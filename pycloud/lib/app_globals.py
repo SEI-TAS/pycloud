@@ -1,5 +1,9 @@
 """The application's Globals object"""
 
+from pylons import config
+from pymongo import Connection
+from pymongo.errors import ConnectionFailure
+
 class Globals(object):
 
     """Globals acts as a container for objects available throughout the
@@ -10,6 +14,18 @@ class Globals(object):
     def __init__(self):
         """One instance of Globals is created during application
         initialization and is available during requests via the
-        'app_globals' variable
+        'g' variable
 
+        We will initialize our database connection here
         """
+
+        host = config['pycloud.mongo.host']
+        port = config['pycloud.mongo.port']
+        db = config['pycloud.mongo.db']
+
+        try:
+            conn = Connection(host, port)
+        except ConnectionFailure:
+            raise Exception('Unable to connect to MongoDB')
+
+        self.db = conn[db]

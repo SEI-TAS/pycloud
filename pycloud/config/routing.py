@@ -8,13 +8,12 @@ from routes import Mapper
 
 def make_map():
     """Create, configure and return the routes Mapper"""
-    map = Mapper()
-    connect = map.connect
+    mapper = Mapper()
+    connect = mapper.connect
 
-
-    connect('/', controller='api', action='home')
+    connect('/api/list_services', controller='api', action='list_services')
 
     #Example
     # connect('/', coontroller='cloudlet', action='home')
 
-    return map
+    return mapper

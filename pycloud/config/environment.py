@@ -7,7 +7,7 @@ from mako.lookup import TemplateLookup
 import routing
 import os
 
-def load_enviroment(global_conf = {}, app_conf = {}):
+def load_enviroment(global_conf={}, app_conf={}):
 
     root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -17,12 +17,18 @@ def load_enviroment(global_conf = {}, app_conf = {}):
              'static_files': os.path.join(root_path, 'public')
     }
 
-    config.init_app(global_conf, app_conf, package='pydion', paths=paths)
+    config.init_app(global_conf, app_conf, package='pycloud', paths=paths)
+
+    # Setup mongo here for now, needs to be pulled out to another file
+    config['pycloud.mongo.host'] = 'aurora'
+    config['pycloud.mongo.port'] = 27017
+    config['pycloud.mongo.db'] = 'cloudlet'
 
     config['routes.map'] = routing.make_map()
     config['debug'] = True
     config['pylons.g'] = Globals()
     config['pylons.h'] = helpers
+
 
     config["pylons.g"].mako_lookup = TemplateLookup(
         directories=paths["templates"],
