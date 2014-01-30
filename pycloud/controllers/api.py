@@ -5,6 +5,9 @@ from util import asjson
 
 class ApiController(BaseController):
 
+    """
+    Return all services this cloudet offers
+    """
     @asjson
     def list_services(self):
         coll = self.db['serviceInfo']
@@ -17,3 +20,4 @@ class ApiController(BaseController):
             "servicePort": 1
         })
         return ret
+
