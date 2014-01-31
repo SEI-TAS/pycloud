@@ -21,15 +21,25 @@ def run_server(app):
     cherrypy.engine.start()
     cherrypy.engine.block()
 
-
-from routes import Mapper
+def load_conf(conf='config.conf'):
+    from ConfigParser import ConfigParser
+    config = ConfigParser()
+    config.read(conf)
+    ret = {}
+    for section in config._sections.keys():
+        for key in config._sections[section].keys():
+            if not key.startswith("__"): # ignore __nane__
+                value = config._sections[section][key]
+                key = "pycloud.%s.%s" % (section, key)
+                ret[key] = value
+    return ret
 
 if __name__ == "__main__":
     from pycloud import make_app
     from pycloud.config import environment
 
     # Load the enviroment first
-    environment.load_enviroment()
+    environment.load_enviroment(app_conf=load_conf())
 
     # Run the server
     run_server(make_app())

@@ -20,12 +20,13 @@ class Globals(object):
         """
 
         host = config['pycloud.mongo.host']
-        port = config['pycloud.mongo.port']
+        port = int(config['pycloud.mongo.port'])
         db = config['pycloud.mongo.db']
 
         try:
             conn = Connection(host, port)
-        except ConnectionFailure:
+        except ConnectionFailure as error:
+            print error
             raise Exception('Unable to connect to MongoDB')
 
         self.db = conn[db]

@@ -19,11 +19,6 @@ def load_enviroment(global_conf={}, app_conf={}):
 
     config.init_app(global_conf, app_conf, package='pycloud', paths=paths)
 
-    # Setup mongo here for now, needs to be pulled out to another file
-    config['pycloud.mongo.host'] = 'aurora'
-    config['pycloud.mongo.port'] = 27017
-    config['pycloud.mongo.db'] = 'cloudlet'
-
     config['routes.map'] = routing.make_map()
     config['debug'] = True
     config['pylons.g'] = Globals()
