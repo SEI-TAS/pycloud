@@ -6,6 +6,7 @@ from paste.registry import RegistryManager
 from pylons import config
 from paste.cascade import Cascade
 from paste.urlparser import StaticURLParser
+from pycloud.config.environment import load_environment
 
 class CloudletApp(PylonsApp):
 
@@ -39,7 +40,10 @@ class CloudletApp(PylonsApp):
 
 
 # Create the cloudlet app
-def make_app():
+def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
+
+    # Configure the Pylons environment
+    load_environment(global_conf, app_conf)
 
     # Create the base app, and add the routes middleware
     app = CloudletApp()

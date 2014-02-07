@@ -1,0 +1,6 @@
+
+Setup and run from this directory:
+
+python setup.py egg_info
+
+paster serve --reload development.ini

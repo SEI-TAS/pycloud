@@ -7,7 +7,8 @@ from mako.lookup import TemplateLookup
 import routing
 import os
 
-def load_enviroment(global_conf={}, app_conf={}):
+def load_environment(global_conf={}, app_conf={}):
+#def load_environment(global_conf, app_conf):
 
     root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

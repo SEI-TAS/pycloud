@@ -11,7 +11,7 @@ def make_map():
     mapper = Mapper()
     connect = mapper.connect
 
-    connect('/api/list_services', controller='api', action='list_services')
+    connect('list_services', '/api/list_services', controller='api', action='list_services')
 
     #Example
     # connect('/', coontroller='cloudlet', action='home')
