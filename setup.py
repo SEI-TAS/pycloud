@@ -22,7 +22,7 @@ setup(
     packages=find_packages(exclude=['ez_setup']),
     entry_points="""
     [paste.app_factory]
-    main = pycloud:make_app
+    main = pycloud.manager:make_app
 
     [paste.app_install]
     main = pylons.util:PylonsInstaller

@@ -4,6 +4,8 @@ from pylons import config
 from pymongo import Connection
 from pymongo.errors import ConnectionFailure
 
+from pycloud import create_cloudlet
+
 class Globals(object):
 
     """Globals acts as a container for objects available throughout the
@@ -19,14 +21,14 @@ class Globals(object):
         We will initialize our database connection here
         """
 
-        host = config['pycloud.mongo.host']
-        port = int(config['pycloud.mongo.port'])
-        db = config['pycloud.mongo.db']
+        # host = config['pycloud.mongo.host']
+        # port = int(config['pycloud.mongo.port'])
+        # db = config['pycloud.mongo.db']
+        #
+        # try:
+        #     conn = Connection(host, port)
+        # except ConnectionFailure as error:
+        #     print error
+        #     raise Exception('Unable to connect to MongoDB')
 
-        try:
-            conn = Connection(host, port)
-        except ConnectionFailure as error:
-            print error
-            raise Exception('Unable to connect to MongoDB')
-
-        self.db = conn[db]
+        self.cloudlet = create_cloudlet(config)

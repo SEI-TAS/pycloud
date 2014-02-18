@@ -23,7 +23,7 @@ class BaseController(WSGIController):
 
     def __before__(self):
         # Make the database available on every request
-        self.db = g.db
+        self.cloudlet = g.cloudlet
         self.pre()
 
     def __after__(self):

@@ -1,10 +1,11 @@
+from pycloud.manager.config import routing
+
 __author__ = 'jdroot'
 
 from pylons import config
-from pycloud.lib.app_globals import Globals
-from pycloud.lib import helpers
+from pycloud.manager.lib.app_globals import Globals
+from pycloud.manager.lib import helpers
 from mako.lookup import TemplateLookup
-import routing
 import os
 
 def load_environment(global_conf={}, app_conf={}):

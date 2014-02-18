@@ -15,7 +15,7 @@ def load_controllers():
 
     # Import All Controllers Here
 
-    from api import ApiController
+    from pycloud.manager.controllers.api import ApiController
 
 
     # Cache the controllers in a look up map

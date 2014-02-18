@@ -1,12 +1,15 @@
 """Pylons middleware initialization"""
 import importlib
+
 from pylons.wsgiapp import PylonsApp
 from routes.middleware import RoutesMiddleware
 from paste.registry import RegistryManager
 from pylons import config
 from paste.cascade import Cascade
 from paste.urlparser import StaticURLParser
-from pycloud.config.environment import load_environment
+
+from pycloud.manager.config.environment import load_environment
+
 
 class CloudletApp(PylonsApp):
 
@@ -22,7 +25,7 @@ class CloudletApp(PylonsApp):
         if self._controllers:
             return
 
-        controllers = importlib.import_module("pycloud.controllers")
+        controllers = importlib.import_module("pycloud.manager.controllers")
         controllers.load_controllers()
         self._controllers = controllers
 
