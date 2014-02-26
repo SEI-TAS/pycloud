@@ -8,8 +8,8 @@ from pycloud.manager.lib import helpers
 from mako.lookup import TemplateLookup
 import os
 
+
 def load_environment(global_conf={}, app_conf={}):
-#def load_environment(global_conf, app_conf):
 
     root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
