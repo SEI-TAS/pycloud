@@ -5,19 +5,19 @@
 import os.path
 
 # To handle VMs.
-import vm.runningvm
+import pycloud.vm.runningvm
 
-# Metadata about a Service VM.
-import servicevm.svmmetadata
+# Metadata about a Service VM (from this same package).
+import svmmetadata
 
 # For disk image management.
-import vm.qcowdiskimage
+import pycloud.vm.qcowdiskimage
 
-# Config utils.
-import utils.config
+# Config pycloud.utils.
+import pycloud.utils.config
 
-# File utils.
-import utils.fileutils
+# File pycloud.utils.
+import pycloud.utils.fileutils
 
 ################################################################################################################
 # Creates StoredServiceVMs.
@@ -40,14 +40,14 @@ class StoredServiceVMFactory(object):
     ################################################################################################################       
     @staticmethod
     def __getLocalConfigParam(key):
-        return utils.config.Configuration.getParam(StoredServiceVMFactory.CONFIG_SECTION, key)
+        return pycloud.utils.config.Configuration.getParam(StoredServiceVMFactory.CONFIG_SECTION, key)
     
     ################################################################################################################  
     # Method to simply getting configuration values for this module.
     ################################################################################################################       
     @staticmethod
     def __getSourceConfigParam(key):
-        return utils.config.Configuration.getParam(StoredServiceVMFactory.SOURCE_CONFIG_SECTION, key)    
+        return pycloud.utils.config.Configuration.getParam(StoredServiceVMFactory.SOURCE_CONFIG_SECTION, key)    
     
     ################################################################################################################
     # Creates a StoredVM from a source file.
@@ -62,11 +62,11 @@ class StoredServiceVMFactory(object):
         
         # Ensure that the base folder is there.
         serviceVMFolder = StoredServiceVMFactory.__getLocalConfigParam(StoredServiceVMFactory.SERVICE_VM_FOLDER_KEY)
-        utils.fileutils.FileUtils.recreateFolder(serviceVMFolder)
+        pycloud.utils.fileutils.FileUtils.recreateFolder(serviceVMFolder)
                         
         # Now we create the metadata file about the ServiceVM.
         print "Creating Service VM metadata file."
-        serviceVMMetadata = servicevm.svmmetadata.ServiceVMMetadata()
+        serviceVMMetadata = svmmetadata.ServiceVMMetadata()
         serviceVMMetadata.serviceId = serviceId
         serviceVMMetadata.servicePort = servicePort
         serviceVMMetadata.writeToFile(os.path.join(serviceVMFolder, serviceVMName))
@@ -75,22 +75,22 @@ class StoredServiceVMFactory(object):
         # Create a new disk image for the Service VM, from the source image.
         # The call to "clone" will add the appropriate extension, so we can use the service name as the filename.
         print "Service VM disk image creation step."
-        sourceDiskImage = vm.diskimage.DiskImage(sourceDiskImageFilePath)
+        sourceDiskImage = pycloud.vm.diskimage.DiskImage(sourceDiskImageFilePath)
         newDiskImageFilePath = os.path.join(serviceVMFolder, serviceVMName)
-        newDiskImage = vm.qcowdiskimage.Qcow2DiskImage(newDiskImageFilePath)
+        newDiskImage = pycloud.vm.qcowdiskimage.Qcow2DiskImage(newDiskImageFilePath)
         newDiskImage.createFromOtherType(sourceDiskImage)
         
         # We start the VM and load a GUI so the user can modify it. We block till he finished. In this process the user
         # will convert the contents of this VM into an actual Service VM by loading it with the appropriate server.
         print "Loading VM for user access..."
-        virtualMachine = vm.runningvm.RunningVM(diskImageFile = newDiskImage.filepath)
+        virtualMachine = pycloud.vm.runningvm.RunningVM(diskImageFile = newDiskImage.filepath)
         virtualMachine.addForwardedSshPort()
         virtualMachine.start(xmlVmDescriptionFilepath, showVNC=True)
         virtualMachine.suspendToFile()
         print "Service VM stopped, and machine state saved."
 
         # Load our data from the folder where we just put everything into.
-        storedServiceVM = servicevm.storedservicevm.StoredServiceVM(serviceId=serviceId)   
+        storedServiceVM = storedservicevm.StoredServiceVM(serviceId=serviceId)   
         storedServiceVM.loadFromFolder(serviceVMFolder)
         
         # Return it.

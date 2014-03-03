@@ -8,13 +8,13 @@ import os.path
 import shutil
 
 # For configuration file management.
-import utils.config
+import pycloud.utils.config
 
-# To handle the actual VMs.
-import servicevm.instance
+# To handle the actual VMs (from this same package).
+import instance
 
 # To handle ports.
-import utils.portmanager
+import pycloud.utils.portmanager
 
 ################################################################################################################
 # Exception type used in our system.
@@ -45,7 +45,7 @@ class ServiceVMInstanceManager(object):
     # Method to simply getting configuration values for this module.
     ################################################################################################################       
     def __getLocalConfigParam(self, key):
-        return utils.config.Configuration.getParam(self.CONFIG_SECTION, key)
+        return pycloud.utils.config.Configuration.getParam(self.CONFIG_SECTION, key)
 
     ################################################################################################################  
     # Cleans up the root folder for VMs instances.
@@ -63,7 +63,7 @@ class ServiceVMInstanceManager(object):
     def __init__(self):
         # Cleanup the VMs instances folder.
         self.cleanupInstancesFolder()
-        utils.portmanager.PortManager.clearPorts()
+        pycloud.utils.portmanager.PortManager.clearPorts()
         
     ################################################################################################################  
     # Starts an instance of a Service VM, or joins an existing one.
@@ -99,15 +99,15 @@ class ServiceVMInstanceManager(object):
         # If no host port was provided, look for a free one.
         # This could still choose a port in use by another process.
         if(serviceHostPort == None):
-            serviceHostPort = utils.portmanager.PortManager.generateRandomAvailablePort()
+            serviceHostPort = pycloud.utils.portmanager.PortManager.generateRandomAvailablePort()
             
         # Look for a free port for SSH.
         # This could still pick a port in use by another process.
-        sshHostPort = utils.portmanager.PortManager.generateRandomAvailablePort()
+        sshHostPort = pycloud.utils.portmanager.PortManager.generateRandomAvailablePort()
         
         # Start a new transient VM.
         instancesRootFolder = self.__getLocalConfigParam(self.INSTANCES_FOLDER_KEY)
-        serviceVMInstance = servicevm.instance.ServiceVMInstance(serviceId, serviceHostPort, sshHostPort, instancesRootFolder)
+        serviceVMInstance = instance.ServiceVMInstance(serviceId, serviceHostPort, sshHostPort, instancesRootFolder)
         serviceVMInstance.createAndStart(showVNC)
     
         # Save this instance in our list of running instances.
@@ -136,7 +136,7 @@ class ServiceVMInstanceManager(object):
             
             # Stop the VM instance.
             serviceVMInstance.stop()
-        except servicevm.instance.ServiceVMException as exception:
+        except instance.ServiceVMException as exception:
             # Most likely VM could not be found.
             print 'Error stopping VM instance with id ' + instanceId + ': ' + str(exception)
             raise ServiceVMInstanceManagerException('Error stopping VM instance: ' + exception.message)
@@ -145,8 +145,8 @@ class ServiceVMInstanceManager(object):
                 print "Cleaning up VM instance data."
                                 
                 # Release the ports.
-                utils.portmanager.PortManager.freePort(serviceVMInstance.serviceHostPort)      
-                utils.portmanager.PortManager.freePort(serviceVMInstance.sshHostPort)
+                pycloud.utils.portmanager.PortManager.freePort(serviceVMInstance.serviceHostPort)      
+                pycloud.utils.portmanager.PortManager.freePort(serviceVMInstance.sshHostPort)
             
                 # Remove this from our list of running instances for a particular Service id.
                 serviceId = serviceVMInstance.serviceId
@@ -170,4 +170,4 @@ class ServiceVMInstanceManager(object):
             self.stopServiceVMInstance(instanceId)       
             
         # Clear any stored ports, if any.
-        utils.portmanager.PortManager.clearPorts()
+        pycloud.utils.portmanager.PortManager.clearPorts()

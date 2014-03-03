@@ -2,7 +2,7 @@
 #       
 
 # To handle VMs.
-import vm.runningvm
+import runningvm
 
 ################################################################################################################
 # Represents a factory to create running VMs.
@@ -17,7 +17,7 @@ class RunningVMFactory(object):
     @staticmethod
     def createRunningVM(self, storedVM, vmId=None, namePrefix=None, showVNC=False, sshHostPort=None):
         # Create the actual VM.
-        virtualMachine = vm.runningvm.RunningVM(id = vmId,
+        virtualMachine = runningvm.RunningVM(id = vmId,
                                                                 prefix = namePrefix, 
                                                                 diskImageFile = storedVM.diskImageFilePath)
 

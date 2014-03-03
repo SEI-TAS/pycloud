@@ -4,7 +4,7 @@
 # Used to check file existence.
 import os.path
 
-# The base class.
+# The base class (from this same package).
 import diskimage
 
 # Used to start external processes.

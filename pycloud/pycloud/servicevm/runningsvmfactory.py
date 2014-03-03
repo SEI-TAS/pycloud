@@ -2,7 +2,7 @@
 #       
 
 # To handle VMs.
-import vm.runningvm
+import pycloud.vm.runningvm
 
 ################################################################################################################
 # Represents a factory to create Running Service VMs.
@@ -25,7 +25,7 @@ class RunningSVMFactory(object):
             namePrefix = RunningSVMFactory.SERVICE_VM_INSTANCE_PREFIX 
 
         # Create the actual VM.
-        virtualMachine = vm.runningvm.RunningVM(id = vmId,
+        virtualMachine = pycloud.vm.runningvm.RunningVM(id = vmId,
                                                 prefix = namePrefix, 
                                                 diskImageFile = storedVM.diskImageFilePath)
 

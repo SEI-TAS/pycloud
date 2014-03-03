@@ -10,15 +10,15 @@ from uuid import uuid4
 # Used to handle paths more easily.
 import os.path
 
-# For SSH connections.
-import vm.vmssh
+# For SSH connections (from this same package).
+import vmssh
 
-# For VNC connections.
-import vm.vncclient
+# For VNC connections (from this same package).
+import vncclient
 
-# Classes for handling disk images and vm memory states.
-import vm.vmsavedstate
-import vm.diskimage
+# Classes for handling disk images and vm memory states (from this same package).
+import vmsavedstate
+import diskimage
 
 ################################################################################################################
 # Exception type used in our system.
@@ -84,7 +84,7 @@ class RunningVM(object):
             diskImageFile = os.path.abspath(diskImageFile)
             
             # Store information about the disk image.
-            self.diskImage = vm.diskimage.DiskImage(diskImageFile)
+            self.diskImage = diskimage.DiskImage(diskImageFile)
         
         # Setup the port mapping info.
         self.portMappings = {}
@@ -127,7 +127,7 @@ class RunningVM(object):
         
         # Connect through the VNC client and wait.
         print 'Starting VNC GUI to VM, and waiting for user to close it.'
-        vncClient = vm.vncclient.VNCClient()
+        vncClient = vncclient.VNCClient()
         result = vncClient.connectAndWait(vncPort)
         print 'VNC GUI no longer running, stopped waiting.'
         
@@ -169,7 +169,7 @@ class RunningVM(object):
         # If no memory image was provided, we will assume its name is based on the disk image.
         if(savedStateFile == None):
             savedStateFile = self.getDefaultSavedStateFile()    
-        savedState = vm.vmsavedstate.VMSavedState(savedStateFile)        
+        savedState = vmsavedstate.VMSavedState(savedStateFile)        
         
         # Check if the Vm saved state file exists.
         if(not savedState.exists()):
@@ -250,7 +250,7 @@ class RunningVM(object):
             # If no memory image was provided, we will define a name for it based on the disk image.
             if(savedStateFile == None):
                 savedStateFile = self.getDefaultSavedStateFile()        
-            savedState = vm.vmsavedstate.VMSavedState(savedStateFile)        
+            savedState = vmsavedstate.VMSavedState(savedStateFile)        
             
             # We indicate that we want want to use as much bandwidth as possible to store the VM's memory when suspending.
             unlimitedBandwidth = 1000000    # In Gpbs
@@ -295,7 +295,7 @@ class RunningVM(object):
     # Returns the default filename for the saved state of a VM, which is based on the disk image path.
     ################################################################################################################     
     def getDefaultSavedStateFile(self):
-        defaultSaveStateFilepath = vm.vmsavedstate.VMSavedState.getCorrectFilepath(self.diskImage.filepath)
+        defaultSaveStateFilepath = vmsavedstate.VMSavedState.getCorrectFilepath(self.diskImage.filepath)
         return defaultSaveStateFilepath          
                 
     ################################################################################################################
@@ -304,7 +304,7 @@ class RunningVM(object):
     def openSSHConnection(self):
         if(self.sshHostPort != None):
             print('Connecting through SSH to port ' + str(self.sshHostPort))
-            self.sshClient = vm.vmssh.VmSshClient(self.sshHostPort)
+            self.sshClient = vmssh.VmSshClient(self.sshHostPort)
         else:
             raise VirtualMachineException("No SSH port configured for connection.")
         

@@ -1,19 +1,22 @@
 #!/usr/bin/env python
 #       
 
+# For file handling.
+import os
+
 # For configuration file management.
-import utils.config
+import pycloud.utils.config
 
 # To get info about existing VMs.
-import vm.vmrepository
+import pycloud.vm.vmrepository
 
-# To get info about existing VMs.
-import servicevm.storedservicevm
+# To get info about existing VMs (from this same package).
+import storedservicevm
 
 ################################################################################################################
 # Stores information about existing ServiceVMs in the system.
 ################################################################################################################
-class ServiceVMRepository(vm.vmrepository.VMRepository):
+class ServiceVMRepository(pycloud.vm.vmrepository.VMRepository):
     
     # Name of the configuration section for this class's parameters.    
     CONFIG_SECTION = 'servicevm'
@@ -25,7 +28,7 @@ class ServiceVMRepository(vm.vmrepository.VMRepository):
     # Method to simply getting configuration values for this module.
     ################################################################################################################       
     def __getLocalConfigParam(self, key):
-        return utils.config.Configuration.getParam(self.CONFIG_SECTION, key)    
+        return pycloud.utils.config.Configuration.getParam(self.CONFIG_SECTION, key)    
 
     ################################################################################################################
     # Just sets up a root folder.
@@ -56,6 +59,26 @@ class ServiceVMRepository(vm.vmrepository.VMRepository):
 
         print "Service VM found."
         return storedVM
+
+    ################################################################################################################
+    # Returns a list of the VM ids and their information.
+    ################################################################################################################    
+    def getStoredServiceVMList(self):        
+        # We will get all folders in the repo, and obtain the information form the files inside.
+        vmList = {}
+        vmIdList = os.listdir(self.vmRepositoryFolder)
+        for vmId in vmIdList:
+            try:
+                # Get the current Stored SVM info.            
+                storedSVM = self.getStoredServiceVM(vmId)
+
+                # Add the id and name to the list.
+                vmList[vmId] = storedSVM                
+            except pycloud.vm.storedvm.StoredVMException as ex:
+                print 'Ignoring invalid Stored SVM folder: %s' % vmId
+        
+        # Return the dictionary
+        return vmList        
     
     ################################################################################################################
     # Gets information about a stored Service VM from the repository.
@@ -63,10 +86,10 @@ class ServiceVMRepository(vm.vmrepository.VMRepository):
     def getStoredServiceVM(self, vmId):
         # Check if the entry exists.
         if(not self.exists(vmId)):
-            raise vm.vmrepository.VMRepositoryException("VM %s does not exist in repository." % vmId)
+            raise pycloud.vm.vmrepository.VMRepositoryException("VM %s does not exist in repository." % vmId)
         
-        # Create a VMInfo object and return it.       
-        storedVM = servicevm.storedservicevm.StoredServiceVM(vmId)
+        # Create a StoredServiceVM object and return it.       
+        storedVM = storedservicevm.StoredServiceVM(vmId)
         vmFolder = self.getStoredVMFolder(vmId)
         storedVM.loadFromFolder(vmFolder)
         return storedVM    

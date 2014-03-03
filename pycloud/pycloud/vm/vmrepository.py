@@ -7,8 +7,8 @@ import os.path
 # Used to copy files.
 import shutil
 
-# Used to represent stored VM info.
-import vm.storedvm
+# Used to represent stored VM info (from this same package)
+import storedvm
 
 ################################################################################################################
 # Exception type used in our system.
@@ -41,10 +41,10 @@ class VMRepository(object):
         self.vmRepositoryFolder = rootFolder
 
     ################################################################################################################
-    # Returns a list of the VM ids and their names.
+    # Returns a list of the VM ids and their information.
     ################################################################################################################    
     def getVMList(self):        
-        # We will get all folders in the repo, and obtain the name form the files inside.
+        # We will get all folders in the repo, and obtain the information form the files inside.
         vmList = {}
         vmIdList = os.listdir(self.vmRepositoryFolder)
         for vmId in vmIdList:
@@ -53,8 +53,8 @@ class VMRepository(object):
                 storedVM = self.getStoredVM(vmId)
 
                 # Add the id and name to the list.
-                vmList[vmId] = storedVM.name                
-            except vm.storedvm.StoredVMException as ex:
+                vmList[vmId] = storedVM                
+            except pycloud.vm.storedvm.StoredVMException as ex:
                 print 'Ignoring invalid Stored VM folder: %s' % vmId
         
         # Return the dictionary
@@ -72,7 +72,7 @@ class VMRepository(object):
         # Get the list of VMs.        
         vmList = self.getVMList()                
         for vmId in vmList.keys():
-            vmListString += vmId + '\t\t' + vmList[vmId] + '\n'
+            vmListString += vmId + '\t\t' + vmList[vmId].name + '\n'
         
         # Simply return the string.
         return vmListString       
@@ -94,7 +94,7 @@ class VMRepository(object):
             raise VMRepositoryException("VM %s does not exist in repository." % vmId)
         
         # Create a VMInfo object and return it.       
-        storedVM = vm.storedvm.StoredVM(vmId)
+        storedVM = pycloud.vm.storedvm.StoredVM(vmId)
         vmFolder = self.getStoredVMFolder(vmId)
         storedVM.loadFromFolder(vmFolder)
         return storedVM

@@ -8,24 +8,21 @@ import os.path
 import shutil
 
 # Base class of a generic stored VM.
-import vm.storedvm
+import pycloud.vm.storedvm
 
-# To handle VMs.
-import vm.runningvm
-
-# Metadata about a Service VM.
-import servicevm.svmmetadata
+# Metadata about a Service VM (from this same package).
+import svmmetadata
 
 # For disk image management.
-import vm.qcowdiskimage
+import pycloud.vm.qcowdiskimage
 
-# File utils.
-import utils.fileutils
+# File pycloud.utils.
+import pycloud.utils.fileutils
 
 ################################################################################################################
 # An object that represents a stored Service VM.
 ################################################################################################################
-class StoredServiceVM(vm.storedvm.StoredVM):
+class StoredServiceVM(pycloud.vm.storedvm.StoredVM):
 
     # ServiceVM metadata file.
     metadataFilePath = None
@@ -52,21 +49,21 @@ class StoredServiceVM(vm.storedvm.StoredVM):
         vmFileList = os.listdir(vmFolder)
         for currentFilename in vmFileList:
             # Check if there is a metadata file, if so, load it into memory. This will only be there for Server VMs.
-            if(servicevm.svmmetadata.ServiceVMMetadata.isValidMetadataFilename(currentFilename)):
+            if(svmmetadata.ServiceVMMetadata.isValidMetadataFilename(currentFilename)):
                 self.metadataFilePath = os.path.join(vmFolder, currentFilename)
-                self.metadata = servicevm.svmmetadata.ServiceVMMetadata()
+                self.metadata = svmmetadata.ServiceVMMetadata()
                 self.metadata.loadFromFile(self.metadataFilePath)                 
 
         # If we didn't find a disk or saved state image, there is something seriously wrong.
         if(self.metadataFilePath == None):
-            raise vm.storedvm.StoredVMException("VM in folder %s did not contain a valid metadata file." % vmFolder)
+            raise pycloud.vm.storedvm.StoredVMException("VM in folder %s did not contain a valid metadata file." % vmFolder)
         
     ################################################################################################################
     # Creates a clone of a StoredServiceVM.
     ################################################################################################################
     def cloneToFolder(self, clonedStoredVMFolderPath):
         # Create the folder for these files.
-        utils.fileutils.FileUtils.recreateFolder(clonedStoredVMFolderPath)
+        pycloud.utils.fileutils.FileUtils.recreateFolder(clonedStoredVMFolderPath)
         
         # Copy the files.
         shutil.copy(self.vmStateImageFilepath, clonedStoredVMFolderPath)
@@ -75,7 +72,7 @@ class StoredServiceVM(vm.storedvm.StoredVM):
         if(self.metadata.refImageId == 'None'):
             # For the disk image, create a shallow qcow2 file pointing at the original image, instead of copying it, for faster startup.
             clonedFilepath = os.path.join(clonedStoredVMFolderPath, self.name)
-            clonedDiskImage = vm.qcowdiskimage.Qcow2DiskImage(clonedFilepath)
+            clonedDiskImage = pycloud.vm.qcowdiskimage.Qcow2DiskImage(clonedFilepath)
             clonedDiskImage.linkToBackingFile(self.diskImageFilePath)
         else:
             # If we are using a synthesized VM with a disk image pointing at a base disk image, libvirt won't allow double redirection, 

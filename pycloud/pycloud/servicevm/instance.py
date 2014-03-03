@@ -8,13 +8,13 @@ import os.path
 import shutil
 
 # To handle VMs.
-import vm.runningvm
+import pycloud.vm.runningvm
 
-# To create Running Service VMs.
-import servicevm.runningsvmfactory
+# To create Running Service VMs (from this same package).
+import runningsvmfactory
 
-# To get info about existing VMs.
-import servicevm.svmrepository
+# To get info about existing VMs (from this same package).
+import svmrepository
 
 ################################################################################################################
 # Exception type used in our system.
@@ -68,13 +68,13 @@ class ServiceVMInstance(object):
     ################################################################################################################   
     def createAndStart(self, showVNC=False):
         # Get information about the VM to execute.
-        serviceVmRepo = servicevm.svmrepository.ServiceVMRepository()
+        serviceVmRepo = svmrepository.ServiceVMRepository()
         storedServiceVM = serviceVmRepo.findServiceVM(self.serviceId)
         if(storedServiceVM == None):
             raise ServiceVMException("No valid VM for service id %s was found in the repository. " % self.serviceId)
         
         # Create a VM id for the running VM, and store it as our id.
-        self.instanceId = vm.runningvm.RunningVM.generateRandomId()
+        self.instanceId = pycloud.vm.runningvm.RunningVM.generateRandomId()
         
         # Now we create a temporary clone of the template ServiceVM, which will be our instance.
         # We don't want to store changes to the template Service VM. Therefore, we have to make a copy of the disk image and start the VM
@@ -90,7 +90,7 @@ class ServiceVMInstance(object):
         
         print '\n*************************************************************************************************'        
         print "Resuming VM."
-        self.runningSVM = servicevm.runningsvmfactory.RunningSVMFactory.createRunningVM(storedVM=clonedStoredServiceVM,
+        self.runningSVM = runningsvmfactory.RunningSVMFactory.createRunningVM(storedVM=clonedStoredServiceVM,
                                                                                         vmId=self.instanceId,
                                                                                         showVNC=showVNC,
                                                                                         sshHostPort=self.sshHostPort,

@@ -10,17 +10,14 @@ import shutil
 # Used to change file permissions.
 import stat
 
-# To handle disk images.
-import vm.diskimage
+# To handle disk images (from this same package).
+import diskimage
 
-# Used to handle data about saved state files.
-import vm.vmsavedstate
-
-# Used to create a VM with our stored files.
-import vm.runningvm
+# Used to handle data about saved state files (from this same package).
+import vmsavedstate
 
 # File utils.
-import utils.fileutils
+import pycloud.utils.fileutils
 
 ################################################################################################################
 # Exception type used in this module.
@@ -70,7 +67,7 @@ class StoredVM(object):
         vmFileList = os.listdir(vmFolder)
         for currentFilename in vmFileList:
             # Check for disk image file.
-            if(vm.diskimage.DiskImage.isValidDiskImageFilename(currentFilename)):
+            if(diskimage.DiskImage.isValidDiskImageFilename(currentFilename)):
                 self.diskImageFilePath = os.path.join(vmFolder, currentFilename)
                  
                 # We use the name of this file, without its extensions, as a simple name for the stored VM.
@@ -78,7 +75,7 @@ class StoredVM(object):
                 self.name = fileParts[0]
                  
             # Check for VM saved state image file.
-            if(vm.vmsavedstate.VMSavedState.isValidSavedStateFilename(currentFilename)):
+            if(vmsavedstate.VMSavedState.isValidSavedStateFilename(currentFilename)):
                 self.vmStateImageFilepath = os.path.join(vmFolder, currentFilename)
 
         # If we didn't find a disk or saved state image, there is something seriously wrong.
@@ -90,7 +87,7 @@ class StoredVM(object):
     ################################################################################################################             
     def moveToFolder(self, destinationFolderPath):
         # First clear the folder and ensure it is there.
-        utils.fileutils.FileUtils.recreateFolder(destinationFolderPath)
+        pycloud.utils.fileutils.FileUtils.recreateFolder(destinationFolderPath)
         
         # Go through all the files in our folder.
         vmFileList = os.listdir(self.folder)

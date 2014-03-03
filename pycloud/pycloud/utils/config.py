@@ -10,7 +10,7 @@ import ConfigParser
 class Configuration(object):
     
     # The default config file.
-    CONFIGURATION_FILE = './cloudlet.conf'
+    CONFIGURATION_FILE = 'cloudlet.conf'
     
     # The parser used to get the parameters.
     parser = None
@@ -23,7 +23,7 @@ class Configuration(object):
         if(Configuration.parser == None):
             print 'Loading config from %s ' % Configuration.CONFIGURATION_FILE 
             Configuration.parser = ConfigParser.ConfigParser()            
-            Configuration.parser.read(Configuration.CONFIGURATION_FILE)        
+            Configuration.parser.readfp(open(Configuration.CONFIGURATION_FILE))        
         
     ################################################################################################################
     # Returns a paramter from the configuration.

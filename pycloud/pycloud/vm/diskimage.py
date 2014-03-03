@@ -11,7 +11,7 @@ import os.path
 import hashlib
 
 # To show progerss visually, for hash calculation.
-import utils.progressbar
+import pycloud.utils.progressbar
 
 ################################################################################################################
 # Exception type used in our system.
@@ -134,7 +134,7 @@ class DiskImage(object):
         
         # Create a simple progress bar to show progress of calculated hash.
         numIterations = os.path.getsize(inputFilename) / blockSize
-        progressBar = utils.progressbar.LoopAnimatedProgressBar(end=100, width=80, numberOfIterations=numIterations)        
+        progressBar = pycloud.utils.progressbar.LoopAnimatedProgressBar(end=100, width=80, numberOfIterations=numIterations)        
         
         # Loop over the file to calculate the hash incrementally.
         currIteration = 0        
