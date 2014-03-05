@@ -8,13 +8,13 @@ import os.path
 import shutil
 
 # For configuration file management.
-from pycloud.utils. import config
+from pycloud.pycloud.utils. import config
 
 # To handle the actual VMs (from this same package).
 import instance
 
 # To handle ports.
-from pycloud.utils import portmanager
+from pycloud.pycloud.utils import portmanager
 
 ################################################################################################################
 # Exception type used in our system.

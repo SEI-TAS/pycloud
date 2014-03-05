@@ -5,10 +5,10 @@
 import os
 
 # For configuration file management.
-from pycloud.utils import config
+from pycloud.pycloud.utils import config
 
 # To get info about existing VMs.
-from pycloud.vm import vmrepository
+from pycloud.pycloud.vm import vmrepository
 
 # To get info about existing VMs (from this same package).
 import storedservicevm

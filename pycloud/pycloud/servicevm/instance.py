@@ -8,7 +8,7 @@ import os.path
 import shutil
 
 # To handle VMs.
-from pycloud.vm import runningvm
+from pycloud.pycloud.vm import runningvm
 
 # To create Running Service VMs (from this same package).
 import runningsvmfactory

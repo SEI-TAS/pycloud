@@ -5,19 +5,19 @@
 import os.path
 
 # To handle VMs.
-from pycloud.vm import runningvm
+from pycloud.pycloud.vm import runningvm
 
 # Metadata about a Service VM (from this same package).
 import svmmetadata
 
 # For disk image management.
-from pycloud.vm import qcowdiskimage
+from pycloud.pycloud.vm import qcowdiskimage
 
 # Config utils.
-from pycloud.utils import config
+from pycloud.pycloud.utils import config
 
 # File utils.
-from pycloud.utils import fileutils
+from pycloud.pycloud.utils import fileutils
 
 ################################################################################################################
 # Creates StoredServiceVMs.

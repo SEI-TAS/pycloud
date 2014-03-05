@@ -2,7 +2,7 @@
 #       
 
 # To handle VMs.
-from pycloud.vm import runningvm
+from pycloud.pycloud.vm import runningvm
 
 ################################################################################################################
 # Represents a factory to create Running Service VMs.

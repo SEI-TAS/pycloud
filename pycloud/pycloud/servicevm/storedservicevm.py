@@ -8,16 +8,16 @@ import os.path
 import shutil
 
 # Base class of a generic stored VM.
-from pycloud.vm import storedvm
+from pycloud.pycloud.vm import storedvm
 
 # Metadata about a Service VM (from this same package).
 import svmmetadata
 
 # For disk image management.
-from pycloud.vm import qcowdiskimage
+from pycloud.pycloud.vm import qcowdiskimage
 
 # File utils.
-from pycloud.utils import fileutils
+from pycloud.pycloud.utils import fileutils
 
 ################################################################################################################
 # An object that represents a stored Service VM.

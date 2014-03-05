@@ -24,4 +24,12 @@ class FileUtils(object):
         # Now create it.
         os.makedirs(folderPath)
         
+    ################################################################################################################
+    # Creates a folder path only if it does not exist.
+    ################################################################################################################
+    @staticmethod
+    def createFolderIfNew(folderPath):
+        if(not os.path.exists(folderPath)):
+            os.makedirs(folderPath)        
+        
 

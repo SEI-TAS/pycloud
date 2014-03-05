@@ -11,7 +11,7 @@ import os.path
 import hashlib
 
 # To show progerss visually, for hash calculation.
-from pycloud.utils import progressbar
+from pycloud.pycloud.utils import progressbar
 
 ################################################################################################################
 # Exception type used in our system.

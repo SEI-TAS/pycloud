@@ -24,3 +24,5 @@ class BasePage(Templated):
 # Example
 # This page will reference pycloud/manager/templates/homepage.html
 # class HomePage(BasePage): pass
+
+class ServicesPage(BasePage): pass

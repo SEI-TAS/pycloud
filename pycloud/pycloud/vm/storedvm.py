@@ -17,7 +17,7 @@ import diskimage
 import vmsavedstate
 
 # File utils.
-from pycloud.utils import fileutils
+from pycloud.pycloud.utils import fileutils
 
 ################################################################################################################
 # Exception type used in this module.

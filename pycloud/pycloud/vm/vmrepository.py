@@ -10,6 +10,9 @@ import shutil
 # Used to represent stored VM info (from this same package)
 import storedvm
 
+# For folder handling.
+from pycloud.pycloud.utils import fileutils
+
 ################################################################################################################
 # Exception type used in our system.
 ################################################################################################################
@@ -39,6 +42,9 @@ class VMRepository(object):
     ################################################################################################################    
     def __init__(self, rootFolder):
         self.vmRepositoryFolder = rootFolder
+        
+        # Create the folder if it was not there.
+        fileutils.FileUtils.createFolderIfNew(self.vmRepositoryFolder)
 
     ################################################################################################################
     # Returns a list of the VM ids and their information.

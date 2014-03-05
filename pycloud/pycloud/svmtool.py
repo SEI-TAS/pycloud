@@ -12,13 +12,13 @@ import sys
 import argparse
 
 # Manager of VM stuff.
-from pycloud.vm import storedvm
-from pycloud.servicevm import instancemanager
-from pycloud.servicevm import svmrepository
-from pycloud.servicevm import ssvmfactory
+from pycloud.pycloud.vm import storedvm
+from pycloud.pycloud.servicevm import instancemanager
+from pycloud.pycloud.servicevm import svmrepository
+from pycloud.pycloud.servicevm import ssvmfactory
 
 # For exceptions.
-from pycloud.vm import vmrepository
+from pycloud.pycloud.vm import vmrepository
 
 ################################################################################################################
 # Global constants.
