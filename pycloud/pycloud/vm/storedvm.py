@@ -17,7 +17,7 @@ import diskimage
 import vmsavedstate
 
 # File utils.
-import pycloud.utils.fileutils
+from pycloud.utils import fileutils
 
 ################################################################################################################
 # Exception type used in this module.
@@ -87,7 +87,7 @@ class StoredVM(object):
     ################################################################################################################             
     def moveToFolder(self, destinationFolderPath):
         # First clear the folder and ensure it is there.
-        pycloud.utils.fileutils.FileUtils.recreateFolder(destinationFolderPath)
+        fileutils.FileUtils.recreateFolder(destinationFolderPath)
         
         # Go through all the files in our folder.
         vmFileList = os.listdir(self.folder)

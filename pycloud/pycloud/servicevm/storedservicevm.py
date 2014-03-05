@@ -8,21 +8,21 @@ import os.path
 import shutil
 
 # Base class of a generic stored VM.
-import pycloud.vm.storedvm
+from pycloud.vm import storedvm
 
 # Metadata about a Service VM (from this same package).
 import svmmetadata
 
 # For disk image management.
-import pycloud.vm.qcowdiskimage
+from pycloud.vm import qcowdiskimage
 
-# File pycloud.utils.
-import pycloud.utils.fileutils
+# File utils.
+from pycloud.utils import fileutils
 
 ################################################################################################################
 # An object that represents a stored Service VM.
 ################################################################################################################
-class StoredServiceVM(pycloud.vm.storedvm.StoredVM):
+class StoredServiceVM(storedvm.StoredVM):
 
     # ServiceVM metadata file.
     metadataFilePath = None
@@ -56,14 +56,14 @@ class StoredServiceVM(pycloud.vm.storedvm.StoredVM):
 
         # If we didn't find a disk or saved state image, there is something seriously wrong.
         if(self.metadataFilePath == None):
-            raise pycloud.vm.storedvm.StoredVMException("VM in folder %s did not contain a valid metadata file." % vmFolder)
+            raise storedvm.StoredVMException("VM in folder %s did not contain a valid metadata file." % vmFolder)
         
     ################################################################################################################
     # Creates a clone of a StoredServiceVM.
     ################################################################################################################
     def cloneToFolder(self, clonedStoredVMFolderPath):
         # Create the folder for these files.
-        pycloud.utils.fileutils.FileUtils.recreateFolder(clonedStoredVMFolderPath)
+        fileutils.FileUtils.recreateFolder(clonedStoredVMFolderPath)
         
         # Copy the files.
         shutil.copy(self.vmStateImageFilepath, clonedStoredVMFolderPath)
@@ -72,7 +72,7 @@ class StoredServiceVM(pycloud.vm.storedvm.StoredVM):
         if(self.metadata.refImageId == 'None'):
             # For the disk image, create a shallow qcow2 file pointing at the original image, instead of copying it, for faster startup.
             clonedFilepath = os.path.join(clonedStoredVMFolderPath, self.name)
-            clonedDiskImage = pycloud.vm.qcowdiskimage.Qcow2DiskImage(clonedFilepath)
+            clonedDiskImage = qcowdiskimage.Qcow2DiskImage(clonedFilepath)
             clonedDiskImage.linkToBackingFile(self.diskImageFilePath)
         else:
             # If we are using a synthesized VM with a disk image pointing at a base disk image, libvirt won't allow double redirection, 

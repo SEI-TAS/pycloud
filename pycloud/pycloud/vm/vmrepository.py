@@ -54,7 +54,7 @@ class VMRepository(object):
 
                 # Add the id and name to the list.
                 vmList[vmId] = storedVM                
-            except pycloud.vm.storedvm.StoredVMException as ex:
+            except storedvm.StoredVMException as ex:
                 print 'Ignoring invalid Stored VM folder: %s' % vmId
         
         # Return the dictionary
@@ -94,7 +94,7 @@ class VMRepository(object):
             raise VMRepositoryException("VM %s does not exist in repository." % vmId)
         
         # Create a VMInfo object and return it.       
-        storedVM = pycloud.vm.storedvm.StoredVM(vmId)
+        storedVM = storedvm.StoredVM(vmId)
         vmFolder = self.getStoredVMFolder(vmId)
         storedVM.loadFromFolder(vmFolder)
         return storedVM

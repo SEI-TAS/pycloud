@@ -8,7 +8,7 @@ import os.path
 import shutil
 
 # To handle VMs.
-import pycloud.vm.runningvm
+from pycloud.vm import runningvm
 
 # To create Running Service VMs (from this same package).
 import runningsvmfactory
@@ -74,7 +74,7 @@ class ServiceVMInstance(object):
             raise ServiceVMException("No valid VM for service id %s was found in the repository. " % self.serviceId)
         
         # Create a VM id for the running VM, and store it as our id.
-        self.instanceId = pycloud.vm.runningvm.RunningVM.generateRandomId()
+        self.instanceId = runningvm.RunningVM.generateRandomId()
         
         # Now we create a temporary clone of the template ServiceVM, which will be our instance.
         # We don't want to store changes to the template Service VM. Therefore, we have to make a copy of the disk image and start the VM

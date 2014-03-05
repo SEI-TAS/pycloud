@@ -5,10 +5,10 @@
 import os
 
 # For configuration file management.
-import pycloud.utils.config
+from pycloud.utils import config
 
 # To get info about existing VMs.
-import pycloud.vm.vmrepository
+from pycloud.vm import vmrepository
 
 # To get info about existing VMs (from this same package).
 import storedservicevm
@@ -16,7 +16,7 @@ import storedservicevm
 ################################################################################################################
 # Stores information about existing ServiceVMs in the system.
 ################################################################################################################
-class ServiceVMRepository(pycloud.vm.vmrepository.VMRepository):
+class ServiceVMRepository(vmrepository.VMRepository):
     
     # Name of the configuration section for this class's parameters.    
     CONFIG_SECTION = 'servicevm'
@@ -28,7 +28,7 @@ class ServiceVMRepository(pycloud.vm.vmrepository.VMRepository):
     # Method to simply getting configuration values for this module.
     ################################################################################################################       
     def __getLocalConfigParam(self, key):
-        return pycloud.utils.config.Configuration.getParam(self.CONFIG_SECTION, key)    
+        return config.Configuration.getParam(self.CONFIG_SECTION, key)    
 
     ################################################################################################################
     # Just sets up a root folder.
@@ -74,7 +74,7 @@ class ServiceVMRepository(pycloud.vm.vmrepository.VMRepository):
 
                 # Add the id and name to the list.
                 vmList[vmId] = storedSVM                
-            except pycloud.vm.storedvm.StoredVMException as ex:
+            except storedvm.StoredVMException as ex:
                 print 'Ignoring invalid Stored SVM folder: %s' % vmId
         
         # Return the dictionary
@@ -86,7 +86,7 @@ class ServiceVMRepository(pycloud.vm.vmrepository.VMRepository):
     def getStoredServiceVM(self, vmId):
         # Check if the entry exists.
         if(not self.exists(vmId)):
-            raise pycloud.vm.vmrepository.VMRepositoryException("VM %s does not exist in repository." % vmId)
+            raise vmrepository.VMRepositoryException("VM %s does not exist in repository." % vmId)
         
         # Create a StoredServiceVM object and return it.       
         storedVM = storedservicevm.StoredServiceVM(vmId)

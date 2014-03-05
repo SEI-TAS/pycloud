@@ -12,13 +12,13 @@ import sys
 import argparse
 
 # Manager of VM stuff.
-import pycloud.pycloud.vm.storedvm
-import pycloud.servicevm.instancemanager
-import pycloud.servicevm.svmrepository
-import pycloud.servicevm.ssvmfactory
+from pycloud.vm import storedvm
+from pycloud.servicevm import instancemanager
+from pycloud.servicevm import svmrepository
+from pycloud.servicevm import ssvmfactory
 
 # For exceptions.
-import pycloud.vm.vmrepository
+from pycloud.vm import vmrepository
 
 ################################################################################################################
 # Global constants.
@@ -109,7 +109,7 @@ def main():
         
         try:
             # Create it.
-            newStoredServiceVM = pycloud.servicevm.ssvmfactory.StoredServiceVMFactory.createFromDiskImage(vmType=arguments.type,
+            newStoredServiceVM = ssvmfactory.StoredServiceVMFactory.createFromDiskImage(vmType=arguments.type,
                                                                              sourceDiskImageFilePath=arguments.sourceImage,
                                                                              serviceId=arguments.serviceId, 
                                                                              serviceVMName=arguments.name, 
@@ -117,11 +117,11 @@ def main():
             
             # Store it in the repo.
             print "Saving ServiceVM."
-            serviceVMRepository = pycloud.servicevm.svmrepository.ServiceVMRepository()
+            serviceVMRepository = svmrepository.ServiceVMRepository()
             serviceVMRepository.addStoredVM(newStoredServiceVM)
             print "ServiceVM stored in repository."            
             
-        except pycloud.vm.storedvm.StoredVMException as e:
+        except storedvm.StoredVMException as e:
             print "Error creating Service VM: " + e.message       
     
     elif(command == CMD_RUN_VM):
@@ -130,13 +130,13 @@ def main():
         
         try:     
             # Run a VM with a VNC GUI.
-            instanceMan = pycloud.servicevm.instancemanager.ServiceVMInstanceManager()
+            instanceMan = instancemanager.ServiceVMInstanceManager()
             runningInstance = instanceMan.getServiceVMInstance(serviceId=arguments.serviceId,
                                                                showVNC=True)
 
             # After we unblocked because the user closed the GUI, we just kill the VM.
             instanceMan.stopServiceVMInstance(runningInstance.instanceId)
-        except pycloud.servicevm.instancemanager.ServiceVMInstanceManagerException as e:
+        except instancemanager.ServiceVMInstanceManagerException as e:
             print "Error running Server VM: " + e.message
             
     elif(command == CMD_MODIFY):
@@ -146,13 +146,13 @@ def main():
         try:     
             # Get the VM, and make it writeable.
             serviceId = arguments.serviceId
-            serviceVMRepository = pycloud.servicevm.svmrepository.ServiceVMRepository()
+            serviceVMRepository = svmrepository.ServiceVMRepository()
             storedServiceVM = serviceVMRepository.getStoredServiceVM(serviceId)
             storedServiceVM.unprotect()
             
             # Run the VM with GUI and store its state.
             defaultMaintenanceServiceHostPort = 16001
-            runningSVM = pycloud.servicevm.runningsvmfactory.RunningSVMFactory.createRunningVM(storedVM=storedServiceVM,
+            runningSVM = runningsvmfactory.RunningSVMFactory.createRunningVM(storedVM=storedServiceVM,
                                                                                        showVNC=True,
                                                                                        serviceHostPort=defaultMaintenanceServiceHostPort)
             runningSVM.suspendToFile()
@@ -162,17 +162,17 @@ def main():
             
             # Make the stored VM read only again.
             storedServiceVM.protect()
-        except pycloud.servicevm.instancemanager.ServiceVMInstanceManagerException as e:
+        except instancemanager.ServiceVMInstanceManagerException as e:
             print "Error modifying Server VM: " + e.message        
             
     elif(command == CMD_LIST_VM):
         try:
             # Get a list and print it.
-            serviceVmRepo = pycloud.servicevm.svmrepository.ServiceVMRepository()
+            serviceVmRepo = svmrepository.ServiceVMRepository()
             vmList = serviceVmRepo.getVMListAsString()
             print '\nService VM List:'
             print vmList
-        except pycloud.vm.vmrepository.VMRepositoryException as e:
+        except vmrepository.VMRepositoryException as e:
             print "Error getting list of Server VMs: " + e.message
             
     elif(command == CMD_TEST_SSH):
@@ -183,7 +183,7 @@ def main():
         runningInstance = None        
         try:
             # Create the manager and access the VM.
-            instanceMan = pycloud.servicevm.instancemanager.ServiceVMInstanceManager()
+            instanceMan = instancemanager.ServiceVMInstanceManager()
             runningInstance = instanceMan.getServiceVMInstance(serviceId=arguments.serviceId,
                                                                showVNC=False)
             
@@ -195,7 +195,7 @@ def main():
             # Close connection.
             runningInstance.closeSSHConnection()
             
-        except pycloud.servicevm.instancemanager.ServiceVMInstanceManagerException as e:
+        except instancemanager.ServiceVMInstanceManagerException as e:
             print "Error testing ssh connection: " + e.message     
         finally:
             # Cleanup.

@@ -2,7 +2,7 @@
 #       
 
 # To handle VMs.
-import pycloud.vm.runningvm
+from pycloud.vm import runningvm
 
 ################################################################################################################
 # Represents a factory to create Running Service VMs.
@@ -25,9 +25,9 @@ class RunningSVMFactory(object):
             namePrefix = RunningSVMFactory.SERVICE_VM_INSTANCE_PREFIX 
 
         # Create the actual VM.
-        virtualMachine = pycloud.vm.runningvm.RunningVM(id = vmId,
-                                                prefix = namePrefix, 
-                                                diskImageFile = storedVM.diskImageFilePath)
+        virtualMachine = runningvm.RunningVM(id = vmId,
+                                             prefix = namePrefix, 
+                                             diskImageFile = storedVM.diskImageFilePath)
 
         # Add port mappings.
         virtualMachine.addForwardedSshPort(sshHostPort)

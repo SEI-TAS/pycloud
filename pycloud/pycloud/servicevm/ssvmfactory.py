@@ -5,19 +5,19 @@
 import os.path
 
 # To handle VMs.
-import pycloud.vm.runningvm
+from pycloud.vm import runningvm
 
 # Metadata about a Service VM (from this same package).
 import svmmetadata
 
 # For disk image management.
-import pycloud.vm.qcowdiskimage
+from pycloud.vm import qcowdiskimage
 
-# Config pycloud.utils.
-import pycloud.utils.config
+# Config utils.
+from pycloud.utils import config
 
-# File pycloud.utils.
-import pycloud.utils.fileutils
+# File utils.
+from pycloud.utils import fileutils
 
 ################################################################################################################
 # Creates StoredServiceVMs.
@@ -40,14 +40,14 @@ class StoredServiceVMFactory(object):
     ################################################################################################################       
     @staticmethod
     def __getLocalConfigParam(key):
-        return pycloud.utils.config.Configuration.getParam(StoredServiceVMFactory.CONFIG_SECTION, key)
+        return config.Configuration.getParam(StoredServiceVMFactory.CONFIG_SECTION, key)
     
     ################################################################################################################  
     # Method to simply getting configuration values for this module.
     ################################################################################################################       
     @staticmethod
     def __getSourceConfigParam(key):
-        return pycloud.utils.config.Configuration.getParam(StoredServiceVMFactory.SOURCE_CONFIG_SECTION, key)    
+        return config.Configuration.getParam(StoredServiceVMFactory.SOURCE_CONFIG_SECTION, key)    
     
     ################################################################################################################
     # Creates a StoredVM from a source file.
@@ -62,7 +62,7 @@ class StoredServiceVMFactory(object):
         
         # Ensure that the base folder is there.
         serviceVMFolder = StoredServiceVMFactory.__getLocalConfigParam(StoredServiceVMFactory.SERVICE_VM_FOLDER_KEY)
-        pycloud.utils.fileutils.FileUtils.recreateFolder(serviceVMFolder)
+        fileutils.FileUtils.recreateFolder(serviceVMFolder)
                         
         # Now we create the metadata file about the ServiceVM.
         print "Creating Service VM metadata file."
@@ -75,15 +75,15 @@ class StoredServiceVMFactory(object):
         # Create a new disk image for the Service VM, from the source image.
         # The call to "clone" will add the appropriate extension, so we can use the service name as the filename.
         print "Service VM disk image creation step."
-        sourceDiskImage = pycloud.vm.diskimage.DiskImage(sourceDiskImageFilePath)
+        sourceDiskImage = diskimage.DiskImage(sourceDiskImageFilePath)
         newDiskImageFilePath = os.path.join(serviceVMFolder, serviceVMName)
-        newDiskImage = pycloud.vm.qcowdiskimage.Qcow2DiskImage(newDiskImageFilePath)
+        newDiskImage = qcowdiskimage.Qcow2DiskImage(newDiskImageFilePath)
         newDiskImage.createFromOtherType(sourceDiskImage)
         
         # We start the VM and load a GUI so the user can modify it. We block till he finished. In this process the user
         # will convert the contents of this VM into an actual Service VM by loading it with the appropriate server.
         print "Loading VM for user access..."
-        virtualMachine = pycloud.vm.runningvm.RunningVM(diskImageFile = newDiskImage.filepath)
+        virtualMachine = runningvm.RunningVM(diskImageFile = newDiskImage.filepath)
         virtualMachine.addForwardedSshPort()
         virtualMachine.start(xmlVmDescriptionFilepath, showVNC=True)
         virtualMachine.suspendToFile()
