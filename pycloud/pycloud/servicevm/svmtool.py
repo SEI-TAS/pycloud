@@ -1,12 +1,9 @@
-    #!/usr/bin/env python
+#!/usr/bin/env python
 #       
 
 ################################################################################################################
 # Imports.
 ################################################################################################################
-
-# Used for argument handling.
-import sys  
 
 # Used to parse command-line arguments.
 import argparse
@@ -16,6 +13,7 @@ from pycloud.pycloud.vm import storedvm
 from pycloud.pycloud.servicevm import instancemanager
 from pycloud.pycloud.servicevm import svmrepository
 from pycloud.pycloud.servicevm import ssvmfactory
+from pycloud.pycloud.servicevm import runningsvmfactory
 
 # For exceptions.
 from pycloud.pycloud.vm import vmrepository
@@ -70,7 +68,6 @@ def parseRunVmCommandArguments():
     
     return parsedArguments
 
-
 ################################################################################################################
 # Parses the arguments for the ServiceVM modification command.    
 ################################################################################################################    
@@ -95,6 +92,108 @@ def parseTestSshCommandArguments():
     
     return parsedArguments 
 
+ ################################################################################################################
+# Creates and a new Service VM.
+################################################################################################################
+def commandCreateVM(arguments):
+    try:
+        # Create it.
+        newStoredServiceVM = ssvmfactory.StoredServiceVMFactory.createFromDiskImage(vmType=arguments.type,
+                                                                         sourceDiskImageFilePath=arguments.sourceImage,
+                                                                         serviceId=arguments.serviceId, 
+                                                                         serviceVMName=arguments.name, 
+                                                                         servicePort=arguments.port)
+        
+        # Store it in the repo.
+        print "Saving ServiceVM."
+        serviceVMRepository = svmrepository.ServiceVMRepository()
+        serviceVMRepository.addStoredVM(newStoredServiceVM)
+        print "ServiceVM stored in repository."            
+        
+    except storedvm.StoredVMException as e:
+        print "Error creating Service VM: " + e.message 
+        
+################################################################################################################
+# Creates and runs a transient copy of a stored service VM present in the cache.
+################################################################################################################
+def commandRunVM(arguments):
+    try:     
+        # Run a VM with a VNC GUI.
+        instanceMan = instancemanager.ServiceVMInstanceManager()
+        runningInstance = instanceMan.getServiceVMInstance(serviceId=arguments.serviceId,
+                                                           showVNC=True)
+
+        # After we unblocked because the user closed the GUI, we just kill the VM.
+        instanceMan.stopServiceVMInstance(runningInstance.instanceId)
+    except instancemanager.ServiceVMInstanceManagerException as e:
+        print "Error running Service VM: " + e.message
+        
+################################################################################################################
+# Allows the modification of an existing ServiceVM from the cache.
+################################################################################################################
+def commandModifyVM(arguments):        
+    try:     
+        # Get the VM, and make it writeable.
+        serviceId = arguments.serviceId
+        serviceVMRepository = svmrepository.ServiceVMRepository()
+        storedServiceVM = serviceVMRepository.getStoredServiceVM(serviceId)
+        storedServiceVM.unprotect()
+        
+        # Run the VM with GUI and store its state.
+        defaultMaintenanceServiceHostPort = 16001
+        runningSVM = runningsvmfactory.RunningSVMFactory.createRunningVM(storedVM=storedServiceVM,
+                                                                         showVNC=True,
+                                                                         serviceHostPort=defaultMaintenanceServiceHostPort)
+        runningSVM.suspendToFile()
+        
+        # Destroy the running VM.
+        runningSVM.destroy()     
+        
+        # Make the stored VM read only again.
+        storedServiceVM.protect()
+    except instancemanager.ServiceVMInstanceManagerException as e:
+        print "Error modifying Service VM: " + e.message
+        
+################################################################################################################
+# Prints a list of Service VMs in the cache.
+################################################################################################################
+def commandListVM():
+    try:
+        # Get a list and print it.
+        serviceVmRepo = svmrepository.ServiceVMRepository()
+        vmList = serviceVmRepo.getVMListAsString()
+        print '\nService VM List:'
+        print vmList
+    except vmrepository.VMRepositoryException as e:
+        print "Error getting list of Server VMs: " + e.message
+        
+################################################################################################################
+# Tests an SSH connection to a VM.
+################################################################################################################
+def commandTestSSH(arguments):
+    instanceMan = None
+    runningInstance = None        
+    try:
+        # Create the manager and access the VM.
+        instanceMan = instancemanager.ServiceVMInstanceManager()
+        runningInstance = instanceMan.getServiceVMInstance(serviceId=arguments.serviceId,
+                                                           showVNC=False)
+        
+        # Send commands.
+        runningInstance.uploadFile(arguments.sfilepath, arguments.dfilepath)
+        result = runningInstance.executeCommand(arguments.command)
+        print 'Result of command: ' + result
+        
+        # Close connection.
+        runningInstance.closeSSHConnection()
+        
+    except instancemanager.ServiceVMInstanceManagerException as e:
+        print "Error testing ssh connection: " + e.message     
+    finally:
+        # Cleanup.
+        if(instanceMan != None and runningInstance != None):
+            instanceMan.stopServiceVMInstance(runningInstance.instanceId) 
+    
 ################################################################################################################
 # Main entry point of the tool.
 ################################################################################################################
@@ -106,106 +205,22 @@ def main():
     if(command == CMD_CREATE_VM):
         # Parse the commands for overlay creation and create it.
         arguments = parseCreateCommandArguments()
-        
-        try:
-            # Create it.
-            newStoredServiceVM = ssvmfactory.StoredServiceVMFactory.createFromDiskImage(vmType=arguments.type,
-                                                                             sourceDiskImageFilePath=arguments.sourceImage,
-                                                                             serviceId=arguments.serviceId, 
-                                                                             serviceVMName=arguments.name, 
-                                                                             servicePort=arguments.port)
-            
-            # Store it in the repo.
-            print "Saving ServiceVM."
-            serviceVMRepository = svmrepository.ServiceVMRepository()
-            serviceVMRepository.addStoredVM(newStoredServiceVM)
-            print "ServiceVM stored in repository."            
-            
-        except storedvm.StoredVMException as e:
-            print "Error creating Service VM: " + e.message       
+        commandCreateVM(arguments)
     
     elif(command == CMD_RUN_VM):
         # Parse the commands for vm running and create it.
         arguments = parseRunVmCommandArguments()
-        
-        try:     
-            # Run a VM with a VNC GUI.
-            instanceMan = instancemanager.ServiceVMInstanceManager()
-            runningInstance = instanceMan.getServiceVMInstance(serviceId=arguments.serviceId,
-                                                               showVNC=True)
-
-            # After we unblocked because the user closed the GUI, we just kill the VM.
-            instanceMan.stopServiceVMInstance(runningInstance.instanceId)
-        except instancemanager.ServiceVMInstanceManagerException as e:
-            print "Error running Server VM: " + e.message
+        commandRunVM(arguments)
             
     elif(command == CMD_MODIFY):
         # Parse the commands for vm modification.
         arguments = parseModifyVmCommandArguments()
-        
-        try:     
-            # Get the VM, and make it writeable.
-            serviceId = arguments.serviceId
-            serviceVMRepository = svmrepository.ServiceVMRepository()
-            storedServiceVM = serviceVMRepository.getStoredServiceVM(serviceId)
-            storedServiceVM.unprotect()
-            
-            # Run the VM with GUI and store its state.
-            defaultMaintenanceServiceHostPort = 16001
-            runningSVM = runningsvmfactory.RunningSVMFactory.createRunningVM(storedVM=storedServiceVM,
-                                                                                       showVNC=True,
-                                                                                       serviceHostPort=defaultMaintenanceServiceHostPort)
-            runningSVM.suspendToFile()
-            
-            # Destroy the running VM.
-            runningSVM.destroy()     
-            
-            # Make the stored VM read only again.
-            storedServiceVM.protect()
-        except instancemanager.ServiceVMInstanceManagerException as e:
-            print "Error modifying Server VM: " + e.message        
+        commandModifyVM(arguments)
             
     elif(command == CMD_LIST_VM):
-        try:
-            # Get a list and print it.
-            serviceVmRepo = svmrepository.ServiceVMRepository()
-            vmList = serviceVmRepo.getVMListAsString()
-            print '\nService VM List:'
-            print vmList
-        except vmrepository.VMRepositoryException as e:
-            print "Error getting list of Server VMs: " + e.message
+        commandListVM()
             
     elif(command == CMD_TEST_SSH):
         # Parse the commands for vm running and create it.
         arguments = parseTestSshCommandArguments()
-
-        instanceMan = None
-        runningInstance = None        
-        try:
-            # Create the manager and access the VM.
-            instanceMan = instancemanager.ServiceVMInstanceManager()
-            runningInstance = instanceMan.getServiceVMInstance(serviceId=arguments.serviceId,
-                                                               showVNC=False)
-            
-            # Send commands.
-            runningInstance.uploadFile(arguments.sfilepath, arguments.dfilepath)
-            result = runningInstance.executeCommand(arguments.command)
-            print 'Result of command: ' + result
-            
-            # Close connection.
-            runningInstance.closeSSHConnection()
-            
-        except instancemanager.ServiceVMInstanceManagerException as e:
-            print "Error testing ssh connection: " + e.message     
-        finally:
-            # Cleanup.
-            if(instanceMan != None and runningInstance != None):
-                instanceMan.stopServiceVMInstance(runningInstance.instanceId) 
-                        
-
-################################################################################################################
-# The call to the actual main function.
-################################################################################################################
-if __name__ == "__main__":
-    status = main()
-    sys.exit(status)    
+        commandTestSSH(arguments)

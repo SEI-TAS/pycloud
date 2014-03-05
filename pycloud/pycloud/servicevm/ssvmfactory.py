@@ -10,7 +10,10 @@ from pycloud.pycloud.vm import runningvm
 # Metadata about a Service VM (from this same package).
 import svmmetadata
 
+import storedservicevm
+
 # For disk image management.
+from pycloud.pycloud.vm import diskimage
 from pycloud.pycloud.vm import qcowdiskimage
 
 # Config utils.

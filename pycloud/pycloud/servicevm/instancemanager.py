@@ -8,7 +8,7 @@ import os.path
 import shutil
 
 # For configuration file management.
-from pycloud.pycloud.utils. import config
+from pycloud.pycloud.utils import config
 
 # To handle the actual VMs (from this same package).
 import instance
