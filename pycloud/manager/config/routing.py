@@ -12,6 +12,11 @@ def make_map():
     connect = mapper.connect
 
     connect('services', '/services', controller='services', action='index')
+    
+    # ServiceVM Controller actions.
+    connect('find', '/servicevm/find', controller='servicevm', action='find')
+    connect('startvm', '/servicevm/start', controller='servicevm', action='start')
+    connect('stopvm', '/servicevm/stop', controller='servicevm', action='stop')
 
     #Example
     # connect('/', coontroller='cloudlet', action='home')
