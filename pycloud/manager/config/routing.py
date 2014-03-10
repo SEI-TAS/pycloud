@@ -17,6 +17,10 @@ def make_map():
     connect('find', '/servicevm/find', controller='servicevm', action='find')
     connect('startvm', '/servicevm/start', controller='servicevm', action='start')
     connect('stopvm', '/servicevm/stop', controller='servicevm', action='stop')
+    
+    # App Push Controller actions.
+    connect('getAppList', '/app/getList', controller='apppush', action='getList')
+    connect('getApp', '/app/getApp', controller='apppush', action='getApp')
 
     #Example
     # connect('/', coontroller='cloudlet', action='home')
