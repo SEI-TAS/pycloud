@@ -17,7 +17,7 @@ def load_controllers():
 
     from pycloud.manager.controllers.api import ApiController
     from pycloud.manager.controllers.services import ServicesController
-    #from pycloud.manager.controllers.servicevm import ServiceVMController
+    from pycloud.manager.controllers.servicevm import ServiceVMController
     from pycloud.manager.controllers.apppush import AppPushController
 
 

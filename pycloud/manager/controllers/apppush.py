@@ -38,10 +38,7 @@ class AppPushController(BaseController):
         timelog.TimeLog.stamp("Request for stored apps received.")
             
         # Create a single json from the json for individual apps. 
-        #path = os.path.dirname(os.path.abspath(self.APPS_FOLDER))
-        path = os.path.abspath(self.APPS_FOLDER)
-        print path
-        
+        path = os.path.dirname(os.path.abspath(self.APPS_FOLDER))        
         apps = []
         for root, dirs, files in os.walk(path):  # @UnusedVariable
             # Loop over all subfolders, one for each app.
@@ -74,7 +71,6 @@ class AppPushController(BaseController):
     # Called to get an app from the server.
     ################################################################################################################
     def GET_getApp(self):
-
         appName = request.GET['appName']
         print '\n*************************************************************************************************'    
         timelog.TimeLog.reset()
@@ -103,10 +99,14 @@ class AppPushController(BaseController):
                                 
                                 # We don't need to continue searching, we have our apk.
                                 break
-        
+
+        # Create a FileApp to return the APK to download. This app will do the actually return execution; 
+        # this makes the current action a middleware for this app in WSGI definitions.
+        # The content_disposition header allows the file to be downloaded properly and with its actual name.
+        fapp = fileapp.FileApp(app_file_path, content_disposition='attachment; filename="'+filename+'"')
+                                
         # Send the response, serving the apk file back to the client.
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
         timelog.TimeLog.writeToFile()
-        fapp = fileapp.FileApp(app_file_path, content_disposition='attachment; filename="'+filename+'"')
         return fapp(request.environ, self.start_response)        
-#        return cherrypy.lib.static.serve_file(app_file_path, "application/x-download", "attachment") 
+        # return cherrypy.lib.static.serve_file(app_file_path, "application/x-download", "attachment") 
