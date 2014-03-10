@@ -132,10 +132,11 @@ class ServiceVMInstanceManager(object):
             
             # Check if this instance is actually running according to our records.
             if(serviceVMInstance == None):
-                print('Warning: attempting to stop VM that is not registered in list of running VMs: ' + instanceId)            
-            
-            # Stop the VM instance.
-            serviceVMInstance.stop()
+                print('Warning: attempting to stop VM that is not registered in list of running VMs: ' + instanceId)
+                return False
+            else:
+                # Stop the VM instance.
+                serviceVMInstance.stop()
         except instance.ServiceVMException as exception:
             # Most likely VM could not be found.
             print 'Error stopping VM instance with id ' + instanceId + ': ' + str(exception)
@@ -154,6 +155,8 @@ class ServiceVMInstanceManager(object):
                     self.runningServices[serviceId].pop(instanceId, None)
                 else:                
                     print "Server id entry not found while cleaning up VM instance."
+                    
+        return True
                     
     ################################################################################################################  
     # Returns the running Service VM instances.

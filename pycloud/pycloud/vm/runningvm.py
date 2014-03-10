@@ -195,7 +195,7 @@ class RunningVM(object):
             print "Resuming from VM image..."
             self.hypervisor.restoreFlags(savedState.savedStateFilename, self.xmlDescriptorString, libvirt.VIR_DOMAIN_SAVE_RUNNING)
         except libvirt.libvirtError as e:
-            message = "Error resuming VM: %s for VM with description %s; error is: %s" % (str(self.id), updatedXmlDescriptor, str(e))           
+            message = "Error resuming VM: %s for VM; error is: %s" % (str(self.id), str(e))           
             raise VirtualMachineException(message)            
         
         # Since this method does not return a pointer to the VM, we get it from another API function.

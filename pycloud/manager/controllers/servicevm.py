@@ -122,11 +122,15 @@ class ServiceVMController(BaseController):
         timelog.TimeLog.reset()        
         timelog.TimeLog.stamp("Request received: stop VM with instance id " + instanceId)
         
-        self.runningVMManager.stopServiceVMInstance(instanceId)
-        print "VM with instance id %s stopped" % instanceId
+        success = self.runningVMManager.stopServiceVMInstance(instanceId)
+        if(success):
+            print "VM with instance id %s stopped" % instanceId
+            responseText = 'OK'
+        else:
+            print "VM with instance id %s could not be stopped" % instanceId
+            responseText = 'NOT OK'
         
         # Send the response.
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
         timelog.TimeLog.writeToFile()
-        responseText = 'OK'
         return responseText

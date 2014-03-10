@@ -15,12 +15,20 @@ setup(
     author_email='jdroot@sei.cmu.edu',
     url='',
     install_requires=[
-        "webob>=1.3.1",
-        "Pylons>=1.0.1",
-        "Routes>=1.12",
+        "Pylons==0.9.7",
+        "Routes==1.11",
+        "webob==1.08",
+        "WebTest==1.4.3",        
         "mako>=0.5",
         "pymongo>=2.6.3"
         ],
+#    install_requires=[
+#        "webob>=1.3.1",
+#        "Pylons>=1.0.1",
+#        "Routes>=1.12",
+#        "mako>=0.5",
+#        "pymongo>=2.6.3"
+#        ],        
     packages=find_packages(exclude=['ez_setup']),
     entry_points="""
     [paste.app_factory]

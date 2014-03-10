@@ -15,8 +15,10 @@ def load_controllers():
 
     # Import All Controllers Here
 
-    from pycloud.manager.controllers.api import ApiController
+    # Cloudlet Manager controllers.
     from pycloud.manager.controllers.services import ServicesController
+    
+    # Cloudlet Server controllers.
     from pycloud.manager.controllers.servicevm import ServiceVMController
     from pycloud.manager.controllers.apppush import AppPushController
 
