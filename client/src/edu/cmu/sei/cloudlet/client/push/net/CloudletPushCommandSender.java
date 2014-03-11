@@ -18,8 +18,8 @@ public class CloudletPushCommandSender extends ServiceVmCommandSender
     private static final String LOG_TAG = CloudletPushCommandSender.class.getName();
 
     // Commands sent to CloudletServer.
-    private static final String HTTP_GET_APPS_LIST = "push/http_get_apps_list";
-    private static final String HTTP_GET_APP = "push/http_get_app";
+    private static final String HTTP_GET_APPS_LIST = "api/app/getList";
+    private static final String HTTP_GET_APP = "api/app/getApp";
     
     /////////////////////////////////////////////////////////////////////////////////////////////////    
     /**

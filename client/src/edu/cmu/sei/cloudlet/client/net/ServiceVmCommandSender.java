@@ -14,10 +14,9 @@ public class ServiceVmCommandSender extends CloudletCommandSender
     private static final String LOG_TAG = ServiceVmCommandSender.class.getName();
 
     // Commands sent to CloudletServer.
-    private static final String HTTP_COMMAND_FIND_VM = "vm/http_find_vm";
-    private static final String HTTP_COMMAND_START_VM = "vm/http_start_vm";
-    private static final String HTTP_COMMAND_START_VM_FOR_APP = "vm/http_start_vm_for_app";
-    private static final String HTTP_COMMAND_STOP_VM = "vm/http_stop_vm";    
+    private static final String HTTP_COMMAND_FIND_VM = "api/servicevm/find";
+    private static final String HTTP_COMMAND_START_VM = "api/servicevm/start";
+    private static final String HTTP_COMMAND_STOP_VM = "api/servicevm/stop";    
     
     // Key used to check response to the existence command.
     private static final String VM_EXISTS_KEY = "VM_EXISTS";
