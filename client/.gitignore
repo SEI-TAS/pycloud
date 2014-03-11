@@ -1,0 +1,8 @@
+bin/
+gen/
+bld/
+.classpath
+.project
+.settings/
+project.properties
+*.cfg
