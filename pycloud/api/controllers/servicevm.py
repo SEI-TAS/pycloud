@@ -90,9 +90,9 @@ class ServiceVMController(BaseController):
             joinIfPossible = True
             
         # Get our current IP, the one that the client requesting this is seeing.
-        #hostIp = cherrypy.server.socket_host   #Should be cherrypy.request.local.ip, but it is not working...
-        hostIp = urlparse.urlparse(request.environ['HTTP_HOST']).hostname
-        
+        # The HTTP_HOST header will also have the port after a colon, so we remove it.
+        hostIp = request.environ['HTTP_HOST'].split(':')[0]
+
         # Start or join a VM.
         instanceInfo = self.runningVMManager.getServiceVMInstance(serviceId=serviceId, joinExisting=joinIfPossible)
         print "Assigned VM running with id %s on IP '%s' and port %d" % (instanceInfo.instanceId, hostIp, instanceInfo.serviceHostPort)
