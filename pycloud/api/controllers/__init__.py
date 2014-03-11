@@ -16,8 +16,8 @@ def load_controllers():
     # Import All Controllers Here
     
     # Cloudlet Server API controllers.
-    from pycloud.manager.controllers.servicevm import ServiceVMController
-    from pycloud.manager.controllers.apppush import AppPushController
+    from pycloud.api.controllers.servicevm import ServiceVMController
+    from pycloud.api.controllers.apppush import AppPushController
 
     # Cache the controllers in a look up map
     controllers.update((name.lower(), obj) for name, obj in locals().iteritems())

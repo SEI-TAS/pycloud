@@ -8,9 +8,9 @@ except ImportError:
     from setuptools import setup, find_packages
 
 setup(
-    name='cloudlet-manager',
+    name='pycloud',
     version='0.1',
-    description='Cloudlet server API implementation',
+    description='Cloudlet Server',
     author='Software Engineering Institute',
     author_email='',
     url='',
@@ -32,9 +32,11 @@ setup(
     packages=find_packages(exclude=['ez_setup']),
     entry_points="""
     [paste.app_factory]
-    main = pycloud.manager:make_app
+    api = pycloud.api:make_app
+    manager = pycloud.manager:make_app
 
     [paste.app_install]
-    main = pylons.util:PylonsInstaller
+    api = pylons.util:PylonsInstaller
+    manager = pylons.util:PylonsInstaller
     """,
     )
