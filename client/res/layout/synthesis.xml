@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <fragment
+        android:id="@+id/connInfoPanel"
+        android:name="edu.cmu.sei.cloudlet.client.ui.ConnectionInfoFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1.5"
+        tools:layout="@layout/connection_info" />
+    
+	<TextView  
+	    android:id="@+id/overlayInfoTitle"
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content"     
+	    android:text="Overlay Info"
+	    android:background="#FFFFFF"
+	    android:textColor="#000000"
+	    android:gravity="center"
+	    android:textAppearance="?android:attr/textAppearanceMedium"
+	/>    
+    
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dip"   
+        android:layout_weight="1.5"        
+        android:columnCount="1" >
+
+        <TextView
+            android:id="@+id/overlayNameLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Overlay Name:"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <TextView
+            android:id="@+id/overlayName"
+            android:layout_column="0"
+            android:layout_gravity="right|top"
+            android:layout_row="0"
+            android:text="not loaded"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <TextView
+            android:id="@+id/serviceIdLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Service ID:"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <TextView
+            android:id="@+id/serviceId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_gravity="right|top"
+            android:layout_row="1"
+            android:text="not loaded"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+        
+        <TextView
+            android:id="@+id/baseVmIdLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Base VM:"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <TextView
+            android:id="@+id/baseVMId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_gravity="right|top"
+            android:layout_row="2"
+            android:text="not loaded"
+            android:textAppearance="?android:attr/textAppearanceSmall" />             
+        
+        <TextView
+            android:id="@+id/servicePortLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Service Port:"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <TextView
+            android:id="@+id/servicePortText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"            
+            android:layout_gravity="right|top" 
+            android:layout_row="3"                       
+            android:text="not loaded"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    </GridLayout>    
+
+    <TextView
+        android:id="@+id/logTitle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:gravity="center"
+        android:text="@string/synthesisLogLabel"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#000000" />
+
+ 	<ScrollView
+	    android:id="@+id/eventScroller" 	    
+        android:layout_width="match_parent"
+        android:layout_height="0dip"   	    
+    	android:layout_weight="2">    
+    
+	    <TextView
+	        android:id="@+id/eventLog"
+	        android:layout_height="wrap_content"
+	        android:layout_width="wrap_content"      
+	        android:textAppearance="?android:attr/textAppearanceSmall" />
+	    
+    </ScrollView>	    
+
+</LinearLayout>

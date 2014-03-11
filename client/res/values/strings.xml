@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">List of Available Cloudlets</string>
+    <string name="app_name">Cloudlet Client Application</string>
+    <string name="availableCloudletsLabel">List of Available Cloudlets</string>
+    <string name="synthesisLogLabel">Events Log</string>
+</resources>
