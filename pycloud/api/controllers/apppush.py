@@ -15,7 +15,7 @@ import urlparse
 import os
 
 # Controller to derive from.
-from pycloud.manager.lib.base import BaseController
+from pycloud.pycloud.pylons.lib.base import BaseController
 
 from pycloud.pycloud.utils import timelog
 

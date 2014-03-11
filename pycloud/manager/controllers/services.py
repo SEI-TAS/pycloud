@@ -3,7 +3,7 @@ import logging
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
-from pycloud.manager.lib.base import BaseController
+from pycloud.pycloud.pylons.lib.base import BaseController
 
 from webhelpers.html.grid import Grid
 

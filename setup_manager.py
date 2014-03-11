@@ -8,16 +8,16 @@ except ImportError:
     from setuptools import setup, find_packages
 
 setup(
-    name='pycloud',
+    name='cloudlet-manager',
     version='0.1',
-    description='Cloudlet server implementation',
-    author='James Root - Software Engineering Institute',
-    author_email='jdroot@sei.cmu.edu',
+    description='Cloudlet server API implementation',
+    author='Software Engineering Institute',
+    author_email='',
     url='',
     install_requires=[
         "Pylons==0.9.7",
         "Routes==1.11",
-        "webob==1.08",
+        "webob==1.0.8",
         "WebTest==1.4.3",        
         "mako>=0.5",
         "pymongo>=2.6.3"

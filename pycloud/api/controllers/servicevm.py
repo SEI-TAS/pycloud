@@ -11,7 +11,7 @@ import json
 import urlparse
 
 # Controller to derive from.
-from pycloud.manager.lib.base import BaseController
+from pycloud.pycloud.pylons.lib.base import BaseController
 
 # Repository to look for SVMs, and manager to handle running instances.
 from pycloud.pycloud.servicevm import svmrepository

@@ -8,12 +8,15 @@ from pylons import config
 from paste.cascade import Cascade
 from paste.urlparser import StaticURLParser
 
-from pycloud.manager.config.environment import load_environment
+from pycloud.pycloud.pylons.config.environment import load_environment
 
 
 class CloudletApp(PylonsApp):
 
-    def __init__(self, *args, **kwargs):
+    controllers_module = ""
+
+    def __init__(self, controllers_module, *args, **kwargs):
+        self.controllers_module = controllers_module
         super(CloudletApp, self).__init__(*args, **kwargs)
         self._controllers = None
 
@@ -25,7 +28,7 @@ class CloudletApp(PylonsApp):
         if self._controllers:
             return
 
-        controllers = importlib.import_module("pycloud.manager.controllers")
+        controllers = importlib.import_module(self.controllers_module)
         controllers.load_controllers()
         self._controllers = controllers
 
@@ -43,13 +46,13 @@ class CloudletApp(PylonsApp):
 
 
 # Create the cloudlet app
-def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
+def make_app(make_map_function, controllers_module, root_path, global_conf, full_stack=True, static_files=True, **app_conf):
 
     # Configure the Pylons environment
-    load_environment(global_conf, app_conf)
+    load_environment(make_map_function, root_path, global_conf, app_conf)
 
     # Create the base app, and add the routes middleware
-    app = CloudletApp()
+    app = CloudletApp(controllers_module)
     app = RoutesMiddleware(app, config["routes.map"])
 
     app = RegistryManager(app)

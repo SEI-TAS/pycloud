@@ -11,16 +11,9 @@ def make_map():
     mapper = Mapper()
     connect = mapper.connect
 
-    connect('services', '/services', controller='services', action='index')
+    # Note that all of this are relative to the base path, /manager.    
     
-    # ServiceVM Controller actions.
-    connect('find', '/api/servicevm/find', controller='servicevm', action='find')
-    connect('startvm', '/api/servicevm/start', controller='servicevm', action='start')
-    connect('stopvm', '/api/servicevm/stop', controller='servicevm', action='stop')
-    
-    # App Push Controller actions.
-    connect('getAppList', '/api/app/getList', controller='apppush', action='getList')
-    connect('getApp', '/api/app/getApp', controller='apppush', action='getApp')
+    connect('services', '/services', controller='services', action='index')    
 
     #Example
     # connect('/', coontroller='cloudlet', action='home')

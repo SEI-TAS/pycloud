@@ -1,27 +1,26 @@
-from pycloud.manager.config import routing
 
 __author__ = 'jdroot'
 
 from pylons import config
-from pycloud.manager.lib.app_globals import Globals
-from pycloud.manager.lib import helpers
+from pycloud.pycloud.pylons.lib.app_globals import Globals
+from pycloud.pycloud.pylons.lib import helpers
 from mako.lookup import TemplateLookup
 import os
 
 
-def load_environment(global_conf={}, app_conf={}):
-
-    root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+def load_environment(make_map_function, root_path, global_conf={}, app_conf={}):
 
     paths = {'root': root_path,
              'controllers': os.path.join(root_path, 'controllers'),
              'templates': [os.path.join(root_path, 'templates')],
              'static_files': os.path.join(root_path, 'public')
     }
+    
+    print 'Templates path: ' + os.path.join(root_path, 'templates')
 
     config.init_app(global_conf, app_conf, package='pycloud', paths=paths)
 
-    config['routes.map'] = routing.make_map()
+    config['routes.map'] = make_map_function()
     config['debug'] = True
     config['pylons.g'] = Globals()
     config['pylons.h'] = helpers
