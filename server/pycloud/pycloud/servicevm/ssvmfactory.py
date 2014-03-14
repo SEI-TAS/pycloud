@@ -16,9 +16,6 @@ import storedservicevm
 from pycloud.pycloud.vm import diskimage
 from pycloud.pycloud.vm import qcowdiskimage
 
-# Config utils.
-from pycloud.pycloud.utils import config
-
 # File utils.
 from pycloud.pycloud.utils import fileutils
 
@@ -26,45 +23,20 @@ from pycloud.pycloud.utils import fileutils
 # Creates StoredServiceVMs.
 ################################################################################################################
 class StoredServiceVMFactory(object):
-
-    # Name of the configuration section for this class's parameters.    
-    CONFIG_SECTION = 'servicevm'
-
-    # Param name for configuration of overlay folder, where they will be created.
-    SERVICE_VM_FOLDER_KEY = 'service_vm_creation_folder'
-    
-    # Param name for configuration of XML template used to create VMs.
-    SOURCE_CONFIG_SECTION = 'sourceimages'    
-    BASE_VM_LIN_XML_TEMPLATE_KEY = 'base_vm_lin_xml_template'    
-    BASE_VM_WIN_XML_TEMPLATE_KEY = 'base_vm_win_xml_template'
-    
-    ################################################################################################################  
-    # Method to simply getting configuration values for this module.
-    ################################################################################################################       
-    @staticmethod
-    def __getLocalConfigParam(key):
-        return config.Configuration.getParam(StoredServiceVMFactory.CONFIG_SECTION, key)
-    
-    ################################################################################################################  
-    # Method to simply getting configuration values for this module.
-    ################################################################################################################       
-    @staticmethod
-    def __getSourceConfigParam(key):
-        return config.Configuration.getParam(StoredServiceVMFactory.SOURCE_CONFIG_SECTION, key)    
     
     ################################################################################################################
     # Creates a StoredVM from a source file.
     ################################################################################################################ 
     @staticmethod
-    def createFromDiskImage(vmType, sourceDiskImageFilePath, serviceId, serviceVMName, servicePort):
+    def createFromDiskImage(cloudletConfig, vmType, sourceDiskImageFilePath, serviceId, serviceVMName, servicePort):
         # Get the XML descriptor from the config.
         if(vmType == 'Windows'):
-            xmlVmDescriptionFilepath = os.path.abspath(StoredServiceVMFactory.__getSourceConfigParam(StoredServiceVMFactory.BASE_VM_WIN_XML_TEMPLATE_KEY))
+            xmlVmDescriptionFilepath = os.path.abspath(cloudletConfig.newVmWinXml)
         else:
-            xmlVmDescriptionFilepath = os.path.abspath(StoredServiceVMFactory.__getSourceConfigParam(StoredServiceVMFactory.BASE_VM_LIN_XML_TEMPLATE_KEY))
+            xmlVmDescriptionFilepath = os.path.abspath(cloudletConfig.newVmLinXml)
         
         # Ensure that the base folder is there.
-        serviceVMFolder = StoredServiceVMFactory.__getLocalConfigParam(StoredServiceVMFactory.SERVICE_VM_FOLDER_KEY)
+        serviceVMFolder = cloudletConfig.newVmFolder
         fileutils.FileUtils.recreateFolder(serviceVMFolder)
                         
         # Now we create the metadata file about the ServiceVM.

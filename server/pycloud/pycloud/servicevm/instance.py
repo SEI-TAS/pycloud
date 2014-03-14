@@ -66,9 +66,9 @@ class ServiceVMInstance(object):
     ################################################################################################################  
     # Starts a temporary instance of a Service VM.
     ################################################################################################################   
-    def createAndStart(self, showVNC=False):
+    def createAndStart(self, cloudletConfig, showVNC=False):
         # Get information about the VM to execute.
-        serviceVmRepo = svmrepository.ServiceVMRepository()
+        serviceVmRepo = svmrepository.ServiceVMRepository(cloudletConfig)
         storedServiceVM = serviceVmRepo.findServiceVM(self.serviceId)
         if(storedServiceVM == None):
             raise ServiceVMException("No valid VM for service id %s was found in the repository. " % self.serviceId)

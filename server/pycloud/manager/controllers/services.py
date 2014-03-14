@@ -2,6 +2,7 @@ import logging
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
+from pylons import g
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 
@@ -17,7 +18,7 @@ class ServicesController(BaseController):
 
     def GET_index(self):
         # Get a list of existing stored VMs in the cache.
-        serviceVmRepo = svmrepository.ServiceVMRepository()
+        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
         vmList = serviceVmRepo.getStoredServiceVMList()
 
         # Create an item list with the info to display.

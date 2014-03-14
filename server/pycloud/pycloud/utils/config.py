@@ -2,7 +2,7 @@
 #       
 
 # To load the configuration.
-import ConfigParser
+import ConfigParser as configparser
 
 ################################################################################################################
 # Stores the configuration.
@@ -19,16 +19,18 @@ class Configuration(object):
     # Creates a parser for the default config file, if it wasn't loaded before.
     ################################################################################################################
     @staticmethod
-    def loadConfiguration():
+    def loadConfiguration(configFile):
         if(Configuration.parser == None):
-            print 'Loading config from %s ' % Configuration.CONFIGURATION_FILE 
-            Configuration.parser = ConfigParser.ConfigParser()            
-            Configuration.parser.readfp(open(Configuration.CONFIGURATION_FILE))        
+            if(configFile == ""):
+                configFile = Configuration.CONFIGURATION_FILE
+            print 'Loading config from %s ' % configFile
+            Configuration.parser = configparser.ConfigParser()            
+            Configuration.parser.readfp(open(configFile))        
         
     ################################################################################################################
-    # Returns a paramter from the configuration.
+    # Returns a dict with the default values.
     ################################################################################################################
     @staticmethod
-    def getParam(section, paramKey):
-        Configuration.loadConfiguration()
-        return Configuration.parser.get(section, paramKey)   
+    def getDefaults(configFile=""):
+        Configuration.loadConfiguration(configFile)
+        return Configuration.parser.defaults()

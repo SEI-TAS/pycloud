@@ -3,6 +3,7 @@ import logging
 # Pylon imports.
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
+from pylons import g
 
 # For serializing JSON data.
 import json
@@ -34,7 +35,7 @@ class ServiceVMController(BaseController):
     ################################################################################################################ 
     def __init__(self):
         # Create the manager for running instances.        
-        self.runningVMManager = instancemanager.ServiceVMInstanceManager()
+        self.runningVMManager = instancemanager.ServiceVMInstanceManager(g.cloudlet)
 
     ################################################################################################################    
     # Cleans up any open resources.
@@ -54,7 +55,7 @@ class ServiceVMController(BaseController):
         print '\n*************************************************************************************************'
         timelog.TimeLog.reset()
         timelog.TimeLog.stamp("Request received: find cached Service VM.")
-        serviceVmRepo = svmrepository.ServiceVMRepository()
+        serviceVmRepo = svmrepository.ServiceVMRepository(self.cloudlet)
         vmEntry = serviceVmRepo.findServiceVM(serviceId)
         if(vmEntry != None):
             vmFound = True

@@ -7,9 +7,6 @@ import os.path
 # To delete folder contents and to move files.
 import shutil
 
-# For configuration file management.
-from pycloud.pycloud.utils import config
-
 # To handle the actual VMs (from this same package).
 import instance
 
@@ -28,12 +25,6 @@ class ServiceVMInstanceManagerException(Exception):
 # Handles ServerVM Instances.
 ################################################################################################################
 class ServiceVMInstanceManager(object):
-
-    # Name of the configuration section for this class's parameters.    
-    CONFIG_SECTION = 'servicevm'
-    
-    # Param name for configuration of root folder where transient VMs are executed.
-    INSTANCES_FOLDER_KEY = 'service_vm_instances_folder'  
     
     # Map of running VM instances, keyed by instance id.
     serviceVMInstances = {}
@@ -42,16 +33,10 @@ class ServiceVMInstanceManager(object):
     runningServices = {}
 
     ################################################################################################################  
-    # Method to simply getting configuration values for this module.
-    ################################################################################################################       
-    def __getLocalConfigParam(self, key):
-        return config.Configuration.getParam(self.CONFIG_SECTION, key)
-
-    ################################################################################################################  
     # Cleans up the root folder for VMs instances.
     ################################################################################################################   
     def cleanupInstancesFolder(self):
-        rootInstancesFolder = self.__getLocalConfigParam(self.INSTANCES_FOLDER_KEY)
+        rootInstancesFolder = self.cloudletConfig.svmInstancesFolder
         if(os.path.exists(rootInstancesFolder)):
             shutil.rmtree(rootInstancesFolder)
         if(not os.path.exists(rootInstancesFolder)):
@@ -60,7 +45,10 @@ class ServiceVMInstanceManager(object):
     ################################################################################################################  
     # Constructor.
     ################################################################################################################       
-    def __init__(self):
+    def __init__(self, cloudletConfig):
+        # Store the config object.
+        self.cloudletConfig = cloudletConfig
+   
         # Cleanup the VMs instances folder.
         self.cleanupInstancesFolder()
         portmanager.PortManager.clearPorts()
@@ -106,9 +94,9 @@ class ServiceVMInstanceManager(object):
         sshHostPort = portmanager.PortManager.generateRandomAvailablePort()
         
         # Start a new transient VM.
-        instancesRootFolder = self.__getLocalConfigParam(self.INSTANCES_FOLDER_KEY)
+        instancesRootFolder = self.cloudletConfig.svmInstancesFolder
         serviceVMInstance = instance.ServiceVMInstance(serviceId, serviceHostPort, sshHostPort, instancesRootFolder)
-        serviceVMInstance.createAndStart(showVNC)
+        serviceVMInstance.createAndStart(self.cloudletConfig, showVNC)
     
         # Save this instance in our list of running instances.
         print "Adding to running instances list " + serviceVMInstance.instanceId

@@ -14,6 +14,8 @@ from pycloud.pycloud.servicevm import instancemanager
 from pycloud.pycloud.servicevm import svmrepository
 from pycloud.pycloud.servicevm import ssvmfactory
 from pycloud.pycloud.servicevm import runningsvmfactory
+from pycloud.pycloud.utils import config
+from pycloud.pycloud import cloudlet
 
 # For exceptions.
 from pycloud.pycloud.vm import vmrepository
@@ -22,6 +24,9 @@ from pycloud.pycloud.vm import vmrepository
 # Global constants.
 ################################################################################################################
 
+# Configuration.
+MAIN_CONFIG_FILE = "development.ini"
+
 # Valid commands.
 CMD_CREATE_VM = "create"
 CMD_RUN_VM = "run"
@@ -29,6 +34,12 @@ CMD_LIST_VM = "list"
 CMD_TEST_SSH = "test_ssh"
 CMD_MODIFY = "modify"
 COMMAND_LIST = [CMD_CREATE_VM, CMD_RUN_VM, CMD_LIST_VM, CMD_TEST_SSH, CMD_MODIFY]
+
+################################################################################################################
+# Global variables.
+################################################################################################################
+
+g_cloudletConfig = None
 
 ################################################################################################################
 # Parse the basic commands.
@@ -98,7 +109,8 @@ def parseTestSshCommandArguments():
 def commandCreateVM(arguments):
     try:
         # Create it.
-        newStoredServiceVM = ssvmfactory.StoredServiceVMFactory.createFromDiskImage(vmType=arguments.type,
+        newStoredServiceVM = ssvmfactory.StoredServiceVMFactory.createFromDiskImage(g_cloudletConfig,
+                                                                         vmType=arguments.type,
                                                                          sourceDiskImageFilePath=arguments.sourceImage,
                                                                          serviceId=arguments.serviceId, 
                                                                          serviceVMName=arguments.name, 
@@ -106,7 +118,7 @@ def commandCreateVM(arguments):
         
         # Store it in the repo.
         print "Saving ServiceVM."
-        serviceVMRepository = svmrepository.ServiceVMRepository()
+        serviceVMRepository = svmrepository.ServiceVMRepository(g_cloudletConfig)
         serviceVMRepository.addStoredVM(newStoredServiceVM)
         print "ServiceVM stored in repository."            
         
@@ -117,9 +129,9 @@ def commandCreateVM(arguments):
 # Creates and runs a transient copy of a stored service VM present in the cache.
 ################################################################################################################
 def commandRunVM(arguments):
-    try:     
+    try:   
         # Run a VM with a VNC GUI.
-        instanceMan = instancemanager.ServiceVMInstanceManager()
+        instanceMan = instancemanager.ServiceVMInstanceManager(g_cloudletConfig)
         runningInstance = instanceMan.getServiceVMInstance(serviceId=arguments.serviceId,
                                                            showVNC=True)
 
@@ -135,7 +147,7 @@ def commandModifyVM(arguments):
     try:     
         # Get the VM, and make it writeable.
         serviceId = arguments.serviceId
-        serviceVMRepository = svmrepository.ServiceVMRepository()
+        serviceVMRepository = svmrepository.ServiceVMRepository(g_cloudletConfig)
         storedServiceVM = serviceVMRepository.getStoredServiceVM(serviceId)
         storedServiceVM.unprotect()
         
@@ -160,7 +172,7 @@ def commandModifyVM(arguments):
 def commandListVM():
     try:
         # Get a list and print it.
-        serviceVmRepo = svmrepository.ServiceVMRepository()
+        serviceVmRepo = svmrepository.ServiceVMRepository(g_cloudletConfig)
         vmList = serviceVmRepo.getVMListAsString()
         print '\nService VM List:'
         print vmList
@@ -175,7 +187,7 @@ def commandTestSSH(arguments):
     runningInstance = None        
     try:
         # Create the manager and access the VM.
-        instanceMan = instancemanager.ServiceVMInstanceManager()
+        instanceMan = instancemanager.ServiceVMInstanceManager(g_cloudletConfig)
         runningInstance = instanceMan.getServiceVMInstance(serviceId=arguments.serviceId,
                                                            showVNC=False)
         
@@ -198,6 +210,15 @@ def commandTestSSH(arguments):
 # Main entry point of the tool.
 ################################################################################################################
 def main():
+
+    # Load the config. (TODO: this is a hacky way of sharing the devini file with Pylons).
+    # NOTE: here pycloud.util.config is creating a dictionary of configurations in the default
+    # section of development.ini. This is similar to what is created by Pylons when loading
+    # a configuraton, tough pylons.config has more information. Since Cloudlet uses only the basic
+    # dictionary values, the dictionary we load here is equivalent to the pylons.config object.
+    configuration = config.Configuration.getDefaults(MAIN_CONFIG_FILE)
+    global g_cloudletConfig
+    g_cloudletConfig = cloudlet.Cloudlet(configuration)
     
     command = parseCommand() 
     print 'Command: ' + command

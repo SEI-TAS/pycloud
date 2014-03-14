@@ -17,24 +17,12 @@ import storedservicevm
 # Stores information about existing ServiceVMs in the system.
 ################################################################################################################
 class ServiceVMRepository(vmrepository.VMRepository):
-    
-    # Name of the configuration section for this class's parameters.    
-    CONFIG_SECTION = 'servicevm'
-    
-    # Param name for configuration of root folder for Service VMs.
-    SERVER_VM_FOLDER_KEY = 'service_vm_repository'
-
-    ################################################################################################################  
-    # Method to simply getting configuration values for this module.
-    ################################################################################################################       
-    def __getLocalConfigParam(self, key):
-        return config.Configuration.getParam(self.CONFIG_SECTION, key)    
 
     ################################################################################################################
     # Just sets up a root folder.
     ################################################################################################################    
-    def __init__(self):
-        repoRootFolder = self.__getLocalConfigParam(self.SERVER_VM_FOLDER_KEY)
+    def __init__(self, cloudletConfig):
+        repoRootFolder = cloudletConfig.svmCache
         super(ServiceVMRepository, self).__init__(repoRootFolder)
     
     ################################################################################################################  
