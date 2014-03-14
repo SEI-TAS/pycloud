@@ -70,6 +70,12 @@ class AppPushController(BaseController):
     ################################################################################################################
     def GET_getApp(self):
         appName = request.GET['appName']
+        if(appName is None):
+            # If we didnt get a valid one, just return an error message.
+            print "No app name to be retrieved was received."
+            responseText = 'NOT OK'
+            return responseText
+        
         print '\n*************************************************************************************************'    
         timelog.TimeLog.reset()
         timelog.TimeLog.stamp("Request to push app received.")
@@ -97,14 +103,21 @@ class AppPushController(BaseController):
                                 
                                 # We don't need to continue searching, we have our apk.
                                 break
-
-        # Create a FileApp to return the APK to download. This app will do the actually return execution; 
-        # this makes the current action a middleware for this app in WSGI definitions.
-        # The content_disposition header allows the file to be downloaded properly and with its actual name.
-        fapp = fileapp.FileApp(app_file_path, content_disposition='attachment; filename="'+filename+'"')
                                 
-        # Send the response, serving the apk file back to the client.
+        # Log that we are responding.
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
-        timelog.TimeLog.writeToFile()
-        return fapp(request.environ, self.start_response)        
-        # return cherrypy.lib.static.serve_file(app_file_path, "application/x-download", "attachment") 
+        timelog.TimeLog.writeToFile()                                
+
+        # Check if we found the app or not.
+        appFound = app_file_path != ''
+        if(appFound):
+            responseText = 'NOT OK'
+            return responseText
+        else:
+            # Create a FileApp to return the APK to download. This app will do the actually return execution; 
+            # this makes the current action a middleware for this app in WSGI definitions.
+            # The content_disposition header allows the file to be downloaded properly and with its actual name.
+            fapp = fileapp.FileApp(app_file_path, content_disposition='attachment; filename="'+filename+'"')
+                                
+            # Send the response, serving the apk file back to the client.
+            return fapp(request.environ, self.start_response)        

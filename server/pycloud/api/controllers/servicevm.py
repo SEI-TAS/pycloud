@@ -77,8 +77,17 @@ class ServiceVMController(BaseController):
     def GET_start(self):
         # Get variables.
         serviceId = request.GET['serviceId']
-        isolated = "true"
-        # TODO: non-isolated
+        if(serviceId is None):
+            # If we didnt get a valid one, just return an error message.
+            print "No service id to be started was received."
+            responseText = 'NOT OK'
+            return responseText        
+
+        # Check the flags that indicates whether we could join an existing instance.
+        isolated = request.GET['serviceId']
+        if(isolated is None):
+            # If no value was sent, set true by default.
+            isolated = "true"
         
         # Start the Service VM on a random port.
         print '\n*************************************************************************************************'        
@@ -117,12 +126,19 @@ class ServiceVMController(BaseController):
     # Called to stop a running instance of a Service VM.
     ################################################################################################################
     def GET_stop(self):
-        # Stop the Service VM.
-        instanceId = request.GET['instanceId']        
+        # Check that we got an instance id.
+        instanceId = request.GET['instanceId']
+        if(instanceId is None):
+            # If we didnt get a valid one, just return an error message.
+            print "No instance id to be stopped was received."
+            responseText = 'NOT OK'
+            return responseText
+
         print '\n*************************************************************************************************'
         timelog.TimeLog.reset()        
         timelog.TimeLog.stamp("Request received: stop VM with instance id " + instanceId)
         
+        # Stop the Service VM.        
         success = self.runningVMManager.stopServiceVMInstance(instanceId)
         if(success):
             print "VM with instance id %s stopped" % instanceId
