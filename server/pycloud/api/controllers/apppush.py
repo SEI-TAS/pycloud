@@ -3,6 +3,7 @@ import logging
 # Pylon imports.
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
+from pylons import g
 from paste import fileapp
 
 # For serializing JSON data.
@@ -25,9 +26,6 @@ log = logging.getLogger(__name__)
 # Class that handles Service VM related HTTP requests to a Cloudlet.
 ################################################################################################################
 class AppPushController(BaseController):
-    
-    # Folder where apps to be pushed are stored.
-    APPS_FOLDER = os.path.join(os.path.abspath(os.getcwd()), "data/app_rep/")  
 
     ################################################################################################################
     # Called to get a list of apps available at the server.
@@ -38,7 +36,7 @@ class AppPushController(BaseController):
         timelog.TimeLog.stamp("Request for stored apps received.")
             
         # Create a single json from the json for individual apps. 
-        path = os.path.dirname(os.path.abspath(self.APPS_FOLDER))        
+        path = os.path.dirname(os.path.abspath(g.cloudlet.appFolder))        
         apps = []
         for root, dirs, files in os.walk(path):  # @UnusedVariable
             # Loop over all subfolders, one for each app.
