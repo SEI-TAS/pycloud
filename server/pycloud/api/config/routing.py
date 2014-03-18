@@ -16,6 +16,7 @@ def make_map():
     # Note that all of this are relative to the base path, /api.
     
     # ServiceVM Controller actions. 
+    connect('list', '/servicevm/listServices', controller='servicevm', action='listServices')    
     connect('find', '/servicevm/find', controller='servicevm', action='find')
     connect('startvm', '/servicevm/start', controller='servicevm', action='start')
     connect('stopvm', '/servicevm/stop', controller='servicevm', action='stop')
