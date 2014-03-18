@@ -20,15 +20,9 @@ setup(
         "webob==1.0.8",
         "WebTest==1.4.3",        
         "mako>=0.5",
-        "pymongo>=2.6.3"
+        "pymongo>=2.6.3",
+        "paramiko"
         ],
-#    install_requires=[
-#        "webob>=1.3.1",
-#        "Pylons>=1.0.1",
-#        "Routes>=1.12",
-#        "mako>=0.5",
-#        "pymongo>=2.6.3"
-#        ],        
     packages=find_packages(exclude=['ez_setup']),
     entry_points="""
     [paste.app_factory]

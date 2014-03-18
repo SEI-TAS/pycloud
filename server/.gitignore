@@ -1,2 +1,6 @@
 *.egg-info/*
-
+/data
+/dist
+/build
+/logs
+*.pyc
