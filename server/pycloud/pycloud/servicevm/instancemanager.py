@@ -150,7 +150,7 @@ class ServiceVMInstanceManager(object):
     # Returns the running Service VM instances.
     ################################################################################################################    
     def getServiceVMInstances(self):
-        return serviceVMInstances
+        return self.serviceVMInstances
                     
     ################################################################################################################  
     # Stops all existing running vms.

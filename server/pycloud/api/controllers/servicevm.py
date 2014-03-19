@@ -34,8 +34,8 @@ class ServiceVMController(BaseController):
     # Sets up the initial resources.
     ################################################################################################################ 
     def __init__(self):
-        # Create the manager for running instances.        
-        self.runningVMManager = instancemanager.ServiceVMInstanceManager(g.cloudlet)
+        # Create the manager for running instances.
+        self.runningVMManager = g.cloudlet.instanceManager
 
     ################################################################################################################    
     # Cleans up any open resources.

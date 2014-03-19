@@ -26,3 +26,4 @@ class BasePage(Templated):
 # class HomePage(BasePage): pass
 
 class ServicesPage(BasePage): pass
+class ServiceVMsPage(BasePage): pass

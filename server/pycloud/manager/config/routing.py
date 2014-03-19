@@ -13,7 +13,9 @@ def make_map():
 
     # Note that all of this are relative to the base path, /manager.    
     
-    connect('services', '/services', controller='services', action='index')    
+    connect('services', '/services', controller='services', action='index')
+    
+    connect('servicevms', '/servicevms', controller='servicevms', action='index')
 
     #Example
     # connect('/', coontroller='cloudlet', action='home')

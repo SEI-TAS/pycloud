@@ -17,6 +17,7 @@ def load_controllers():
 
     # Cloudlet Manager controllers.
     from pycloud.manager.controllers.services import ServicesController
+    from pycloud.manager.controllers.servicevms import ServiceVMsController
 
     # Cache the controllers in a look up map
     controllers.update((name.lower(), obj) for name, obj in locals().iteritems())
