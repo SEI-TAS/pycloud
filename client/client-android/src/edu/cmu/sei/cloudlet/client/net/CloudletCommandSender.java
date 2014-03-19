@@ -10,7 +10,9 @@ import java.net.URISyntaxException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
@@ -131,8 +133,13 @@ public class CloudletCommandSender
         String responseText = "";
         try 
         {
+            HttpRequestBase request;
+            if (multipartData != null)
+                request = new HttpPut();
+            else
+                request = new HttpGet();
             // Gets the full URI of the command.
-            HttpPut request = new HttpPut();            
+            //HttpPut request = new HttpPut();
             URI fullURI = getCommandURI(command);
 			Log.d(LOG_TAG, "URI: " + fullURI.toASCIIString());
             request.setURI(fullURI);
@@ -140,7 +147,7 @@ public class CloudletCommandSender
             // If there is multipart data, add it.
             if(multipartData != null)
             {
-                request.setEntity(multipartData);                
+                ((HttpPut)request).setEntity(multipartData);
                 request.setHeader(multipartData.getContentType());
                 request.setHeader("Connection", "Keep-Alive");                
             }
