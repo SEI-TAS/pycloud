@@ -149,7 +149,7 @@ public class CloudletDiscoveryActivity extends Activity implements ServiceListen
 		try 
 		{			
 			jmdns = JmDNS.create(InetAddress.getByName(wifiIpAddress));
-			infos = jmdns.list(CLOUDLET_SERVER_DNS);			
+			infos = jmdns.list(CLOUDLET_SERVER_DNS);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			Log.d(LOG_TAG,"Inside Exception");
