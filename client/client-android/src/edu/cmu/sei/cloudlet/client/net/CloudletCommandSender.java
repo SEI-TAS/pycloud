@@ -19,10 +19,9 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Environment;
 import android.util.Log;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 
 /**
  * Class that handles HTTP communication with a CloudletServer.
@@ -33,6 +32,7 @@ import android.util.Log;
  */
 public class CloudletCommandSender
 {
+    private static final XLogger log = XLoggerFactory.getXLogger(CloudletCommandSender.class);
     // Used to identify logging statements.
     private static final String LOG_TAG = CloudletCommandSender.class.getName();
 
@@ -142,6 +142,7 @@ public class CloudletCommandSender
             //HttpPut request = new HttpPut();
             URI fullURI = getCommandURI(command);
 			Log.d(LOG_TAG, "URI: " + fullURI.toASCIIString());
+            Log.d(LOG_TAG, fullURI.getHost());
             request.setURI(fullURI);
             
             // If there is multipart data, add it.
