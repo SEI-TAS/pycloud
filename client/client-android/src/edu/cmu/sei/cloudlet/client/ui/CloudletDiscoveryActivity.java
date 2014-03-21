@@ -2,6 +2,7 @@ package edu.cmu.sei.cloudlet.client.ui;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,6 +48,10 @@ public class CloudletDiscoveryActivity extends Activity implements ServiceListen
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+
+        ClassLoader classLoader = CloudletDiscoveryActivity.class.getClassLoader();
+        URL resource = classLoader.getResource("org/apache/http/message/BasicLineFormatter.class");
+        Log.v("CLOUDLET", "Class loaded by: " + resource);
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.cloudlet_discovery);	
@@ -157,7 +162,8 @@ public class CloudletDiscoveryActivity extends Activity implements ServiceListen
 		// Store the cloudlet information in a shared static class.
 		CurrentCloudlet.name = selectedCloudletName;
         CurrentCloudlet.ipAddress = selectedCloudletIPAddress;
-        CurrentCloudlet.port = selectedCloudletPort;		
+        CurrentCloudlet.port = selectedCloudletPort;
+        CurrentCloudlet.cloudlet = cloudlets.get(selectedCloudlet);
 
 		// Invoke the selection Activity.
 		Intent i = new Intent(this, ProcessSelectionActivity.class);

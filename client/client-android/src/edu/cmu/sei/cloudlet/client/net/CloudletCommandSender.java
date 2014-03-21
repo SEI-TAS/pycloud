@@ -61,7 +61,8 @@ public class CloudletCommandSender
         // Prepare the HTTP client to use.
         setUpHttpClient();
     }
-    
+
+
     /////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * Shutdown the HTTP connnections. 

@@ -33,10 +33,7 @@
 	        android:id="@+id/vmsynthproc"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-			android:layout_centerInParent="true"
-			android:layout_centerVertical="true"			
-			android:layout_centerHorizontal="true"        
-	        android:text="VM Synthesis" />
+            android:text="VM Synthesis" android:layout_centerVertical="true" android:layout_centerHorizontal="true"/>
 	    
 	</RelativeLayout>	
 	
@@ -50,11 +47,8 @@
 	        android:id="@+id/cloudletpushproc"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-			android:layout_centerInParent="true"
-			android:layout_alignParentTop="true"
-			android:layout_centerHorizontal="true"        
-	        android:text="Cloudlet Push" />
-	
+            android:text="Cloudlet Push" android:layout_centerVertical="true" android:layout_centerHorizontal="true"/>
+
 	</RelativeLayout>
 	
 	<RelativeLayout
@@ -67,10 +61,17 @@
 	        android:id="@+id/odpproc"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-			android:layout_centerInParent="true"
-			android:layout_alignParentTop="true"			
-			android:layout_centerHorizontal="true"        
-	        android:text="On-Demand Provisioning" />
+            android:text="On-Demand Provisioning" android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"/>
 	    
-	</RelativeLayout>		
+	</RelativeLayout>
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dip" android:layout_weight="1.5">
+        <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="VM Caching"
+                android:id="@+id/caching_btn" android:layout_centerVertical="true" android:layout_centerHorizontal="true"/>
+    </RelativeLayout>
 </LinearLayout>	
