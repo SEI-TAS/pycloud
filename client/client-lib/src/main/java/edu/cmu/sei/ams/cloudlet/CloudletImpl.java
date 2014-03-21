@@ -1,13 +1,7 @@
 package edu.cmu.sei.ams.cloudlet;
 
-import org.codehaus.jackson.annotate.JsonAutoDetect;
-import org.codehaus.jackson.annotate.JsonMethod;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
@@ -62,21 +56,13 @@ public class CloudletImpl implements Cloudlet
 
         List<Service> ret = new ArrayList<Service>();
 
-        JSONObject obj = (JSONObject)JSONValue.parse(result);
-        JSONArray services = (JSONArray)obj.get("services");
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setVisibility(JsonMethod.FIELD, JsonAutoDetect.Visibility.ANY);
-        mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        for (Object service : services)
+        JSONObject obj = new JSONObject(result);
+        JSONArray services = obj.getJSONArray("services");
+        for (int x = 0; x < services.length(); x++)
         {
-            Service s = mapper.readValue(service.toString(), ServiceImpl.class);
-            ret.add(s);
+            JSONObject service = services.getJSONObject(x);
+            ret.add(new ServiceImpl(service));
         }
-
-
-
-
-
 
         log.exit(ret);
         return ret;

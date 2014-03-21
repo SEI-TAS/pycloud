@@ -1,5 +1,8 @@
 package edu.cmu.sei.ams.cloudlet;
 
+import org.json.JSONObject;
+import static edu.cmu.sei.ams.cloudlet.CloudletUtilities.*;
+
 /**
  * User: jdroot
  * Date: 3/20/14
@@ -7,18 +10,31 @@ package edu.cmu.sei.ams.cloudlet;
  */
 public class ServiceImpl implements Service
 {
-    private String _id;
+    private String serviceId;
     private String description;
+
+    ServiceImpl(JSONObject json)
+    {
+        this.serviceId = getSafeString("_id", json);
+        this.description = getSafeString("description", json);
+    }
 
     @Override
     public String getServiceId()
     {
-        return _id;
+        return serviceId;
     }
 
     @Override
     public String getDescription()
     {
         return description;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "{serviceId:\"" + serviceId + "\"," +
+                "description:\"" + description + "\"}";
     }
 }

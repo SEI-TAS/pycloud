@@ -1,12 +1,12 @@
 package edu.cmu.sei.ams.cloudlet;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
@@ -47,7 +47,7 @@ public class CloudletCommand
     {
         log.entry(cloudlet, method, path);
 
-        CloseableHttpClient client = null;
+        HttpClient client = null;
 
         String command = String.format("http://%s:%d%s",
                 cloudlet.getAddress().getHostAddress(),
@@ -75,7 +75,8 @@ public class CloudletCommand
 
         try
         {
-            client = HttpClientBuilder.create().build();
+
+            client = new DefaultHttpClient();
 
             request.setURI(new URI(command));
 
@@ -98,7 +99,7 @@ public class CloudletCommand
         }
         catch (Exception e)
         {
-            log.error("Error connecting to server!");
+            log.error("Error connecting to server!", e);
             throw new CloudletError("Error sending command to server!", e);
         }
         finally
@@ -107,7 +108,7 @@ public class CloudletCommand
             {
                 try
                 {
-                    client.close();
+                    client.getConnectionManager().shutdown();
                 }
                 catch (Exception e)
                 {
