@@ -1,4 +1,4 @@
-package edu.cmu.sei.ams.cloudlet;
+package edu.cmu.sei.ams.cloudlet.impl;
 
 import org.json.JSONObject;
 

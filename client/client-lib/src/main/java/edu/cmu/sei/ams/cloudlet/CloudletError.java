@@ -7,12 +7,12 @@ package edu.cmu.sei.ams.cloudlet;
  */
 public class CloudletError extends Exception
 {
-    CloudletError(String message)
+    public CloudletError(String message)
     {
         super(message);
     }
 
-    CloudletError(String message, Throwable cause)
+    public CloudletError(String message, Throwable cause)
     {
         super(message, cause);
     }

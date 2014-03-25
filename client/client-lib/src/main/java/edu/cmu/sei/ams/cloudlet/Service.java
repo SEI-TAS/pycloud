@@ -9,4 +9,6 @@ public interface Service
 {
     public String getServiceId();
     public String getDescription();
+
+    public VMInfo startService();
 }

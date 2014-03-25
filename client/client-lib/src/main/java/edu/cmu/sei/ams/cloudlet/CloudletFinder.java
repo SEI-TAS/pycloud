@@ -1,5 +1,6 @@
 package edu.cmu.sei.ams.cloudlet;
 
+import edu.cmu.sei.ams.cloudlet.impl.CloudletImpl;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 

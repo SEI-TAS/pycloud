@@ -1,5 +1,9 @@
-package edu.cmu.sei.ams.cloudlet;
+package edu.cmu.sei.ams.cloudlet.impl;
 
+import edu.cmu.sei.ams.cloudlet.Cloudlet;
+import edu.cmu.sei.ams.cloudlet.CloudletError;
+import edu.cmu.sei.ams.cloudlet.Service;
+import edu.cmu.sei.ams.cloudlet.impl.cmds.GetServicesCommand;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -7,57 +11,104 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * User: jdroot
- * Date: 3/20/14
- * Time: 4:35 PM
+ * Date: 3/19/14
+ * Time: 4:05 PM
  */
-public class CloudletCommand
+public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
 {
-    private static final XLogger log = XLoggerFactory.getXLogger(CloudletCommand.class);
+    private static final XLogger log = XLoggerFactory.getXLogger(CloudletImpl.class);
 
-    private static final String STATIC_PATH = "/api";
+    private final String name;
+    private final InetAddress addr;
+    private final int port;
 
-    static final CloudletCommand GET_SERVICES = new CloudletCommand(Method.GET, "/servicevm/listServices");
-
-    private static enum Method
+    public CloudletImpl(String name, InetAddress addr, int port)
     {
-        GET,
-        PUT,
-        POST
+        this.name = name;
+        this.addr = addr;
+        this.port = port;
     }
 
-    private final Method method;
-    private final String path;
-
-    private CloudletCommand(Method method, String path)
+    @Override
+    public String getName()
     {
-        this.method = method;
-        this.path = STATIC_PATH + path;
+        return name;
     }
 
-    String execute(Cloudlet cloudlet) throws CloudletError
+    @Override
+    public InetAddress getAddress()
     {
-        log.entry(cloudlet, method, path);
+        return addr;
+    }
+
+    @Override
+    public int getPort()
+    {
+        return port;
+    }
+
+    @Override
+    public List<Service> getServices() throws Exception
+    {
+        log.entry();
+
+        String result = executeCommand(new GetServicesCommand()); //CloudletCommand.GET_SERVICES.execute(this);
+
+        List<Service> ret = new ArrayList<Service>();
+
+        JSONObject obj = new JSONObject(result);
+        JSONArray services = obj.getJSONArray("services");
+        for (int x = 0; x < services.length(); x++)
+        {
+            JSONObject service = services.getJSONObject(x);
+            ret.add(new ServiceImpl(this, service));
+        }
+
+        log.exit(ret);
+        return ret;
+    }
+
+    @Override
+    public String executeCommand(edu.cmu.sei.ams.cloudlet.impl.cmds.CloudletCommand cmd) throws CloudletError
+    {
+        log.entry(cmd.getMethod(), cmd.getPath());
 
         HttpClient client = null;
 
-        String command = String.format("http://%s:%d%s",
-                cloudlet.getAddress().getHostAddress(),
-                cloudlet.getPort(),
-                path);
+        String command = String.format("http://%s:%d/api%s",
+                getAddress().getHostAddress(),
+                getPort(),
+                cmd.getPath());
+
+        String args = null;
+        for (String key : cmd.getArgs().keySet())
+        {
+            if (args == null)
+                args = "?";
+            args += key + "=" + cmd.getArgs().get(key);
+        }
+
+        if (args != null)
+            command += args;
 
         log.info("Compiled command: " + command);
 
         HttpRequestBase request;
-        switch (method)
+        switch (cmd.getMethod())
         {
             case GET:
                 request = new HttpGet();
@@ -162,5 +213,10 @@ public class CloudletCommand
         }
 
         return responseText;
+    }
+
+    public String toString()
+    {
+        return name + "[" + addr + ":" + port + "]";
     }
 }
