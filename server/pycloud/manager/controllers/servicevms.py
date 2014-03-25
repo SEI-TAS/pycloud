@@ -10,7 +10,7 @@ from webhelpers.html import HTML
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.servicevm import svmrepository
 from pycloud.manager.lib.pages import ServiceVMsPage
-import pycloud.pycloud.pylons.lib.helpers as h
+from pycloud.pycloud.pylons.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
@@ -23,6 +23,9 @@ class ServiceVMsController(BaseController):
     # Shows the list of running Service VMs.
     ############################################################################################################
     def GET_index(self):
+        # Mark the active tab.
+        c.servicevms_active = 'active'
+        
         # Get a list of running ServiceVM instances.
         instanceManager = g.cloudlet.instanceManager
         instanceList = instanceManager.getServiceVMInstances()

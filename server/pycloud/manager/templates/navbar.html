@@ -1,5 +1,10 @@
 <%def name="navbar()">
 
+<%!
+    ## This should have been received by Mako automatically, but for some reason we have to import it manually.
+    from pycloud.pycloud.pylons.lib import helpers as h
+%>
+
     <!-- Fixed navbar -->
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <div class="container">
@@ -15,8 +20,8 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a href="#">Home</a></li>
-                    <li><a href="/manager/services">Cached Services</a></li>
-                    <li class="active"><a href="/manager/servicevms">Running Service VMs</a></li>
+                    <li class="${c.services_active}">${h.link_to('Cached Services', h.url_for(controller='services'))}</li>
+                    <li class="${c.servicevms_active}">${h.link_to('Running Service VMs', h.url_for(controller='servicevms'))}</li>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>

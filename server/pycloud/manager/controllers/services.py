@@ -10,7 +10,7 @@ from webhelpers.html import HTML
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.servicevm import svmrepository
 from pycloud.manager.lib.pages import ServicesPage
-import pycloud.pycloud.pylons.lib.helpers as h
+from pycloud.pycloud.pylons.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
@@ -23,6 +23,9 @@ class ServicesController(BaseController):
     # Shows the list of cached Services.
     ############################################################################################################
     def GET_index(self):
+        # Mark the active tab.
+        c.services_active = 'active'
+    
         # Get a list of existing stored VMs in the cache.
         serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
         vmList = serviceVmRepo.getStoredServiceVMList()
