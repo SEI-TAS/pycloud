@@ -1,8 +1,14 @@
 package edu.cmu.sei.ams.cloudlet.impl;
 
+import edu.cmu.sei.ams.cloudlet.Service;
 import edu.cmu.sei.ams.cloudlet.VMInfo;
+import org.json.JSONObject;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 
 import java.net.InetAddress;
+
+import static edu.cmu.sei.ams.cloudlet.impl.CloudletUtilities.*;
 
 /**
  * User: jdroot
@@ -11,33 +17,52 @@ import java.net.InetAddress;
  */
 public class VMInfoImpl implements VMInfo
 {
+    private static final XLogger log = XLoggerFactory.getXLogger(VMInfoImpl.class);
+    private String instanceId;
+    private InetAddress addr;
+    private int port;
 
-    VMInfoImpl()
+    private Service service;
+    private final CloudletCommandExecutor mCloudlet;
+
+    VMInfoImpl(CloudletCommandExecutor mCloudlet, Service service, JSONObject obj)
     {
-
+        log.entry(mCloudlet, service, obj);
+        this.mCloudlet = mCloudlet;
+        this.instanceId = getSafeString("INSTANCE_ID", obj);
+        this.port = getSafeInt("PORT", obj);
+        this.addr = getSafeInetAddress("IP_ADDRESS", obj);
+        this.service = service;
+        log.exit();
     }
 
     @Override
     public String getServiceId()
     {
-        throw new UnsupportedOperationException("VMInfoImpl#getServiceId is unsupported at this time");
+        return service.getServiceId();
     }
 
     @Override
     public String getInstanceId()
     {
-        throw new UnsupportedOperationException("VMInfoImpl#getInstanceId is unsupported at this time");
+        return instanceId;
     }
 
     @Override
     public InetAddress getAddress()
     {
-        throw new UnsupportedOperationException("VMInfoImpl#getAddress is unsupported at this time");
+        return addr;
     }
 
     @Override
     public int getPort()
     {
-        throw new UnsupportedOperationException("VMInfoImpl#getPort is unsupported at this time");
+        return port;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "{serviceId:\"" + getServiceId() + "\", instanceId:\"" + getInstanceId() + "\", ip_address:\"" + getAddress() + "\", port:" + getPort() + "}";
     }
 }

@@ -51,7 +51,9 @@ public class ServiceImpl implements Service
         StartServiceCommand cmd = new StartServiceCommand(this);
         try
         {
-            mCloudlet.executeCommand(cmd);
+            String jsonStr = mCloudlet.executeCommand(cmd);
+            JSONObject obj = new JSONObject(jsonStr);
+            ret = new VMInfoImpl(mCloudlet, this, obj);
         }
         catch (CloudletError e)
         {
