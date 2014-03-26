@@ -11,4 +11,6 @@ public interface Service
     public String getDescription();
 
     public ServiceVM startService();
+    public boolean stopService();
+    public ServiceVM getServiceVM();
 }

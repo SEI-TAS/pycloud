@@ -25,6 +25,8 @@ public class ServiceImpl implements Service
 
     private final CloudletCommandExecutor mCloudlet;
 
+    private ServiceVM serviceVM;
+
     ServiceImpl(CloudletCommandExecutor mCloudlet, JSONObject json)
     {
         this.serviceId = getSafeString("_id", json);
@@ -54,12 +56,31 @@ public class ServiceImpl implements Service
             String jsonStr = mCloudlet.executeCommand(cmd);
             JSONObject obj = new JSONObject(jsonStr);
             ret = new ServiceVMImpl(mCloudlet, this, obj);
+            this.serviceVM = ret;
         }
         catch (CloudletError e)
         {
             log.error("Error starting service", e);
         }
         return ret;
+    }
+
+    @Override
+    public boolean stopService()
+    {
+        boolean ret = false;
+        if (serviceVM != null)
+        {
+            ret = serviceVM.stopVm();
+            serviceVM = null;
+        }
+        return ret;
+    }
+
+    @Override
+    public ServiceVM getServiceVM()
+    {
+        return serviceVM;
     }
 
     @Override

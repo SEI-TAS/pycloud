@@ -23,17 +23,17 @@ public class ServiceVMImpl implements ServiceVM
     private InetAddress addr;
     private int port;
 
-    private Service service;
+    private Service mService;
     private final CloudletCommandExecutor mCloudlet;
 
-    ServiceVMImpl(CloudletCommandExecutor mCloudlet, Service service, JSONObject obj)
+    ServiceVMImpl(CloudletCommandExecutor mCloudlet, Service mService, JSONObject obj)
     {
-        log.entry(mCloudlet, service, obj);
+        log.entry(mCloudlet, mService, obj);
         this.mCloudlet = mCloudlet;
         this.instanceId = getSafeString("INSTANCE_ID", obj);
         this.port = getSafeInt("PORT", obj);
         this.addr = getSafeInetAddress("IP_ADDRESS", obj);
-        this.service = service;
+        this.mService = mService;
         log.exit();
     }
 
@@ -59,7 +59,7 @@ public class ServiceVMImpl implements ServiceVM
     @Override
     public String getServiceId()
     {
-        return service.getServiceId();
+        return mService.getServiceId();
     }
 
     @Override
