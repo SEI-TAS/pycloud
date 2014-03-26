@@ -11,3 +11,28 @@
 <table class="table table-striped table-bordered table-condensed">
     ${c.myGrid}
 </table>
+
+<script>
+    // Function to stop a Service VM through Ajax.
+    function stopSVM(stopUrl)
+    {
+        // Show progress bar.
+        var dialog = WaitDialog("Stopping Service VM");
+        dialog.show();
+        
+        // Send the ajax request to start the service vm.
+        $.ajax({
+          url: stopUrl,
+          dataType: 'json',
+          success: function( resp ) {
+            // Hide the progress bar and reload the page to show the changes.
+            dialog.hide();
+            window.top.location=window.top.location;
+          },
+          error: function( req, status, err ) {
+            dialog.hide();
+            console.log( 'something went wrong', status, err );
+          }
+        });
+    }    
+</script>

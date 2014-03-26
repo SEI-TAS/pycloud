@@ -36,14 +36,14 @@ class ServiceVMsController(BaseController):
             serviceVMInstance = instanceList[serviceVMInstanceId]
             newItem = {'instance_id':serviceVMInstance.instanceId,
                        'service_id':serviceVMInstance.serviceId,
-                       'service_port':serviceVMInstance.serviceHostPort,
+                       'service_external_port':serviceVMInstance.serviceHostPort,
                        'ssh_port':serviceVMInstance.sshHostPort,                       
                        'folder':serviceVMInstance.getInstanceFolder(),
                        'action':'Stop'}
             itemList.append(newItem)
 
         # Create and format the grid.
-    	c.myGrid = Grid(itemList, ['instance_id', 'service_id', 'service_port', 'ssh_port', 'folder', 'action'])
+    	c.myGrid = Grid(itemList, ['instance_id', 'service_id', 'service_external_port', 'ssh_port', 'folder', 'action'])
         c.myGrid.column_formats["service_id"] = generate_service_id_link
         c.myGrid.column_formats["action"] = generate_stop_button
 
@@ -61,5 +61,8 @@ def generate_service_id_link(col_num, i, item):
 # Helper function to generate a link for the service id.
 ############################################################################################################        
 def generate_stop_button(col_num, i, item):
+    # TODO: we will need a centralized way of getting API URLs.
     stopUrl = '/api/servicevm/stop?instanceId=' + item["instance_id"]
-    return HTML.td(HTML.button("Stop", onclick="window.location.href='"+ stopUrl +"'"))   
+
+    # Render the button with the Ajax code to stop the SVM.    
+    return HTML.td(HTML.button("Stop", onclick=h.literal("stopSVM('"+ stopUrl +"')"), class_="btn btn-primary btn"))   

@@ -29,6 +29,9 @@ class ServiceVMController(BaseController):
     
     # Manager of running VMs.
     runningVMManager = None
+    
+    JSON_OK = json.dumps({"STATUS" : "OK" })
+    JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})    
 
     ################################################################################################################    
     # Sets up the initial resources.
@@ -110,8 +113,7 @@ class ServiceVMController(BaseController):
         if(serviceId is None):
             # If we didnt get a valid one, just return an error message.
             print "No service id to be started was received."
-            responseText = 'NOT OK'
-            return responseText        
+            return self.JSON_NOT_OK        
 
         # Check the flags that indicates whether we could join an existing instance.
         isolated = request.GET['serviceId']
@@ -161,8 +163,7 @@ class ServiceVMController(BaseController):
         if(instanceId is None):
             # If we didnt get a valid one, just return an error message.
             print "No instance id to be stopped was received."
-            responseText = 'NOT OK'
-            return responseText
+            return self.JSON_NOT_OK
 
         print '\n*************************************************************************************************'
         timelog.TimeLog.reset()        
@@ -172,10 +173,10 @@ class ServiceVMController(BaseController):
         success = self.runningVMManager.stopServiceVMInstance(instanceId)
         if(success):
             print "VM with instance id %s stopped" % instanceId
-            responseText = 'OK'
+            responseText = self.JSON_OK
         else:
             print "VM with instance id %s could not be stopped" % instanceId
-            responseText = 'NOT OK'
+            responseText = self.JSON_NOT_OK
         
         # Send the response.
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
