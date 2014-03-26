@@ -117,7 +117,7 @@ class RunningVM(object):
     ################################################################################################################
     # Starts a VNC connection with a GUI and waits until it is closed.
     ################################################################################################################            
-    def startVncAndWait(self):
+    def startVncAndWait(self, wait=True):
         # We have to get the XML description of the running machine to find the port available for VNC.
         runningVMXmlString = self.virtualMachine.XMLDesc(libvirt.VIR_DOMAIN_XML_SECURE)
         runningVMElement = ElementTree.fromstring(runningVMXmlString)
@@ -128,7 +128,7 @@ class RunningVM(object):
         # Connect through the VNC client and wait.
         print 'Starting VNC GUI to VM, and waiting for user to close it.'
         vncClient = vncclient.VNCClient()
-        result = vncClient.connectAndWait(vncPort)
+        result = vncClient.connectAndWait(vncPort, wait)
         print 'VNC GUI no longer running, stopped waiting.'
         
         # If there was a problem, destroy the VM.

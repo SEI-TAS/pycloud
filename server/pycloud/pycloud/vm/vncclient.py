@@ -18,7 +18,7 @@ class VNCClient(object):
 	# Returns true if everything went ok, or false if there was a problem creating the VNC connection or if it
 	# was interrupted.
     ################################################################################################################        
-    def connectAndWait(self, vncPort):
+    def connectAndWait(self, vncPort, wait=True):
         # Starts VNC GUI in a separate process.
         try:
             vncCommandArguments = self.__getVncCommand(vncPort)
@@ -28,13 +28,14 @@ class VNCClient(object):
             print "Error creating VNC process: " + e.message
             return False
         
-        # Wait until the VNC window is closed.
-        try:            
-            vncProcess.wait()
-        except KeyboardInterrupt:
-            # If the user interrupts the process when VNC is open, we abort by destroying the VM.
-            print "[INFO] Keyboard interrupt while waiting for VNC to be closed."
-            return False
+        if(wait):
+            # Wait until the VNC window is closed.
+            try:            
+                vncProcess.wait()
+            except KeyboardInterrupt:
+                # If the user interrupts the process when VNC is open, we abort by destroying the VM.
+                print "[INFO] Keyboard interrupt while waiting for VNC to be closed."
+                return False
         
         return True        
         

@@ -73,7 +73,7 @@ class ServiceVMsController(BaseController):
         svmInstance = instanceList[id]
         
         # Try to start the VNC window (this will only work if done on the Cloudlet).
-        svmInstance.runningSVM.startVncAndWait()
+        svmInstance.runningSVM.startVncAndWait(wait=False)
         
         # Everything went well.
         return self.JSON_OK
