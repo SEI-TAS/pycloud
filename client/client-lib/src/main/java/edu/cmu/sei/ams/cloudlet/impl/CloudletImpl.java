@@ -83,6 +83,7 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public String executeCommand(edu.cmu.sei.ams.cloudlet.impl.cmds.CloudletCommand cmd) throws CloudletError
     {
         log.entry(cmd.getMethod(), cmd.getPath());
@@ -174,6 +175,7 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
      * @param response The HTTP response to get the text from.
      * @return The text in the response as a string.
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private String getResponseText(final HttpResponse response)
     {
         String responseText = "";
@@ -203,13 +205,11 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
         }
         catch (IllegalStateException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("Illegal State Exception in the response!", e);
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("IOException in the response!", e);
         }
 
         return responseText;
