@@ -7,10 +7,12 @@ import java.net.InetAddress;
  * Date: 3/24/14
  * Time: 4:11 PM
  */
-public interface VMInfo
+public interface ServiceVM
 {
     public String getServiceId();
     public String getInstanceId();
     public InetAddress getAddress();
     public int getPort();
+
+    public boolean stopVm();
 }

@@ -2,7 +2,7 @@ package edu.cmu.sei.ams.cloudlet.impl;
 
 import edu.cmu.sei.ams.cloudlet.CloudletError;
 import edu.cmu.sei.ams.cloudlet.Service;
-import edu.cmu.sei.ams.cloudlet.VMInfo;
+import edu.cmu.sei.ams.cloudlet.ServiceVM;
 import edu.cmu.sei.ams.cloudlet.impl.cmds.StartServiceCommand;
 import org.json.JSONObject;
 import org.slf4j.ext.XLogger;
@@ -45,15 +45,15 @@ public class ServiceImpl implements Service
     }
 
     @Override
-    public VMInfo startService()
+    public ServiceVM startService()
     {
-        VMInfo ret = null;
+        ServiceVM ret = null;
         StartServiceCommand cmd = new StartServiceCommand(this);
         try
         {
             String jsonStr = mCloudlet.executeCommand(cmd);
             JSONObject obj = new JSONObject(jsonStr);
-            ret = new VMInfoImpl(mCloudlet, this, obj);
+            ret = new ServiceVMImpl(mCloudlet, this, obj);
         }
         catch (CloudletError e)
         {
