@@ -35,4 +35,21 @@
           }
         });
     }    
+    
+    // Function to start a VNC window.
+    function openVNC(vncUrl)
+    {
+        // Send the ajax request to start the VNC window.
+        $.ajax({
+          url: vncUrl,
+          dataType: 'json',
+          success: function( resp ) {
+            // Do nothing, as the VNC window should have opened by now.
+            console.log( 'VNC window was opened successfully.');
+          },
+          error: function( req, status, err ) {
+            console.log( 'Something went wrong', status, err );
+          }
+        });
+    }     
 </script>
