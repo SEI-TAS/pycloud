@@ -31,7 +31,7 @@ class ServiceVMsController(BaseController):
         instanceList = instanceManager.getServiceVMInstances()
 
         # Create an item list with the info to display.
-        itemList = []
+        gridItems = []
     	for serviceVMInstanceId in instanceList:
             serviceVMInstance = instanceList[serviceVMInstanceId]
             newItem = {'instance_id':serviceVMInstance.instanceId,
@@ -40,15 +40,17 @@ class ServiceVMsController(BaseController):
                        'ssh_port':serviceVMInstance.sshHostPort,                       
                        'folder':serviceVMInstance.getInstanceFolder(),
                        'action':'Stop'}
-            itemList.append(newItem)
+            gridItems.append(newItem)
 
         # Create and format the grid.
-    	c.myGrid = Grid(itemList, ['instance_id', 'service_id', 'service_external_port', 'ssh_port', 'folder', 'action'])
-        c.myGrid.column_formats["service_id"] = generate_service_id_link
-        c.myGrid.column_formats["action"] = generate_stop_button
+    	instancesGrid = Grid(gridItems, ['instance_id', 'service_id', 'service_external_port', 'ssh_port', 'folder', 'action'])
+        instancesGrid.column_formats["service_id"] = generate_service_id_link
+        instancesGrid.column_formats["action"] = generate_stop_button
 
-        # Render the page.
-        return ServiceVMsPage().render()
+        # Pass the grid and render the page.
+        svmPage = ServiceVMsPage()
+        svmPage.instancesGrid = instancesGrid
+        return svmPage.render()
         
 ############################################################################################################
 # Helper function to generate a link for the service id.

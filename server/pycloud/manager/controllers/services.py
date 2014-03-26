@@ -31,7 +31,7 @@ class ServicesController(BaseController):
         vmList = serviceVmRepo.getStoredServiceVMList()
 
         # Create an item list with the info to display.
-        itemList = []
+        gridItems = []
     	for storedVMId in vmList:
             storedVM = vmList[storedVMId]
             newItem = {'service_id':storedVM.metadata.serviceId,
@@ -39,14 +39,16 @@ class ServicesController(BaseController):
                        'service_internal_port':storedVM.metadata.servicePort,
                        'stored_service_vm_folder':storedVM.folder,
                        'action':'Start'}
-            itemList.append(newItem)
+            gridItems.append(newItem)
 
         # Create and fomat the grid.
-    	c.myGrid = Grid(itemList, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'action'])
-        c.myGrid.column_formats["action"] = generate_start_button        
+    	servicesGrid = Grid(gridItems, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'action'])
+        servicesGrid.column_formats["action"] = generate_start_button        
         
-        # Render the page with the grid.
-        return ServicesPage().render()
+        # Pass the grid and render the page.
+        servicesPage = ServicesPage()
+        servicesPage.servicesGrid = servicesGrid
+        return servicesPage.render()
 
 ############################################################################################################
 # Helper function to generate a button to start a Service VM for a Service through Ajax.
