@@ -1,5 +1,7 @@
 package edu.cmu.sei.cloudlet.client;
 
+import edu.cmu.sei.ams.cloudlet.Cloudlet;
+
 /**
  * 
  * This is a in-memory class used to store the cloudlet information.
@@ -11,6 +13,8 @@ package edu.cmu.sei.cloudlet.client;
  */
 public class CurrentCloudlet
 {
+    public static Cloudlet cloudlet;
+
     // The IP and port. Static so that it can be easily shared between activities.
     public static String name = "";
     public static String ipAddress = "";

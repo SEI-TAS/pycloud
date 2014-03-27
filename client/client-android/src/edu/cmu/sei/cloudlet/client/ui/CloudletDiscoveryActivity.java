@@ -1,16 +1,17 @@
 package edu.cmu.sei.cloudlet.client.ui;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
-import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
+import edu.cmu.sei.ams.cloudlet.Cloudlet;
+import edu.cmu.sei.ams.cloudlet.CloudletFinder;
 import edu.cmu.sei.cloudlet.client.R;
 import edu.cmu.sei.cloudlet.client.CurrentCloudlet;
 
@@ -40,13 +41,17 @@ public class CloudletDiscoveryActivity extends Activity implements ServiceListen
 	public static final String ASYNC_TASK_STATUS_FAILURE = "failure";
 	private static final String LOG_TAG = "AvailableCloudletsActivity";
 	private static final String CLOUDLET_SERVER_DNS = "_cloudlet._tcp.local.";
-	ServiceInfo[] cloudletInfo = null;
+	List<Cloudlet> cloudlets = null;
 	String[] cloudletListData = null;
 	ArrayAdapter<String> adapter;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+
+        ClassLoader classLoader = CloudletDiscoveryActivity.class.getClassLoader();
+        URL resource = classLoader.getResource("org/apache/http/message/BasicLineFormatter.class");
+        Log.v("CLOUDLET", "Class loaded by: " + resource);
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.cloudlet_discovery);	
@@ -120,8 +125,7 @@ public class CloudletDiscoveryActivity extends Activity implements ServiceListen
 
 			Log.d(LOG_TAG, "doInBackground");
 			String status = ASYNC_TASK_STATUS_SUCCESS;
-			cloudletInfo = doZeroConfSetup();
-			//fillData(cloudletInfo);
+			cloudlets = doZeroConfSetup();
 			return status;
 
 		}
@@ -132,41 +136,25 @@ public class CloudletDiscoveryActivity extends Activity implements ServiceListen
 			Log.d(LOG_TAG, "onPostExecute");
 			if (mProgressDialog != null) {
 				mProgressDialog.dismiss();
-				fillData(cloudletInfo);
+				fillData(cloudlets);
 			}
 		}		
 
 	}
 
-	private ServiceInfo[] doZeroConfSetup() 
+	private List<Cloudlet> doZeroConfSetup()
 	{
-		JmDNS jmdns;
-		ServiceInfo[] infos = null;
-		
-        ConnectionInfoFragment connInfoFragment = (ConnectionInfoFragment) getFragmentManager().findFragmentById(R.id.connInfoPanel);
-        String wifiIpAddress = connInfoFragment.getWifiIpAddress();		
-
-		try 
-		{			
-			jmdns = JmDNS.create(InetAddress.getByName(wifiIpAddress));
-			infos = jmdns.list(CLOUDLET_SERVER_DNS);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			Log.d(LOG_TAG,"Inside Exception");
-			e.printStackTrace();
-		}
-
-		return infos;
+        return CloudletFinder.findCloudlets();
 	}
 
 	private void invokeOverlayDetailsActivity (int selectedCloudlet) 
 	{
 		// Get IP address and port of the selected cloudlet
 		// It starts at 1 because the character at position 0 is "/"
-	    String selectedCloudletName = cloudletInfo[selectedCloudlet].getName();
+	    String selectedCloudletName = cloudlets.get(selectedCloudlet).getName();
 
-		String selectedCloudletIPAddress = cloudletInfo[selectedCloudlet].getInetAddresses()[0].toString().substring(1);
-		int selectedCloudletPort = cloudletInfo[selectedCloudlet].getPort();
+		String selectedCloudletIPAddress = cloudlets.get(selectedCloudlet).getAddress().getHostAddress();
+		int selectedCloudletPort = cloudlets.get(selectedCloudlet).getPort();
 
 		Log.d(LOG_TAG,"Selected Cloudlet IP Address: " + selectedCloudletIPAddress);
 		Log.d(LOG_TAG,"Selected Cloudlet IP Port: " + selectedCloudletPort);
@@ -174,7 +162,8 @@ public class CloudletDiscoveryActivity extends Activity implements ServiceListen
 		// Store the cloudlet information in a shared static class.
 		CurrentCloudlet.name = selectedCloudletName;
         CurrentCloudlet.ipAddress = selectedCloudletIPAddress;
-        CurrentCloudlet.port = selectedCloudletPort;		
+        CurrentCloudlet.port = selectedCloudletPort;
+        CurrentCloudlet.cloudlet = cloudlets.get(selectedCloudlet);
 
 		// Invoke the selection Activity.
 		Intent i = new Intent(this, ProcessSelectionActivity.class);
@@ -201,11 +190,9 @@ public class CloudletDiscoveryActivity extends Activity implements ServiceListen
 	}
 
 	@SuppressWarnings("deprecation")
-    private void fillData(ServiceInfo[] cloudletInfo) {
+    private void fillData(List<Cloudlet> cloudlets) {
 
-		int position = 0;
-
-		if (cloudletInfo == null || cloudletInfo.length == 0) {
+		if (cloudlets == null || cloudlets.size() == 0) {
 			Log.d(LOG_TAG, "No cloudlets nearby");
 			adapter.clear();
 			
@@ -223,16 +210,16 @@ public class CloudletDiscoveryActivity extends Activity implements ServiceListen
 		else
 		{
 			Log.d(LOG_TAG, "Cloudlets nearby");
-			Log.d(LOG_TAG, "Cloudlet Info Length = " + cloudletInfo.length);
+			Log.d(LOG_TAG, "Cloudlet Info Length = " + cloudlets.size());
 			adapter.clear();
-			while (position < cloudletInfo.length) {
-				Log.d(LOG_TAG,"Name = "+ cloudletInfo[position].getName());
-				Log.d(LOG_TAG,"IP = "+ cloudletInfo[position].getInetAddresses()[0].toString().substring(1));
-				Log.d(LOG_TAG,"Port = " + cloudletInfo[position].getPort());
-				adapter.add(cloudletInfo[position].getName() + ":" +
-						cloudletInfo[position].getInetAddresses()[0].toString().substring(1) + ":" +
-						cloudletInfo[position].getPort());
-				position++;
+            for (Cloudlet cloudlet : cloudlets)
+			{
+				Log.d(LOG_TAG,"Name = "+ cloudlet.getName());
+				Log.d(LOG_TAG,"IP = "+ cloudlet.getAddress());
+				Log.d(LOG_TAG,"Port = " + cloudlet.getPort());
+				adapter.add(cloudlet.getName() + ":" +
+						cloudlet.getAddress() + ":" +
+						cloudlet.getPort());
 			}
 			
 			//adapter.notifyDataSetChanged();

@@ -11,7 +11,9 @@ dependencies {
     compile (
             'javax.jmdns:jmdns:3.4.0',
             'org.slf4j:slf4j-api:1.7.6',
-            'org.slf4j:slf4j-ext:1.7.6'
+            'org.slf4j:slf4j-ext:1.7.6',
+            'org.apache.httpcomponents:httpclient:4.3.3',
+            'org.json:json:20140107'
     )
     testCompile (
             'junit:junit:4.11',

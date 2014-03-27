@@ -2,6 +2,7 @@ package edu.cmu.sei.cloudlet.client.ui;
 
 import edu.cmu.sei.cloudlet.client.CurrentCloudlet;
 import edu.cmu.sei.cloudlet.client.R;
+import edu.cmu.sei.cloudlet.client.caching.ui.ListServicesActivity;
 import edu.cmu.sei.cloudlet.client.ondemand.ui.ModulesList;
 import edu.cmu.sei.cloudlet.client.push.ui.CloudletAppsListActivity;
 import edu.cmu.sei.cloudlet.client.synth.ui.OverlayList;
@@ -65,6 +66,18 @@ public class ProcessSelectionActivity extends Activity
                 Intent intent = new Intent(ProcessSelectionActivity.this, ModulesList.class);
                 startActivity(intent);
             }
-        });                  
+        });
+
+        // Setup button to go to Cloudlet Push activity.
+        Button cachingButton = (Button) findViewById(R.id.caching_btn);
+        cachingButton.setOnClickListener(new OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(ProcessSelectionActivity.this, ListServicesActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 }

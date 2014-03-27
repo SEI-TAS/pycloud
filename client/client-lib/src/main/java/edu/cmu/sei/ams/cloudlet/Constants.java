@@ -7,5 +7,5 @@ package edu.cmu.sei.ams.cloudlet;
  */
 public class Constants
 {
-    public static final String CLOUDLET_SERVER_DNS = "_cloudlet._tcp.local.";
+    static final String CLOUDLET_SERVER_DNS = "_cloudlet._tcp.local.";
 }
