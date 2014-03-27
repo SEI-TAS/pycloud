@@ -41,13 +41,59 @@ class ServiceVMInstanceManager(object):
             shutil.rmtree(rootInstancesFolder)
         if(not os.path.exists(rootInstancesFolder)):
             os.makedirs(rootInstancesFolder)  
-
+                    
+    ################################################################################################################  
+    # Stops all VM instances existing in the instances folder.
+    ################################################################################################################     
+    def cleanupRunningInstances(self):
+        # Loop over all running vms.
+        print 'Attempting to clean up instances in instance folder...'
+        rootInstancesFolder = self.cloudletConfig.svmInstancesFolder
+        
+        # Loop over the folders, finding valid instances.
+        instancesFolderList = os.listdir(rootInstancesFolder)
+        for currentFolder in instancesFolderList:
+            # Only use folders.
+            if(os.path.isdir(os.path.join(rootInstancesFolder, currentFolder))):
+                # Assume the folder has an instance, with the id being the folder's name. 
+                instanceId = currentFolder
+                
+                try:
+                    # Try to connect to a running instance with this id.
+                    svmInstance = instance.ServiceVMInstance(rootInstancesFolder)                    
+                    svmInstance.connectToExistingInstance(instanceId)
+                    
+                    # Stop the SVM instance.
+                    svmInstance.stop()                    
+                except instance.ServiceVMException as exception:
+                    # Could not connect to existing instance, probably folder was a leftover.
+                    print 'Error stopping VM instance with id ' + instanceId + ' (probably folder had no associated VM): ' + str(exception)                
+            
+        print 'Instances in instance folder cleaned up.'
+                    
+    ################################################################################################################  
+    # Stops all existing running vms.
+    ################################################################################################################     
+    def cleanup(self):
+        # Loop over all running vms.
+        print 'Cleaning up instance manager...'
+        for instanceId in self.serviceVMInstances.keys():
+            self.stopServiceVMInstance(instanceId)       
+            
+        # Clear any stored ports, if any.
+        portmanager.PortManager.clearPorts()
+        
+        print 'Instance manager cleaned up.'
+            
     ################################################################################################################  
     # Constructor.
     ################################################################################################################       
     def __init__(self, cloudletConfig):
         # Store the config object.
         self.cloudletConfig = cloudletConfig
+        
+        # Stop any leftover VMs from a previous session, if any.
+        self.cleanupRunningInstances()
    
         # Cleanup the VMs instances folder.
         self.cleanupInstancesFolder()
@@ -95,8 +141,8 @@ class ServiceVMInstanceManager(object):
         
         # Start a new transient VM.
         instancesRootFolder = self.cloudletConfig.svmInstancesFolder
-        serviceVMInstance = instance.ServiceVMInstance(serviceId, serviceHostPort, sshHostPort, instancesRootFolder)
-        serviceVMInstance.createAndStart(self.cloudletConfig, showVNC)
+        serviceVMInstance = instance.ServiceVMInstance(instancesRootFolder)
+        serviceVMInstance.createAndStart(self.cloudletConfig, serviceId, serviceHostPort, sshHostPort, showVNC)
     
         # Save this instance in our list of running instances.
         print "Adding to running instances list " + serviceVMInstance.instanceId
@@ -151,14 +197,3 @@ class ServiceVMInstanceManager(object):
     ################################################################################################################    
     def getServiceVMInstances(self):
         return self.serviceVMInstances
-                    
-    ################################################################################################################  
-    # Stops all existing running vms.
-    ################################################################################################################              
-    def cleanup(self):
-        # Loop over all running vms.
-        for instanceId in self.serviceVMInstances.keys():
-            self.stopServiceVMInstance(instanceId)       
-            
-        # Clear any stored ports, if any.
-        portmanager.PortManager.clearPorts()

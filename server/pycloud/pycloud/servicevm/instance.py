@@ -12,6 +12,7 @@ from pycloud.pycloud.vm import runningvm
 
 # To create Running Service VMs (from this same package).
 import runningsvmfactory
+import storedservicevm
 
 # To get info about existing VMs (from this same package).
 import svmrepository
@@ -48,13 +49,33 @@ class ServiceVMInstance(object):
     runningSVM = None
     
     ################################################################################################################
-    # Constructor, recieves the Service ID, plus the external ports which will be mapped to this instance.
+    # Constructor.
     ################################################################################################################
-    def __init__(self, serviceId, serviceHostPort, sshHostPort, instancesRootFolder):
-        self.serviceId = serviceId
-        self.serviceHostPort = serviceHostPort
-        self.sshHostPort = sshHostPort
-        self.instancesRootFolder = instancesRootFolder        
+    def __init__(self, instancesRootFolder):
+        self.instancesRootFolder = instancesRootFolder       
+
+    ################################################################################################################
+    # Loads an SVM Instance object from a folder, assuming it has a VM currently running.
+    # NOTE: currently this loaded instance will not store in the object the ports it has mapped. This could be 
+    # retrieved from the in-memory XML descriptor, but that is not supported as of now. It won't have the service 
+    # id stored yet, either.
+    ################################################################################################################        
+    def connectToExistingInstance(self, instanceId):
+        self.instanceId = instanceId
+        
+        # Load information from the stored files.
+        storedVM = storedservicevm.StoredServiceVM(instanceId)
+        storedVM.loadFromFolder(self.getInstanceFolder())
+        
+        # Create a running VM object with the data we have (this won't be connected yet to any existing running VM).
+        self.runningSVM = runningvm.RunningVM(id=self.instanceId, diskImageFile=storedVM.diskImageFilePath)
+        
+        # Try to connect to an existing running VM.
+        try:
+            self.runningSVM.connectToRunningVM()
+        except VirtualMachineException as ex:
+            print 'Error connecting to existing instance: ' + str(ex)
+            raise ServiceVMException('Could not connect to existing instance with id %s.' % str(instanceId))
 
     ################################################################################################################  
     # Gets the folder where an instance will run.
@@ -64,9 +85,15 @@ class ServiceVMInstance(object):
         return instanceFolder        
         
     ################################################################################################################  
-    # Starts a temporary instance of a Service VM.
+    # Starts a temporary instance of a Service VM, receives the Service ID, plus the external ports which will be 
+    # mapped to this instance.
     ################################################################################################################   
-    def createAndStart(self, cloudletConfig, showVNC=False):
+    def createAndStart(self, cloudletConfig, serviceId, serviceHostPort, sshHostPort, showVNC=False):
+        # Set internal variables.
+        self.serviceId = serviceId
+        self.serviceHostPort = serviceHostPort
+        self.sshHostPort = sshHostPort
+    
         # Get information about the VM to execute.
         serviceVmRepo = svmrepository.ServiceVMRepository(cloudletConfig)
         storedServiceVM = serviceVmRepo.findServiceVM(self.serviceId)

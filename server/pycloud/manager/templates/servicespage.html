@@ -5,10 +5,31 @@
 </%block>
 
 <%block name="title">
-    Cached Service VMs
+    Cached Services
 </%block>
 
 <table class="table table-striped table-bordered table-condensed">
-    ${c.myGrid}
+    ${page.servicesGrid}
 </table>
 
+<script>
+    // Function to start a Service VM through Ajax, and redirect to the given page.
+    function startSVM(startUrl, redirectUrl)
+    {
+        // Show progress bar.
+        var dialog = WaitDialog("Starting Service VM Instance");
+        dialog.show();
+        
+        // Send the ajax request to start the service vm.
+        $.ajax({
+          url: startUrl,
+          dataType: 'json',
+          success: function( resp ) {
+            window.location.href = redirectUrl;
+          },
+          error: function( req, status, err ) {
+            console.log( 'something went wrong', status, err );
+          }
+        });
+    }    
+</script>

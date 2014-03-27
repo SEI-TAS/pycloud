@@ -8,3 +8,4 @@ available to Controllers. This module is available to templates as 'h'.
 
 from routes import url_for
 from webhelpers.html.tags import link_to
+from webhelpers.html import literal

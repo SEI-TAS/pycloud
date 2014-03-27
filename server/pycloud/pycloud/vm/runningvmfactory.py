@@ -18,8 +18,8 @@ class RunningVMFactory(object):
     def createRunningVM(self, storedVM, vmId=None, namePrefix=None, showVNC=False, sshHostPort=None):
         # Create the actual VM.
         virtualMachine = runningvm.RunningVM(id = vmId,
-                                                                prefix = namePrefix, 
-                                                                diskImageFile = storedVM.diskImageFilePath)
+                                             prefix = namePrefix, 
+                                             diskImageFile = storedVM.diskImageFilePath)
 
         # Add port mappings.
         virtualMachine.addForwardedSshPort(sshHostPort)

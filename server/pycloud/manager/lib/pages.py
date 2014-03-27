@@ -1,6 +1,6 @@
 __author__ = 'jdroot'
 
-from pycloud.pycloud.pylons.lib.tm import BasePage
+from pycloud.pycloud.pylons.lib.pages import BasePage
 
 # Example
 # This page will reference pycloud/manager/templates/homepage.html
