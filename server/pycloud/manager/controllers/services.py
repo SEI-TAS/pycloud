@@ -38,12 +38,12 @@ class ServicesController(BaseController):
                        'name':storedVM.name,
                        'service_internal_port':storedVM.metadata.servicePort,
                        'stored_service_vm_folder':storedVM.folder,
-                       'action':'Start'}
+                       'service_vm_instances':'Start'}
             gridItems.append(newItem)
 
         # Create and fomat the grid.
-    	servicesGrid = Grid(gridItems, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'action'])
-        servicesGrid.column_formats["action"] = generate_start_button        
+    	servicesGrid = Grid(gridItems, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances'])
+        servicesGrid.column_formats["service_vm_instances"] = generate_start_button        
         
         # Pass the grid and render the page.
         servicesPage = ServicesPage()
@@ -61,4 +61,6 @@ def generate_start_button(col_num, i, item):
     redirectUrl = h.url_for(controller='servicevms')
     
     # Render the button with the Ajax code to start the SVM.
-    return HTML.td(HTML.button("Start SVM", onclick=h.literal("startSVM('"+ startUrl +"', '"+ redirectUrl +"')"), class_="btn btn-primary btn"))   
+    linkToSVMButton = HTML.button("View Instances", onclick=h.literal("window.location.href = '" + redirectUrl + "';"), class_="btn btn-primary btn")
+    newSVMButton = HTML.button("New Instance", onclick=h.literal("startSVM('"+ startUrl +"', '"+ redirectUrl +"')"), class_="btn btn-primary btn")
+    return HTML.td(linkToSVMButton + " " + newSVMButton)   
