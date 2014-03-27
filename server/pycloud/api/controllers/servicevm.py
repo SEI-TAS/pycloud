@@ -58,7 +58,7 @@ class ServiceVMController(BaseController):
         timelog.TimeLog.stamp("Request received: get list of Services.")
         
         # Get the list of stored service vms in the cache.
-        serviceVmCache = svmrepository.ServiceVMRepository(self.cloudlet)
+        serviceVmCache = svmrepository.ServiceVMRepository(g.cloudlet)
         vmList = serviceVmCache.getStoredServiceVMList()
 
         # Create an item list with the info to display.
@@ -88,7 +88,7 @@ class ServiceVMController(BaseController):
         print '\n*************************************************************************************************'
         timelog.TimeLog.reset()
         timelog.TimeLog.stamp("Request received: find cached Service VM.")
-        serviceVmRepo = svmrepository.ServiceVMRepository(self.cloudlet)
+        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
         vmEntry = serviceVmRepo.findServiceVM(serviceId)
         if(vmEntry != None):
             vmFound = True
