@@ -12,10 +12,15 @@ def make_map():
     connect = mapper.connect
 
     # Note that all of this are relative to the base path, /manager.    
-    
+
+
+    connect('home', '/home', controller='home', action='index')
     connect('services', '/services', controller='services', action='index')
-    
     connect('servicevms', '/servicevms', controller='servicevms', action='index')
+    connect('servicevms_vnc', '/servicevms/openvnc/{id}', controller='servicevms', action='openvnc')
+    connect('/{controller}/{action}/{id}')
+
+    connect('modify', '/modify', controller='modify', action='index')
 
     #Example
     # connect('/', coontroller='cloudlet', action='home')

@@ -1,0 +1,13 @@
+<%inherit file="base.html"/>
+
+<%block name="header">
+    ${parent.header()}
+</%block>
+
+<%block name="title">
+
+</%block>
+
+<div>
+    <a class="btn btn-large btn-success" href="${h.url_for(controller='modify')}">Add Service </a>
+</div>

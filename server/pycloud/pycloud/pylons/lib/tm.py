@@ -4,7 +4,6 @@ from pylons import config
 from mako.exceptions import TemplateLookupException
 from mako import exceptions
 
-
 class TemplateManager():
 
     def __init__(self):

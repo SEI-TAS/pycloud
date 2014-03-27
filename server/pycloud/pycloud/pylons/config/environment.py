@@ -32,5 +32,7 @@ def load_environment(make_map_function, root_path, global_conf={}, app_conf={}):
         imports=[
             "from pylons import c, g, request",
             "from pylons.i18n import _, ungettext",
+            "from pycloud.pycloud.pylons.lib import helpers as h",
+            "from routes import url_for"
             ]
     )
