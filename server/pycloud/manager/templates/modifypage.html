@@ -10,10 +10,16 @@ ${parent.header()}
 
 <%block>
 
-<form class="form-signin" method="POST" action="${url_for('modify')}">
+<form class="form-service" method="POST" action="${url_for('modify')}">
 
-    <div class="form-block">
-    <h2 class="form-signin-heading">General</h2>
+
+<table style="width:1200px">
+<tr>
+
+    <!-- GENERAL -->
+
+    <td class="form-block">
+    <h2 class="form-service-heading">General</h2>
     <table style="width:600px">
 
         <tr>
@@ -46,49 +52,13 @@ ${parent.header()}
 
 
     </table>
-    </div>
-    <div class="form-block">
-        <h2 class="form-signin-heading">Requirement</h2>
-        <table style="width:600px">
-            <tr>
-                <td>
-                    Min Memory (MB):  <br>
-                    <input type="text" class="input-block-level" name="minMemory">
-                </td>
-                <td>
-                    Ideal Memory (MB):     <br>
-                    <input type="text" name="idealMem">
-                </td>
-            </tr>
-        </table>
-    </div>
+    </td>
 
-    <div class="form-block">
-        <h2 class="form-signin-heading">Stored Service VM</h2>
-        <table style="width:600px">
-            <tr>
-                <td>
-                    Stored VM Folder  <br>
-                    <input type="text" class="input-block-level" name="VMStoredFolder">
-                </td>
-                <td>
-                    Disk Image File:     <br>
-                    <input type="text" name="VMDiskImageFile">
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    State Image File:     <br>
-                    <input type="text" name="VMStateImageFile">
-                </td>
-            </tr>
+    <!-- APP -->
 
-        </table>
-    </div>
+    <td class="form-block">
 
-    <div class="form-block">
-
-        <h2 class="form-signin-heading">Cloudlet Ready App</h2>
+        <h2 class="form-service-heading">Cloudlet Ready App</h2>
         <table style="width:600px">
             <tr>
                 <td>
@@ -119,6 +89,57 @@ ${parent.header()}
                 </td>
             </tr>
         </table>
-    </div>
+    </td>
+
+</tr>
+<tr>
+
+    <!-- REQUIREMENT -->
+
+    <td class="form-block">
+        <h2 class="form-service-heading">Requirement</h2>
+        <table style="width:600px">
+            <tr>
+                <td>
+                    Min Memory (MB):  <br>
+                    <input type="text" class="input-block-level" name="minMemory">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Ideal Memory (MB):     <br>
+                    <input type="text" name="idealMem">
+                </td>
+            </tr>
+        </table>
+    </td>
+
+    <!-- STORAGE -->
+    <td class="form-block">
+        <h2 class="form-service-heading">Stored Service VM</h2>
+        <table style="width:600px">
+            <tr>
+                <td>
+                    Stored VM Folder  <br>
+                    <input type="text" class="input-block-level" name="VMStoredFolder">
+                </td>
+                <td>
+                    Disk Image File:     <br>
+                    <input type="text" name="VMDiskImageFile">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    State Image File:     <br>
+                    <input type="text" name="VMStateImageFile">
+                </td>
+            </tr>
+
+        </table>
+    </td>
+
+</tr>
+</table>
+
 </form>
 </%block>

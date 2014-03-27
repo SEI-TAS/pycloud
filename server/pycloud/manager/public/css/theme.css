@@ -34,17 +34,17 @@ body {
     -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
     box-shadow: 0 1px 2px rgba(0,0,0,.05);
 }
-.form-signin {
+.form-service {
     padding: 19px 29px 29px;
 }
-.form-signin .form-signin-heading,
-.form-signin .checkbox {
+.form-service .form-service-heading,
+.form-service .checkbox {
     margin-bottom: 10px;
 }
-.form-signin input[type="text"]{
+.form-service input[type="text"]{
     margin: 0 auto 20px;
 }
-.form-signin input[type="password"] {
+.form-service input[type="password"] {
     font-size: 16px;
     height: auto;
     margin-bottom: 15px;
