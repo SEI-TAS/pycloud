@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.*;
 import edu.cmu.sei.ams.cloudlet.Service;
 import edu.cmu.sei.ams.cloudlet.ServiceVM;
+import edu.cmu.sei.cloudlet.client.CloudletReadyApp;
 import edu.cmu.sei.cloudlet.client.CurrentCloudlet;
 import edu.cmu.sei.cloudlet.client.R;
 import edu.cmu.sei.cloudlet.client.ui.ConnectionInfoFragment;
@@ -68,7 +69,7 @@ public class ListServicesActivity extends Activity
             super(context, textViewResourceId, objects);
         }
 
-        public View getView(int position, View convertView, ViewGroup parent)
+        public View getView(int position, View convertView, final ViewGroup parent)
         {
             View v = convertView;
             if( v == null )
@@ -104,9 +105,25 @@ public class ListServicesActivity extends Activity
                 }
             });
 
+            startAppBtn.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    if (service.getServiceVM() != null)
+                    {
+                        CloudletReadyApp app = new CloudletReadyApp(service);
+                        app.start(ListServicesActivity.this);
+                    }
+                    else
+                        Toast.makeText(ListServicesActivity.this, "Unable to start app, there is no running server", Toast.LENGTH_SHORT).show();
+                }
+            });
+
             return v;
         }
     }
+
 
     private class StartStopServiceAsync extends AsyncTask<Void, Void, Boolean>
     {

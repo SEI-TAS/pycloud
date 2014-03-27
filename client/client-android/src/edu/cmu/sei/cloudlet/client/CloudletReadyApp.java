@@ -1,11 +1,14 @@
 package edu.cmu.sei.cloudlet.client;
 
+import edu.cmu.sei.ams.cloudlet.Service;
 import edu.cmu.sei.cloudlet.client.models.ServiceVMInstance;
 import edu.cmu.sei.cloudlet.client.synth.ui.VMSynthesisActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 
 /**
  * Handles starting cloudlet-ready apps.
@@ -14,6 +17,8 @@ import android.widget.Toast;
  */
 public class CloudletReadyApp
 {
+    private static XLogger log = XLoggerFactory.getXLogger(CloudletReadyApp.class);
+
     // Used for Android log debugging/
     private static final String LOG_TAG = VMSynthesisActivity.class.getName();
     
@@ -24,9 +29,9 @@ public class CloudletReadyApp
 
     // The action the activity is listening to.
     private String m_intentAction;
-    
-    // The server information we have to pass to the activity.
-    private ServiceVMInstance m_serverInfo;  
+
+    private final String addr;
+    private final int port;
     
     /////////////////////////////////////////////////////////////////////////////////////////////////
     /**
@@ -37,7 +42,19 @@ public class CloudletReadyApp
     public CloudletReadyApp(String intentActionPrefix, ServiceVMInstance serverInfo)
     {
         m_intentAction = intentActionPrefix + INTENT_ACTION_START_SUFFIX;
-        m_serverInfo = serverInfo;
+        addr = serverInfo.getIpAddress();
+        port = serverInfo.getPort();
+    }
+
+    public CloudletReadyApp(Service service)
+    {
+        m_intentAction = service.getServiceId() + INTENT_ACTION_START_SUFFIX;
+        addr = service.getServiceVM().getAddress().getHostAddress();
+        port = service.getServiceVM().getPort();
+
+        log.info("Creating app: " + m_intentAction);
+        log.info("Address: " + addr);
+        log.info("Port: " + port);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////    
@@ -51,10 +68,8 @@ public class CloudletReadyApp
         Intent appIntent = new Intent();
         appIntent.setAction(m_intentAction);
         appIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        appIntent.putExtra(INTENT_EXTRA_APP_SERVER_IP_ADDRESS,
-                            m_serverInfo.getIpAddress());
-        appIntent.putExtra(INTENT_EXTRA_APP_SERVER_PORT,
-                            m_serverInfo.getPort());
+        appIntent.putExtra(INTENT_EXTRA_APP_SERVER_IP_ADDRESS, addr);
+        appIntent.putExtra(INTENT_EXTRA_APP_SERVER_PORT, port);
 
         // Start the new cloudlet-ready activity.
         try
