@@ -52,7 +52,7 @@ class RunningVM(object):
     # Port where SSH server is running inside the VM.
     SSH_GUEST_PORT = 22
     
-    # A client used to connect through SSH to the instance.
+    # A client used to connect through SSH to the VM.
     sshClient = None
 
     # The external port in the host which will be mapped to the internal SSH server port.
@@ -69,7 +69,7 @@ class RunningVM(object):
     # Sets up internal values of the VM.
     ################################################################################################################        
     def __init__(self, id=None, prefix=None, diskImageFile=None):
-        # Set a unique id for this VM instance.
+        # Set a unique id for this VM.
         self.id = id
         if(self.id == None):
             self.id = RunningVM.generateRandomId()
@@ -200,7 +200,7 @@ class RunningVM(object):
         
         # Since this method does not return a pointer to the VM, we get it from another API function.
         try:
-            self.connectToRunningInstance()
+            self.connectToRunningVM()
         except VirtualMachineException:
             # Something really weird happened, as we just started this VM, and no exceptions were thrown when starting it.
             raise VirtualMachineException('Could not connect to newly resumed VM with id %d. Descriptor: %s' % (self.id, updatedXmlDescriptor))
@@ -212,13 +212,13 @@ class RunningVM(object):
     ################################################################################################################
     # Finds a running VM with our id and loads that VM in our object.
     ################################################################################################################  
-    def connectToRunningInstance(self):
+    def connectToRunningVM(self):
         try:
             self.virtualMachine = self.hypervisor.lookupByUUIDString(self.id)
         except Exception as e:
-            # This means the instance could not be found.
-            print 'Error connecting to running instance: ' + str(e)
-            raise VirtualMachineException('Instance %s could not be found by hypervisor.' % str(self.id))
+            # This means the VM could not be found.
+            print 'Error connecting to running VM: ' + str(e)
+            raise VirtualMachineException('Running VM %s could not be found by hypervisor.' % str(self.id))
             
     ################################################################################################################
     # Updates a given XML descriptor string with this VM's information, and stores it internally.
