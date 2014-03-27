@@ -83,7 +83,7 @@ class AppPushController(BaseController):
         # Find a folder with a name matching the app and return the .apk inside.
         app_file_path = ''
         print "Got app name " + appName 
-        path = os.path.dirname(os.path.abspath(self.APPS_FOLDER))
+        path = os.path.dirname(os.path.abspath(self.cloudlet.appFolder))
         for root, dirs, files in os.walk(path):  # @UnusedVariable
             # Loop over all subfolders, to find the one for this app.
             for subdirname in dirs:
@@ -110,7 +110,7 @@ class AppPushController(BaseController):
 
         # Check if we found the app or not.
         appFound = app_file_path != ''
-        if(appFound):
+        if(not appFound):
             responseText = 'NOT OK'
             return responseText
         else:
