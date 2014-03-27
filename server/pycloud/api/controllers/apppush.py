@@ -27,6 +27,8 @@ log = logging.getLogger(__name__)
 ################################################################################################################
 class AppPushController(BaseController):
 
+    JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})    
+
     ################################################################################################################
     # Called to get a list of apps available at the server.
     ################################################################################################################
@@ -73,7 +75,7 @@ class AppPushController(BaseController):
         if(appName is None):
             # If we didnt get a valid one, just return an error message.
             print "No app name to be retrieved was received."
-            responseText = 'NOT OK'
+            responseText = self.JSON_NOT_OK
             return responseText
         
         print '\n*************************************************************************************************'    
@@ -111,7 +113,7 @@ class AppPushController(BaseController):
         # Check if we found the app or not.
         appFound = app_file_path != ''
         if(not appFound):
-            responseText = 'NOT OK'
+            responseText = self.JSON_NOT_OK
             return responseText
         else:
             # Create a FileApp to return the APK to download. This app will do the actually return execution; 
