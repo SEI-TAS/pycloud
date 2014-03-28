@@ -11,9 +11,8 @@ def make_map():
     mapper = Mapper()
     connect = mapper.connect
 
-    # Note that all of this are relative to the base path, /manager.    
-
-
+    # Note that all of this are relative to the base path, /manager. 
+    connect('root', '/', controller='services', action='index')    
     connect('home', '/home', controller='home', action='index')
     connect('services', '/services', controller='services', action='index')
     connect('servicevms', '/servicevms', controller='servicevms', action='index')
