@@ -38,12 +38,14 @@ class ServicesController(BaseController):
                        'name':storedVM.name,
                        'service_internal_port':storedVM.metadata.servicePort,
                        'stored_service_vm_folder':storedVM.folder,
-                       'service_vm_instances':'Start'}
+                       'service_vm_instances':'SVM',
+                       'actions':'Action'}
             gridItems.append(newItem)
 
         # Create and fomat the grid.
-    	servicesGrid = Grid(gridItems, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances'])
-        servicesGrid.column_formats["service_vm_instances"] = generate_start_button        
+    	servicesGrid = Grid(gridItems, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances', 'actions'])
+        servicesGrid.column_formats["service_vm_instances"] = generateSVMButtons
+        servicesGrid.column_formats["actions"] = generateActionButtons
         
         # Pass the grid and render the page.
         servicesPage = ServicesPage()
@@ -51,16 +53,32 @@ class ServicesController(BaseController):
         return servicesPage.render()
 
 ############################################################################################################
-# Helper function to generate a button to start a Service VM for a Service through Ajax.
+# Helper function to generate buttons to see the list of SVMs and to start a new instace.
 ############################################################################################################        
-def generate_start_button(col_num, i, item):
+def generateSVMButtons(col_num, i, item):
     # TODO: we will need a centralized way of getting API URLs.
-    startUrl = '/api/servicevm/start?serviceId=' + item["service_id"]
+    startInstanceUrl = '/api/servicevm/start?serviceId=' + item["service_id"]
     
     # After starting the SVM, we will redirect to the Service VM list page.
-    redirectUrl = h.url_for(controller='servicevms')
+    svmListURL = h.url_for(controller='servicevms')
     
-    # Render the button with the Ajax code to start the SVM.
-    linkToSVMButton = HTML.button("View Instances", onclick=h.literal("window.location.href = '" + redirectUrl + "';"), class_="btn btn-primary btn")
-    newSVMButton = HTML.button("New Instance", onclick=h.literal("startSVM('"+ startUrl +"', '"+ redirectUrl +"')"), class_="btn btn-primary btn")
-    return HTML.td(linkToSVMButton + " " + newSVMButton)   
+    # Create a button to the list of service VMs, and another to start a new instance.
+    linkToSVMButton = HTML.button("View Instances", onclick=h.literal("window.location.href = '" + svmListURL + "';"), class_="btn btn-primary btn")
+    newSVMButton = HTML.button("New Instance", onclick=h.literal("startSVM('"+ startInstanceUrl +"', '"+ svmListURL +"')"), class_="btn btn-primary btn")
+
+    # Render the buttons.
+    return HTML.td(linkToSVMButton + " " + newSVMButton)
+    
+############################################################################################################
+# Helper function to generate buttons to edit or delete services.
+############################################################################################################        
+def generateActionButtons(col_num, i, item):
+    # Link to edit the service.
+    editServiceURL = h.url_for(controller='modify')
+
+    # Create a button to edit and a button to remove a service.
+    editButton = HTML.button("Edit Service", onclick=h.literal("window.location.href = '" + editServiceURL + "&serviceId= " + item["service_id"] + "';"), class_="btn btn-primary btn")
+    removeButton = HTML.button("Remove Service", onclick="#", class_="btn btn-primary btn")
+    
+    # Render the buttons.
+    return HTML.td(editButton + " " + removeButton  )       
