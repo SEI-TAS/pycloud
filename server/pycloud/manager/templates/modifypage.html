@@ -10,136 +10,137 @@ ${parent.header()}
 
 <%block>
 
-<form class="form-service" method="POST" action="${url_for('modify')}">
 
-
-<table style="width:1200px">
-<tr>
+<form class="form-service" method="POST" action="${url_for('modify')}" role="form">
 
     <!-- GENERAL -->
+    <div class="panel panel-primary col-sm-6">
+        <div class="panel-heading"> General </div>
+        <div class="panel-body">
+            <div class="form-group col-sm-12">
 
-    <td class="form-block">
-    <h2 class="form-service-heading">General</h2>
-    <table style="width:600px">
+                <label for="serviceID"> Service ID </label>
+                <input type="text" class="form-control" name="serviceID" id="serviceID">
 
-        <tr>
-            <td>
-                Service ID:  <br>
-                <input type="text" class="input-block-level" name="serviceID">
-            </td>
-            <td>
-                Version:     <br>
-                <input type="text" name="serviceVersion">
-            </td>
-        </tr>
+            </div>
+            <div class="form-group col-sm-12">
 
-        <tr>
-            <td>
-                Description: <br>
-                <input type="text" name="serviceDescription">
-            </td>
-            <td>
-                Tags:        <br>
-                <input type="text" name="serviceTags">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Port:        <br>
-                <input type="text" name="servicePort">
-            </td>
-        </tr>
+            <label for="serviceVersion"> Version </label>
+                <input type="text" class="form-control" name="serviceVersion" id="serviceVersion">
 
+            </div>
+            <div class="form-group col-sm-12">
 
-    </table>
-    </td>
+            <label for="serviceDescription"> Description </label>
+                <input type="text" class="form-control" name="serviceDescription" id="serviceDescription">
+
+            </div>
+            <div class="form-group col-sm-12">
+
+            <label for="serviceTags"> Tags  </label>
+                <input type="text" class="form-control" name="serviceTags" id="serviceTags">
+
+            </div>
+            <div class="form-group col-sm-12">
+
+            <label for="servicePort"> Port </label>
+                <input type="text" class="form-control" name="servicePort" id="servicePort">
+
+            </div>
+        </div>
+    </div>
 
     <!-- APP -->
+    <div class="panel panel-primary col-sm-6">
+        <div class="panel-heading"> Cloudlet Ready App </div>
+        <div class="panel-body">
+            <div class="form-group col-sm-12">
 
-    <td class="form-block">
+                <label for="appName"> Name </label>
+                <input type="text" class="form-control" name="appName" id="appName">
 
-        <h2 class="form-service-heading">Cloudlet Ready App</h2>
-        <table style="width:600px">
-            <tr>
-                <td>
-                    Name  <br>
-                    <input type="text" class="input-block-level" name="appName"><br>
-                </td>
-                <td>
-                    Description:     <br>
-                    <input type="text" name="appDescription">
-                </td>
-            </tr>
+            </div>
+            <div class="form-group col-sm-12">
 
-            <tr>
-                <td>
-                    Version:     <br>
-                    <input type="text" name="appVersion"><br>
-                </td>
-                <td>
-                    Package:     <br>
-                    <input type="text" name="appPackage">
-                </td>
-            </tr>
+            <label for="appDescription"> Description </label>
+                <input type="text" class="form-control" name="appDescription" id="appDescription">
 
-            <tr>
-                <td>
-                    Filename:     <br>
-                    <input type="text" name="appFilename">
-                </td>
-            </tr>
-        </table>
-    </td>
+            </div>
+            <div class="form-group col-sm-12">
 
-</tr>
-<tr>
+            <label for="appVersion"> Version </label>
+                <input type="text" class="form-control" name="appVersion" id="appVersion">
 
-    <!-- REQUIREMENT -->
+            </div>
+            <div class="form-group col-sm-12">
 
-    <td class="form-block">
-        <h2 class="form-service-heading">Requirement</h2>
-        <table style="width:600px">
-            <tr>
-                <td>
-                    Min Memory (MB):  <br>
-                    <input type="text" class="input-block-level" name="minMemory">
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    Ideal Memory (MB):     <br>
-                    <input type="text" name="idealMem">
-                </td>
-            </tr>
-        </table>
-    </td>
+            <label for="appPackage"> Package </label>
+                <input type="text" class="form-control" name="appPackage" id="appPackage">
+
+            </div>
+            <div class="form-group col-sm-12">
+
+            <label for="appFilename"> Filename </label>
+                <input type="text" class="form-control" name="appFilename" id="appFilename">
+
+            </div>
+        </div>
+    </div>
 
     <!-- STORAGE -->
-    <td class="form-block">
-        <h2 class="form-service-heading">Stored Service VM</h2>
-        <table style="width:600px">
-            <tr>
-                <td>
-                    Stored VM Folder  <br>
-                    <input type="text" class="input-block-level" name="VMStoredFolder">
-                </td>
-                <td>
-                    Disk Image File:     <br>
-                    <input type="text" name="VMDiskImageFile">
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    State Image File:     <br>
-                    <input type="text" name="VMStateImageFile">
-                </td>
-            </tr>
+    <div class="panel panel-primary col-sm-6">
+        <div class="panel-heading"> Stored Service VM </div>
+        <div class="panel-body">
+            <div class="form-group col-sm-12">
 
-        </table>
-    </td>
+                <label for="vmStoredFolder"> Stored VM Folder </label>
+                <input type="text" class="form-control" name="vmStoredFolder" id="vmStoredFolder">
 
-</tr>
-</table>
+            </div>
+            <div class="form-group col-sm-12">
+
+            <label for="vmDiskImageFile"> Disk Image File </label>
+                <input type="text" class="form-control" name="vmDiskImageFile" id="vmDiskImageFile">
+
+            </div>
+            <div class="form-group col-sm-12">
+
+                <label for="vmStateImageFile"> State Image File </label>
+                <input type="text" class="form-control" name="vmStateImageFile" id="vmStateImageFile">
+
+            </div>
+        </div>
+    </div>
+
+    <!-- REQUIREMENT -->
+    <div class="panel panel-primary col-sm-6">
+        <div class="panel-heading"> Requirement </div>
+        <div class="panel-body">
+            <div class="form-group col-sm-12">
+
+                <label for="reqMinMem"> Min Memory (MB) </label>
+                <input type="text" class="form-control" name="reqMinMem" id="reqMinMem">
+
+            </div>
+            <div class="form-group col-sm-12">
+
+                <label for="reqIdealMem"> Ideal Memory (MB) </label>
+                <input type="text" class="form-control" name="reqIdealMem" id="reqIdealMem">
+            </div>
+
+        </div>
+    </div>
+
+    <div class="panel panel-primary col-sm-12">
+        <div class="panel-body">
+            <div class="form-group col-sm-12">
+                <button type="reset"  class="btn btn-default btn-primary col-sm-offset-1 col-sm-4" name="cancelButton" id="cancelButton">Cancel</button>
+                <button type="submit" class="btn btn-default btn-primary col-sm-offset-2 col-sm-4" name="submitButton" id="submitButton">Submit</button>
+            </div>
+        </div>
+    </div>
 
 </form>
+
+
 </%block>

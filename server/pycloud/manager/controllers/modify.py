@@ -22,5 +22,28 @@ class ModifyController(BaseController):
         return ModifyPage().render()
 
     def POST_index(self):
-        print request.params.get("name")
+        # Service
+        serviceID           = request.params.get("serviceID")
+        serviceVersion      = request.params.get("serviceVersion")
+        serviceDescription  = request.params.get("serviceDescription")
+        serviceTags         = request.params.get("serviceTags")
+        servicePort         = request.params.get("servicePort")
+
+        # App
+        appName             = request.params.get("appName")
+        appDescription      = request.params.get("appDescription")
+        appVersion          = request.params.get("appVersion")
+        appPackage          = request.params.get("appPackage")
+        appFilename         = request.params.get("appFilename")
+
+        # VM
+        vmStoredFolder      = request.params.get("vmStoredFolder")
+        vmDiskImageFile     = request.params.get("vmDiskImageFile")
+        vmStateImageFile    = request.params.get("vmStateImageFile")
+
+        # Requirements
+        reqMinMem           = request.params.get("reqMinMem")
+        reqIdealMem         = request.params.get("reqIdealMem")
+
+        print serviceID + ": " + serviceDescription + ": " + reqMinMem
         return ModifyPage().render()

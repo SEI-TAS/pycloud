@@ -49,3 +49,8 @@ body {
     height: auto;
     margin-bottom: 15px;
 }
+
+.panel-heading {
+    margin: 10px;
+    border-radius: 8px;
+}
