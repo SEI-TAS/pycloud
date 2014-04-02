@@ -9,7 +9,6 @@ from webhelpers.html.grid import Grid
 from webhelpers.html import HTML
 
 from pycloud.pycloud.pylons.lib.base import BaseController
-from pycloud.pycloud.servicevm import svmrepository
 from pycloud.manager.lib.pages import ServiceVMsPage
 from pycloud.pycloud.pylons.lib import helpers as h
 
