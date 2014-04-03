@@ -1,4 +1,5 @@
 import logging
+import json
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
@@ -19,10 +20,19 @@ log = logging.getLogger(__name__)
 ################################################################################################################
 class ServicesController(BaseController):
 
+    JSON_OK = json.dumps({"STATUS" : "OK" })
+    JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})   
+
+    ############################################################################################################
+    # Entry point.
+    ############################################################################################################
+    def GET_index(self):
+        return self.GET_listServices()
+
     ############################################################################################################
     # Shows the list of cached Services.
     ############################################################################################################
-    def GET_index(self):
+    def GET_listServices(self):
         # Mark the active tab.
         c.services_active = 'active'
     
@@ -51,6 +61,17 @@ class ServicesController(BaseController):
         servicesPage = ServicesPage()
         servicesPage.servicesGrid = servicesGrid
         return servicesPage.render()
+        
+    ############################################################################################################
+    # Shows the list of cached Services.
+    ############################################################################################################        
+    def GET_removeService(self, id):
+        # Remove the stored service VM from the repository.
+        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
+        serviceVmRepo.deleteStoredVM(id)  
+        
+        # Everything went well.
+        return self.JSON_OK        
 
 ############################################################################################################
 # Helper function to generate buttons to see the list of SVMs and to start a new instace.
@@ -75,10 +96,13 @@ def generateSVMButtons(col_num, i, item):
 def generateActionButtons(col_num, i, item):
     # Link to edit the service.
     editServiceURL = h.url_for(controller='modify')
+    
+    # Ajax URL to remove the service.
+    removeServiceURL = h.url_for(controller='services', action='removeService', id=item["service_id"])
 
     # Create a button to edit and a button to remove a service.
     editButton = HTML.button("Edit Service", onclick=h.literal("window.location.href = '" + editServiceURL + "&serviceId= " + item["service_id"] + "';"), class_="btn btn-primary btn")
-    removeButton = HTML.button("Remove Service", onclick="#", class_="btn btn-primary btn")
+    removeButton = HTML.button("Remove Service", onclick="removeServiceConfirmation('" + removeServiceURL + "');", class_="btn btn-primary btn")
     
     # Render the buttons.
     return HTML.td(editButton + " " + removeButton  )       

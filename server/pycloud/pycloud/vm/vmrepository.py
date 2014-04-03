@@ -61,7 +61,7 @@ class VMRepository(object):
                 # Add the id and name to the list.
                 vmList[vmId] = storedVM                
             except storedvm.StoredVMException as ex:
-                print 'Ignoring invalid Stored VM folder: %s' % vmId
+                print 'Ignoring invalid Stored VM folder: %s (%s)' % (vmId, ex.message)
         
         # Return the dictionary
         return vmList

@@ -9,6 +9,7 @@ from pycloud.pycloud.utils import config
 
 # To get info about existing VMs.
 from pycloud.pycloud.vm import vmrepository
+from pycloud.pycloud.vm import storedvm
 
 # To get info about existing VMs (from this same package).
 import storedservicevm
@@ -63,7 +64,7 @@ class ServiceVMRepository(vmrepository.VMRepository):
                 # Add the id and name to the list.
                 vmList[vmId] = storedSVM                
             except storedvm.StoredVMException as ex:
-                print 'Ignoring invalid Stored SVM folder: %s' % vmId
+                print 'Ignoring invalid Stored SVM folder: %s (%s)' % (vmId, ex.message)
         
         # Return the dictionary
         return vmList        
@@ -80,4 +81,4 @@ class ServiceVMRepository(vmrepository.VMRepository):
         storedVM = storedservicevm.StoredServiceVM(vmId)
         vmFolder = self.getStoredVMFolder(vmId)
         storedVM.loadFromFolder(vmFolder)
-        return storedVM    
+        return storedVM
