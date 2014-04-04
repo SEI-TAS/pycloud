@@ -56,7 +56,7 @@ class ServiceVMsController(BaseController):
         return svmPage.render()
         
     ############################################################################################################
-    # Opens a VNC window.
+    # Opens a VNC window to a running Service VM Instance.
     ############################################################################################################
     def GET_openvnc(self, id):
         # Get a list of running ServiceVM instances.
