@@ -14,24 +14,6 @@ function WaitDialog (headerText) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
-// Creates a modal dialog to ask for confirmation.
-/////////////////////////////////////////////////////////////////////////////////////
-function ConfirmDialog(objectToDelete) {
-    var confirmDialogDiv = $('<div class="modal fade" id="modal-confirm-deletion" role="dialog"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">x</button><h3>Deletion Confirmation</h3></div><div class="modal-body"><p>Are you sure you want to delete <strong>'+objectToDelete+'</strong>?</p></div><div class="modal-footer"><a href="#" class="btn cancel-action" data-dismiss="modal">Close</a><a href="#" class="btn btn-danger confirm-action">Delete</a></div></div></div></div>');
-    
-    var result = false;
-    $('.confirm-action').click(function() {$('#.modal-confirm-deletion').modal('hide');});
-    return {
-        show: function() {
-            confirmDialogDiv.modal();
-        },
-        hide: function () {
-            confirmDialogDiv.modal('hide');
-        },
-    };    
-}
-
-/////////////////////////////////////////////////////////////////////////////////////
 // Creates a notification to inform the user of an event.
 /////////////////////////////////////////////////////////////////////////////////////
 function notify(level, message) {

@@ -50,6 +50,10 @@ class ServiceVMInstanceManager(object):
         print 'Attempting to clean up instances in instance folder...'
         rootInstancesFolder = self.cloudletConfig.svmInstancesFolder
         
+        # Create the cache folder if it does not exist.
+        if(not os.path.exists(rootInstancesFolder)):
+            os.makedirs(rootInstancesFolder)        
+        
         # Loop over the folders, finding valid instances.
         instancesFolderList = os.listdir(rootInstancesFolder)
         for currentFolder in instancesFolderList:
