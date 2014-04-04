@@ -9,6 +9,7 @@ import java.util.Map;
  * User: jdroot
  * Date: 3/24/14
  * Time: 2:50 PM
+ * Parent class for all Cloudlet commands. It facilitates URL args and file uploads
  */
 public abstract class CloudletCommand
 {

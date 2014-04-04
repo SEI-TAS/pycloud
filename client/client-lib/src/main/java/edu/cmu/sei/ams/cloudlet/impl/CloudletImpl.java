@@ -1,7 +1,7 @@
 package edu.cmu.sei.ams.cloudlet.impl;
 
 import edu.cmu.sei.ams.cloudlet.Cloudlet;
-import edu.cmu.sei.ams.cloudlet.CloudletError;
+import edu.cmu.sei.ams.cloudlet.CloudletException;
 import edu.cmu.sei.ams.cloudlet.Service;
 import edu.cmu.sei.ams.cloudlet.impl.cmds.GetServicesCommand;
 import org.apache.http.HttpResponse;
@@ -27,6 +27,7 @@ import java.util.List;
  * User: jdroot
  * Date: 3/19/14
  * Time: 4:05 PM
+ * CloudletImpl handles both the cloudlet metadata issuing commands to the cloudlet
  */
 public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
 {
@@ -43,26 +44,38 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
         this.port = port;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName()
     {
         return name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public InetAddress getAddress()
     {
         return addr;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getPort()
     {
         return port;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public List<Service> getServices() throws Exception
+    public List<Service> getServices() throws CloudletException
     {
         log.entry();
 
@@ -70,21 +83,31 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
 
         List<Service> ret = new ArrayList<Service>();
 
-        JSONObject obj = new JSONObject(result);
-        JSONArray services = obj.getJSONArray("services");
-        for (int x = 0; x < services.length(); x++)
+        try
         {
-            JSONObject service = services.getJSONObject(x);
-            ret.add(new ServiceImpl(this, service));
+            JSONObject obj = new JSONObject(result);
+            JSONArray services = obj.getJSONArray("services");
+            for (int x = 0; x < services.length(); x++)
+            {
+                JSONObject service = services.getJSONObject(x);
+                ret.add(new ServiceImpl(this, service));
+            }
+        }
+        catch (Exception e)
+        {
+            log.error("Error getting services array from response!", e);
         }
 
         log.exit(ret);
         return ret;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @SuppressWarnings("deprecation")
-    public String executeCommand(edu.cmu.sei.ams.cloudlet.impl.cmds.CloudletCommand cmd) throws CloudletError
+    public String executeCommand(edu.cmu.sei.ams.cloudlet.impl.cmds.CloudletCommand cmd) throws CloudletException
     {
         log.entry(cmd.getMethod(), cmd.getPath());
 
@@ -140,19 +163,19 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
             log.info("Response object: " + response.getStatusLine().getReasonPhrase());
 
             if (code != 200)
-                throw new CloudletError(response.getStatusLine() + (responseText == null ? "" : ":\n" + responseText));
+                throw new CloudletException(response.getStatusLine() + (responseText == null ? "" : ":\n" + responseText));
 
             log.exit(responseText);
             return responseText;
         }
-        catch (CloudletError e)
+        catch (CloudletException e)
         {
             throw e; //Just pass it on
         }
         catch (Exception e)
         {
             log.error("Error connecting to server!", e);
-            throw new CloudletError("Error sending command to server!", e);
+            throw new CloudletException("Error sending command to server!", e);
         }
         finally
         {

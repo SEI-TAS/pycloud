@@ -8,6 +8,7 @@ import java.net.InetAddress;
  * User: jdroot
  * Date: 3/21/14
  * Time: 10:04 AM
+ * A collection of utilities for parsing JSON strings without throwing exceptions
  */
 public class CloudletUtilities
 {
