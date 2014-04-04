@@ -1,3 +1,5 @@
+<%namespace file="form.html" import="text"/>
+
 <%inherit file="base.html"/>
 
 <%block name="header">
@@ -10,43 +12,19 @@ ${parent.header()}
 
 <%block>
 
-
 <form class="form-service" method="POST" action="${url_for('modify')}" role="form">
 
     <!-- GENERAL -->
     <div class="panel panel-primary col-sm-6">
         <div class="panel-heading"> General </div>
         <div class="panel-body">
-            <div class="form-group col-sm-12">
 
-                <label for="serviceID"> Service ID </label>
-                <input type="text" class="form-control" name="serviceID" id="serviceID">
+            ${text('serviceID', input_width=12, label=_('Service ID'))}
+            ${text('serviceVersion', input_width=12, label=_('Service Version'))}
+            ${text('serviceDescription', input_width=12, label=_('Description'))}
+            ${text('serviceTags', input_width=12, label=_('Tags'))}
+            ${text('servicePort', input_width=12, label=_('Port'))}
 
-            </div>
-            <div class="form-group col-sm-12">
-
-            <label for="serviceVersion"> Version </label>
-                <input type="text" class="form-control" name="serviceVersion" id="serviceVersion">
-
-            </div>
-            <div class="form-group col-sm-12">
-
-            <label for="serviceDescription"> Description </label>
-                <input type="text" class="form-control" name="serviceDescription" id="serviceDescription">
-
-            </div>
-            <div class="form-group col-sm-12">
-
-            <label for="serviceTags"> Tags  </label>
-                <input type="text" class="form-control" name="serviceTags" id="serviceTags">
-
-            </div>
-            <div class="form-group col-sm-12">
-
-            <label for="servicePort"> Port </label>
-                <input type="text" class="form-control" name="servicePort" id="servicePort">
-
-            </div>
         </div>
     </div>
 
@@ -54,36 +32,13 @@ ${parent.header()}
     <div class="panel panel-primary col-sm-6">
         <div class="panel-heading"> Cloudlet Ready App </div>
         <div class="panel-body">
-            <div class="form-group col-sm-12">
 
-                <label for="appName"> Name </label>
-                <input type="text" class="form-control" name="appName" id="appName">
+            ${text('appName', input_width=12, label=_('Name'))}
+            ${text('appDescription', input_width=12, label=_('Description'))}
+            ${text('appVersion', input_width=12, label=_('Version'))}
+            ${text('appPackage', input_width=12, label=_('Package'))}
+            ${text('appFilename', input_width=12, label=_('Filename'))}
 
-            </div>
-            <div class="form-group col-sm-12">
-
-            <label for="appDescription"> Description </label>
-                <input type="text" class="form-control" name="appDescription" id="appDescription">
-
-            </div>
-            <div class="form-group col-sm-12">
-
-            <label for="appVersion"> Version </label>
-                <input type="text" class="form-control" name="appVersion" id="appVersion">
-
-            </div>
-            <div class="form-group col-sm-12">
-
-            <label for="appPackage"> Package </label>
-                <input type="text" class="form-control" name="appPackage" id="appPackage">
-
-            </div>
-            <div class="form-group col-sm-12">
-
-            <label for="appFilename"> Filename </label>
-                <input type="text" class="form-control" name="appFilename" id="appFilename">
-
-            </div>
         </div>
     </div>
 
@@ -91,24 +46,11 @@ ${parent.header()}
     <div class="panel panel-primary col-sm-6">
         <div class="panel-heading"> Stored Service VM </div>
         <div class="panel-body">
-            <div class="form-group col-sm-12">
 
-                <label for="vmStoredFolder"> Stored VM Folder </label>
-                <input type="text" class="form-control" name="vmStoredFolder" id="vmStoredFolder">
+            ${text('vmStoredFolder', input_width=12, label=_('Stored VM Folder'))}
+            ${text('vmDiskImageFile', input_width=12, label=_('Disk Image File'))}
+            ${text('vmStateImageFile', input_width=12, label=_('State Image File'))}
 
-            </div>
-            <div class="form-group col-sm-12">
-
-            <label for="vmDiskImageFile"> Disk Image File </label>
-                <input type="text" class="form-control" name="vmDiskImageFile" id="vmDiskImageFile">
-
-            </div>
-            <div class="form-group col-sm-12">
-
-                <label for="vmStateImageFile"> State Image File </label>
-                <input type="text" class="form-control" name="vmStateImageFile" id="vmStateImageFile">
-
-            </div>
         </div>
     </div>
 
@@ -116,17 +58,9 @@ ${parent.header()}
     <div class="panel panel-primary col-sm-6">
         <div class="panel-heading"> Requirement </div>
         <div class="panel-body">
-            <div class="form-group col-sm-12">
 
-                <label for="reqMinMem"> Min Memory (MB) </label>
-                <input type="text" class="form-control" name="reqMinMem" id="reqMinMem">
-
-            </div>
-            <div class="form-group col-sm-12">
-
-                <label for="reqIdealMem"> Ideal Memory (MB) </label>
-                <input type="text" class="form-control" name="reqIdealMem" id="reqIdealMem">
-            </div>
+            ${text('reqMinMem', input_width=12, label=_('Min Memory (MB)'))}
+            ${text('reqIdealMem', input_width=12, label=_('Ideal Memory (MB)'))}
 
         </div>
     </div>

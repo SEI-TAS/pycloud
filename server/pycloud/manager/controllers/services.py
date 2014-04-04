@@ -79,6 +79,6 @@ def generateActionButtons(col_num, i, item):
     # Create a button to edit and a button to remove a service.
     editButton = HTML.button("Edit Service", onclick=h.literal("window.location.href = '" + editServiceURL + "&serviceId= " + item["service_id"] + "';"), class_="btn btn-primary btn")
     removeButton = HTML.button("Remove Service", onclick="#", class_="btn btn-primary btn")
-    
+
     # Render the buttons.
-    return HTML.td(editButton + " " + removeButton  )       
+    return HTML.td(editButton + " " + removeButton)
