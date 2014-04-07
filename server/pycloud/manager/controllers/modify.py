@@ -1,4 +1,5 @@
 import logging
+import os
 
 from pycloud.pycloud.servicevm import svmrepository
 from pycloud.manager.lib.pages import ServiceVMsPage
@@ -12,36 +13,42 @@ from pycloud.manager.lib.pages import ModifyPage
 
 log = logging.getLogger(__name__)
 
-
 ################################################################################################################
 # Controller for the Modify page.
 ################################################################################################################
 class ModifyController(BaseController):
 
+    ################################################################################################################ 
+    #
+    ################################################################################################################ 
     def GET_index(self):
         # Mark the active tab.
         c.services_active = 'active'
 
         # Get the data fields.
-        serviceID = request.params.get("serviceId")
+        serviceID = request.params.get("serviceId").strip()
         serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
         storedServiceVM = serviceVmRepo.findServiceVM(serviceID)
 
+        # Setup the page to render.
         page = ModifyPage()
         page.form_values = {}
         page.form_errors = {}
 
-        # Set the data fields
+        # Set the data fields.
         page.form_values['serviceID'] = serviceID
-        if (not storedServiceVM is None):
-            page.form_values['vmStoredFolder'] = storedServiceVM.metadataFilePath
-            page.form_values['vmStoredFolder'] = storedServiceVM.diskImageFilePath
+        if (storedServiceVM is not None):
+            page.form_values['vmStoredFolder'] = os.path.dirname(storedServiceVM.diskImageFilePath)
+            page.form_values['vmDiskImageFile'] = storedServiceVM.diskImageFilePath
             page.form_values['vmStateImageFile'] = storedServiceVM.vmStateImageFilepath
 
 
         # Render the page with the grid.
         return page.render()
 
+    ################################################################################################################ 
+    #
+    ################################################################################################################         
     def POST_index(self):
         # Service
         serviceID           = request.params.get("serviceID")

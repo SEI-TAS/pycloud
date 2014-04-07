@@ -1,10 +1,10 @@
-<%def name="text(id, label=None, label_width=6, input_width=6, error_width=6, input_type='text')">
+<%def name="text(id, label=None, label_width=6, input_width=6, error_width=6, input_type='text', disabled=False)">
 <div class="form-group ${'has-error' if id in page.form_errors else ''}" id="${id}">
     % if label:
     <label for="${id}" class="col-sm-${label_width} control-label">${label}</label>
     % endif
     <div class="col-sm-${input_width}">
-        <input type="${input_type}" class="form-control" placeholder="${label}" name="${id}" id="${id}" value="${page.form_values[id] if id in page.form_values else ''}" />
+        <input type="${input_type}" class="form-control" placeholder="${label}" name="${id}" id="${id}" value="${page.form_values[id] if id in page.form_values else ''}" ${'disabled' if disabled else ''} />
     </div>
     % if id in c.form_errors:
     <div class="col-sm-${error_width}}">

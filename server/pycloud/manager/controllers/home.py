@@ -7,16 +7,16 @@ from pycloud.manager.lib.pages import HomePage
 log = logging.getLogger(__name__)
 
 ################################################################################################################
-# Controller for the Services page.
+# Controller for the main page.
 ################################################################################################################
 class HomeController(BaseController):
 
     ############################################################################################################
-    # Shows the list of cached Services.
+    # Shows the main page.  
     ############################################################################################################
     def GET_index(self):
         # Mark the active tab.
-        c.services_active = 'active'
+        c.home_active = 'active'
 
         # Render the page with the grid.
         return HomePage().render()

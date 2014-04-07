@@ -46,10 +46,9 @@ ${parent.header()}
     <div class="panel panel-primary col-sm-6">
         <div class="panel-heading"> Stored Service VM </div>
         <div class="panel-body">
-
             ${text('vmStoredFolder', input_width=12, label=_('Stored VM Folder'))}
-            ${text('vmDiskImageFile', input_width=12, label=_('Disk Image File'))}
-            ${text('vmStateImageFile', input_width=12, label=_('State Image File'))}
+            ${text('vmDiskImageFile', input_width=12, label=_('Disk Image File'), disabled=True)}
+            ${text('vmStateImageFile', input_width=12, label=_('State Image File'), disabled=True)}
 
         </div>
     </div>
