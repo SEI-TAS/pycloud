@@ -1,6 +1,10 @@
 import logging
 
+from pycloud.pycloud.servicevm import svmrepository
+from pycloud.manager.lib.pages import ServiceVMsPage
+
 from pylons import request, response, session, tmpl_context as c, url
+from pylons import g
 from pylons.templating import render_mako as render
 
 from pycloud.pycloud.pylons.lib.base import BaseController
@@ -18,8 +22,25 @@ class ModifyController(BaseController):
         # Mark the active tab.
         c.services_active = 'active'
 
+        # Get the data fields.
+        serviceID = request.params.get("serviceId")
+        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
+        storedServiceVM = serviceVmRepo.findServiceVM(serviceID)
+
+        page = ModifyPage()
+        page.form_values = {}
+        page.form_errors = {}
+
+        # Set the data fields
+        page.form_values['serviceID'] = serviceID
+        if (not storedServiceVM is None):
+            page.form_values['vmStoredFolder'] = storedServiceVM.metadataFilePath
+            page.form_values['vmStoredFolder'] = storedServiceVM.diskImageFilePath
+            page.form_values['vmStateImageFile'] = storedServiceVM.vmStateImageFilepath
+
+
         # Render the page with the grid.
-        return ModifyPage().render()
+        return page.render()
 
     def POST_index(self):
         # Service
