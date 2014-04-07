@@ -25,23 +25,24 @@ class ModifyController(BaseController):
         # Mark the active tab.
         c.services_active = 'active'
 
-        # Get the data fields.
-        serviceID = request.params.get("serviceId").strip()
-        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
-        storedServiceVM = serviceVmRepo.findServiceVM(serviceID)
-
         # Setup the page to render.
         page = ModifyPage()
         page.form_values = {}
         page.form_errors = {}
+                
+        # Get the data fields.
+        serviceID = request.params.get("serviceId")
+        if(serviceID is not None):
+            serviceID = serviceID.strip()
+            serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
+            storedServiceVM = serviceVmRepo.findServiceVM(serviceID)
 
-        # Set the data fields.
-        page.form_values['serviceID'] = serviceID
-        if (storedServiceVM is not None):
-            page.form_values['vmStoredFolder'] = os.path.dirname(storedServiceVM.diskImageFilePath)
-            page.form_values['vmDiskImageFile'] = storedServiceVM.diskImageFilePath
-            page.form_values['vmStateImageFile'] = storedServiceVM.vmStateImageFilepath
-
+            # Set the data fields.
+            page.form_values['serviceID'] = serviceID
+            if (storedServiceVM is not None):
+                page.form_values['vmStoredFolder'] = os.path.dirname(storedServiceVM.diskImageFilePath)
+                page.form_values['vmDiskImageFile'] = storedServiceVM.diskImageFilePath
+                page.form_values['vmStateImageFile'] = storedServiceVM.vmStateImageFilepath
 
         # Render the page with the grid.
         return page.render()
