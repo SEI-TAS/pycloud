@@ -19,6 +19,7 @@ from pycloud.pycloud.servicevm import svmrepository
 from pycloud.pycloud.servicevm import instancemanager
 
 from pycloud.pycloud.utils import timelog
+from pycloud.pycloud.pylons.lib.util import asjson
 
 log = logging.getLogger(__name__)
 
@@ -52,6 +53,7 @@ class ServiceVMController(BaseController):
     # Get a list of the services in the VM. In realiy, for now at least, it actually get a list of services that
     # have associated ServiceVMs in the cache.
     ################################################################################################################
+    @asjson
     def GET_listServices(self):
         print '\n*************************************************************************************************'
         timelog.TimeLog.reset()
@@ -65,18 +67,16 @@ class ServiceVMController(BaseController):
         servicesList = []
     	for storedVMId in vmList:
             storedVM = vmList[storedVMId]
-            serviceInfo = {'_id':storedVM.metadata.serviceId,
-                           'description':storedVM.name}
+            serviceInfo = {'_id': storedVM.metadata.serviceId,
+                           'description': storedVM.name}
             servicesList.append(serviceInfo)        
         
         # Create a JSON response to indicate the result.
-        jsonDataStructure = { "services" : servicesList }
-        jsonDataString = json.dumps(jsonDataStructure)
+        jsonDataStructure = {"services": servicesList}
         
         # Send the response.
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
-        responseText = jsonDataString
-        return responseText  
+        return jsonDataStructure
             
     ################################################################################################################
     # Called to check if a specific service is already provided by a cached Service VM on this server.
