@@ -62,7 +62,7 @@ class ServiceVMRepository(vmrepository.VMRepository):
 
                 # Add the id and name to the list.
                 vmList[vmId] = storedSVM                
-            except storedvm.StoredVMException as ex:
+            except storedSVM.StoredVMException as ex:
                 print 'Ignoring invalid Stored SVM folder: %s' % vmId
         
         # Return the dictionary
