@@ -5,7 +5,7 @@
 function openEditVNC(vncUrl)
 {
     // Show progress bar.
-    var dialog = WaitDialog("Starting Service VM and opening VNC Window");
+    var dialog = WaitDialog("Starting and Connecting to Service VM");
     dialog.show();
 
     // Send the ajax request to start the VNC window.
@@ -13,9 +13,11 @@ function openEditVNC(vncUrl)
       url: vncUrl,
       dataType: 'json',
       success: function( resp ) {
-        // Do nothing, as the VNC window should have opened by now.
-        console.log( 'Service VM was modified successfully.');
+        // Notify that the process was successful.
         dialog.hide();
+        var alert = Alert('success', 'Service VM was modified successfully.');
+        alert.show();
+        console.log( 'Service VM was modified successfully.');        
       },
       error: function( req, status, err ) {
         console.log( 'Something went wrong', status, err );
