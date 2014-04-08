@@ -83,6 +83,7 @@ class ServiceVMManager(object):
                                                                              showVNC=True,
                                                                              serviceHostPort=defaultMaintenanceServiceHostPort)
             serviceVM.suspendToFile()
+            print 'Service VM stored.'
             
             # Destroy the service VM.
             serviceVM.destroy()     

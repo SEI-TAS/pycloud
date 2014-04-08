@@ -19,6 +19,8 @@ def make_map():
     connect('services', '/services/removeService/{id}', controller='services', action='removeService')
     
     connect('servicevms', '/servicevms', controller='servicevms', action='index')
+    connect('servicevms_startSVM', '/servicevms/startSVM/{id}', controller='servicevms', action='startSVM')
+    connect('servicevms_stopSVM', '/servicevms/stopSVM/{id}', controller='servicevms', action='stopSVM')
     connect('servicevms_vnc', '/servicevms/openvnc/{id}', controller='servicevms', action='openvnc')
     connect('/{controller}/{action}/{id}')
 

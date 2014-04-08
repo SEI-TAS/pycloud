@@ -77,8 +77,8 @@ class ServicesController(BaseController):
 # Helper function to generate buttons to see the list of SVMs and to start a new instace.
 ############################################################################################################        
 def generateSVMButtons(col_num, i, item):
-    # TODO: we will need a centralized way of getting API URLs.
-    startInstanceUrl = '/api/servicevm/start?serviceId=' + item["service_id"]
+    # URL to start a new instance.
+    startInstanceUrl = h.url_for(controller='servicevms', action='startSVM', id=item["service_id"])
     
     # After starting the SVM, we will redirect to the Service VM list page.
     svmListURL = h.url_for(controller='servicevms')

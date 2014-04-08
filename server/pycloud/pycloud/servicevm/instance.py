@@ -10,7 +10,7 @@ import shutil
 # To handle VMs.
 from pycloud.pycloud.vm import runningvm
 
-# To create Running Service VMs (from this same package).
+# To create Service VMs (from this same package).
 import svmfactory
 import storedservicevm
 

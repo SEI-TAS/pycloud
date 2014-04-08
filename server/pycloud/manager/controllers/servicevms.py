@@ -76,6 +76,28 @@ class ServiceVMsController(BaseController):
         
         # Everything went well.
         return self.JSON_OK
+
+    ############################################################################################################
+    # Starts a new SVM instance of the Service.
+    ############################################################################################################        
+    def GET_startSVM(self, id):
+        # Use the common Instance Manager to start a new instance for the given Service ID.
+        instanceManager = g.cloudlet.instanceManager
+        instanceManager.getServiceVMInstance(serviceId=id)
+        
+        # Everything went well.
+        return self.JSON_OK        
+
+    ############################################################################################################
+    # Stops an existing instance.
+    ############################################################################################################        
+    def GET_stopSVM(self, id):
+        # Use the common Instance Manager to stop an existing instance with the given ID.
+        instanceManager = g.cloudlet.instanceManager
+        instanceManager.stopServiceVMInstance(instanceId=id)
+        
+        # Everything went well.
+        return self.JSON_OK        
         
 ############################################################################################################
 # Helper function to generate a link for the service id.
@@ -88,15 +110,15 @@ def generate_service_id_link(col_num, i, item):
 # Helper function to generate actions for the service vms (stop and vnc buttons).
 ############################################################################################################        
 def generate_action_buttons(col_num, i, item):
-    # TODO: we will need a centralized way of getting API URLs.
-    stopUrl = '/api/servicevm/stop?instanceId=' + item["instance_id"]
+    # Button to stop an instance.
+    stopUrl = h.url_for(controller='servicevms', action='stopSVM', id=item["instance_id"])
     stopButtonHtml = HTML.button("Stop", onclick=h.literal("stopSVM('"+ stopUrl +"')"), class_="btn btn-primary btn")
 
     # Button to open VNC window.
     vncUrl = h.url_for(controller='servicevms', action='openvnc', id=item["instance_id"])
     vncButtonHtml = HTML.button("Open VNC", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
 
-    modifyUrl = h.url_for(controller="modify", action='modify', id=item["instance+id"])
+    modifyUrl = h.url_for(controller="modify", action='modify', id=item["instance_id"])
     modifyButtonHtml = HTML.button("Modify", onclick=h.literal("openVNC('"+ modifyUrl +"')"), class_="btn btn-primary btn")
 
     # Render the buttons with the Ajax code to stop the SVM.    

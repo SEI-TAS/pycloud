@@ -25,8 +25,8 @@ log = logging.getLogger(__name__)
 ################################################################################################################
 class ServiceVMController(BaseController):
     
-    # Manager of running VMs.
-    runningVMManager = None
+    # Manager of service VMs instances.
+    instanceManager = None
     
     JSON_OK = json.dumps({"STATUS" : "OK" })
     JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})    
@@ -36,15 +36,15 @@ class ServiceVMController(BaseController):
     ################################################################################################################ 
     def __init__(self):
         # Create the manager for running instances.
-        self.runningVMManager = g.cloudlet.instanceManager
+        self.instanceManager = g.cloudlet.instanceManager
 
     ################################################################################################################    
     # Cleans up any open resources.
     ################################################################################################################ 
     def cleanup(self):
         # Cleanup running vms.
-        if(self.runningVMManager != None):
-            self.runningVMManager.cleanup()
+        if(self.instanceManager != None):
+            self.instanceManager.cleanup()
         
     ################################################################################################################
     # Called to start a Service VM.
@@ -79,7 +79,7 @@ class ServiceVMController(BaseController):
         hostIp = request.environ['HTTP_HOST'].split(':')[0]
 
         # Start or join a VM.
-        instanceInfo = self.runningVMManager.getServiceVMInstance(serviceId=serviceId, joinExisting=joinIfPossible)
+        instanceInfo = self.instanceManager.getServiceVMInstance(serviceId=serviceId, joinExisting=joinIfPossible)
         print "Assigned VM running with id %s on IP '%s' and port %d" % (instanceInfo.instanceId, hostIp, instanceInfo.serviceHostPort)
                 
         # Create a JSON response to indicate the IP and port of the Service VM (the IP will be the same as the hosts's as
@@ -113,7 +113,7 @@ class ServiceVMController(BaseController):
         timelog.TimeLog.stamp("Request received: stop VM with instance id " + instanceId)
         
         # Stop the Service VM.        
-        success = self.runningVMManager.stopServiceVMInstance(instanceId)
+        success = self.instanceManager.stopServiceVMInstance(instanceId)
         if(success):
             print "VM with instance id %s stopped" % instanceId
             responseText = self.JSON_OK
