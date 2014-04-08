@@ -1,14 +1,18 @@
 import logging
 import os
-
-from pycloud.pycloud.servicevm import svmrepository
-from pycloud.manager.lib.pages import ServiceVMsPage
+import json
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons import g
 from pylons.templating import render_mako as render
 
+from webhelpers.html import HTML
+
+from pycloud.pycloud.servicevm import svmrepository
+from pycloud.pycloud.servicevm import svmmanager
 from pycloud.pycloud.pylons.lib.base import BaseController
+from pycloud.pycloud.pylons.lib import helpers as h
+
 from pycloud.manager.lib.pages import ModifyPage
 
 log = logging.getLogger(__name__)
@@ -17,6 +21,9 @@ log = logging.getLogger(__name__)
 # Controller for the Modify page.
 ################################################################################################################
 class ModifyController(BaseController):
+
+    JSON_OK = json.dumps({"STATUS" : "OK" })
+    JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})
 
     ################################################################################################################ 
     #
@@ -29,6 +36,7 @@ class ModifyController(BaseController):
         page = ModifyPage()
         page.form_values = {}
         page.form_errors = {}
+        page.modifyButtonHtml = ''
                 
         # Get the data fields.
         serviceID = request.params.get("serviceId")
@@ -36,7 +44,11 @@ class ModifyController(BaseController):
             serviceID = serviceID.strip()
             serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
             storedServiceVM = serviceVmRepo.findServiceVM(serviceID)
-
+            
+            # Add link to open an SVM.
+            openSVMURL = h.url_for(controller="modify", action='openSVM', id=serviceID)
+            page.modifyButtonHtml = HTML.button("Modify SVM", onclick=h.literal("openEditVNC('"+ openSVMURL +"')"), class_="btn btn-primary btn", type="button")
+            
             # Set the data fields.
             page.form_values['serviceID'] = serviceID
             if (storedServiceVM is not None):
@@ -75,4 +87,25 @@ class ModifyController(BaseController):
         reqIdealMem         = request.params.get("reqIdealMem")
 
         print serviceID + ": " + serviceDescription + ": " + reqMinMem
-        return ModifyPage().render()
+        
+        page = ModifyPage()
+        page.form_values = {}
+        page.form_errors = {}
+        page.modifyButtonHtml = ''
+        
+        return page.render()
+
+    ############################################################################################################
+    # Opens the Service VM in a VNC window for editing.
+    # NOTE: The VNC window will only open on the computer running the server.
+    ############################################################################################################
+    def GET_openSVM(self, id):
+        # Get the manager.
+        svmManager = svmmanager.ServiceVMManager(g.cloudlet)
+        
+        # Open a VNC window to modify the VM.
+        svmManager.modifyServiceVM(id)
+        
+        # Everything went well.
+        return self.JSON_OK
+ 

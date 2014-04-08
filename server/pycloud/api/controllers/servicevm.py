@@ -51,6 +51,10 @@ class ServiceVMController(BaseController):
     # - isolated: indicates if we want to run our own Service VM (true) or if we can share an existing one ("false")
     ################################################################################################################
     def GET_start(self):
+        # Start the Service VM on a random port.
+        print '\n*************************************************************************************************'        
+        timelog.TimeLog.stamp("Request received: start VM with service id " + serviceId)
+
         # Get variables.
         serviceId = request.GET['serviceId']
         if(serviceId is None):
@@ -63,11 +67,7 @@ class ServiceVMController(BaseController):
         if(isolated is None):
             # If no value was sent, set true by default.
             isolated = "true"
-        
-        # Start the Service VM on a random port.
-        print '\n*************************************************************************************************'        
-        timelog.TimeLog.stamp("Request received: start VM with service id " + serviceId)
-        
+
         # Check if we will want to try to join an existing VM.
         joinIfPossible = False
         if(isolated == "false"):

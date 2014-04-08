@@ -9,17 +9,17 @@
 from pycloud.pycloud.vm import storedvm
 import instancemanager
 import svmrepository
-import ssvmfactory
-import runningsvmfactory
+import storedsvmfactory
+import svmfactory
 from pycloud.pycloud import cloudlet
 
 # For exceptions.
 from pycloud.pycloud.vm import vmrepository
   
 ################################################################################################################
-# Handles a ServerVM Cache.
+# Handles ServiceVMs in the local cache.
 ################################################################################################################
-class ServiceVMCacheManager(object):
+class ServiceVMManager(object):
 
     cloudletConfig = None
 
@@ -53,7 +53,7 @@ class ServiceVMCacheManager(object):
             print "Error creating Service VM: " + e.message 
             
     ################################################################################################################
-    # Creates and runs a transient copy of a stored service VM present in the cache.
+    # Creates and runs a transient copy of a stored service VM present in the cache for user interaction.
     ################################################################################################################
     def runServiceVMInstance(self, serviceId):
         try:   
@@ -79,13 +79,13 @@ class ServiceVMCacheManager(object):
             
             # Run the VM with GUI and store its state.
             defaultMaintenanceServiceHostPort = 16001
-            runningSVM = runningsvmfactory.RunningSVMFactory.createRunningVM(storedVM=storedServiceVM,
+            serviceVM = svmfactory.ServiceVMFactory.createServiceVM(storedVM=storedServiceVM,
                                                                              showVNC=True,
                                                                              serviceHostPort=defaultMaintenanceServiceHostPort)
-            runningSVM.suspendToFile()
+            serviceVM.suspendToFile()
             
-            # Destroy the running VM.
-            runningSVM.destroy()     
+            # Destroy the service VM.
+            serviceVM.destroy()     
             
             # Make the stored VM read only again.
             storedServiceVM.protect()

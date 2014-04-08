@@ -5,24 +5,24 @@
 from pycloud.pycloud.vm import runningvm
 
 ################################################################################################################
-# Represents a factory to create Running Service VMs.
+# Represents a factory to create Service VMs.
 ################################################################################################################
-class RunningSVMFactory(object):
+class ServiceVMFactory(object):
     
     # Prefix used to name Service VMs.
     SERVICE_VM_INSTANCE_PREFIX = 'servicevm'
 
     ################################################################################################################  
-    # Creates a running VM from a stored VM. If required, it starts it with a VNC GUI, and stores its state once 
+    # Creates a Service VM from a Stored Service VM. If required, it starts it with a VNC GUI, and stores its state once 
     # the GUI is closed.
     # NOTE: If showVNC is True, it will show a VNC GUI and block there until the GUI is closed.
     # NOTE: If sshHostPort=None, then the VM will pick a default host port for SSH when that port is mapped.        
     ################################################################################################################         
     @staticmethod
-    def createRunningVM(storedVM, vmId=None, namePrefix=None, showVNC=False, sshHostPort=None, serviceHostPort=None):
+    def createServiceVM(storedVM, vmId=None, namePrefix=None, showVNC=False, sshHostPort=None, serviceHostPort=None):
         # Check if we got a prefix, or use the default one.
         if(namePrefix == None):
-            namePrefix = RunningSVMFactory.SERVICE_VM_INSTANCE_PREFIX 
+            namePrefix = ServiceVMFactory.SERVICE_VM_INSTANCE_PREFIX 
 
         # Create the actual VM.
         virtualMachine = runningvm.RunningVM(id = vmId,
