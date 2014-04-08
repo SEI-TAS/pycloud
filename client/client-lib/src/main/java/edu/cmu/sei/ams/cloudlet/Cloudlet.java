@@ -36,4 +36,11 @@ public interface Cloudlet
      * @throws Exception can throw exceptions when server is unreachable or bad data is returned
      */
     public List<Service> getServices() throws CloudletException;
+
+    /**
+     * Gets the current CPU and Memory state of the Cloudlet for evaluating Cloudlet selection
+     * @return
+     * @throws CloudletException can throw exceptions when the server is unreachable or bad data is returned
+     */
+    public CloudletSystemInfo getSystemInfo() throws CloudletException;
 }

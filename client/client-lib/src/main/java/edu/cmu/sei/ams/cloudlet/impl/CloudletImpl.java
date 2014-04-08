@@ -1,8 +1,8 @@
 package edu.cmu.sei.ams.cloudlet.impl;
 
-import edu.cmu.sei.ams.cloudlet.Cloudlet;
-import edu.cmu.sei.ams.cloudlet.CloudletException;
-import edu.cmu.sei.ams.cloudlet.Service;
+import edu.cmu.sei.ams.cloudlet.*;
+import edu.cmu.sei.ams.cloudlet.impl.cmds.CloudletCommand;
+import edu.cmu.sei.ams.cloudlet.impl.cmds.GetMetadataCommand;
 import edu.cmu.sei.ams.cloudlet.impl.cmds.GetServicesCommand;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -107,7 +107,7 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
      */
     @Override
     @SuppressWarnings("deprecation")
-    public String executeCommand(edu.cmu.sei.ams.cloudlet.impl.cmds.CloudletCommand cmd) throws CloudletException
+    public String executeCommand(CloudletCommand cmd) throws CloudletException
     {
         log.entry(cmd.getMethod(), cmd.getPath());
 
@@ -174,7 +174,7 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
         }
         catch (Exception e)
         {
-            log.error("Error connecting to server!", e);
+            log.error("Error connecting to " + getAddress() + ": " + e.getMessage());
             throw new CloudletException("Error sending command to server!", e);
         }
         finally
@@ -191,6 +191,16 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
                 }
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CloudletSystemInfo getSystemInfo() throws CloudletException
+    {
+        String ret = this.executeCommand(new GetMetadataCommand());
+        return new CloudletSystemInfoImpl(new JSONObject(ret));
     }
 
     /**

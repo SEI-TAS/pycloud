@@ -1,7 +1,12 @@
 package edu.cmu.sei.ams.cloudlet.rank;
 
 import edu.cmu.sei.ams.cloudlet.Cloudlet;
+import edu.cmu.sei.ams.cloudlet.CloudletException;
+import edu.cmu.sei.ams.cloudlet.CloudletSystemInfo;
 import edu.cmu.sei.ams.cloudlet.Service;
+import edu.cmu.sei.ams.cloudlet.impl.CloudletImpl;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 
 /**
  * User: jdroot
@@ -10,10 +15,15 @@ import edu.cmu.sei.ams.cloudlet.Service;
  */
 public class CpuBasedRanker implements CloudletRanker
 {
+    private static final XLogger log = XLoggerFactory.getXLogger(CpuBasedRanker.class);
 
     @Override
-    public double rankCloudlet(Service service, Cloudlet cloudlet)
+    public double rankCloudlet(Service service, Cloudlet cloudlet) throws CloudletException
     {
-        return 1.0;
+        log.entry(service, cloudlet);
+        CloudletSystemInfo info = cloudlet.getSystemInfo();
+        double ranking = (100.0 * info.getCPUInfo().getTotalCores()) - info.getCPUInfo().getUsage();
+        log.exit(ranking);
+        return ranking;
     }
 }

@@ -92,11 +92,18 @@ public class CloudletFinder
                     //Only call the ranker if this Cloudlet can offer this service
                     if (serviceId.equalsIgnoreCase(s.getServiceId()))
                     {
-                        double val = ranker.rankCloudlet(s, c);
-                        if (val > max_rank)
+                        try
                         {
-                            max_rank = val;
-                            ret = c;
+                            double val = ranker.rankCloudlet(s, c);
+                            if (val > max_rank)
+                            {
+                                max_rank = val;
+                                ret = c;
+                            }
+                        }
+                        catch (CloudletException e)
+                        {
+                            log.error("Error running ranker: " + ranker + " on " + c + " with service " + s);
                         }
 
                         break; //For now, we only care about one service
@@ -105,7 +112,7 @@ public class CloudletFinder
             }
             catch (CloudletException e)
             {
-                log.error("Error getting services for " + c, e);
+                log.error("Error getting services for " + c);
             }
         }
 
