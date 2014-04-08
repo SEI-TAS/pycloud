@@ -15,7 +15,7 @@ function openEditVNC(vncUrl)
       success: function( resp ) {
         // Notify that the process was successful.
         dialog.hide();
-        var alert = Alert('success', 'Service VM was modified successfully.');
+        var alert = Alert('success', 'Stored Service VM was modified successfully.');
         alert.show();
         console.log( 'Service VM was modified successfully.');        
       },
@@ -26,4 +26,13 @@ function openEditVNC(vncUrl)
     });
     
     return false;
-}     
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to show a notification of a successful edit.
+/////////////////////////////////////////////////////////////////////////////////////
+function showEditSuccess()
+{
+    var alert = Alert('success', 'Service was modified successfully.');
+    alert.show();
+}

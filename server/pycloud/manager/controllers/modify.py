@@ -31,15 +31,27 @@ class ModifyController(BaseController):
     def GET_index(self):
         # Mark the active tab.
         c.services_active = 'active'
+                
+        # Load the data into the page.
+        page = ModifyPage()        
+        serviceID = request.params.get("serviceId")
+        page.serviceID = serviceID
+        page = self.loadDataIntoPage(page, serviceID)
 
+        # Render the page with the data.
+        return page.render()
+    
+    ################################################################################################################ 
+    # Loads data about the stored service vm into a page, and returns the filled page.
+    ################################################################################################################         
+    def loadDataIntoPage(self, page, serviceID):
         # Setup the page to render.
-        page = ModifyPage()
         page.form_values = {}
         page.form_errors = {}
         page.modifyButtonHtml = ''
+        page.initScript = ''
                 
         # Get the data fields.
-        serviceID = request.params.get("serviceId")
         if(serviceID is not None):
             serviceID = serviceID.strip()
             serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
@@ -52,17 +64,23 @@ class ModifyController(BaseController):
             # Set the data fields.
             page.form_values['serviceID'] = serviceID
             if (storedServiceVM is not None):
+                # Metadata values.
+                page.form_values['servicePort'] = storedServiceVM.metadata.servicePort
+            
+                # Stored SVM values.
                 page.form_values['vmStoredFolder'] = os.path.dirname(storedServiceVM.diskImageFilePath)
                 page.form_values['vmDiskImageFile'] = storedServiceVM.diskImageFilePath
                 page.form_values['vmStateImageFile'] = storedServiceVM.vmStateImageFilepath
 
-        # Render the page with the grid.
-        return page.render()
+        return page
 
     ################################################################################################################ 
-    #
+    # Modifying a Service record.
     ################################################################################################################         
     def POST_index(self):
+        # Mark the active tab.
+        c.services_active = 'active'
+        
         # Service
         serviceID           = request.params.get("serviceID")
         serviceVersion      = request.params.get("serviceVersion")
@@ -79,8 +97,6 @@ class ModifyController(BaseController):
 
         # VM
         vmStoredFolder      = request.params.get("vmStoredFolder")
-        vmDiskImageFile     = request.params.get("vmDiskImageFile")
-        vmStateImageFile    = request.params.get("vmStateImageFile")
 
         # Requirements
         reqMinMem           = request.params.get("reqMinMem")
@@ -88,11 +104,35 @@ class ModifyController(BaseController):
 
         print serviceID + ": " + serviceDescription + ": " + reqMinMem
         
-        page = ModifyPage()
-        page.form_values = {}
-        page.form_errors = {}
-        page.modifyButtonHtml = ''
+        # Load the current Stored SVM info.
+        # Note that we have to use the original service id to find the data, 
+        # since it may have been changed by the user.
+        originalServiceID = request.params.get("originalServiceID")
+        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
+        storedServiceVM = serviceVmRepo.findServiceVM(originalServiceID)
+
+        # Change the values.
+        storedServiceVM.metadata.serviceId = serviceID
+        storedServiceVM.metadata.servicePort = servicePort
         
+        # Store them back to file.
+        storedServiceVM.unprotect()
+        storedServiceVM.metadata.writeToFile(storedServiceVM.metadataFilePath)
+        storedServiceVM.protect()
+        
+        # If the service ID changed, rename the folders (as it needs to have the correct id).
+        if(originalServiceID != serviceID):
+            serviceVmRepo.renameStoredVM(originalServiceID, serviceID)
+        
+        # Load the data into the page.
+        page = ModifyPage()
+        page.serviceID = serviceID
+        page = self.loadDataIntoPage(page, serviceID)
+        
+        # Add a notification to the user about the changes.
+        page.initScript = 'document.getElementsByTagName("body")[0].addEventListener("load", showEditSuccess, false);';
+        
+        # Render the page.
         return page.render()
 
     ############################################################################################################

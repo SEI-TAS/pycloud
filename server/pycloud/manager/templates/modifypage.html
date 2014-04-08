@@ -7,7 +7,7 @@ ${parent.header()}
 </%block>
 
 <%block name="title">
-    Create New Service
+    Edit Service
 </%block>
 
 <%block>
@@ -18,7 +18,7 @@ ${parent.header()}
     <div class="panel panel-primary col-sm-6">
         <div class="panel-heading"> General </div>
         <div class="panel-body">
-
+            <input type="hidden" name="originalServiceID" id="originalServiceID" value='${page.serviceID}' />
             ${text('serviceID', input_width=12, label=_('Service ID'))}
             ${text('serviceVersion', input_width=12, label=_('Service Version'))}
             ${text('serviceDescription', input_width=12, label=_('Description'))}
@@ -76,5 +76,6 @@ ${parent.header()}
 </form>
 
 <script src="/manager/js/modify.js"></script>
+<script>${page.initScript}</script>
 
 </%block>
