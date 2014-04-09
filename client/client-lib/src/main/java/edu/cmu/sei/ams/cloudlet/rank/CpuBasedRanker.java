@@ -9,6 +9,8 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
 /**
+ * Attempts to rank the cloudlet based on how much free CPU power there is.
+ * This calculation is done with: (max_cores * 100.0) - usage
  * User: jdroot
  * Date: 4/4/14
  * Time: 3:45 PM
