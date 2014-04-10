@@ -7,7 +7,11 @@ ${parent.header()}
 </%block>
 
 <%block name="title">
-    Edit Service
+    % if page.serviceID is not None:
+        Edit Service
+    % else:
+        Create New Service
+    % endif
 </%block>
 
 <%block>
@@ -24,7 +28,6 @@ ${parent.header()}
             ${text('serviceDescription', input_width=12, label=_('Description'))}
             ${text('serviceTags', input_width=12, label=_('Tags'))}
             ${text('servicePort', input_width=12, label=_('Port'))}
-
         </div>
     </div>
 
@@ -32,13 +35,11 @@ ${parent.header()}
     <div class="panel panel-primary col-sm-6">
         <div class="panel-heading"> Cloudlet Ready App </div>
         <div class="panel-body">
-
             ${text('appName', input_width=12, label=_('Name'))}
             ${text('appDescription', input_width=12, label=_('Description'))}
             ${text('appVersion', input_width=12, label=_('Version'))}
             ${text('appPackage', input_width=12, label=_('Package'))}
             ${text('appFilename', input_width=12, label=_('Filename'))}
-
         </div>
     </div>
 
@@ -49,7 +50,7 @@ ${parent.header()}
             ${text('vmStoredFolder', input_width=12, label=_('Stored VM Folder'))}
             ${text('vmDiskImageFile', input_width=12, label=_('Disk Image File'), disabled=True)}
             ${text('vmStateImageFile', input_width=12, label=_('State Image File'), disabled=True)}
-            ${page.modifyButtonHtml}
+            ${page.storedSvmButtonHtml}
         </div>
     </div>
 
@@ -57,10 +58,8 @@ ${parent.header()}
     <div class="panel panel-primary col-sm-6">
         <div class="panel-heading"> Requirement </div>
         <div class="panel-body">
-
             ${text('reqMinMem', input_width=12, label=_('Min Memory (MB)'))}
             ${text('reqIdealMem', input_width=12, label=_('Ideal Memory (MB)'))}
-
         </div>
     </div>
 

@@ -48,18 +48,27 @@ class ModifyController(BaseController):
         # Setup the page to render.
         page.form_values = {}
         page.form_errors = {}
-        page.modifyButtonHtml = ''
+        page.storedSvmButtonHtml = ''
         page.initScript = ''
                 
-        # Get the data fields.
-        if(serviceID is not None):
+        # Check if we are editing or creating a new service.
+        creatingNew = serviceID is None
+        if(creatingNew):
+            # We are creating a new service.
+            
+            # Add link to open an SVM.
+            openSVMURL = h.url_for(controller="modify", action='createSVM', id=serviceID)            
+            page.storedSvmButtonHtml = HTML.button("Create SVM", onclick=h.literal("openCreateVNC('"+ openSVMURL +"')"), class_="btn btn-primary btn", type="button")
+        else:
+            # We are editing an existing service.
+            # Get the data fields.
             serviceID = serviceID.strip()
             serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
             storedServiceVM = serviceVmRepo.findServiceVM(serviceID)
             
             # Add link to open an SVM.
             openSVMURL = h.url_for(controller="modify", action='openSVM', id=serviceID)
-            page.modifyButtonHtml = HTML.button("Modify SVM", onclick=h.literal("openEditVNC('"+ openSVMURL +"')"), class_="btn btn-primary btn", type="button")
+            page.storedSvmButtonHtml = HTML.button("Modify SVM", onclick=h.literal("openEditVNC('"+ openSVMURL +"')"), class_="btn btn-primary btn", type="button")
             
             # Set the data fields.
             page.form_values['serviceID'] = serviceID

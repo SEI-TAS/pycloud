@@ -2,7 +2,10 @@
 // Creates a modal dialog to show wait state for a process (no actual progress though).
 /////////////////////////////////////////////////////////////////////////////////////
 function WaitDialog (headerText) {
+    // HTML for the modal dialog.
     var pleaseWaitDiv = $('<div class="modal fade" id="pleaseWaitDialog" role="dialog" data-backdrop="static" data-keyboard="false"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h3>'+headerText+'...</h3></div><div class="modal-body"><div class="progress progress-striped active"><div class="progress-bar" role="progressbar" style="width: 100%;"></div></div></div></div></div></div>');
+    
+    // Functions to show and hide the dialog.
     return {
         show: function() {
             pleaseWaitDiv.modal();
@@ -35,10 +38,5 @@ function Alert(level, message) {
                 }, 5000);
             });
         },
-        hide: function () {
-            alert('hiding');
-        },
     };
-
 }
-

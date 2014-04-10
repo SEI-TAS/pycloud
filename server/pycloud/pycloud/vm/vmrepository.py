@@ -131,3 +131,13 @@ class VMRepository(object):
         
         # Protect the stored VM from accidental deletion.
         storedVM.protect()
+
+    ################################################################################################################
+    # Renames a stored VM by changing its id.
+    ################################################################################################################        
+    def renameStoredVM(self, vmId, newVmId):
+        # Clear everything up from the VM folder.
+        vmFolder = self.getStoredVMFolder(vmId)
+        if(os.path.exists(vmFolder)):
+            newVmFolder = os.path.join(self.vmRepositoryFolder, newVmId)
+            os.rename(vmFolder, newVmFolder)
