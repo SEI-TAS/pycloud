@@ -1,4 +1,6 @@
 <%namespace file="form.html" import="text"/>
+<%namespace file="form.html" import="dropdown"/>
+<%namespace file="form.html" import="browse"/>
 
 <%inherit file="base.html"/>
 
@@ -7,16 +9,16 @@ ${parent.header()}
 </%block>
 
 <%block name="title">
-    % if page.serviceID is not None:
-        Edit Service
-    % else:
+    % if page.newService:
         Create New Service
+    % else:
+        Edit Service
     % endif
 </%block>
 
 <%block>
 
-<form class="form-service" method="POST" action="${url_for('modify')}" role="form">
+<form class="form-service" method="post" action="${url_for('modify')}" role="form">
 
     <!-- GENERAL -->
     <div class="panel panel-primary col-sm-6">
@@ -50,7 +52,12 @@ ${parent.header()}
             ${text('vmStoredFolder', input_width=12, label=_('Stored VM Folder'))}
             ${text('vmDiskImageFile', input_width=12, label=_('Disk Image File'), disabled=True)}
             ${text('vmStateImageFile', input_width=12, label=_('State Image File'), disabled=True)}
-            ${page.storedSvmButtonHtml}
+            
+		    % if page.newService:
+        	    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-new-servicevm">Create Service VM</button>
+      	    % else:
+          	    <button type="button" class="btn btn-primary" onclick="openEditVNC('${page.openSVMURL}')">Modify Service VM</button>
+            % endif
         </div>
     </div>
 
@@ -74,7 +81,30 @@ ${parent.header()}
 
 </form>
 
+<!-- Create New Service VM modal. -->
+<div class="modal fade" id="modal-new-servicevm" role="dialog" data-backdrop="static">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		    <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal">x</button>
+		        <h3>Create New Service VM</h3>
+		    </div>
+		    <div class="modal-body">
+		        <div class="well">
+		            <form id="new-svm-form" class="form-horizontal" action="${url_for('modify')}" method="post">
+		            	${browse(id='sourceDiskImage', input_width=12, label=_('Source Disk Image'))}
+		                ${dropdown(id='osType', options={'Windows':'Windows','Linux':'Linux'}, input_width=12, label=_('OS Type'))}
+		            </form>
+		        </div>
+		    </div>
+		    <div class="modal-footer">
+		        <a href="#" class="btn" data-dismiss="modal">Cancel</a>
+		        <a href="#" class="btn btn-primary new-svm-action">Create</a>
+		    </div>
+	    </div>
+    </div>
+</div>
+
 <script src="/manager/js/modify.js"></script>
-<script>${page.initScript}</script>
 
 </%block>

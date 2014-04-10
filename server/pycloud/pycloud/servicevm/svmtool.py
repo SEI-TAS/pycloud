@@ -8,8 +8,8 @@
 # Used to parse command-line arguments.
 import argparse
 
-# For SVM Cache management.
-from pycloud.pycloud.servicevm import cachemanager
+# For SVM management.
+from pycloud.pycloud.servicevm import svmmanager
 
 # For config management.
 from pycloud.pycloud.utils import config
@@ -105,7 +105,7 @@ def main():
     cloudletConfig = cloudlet.Cloudlet(configuration)
     
     # Create the cache manager.
-    svmCacheManager = cachemanager.ServiceVMCacheManager(cloudletConfig)
+    svmCacheManager = svmmanager.ServiceVMManager(cloudletConfig)
     
     # Get the command.
     command = parseCommand() 

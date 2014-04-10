@@ -65,3 +65,17 @@ function showEditSuccess()
     var alert = Alert('success', 'Service was modified successfully.');
     alert.show();
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Called when the document is loaded.
+/////////////////////////////////////////////////////////////////////////////////////////////////
+$(document).ready( function () {
+    // Set up event handlers.
+    console.log('Setting up JS actions for the New Service VM modal.');    
+    
+    // Setup to ensure the New Quiz modal is ready to be used when showing the modal.
+    $('#modal-new-servicevm').on('show', prepareNewQuizModal);
+    
+    // Set actual JS action that will be executed when the "Create" button is pushed.
+    //$('.new-quiz-action').click(createQuiz);        
+});   
