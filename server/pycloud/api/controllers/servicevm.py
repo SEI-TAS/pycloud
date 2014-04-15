@@ -117,7 +117,7 @@ class ServiceVMController(BaseController):
 
         # Check the flags that indicates whether we could join an existing instance.
         isolated = request.params.get('isolated', True)
-        if isinstance(isolated, str):
+        if not isinstance(isolated, bool): # Will only be bool if it was none and the default was set
             isolated = isolated.lower() in ("yes", "true", "t", "1")
 
         
