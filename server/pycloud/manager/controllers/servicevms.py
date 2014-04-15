@@ -119,8 +119,5 @@ def generate_action_buttons(col_num, i, item):
     vncUrl = h.url_for(controller='servicevms', action='openvnc', id=item["instance_id"])
     vncButtonHtml = HTML.button("Open VNC", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
 
-    modifyUrl = h.url_for(controller="modify", action='modify', id=item["instance_id"])
-    modifyButtonHtml = HTML.button("Modify", onclick=h.literal("openVNC('"+ modifyUrl +"')"), class_="btn btn-primary btn")
-
     # Render the buttons with the Ajax code to stop the SVM.    
-    return HTML.td(stopButtonHtml + " " + vncButtonHtml + " " + modifyButtonHtml)
+    return HTML.td(stopButtonHtml + " " + vncButtonHtml)

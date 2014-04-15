@@ -27,16 +27,17 @@ class ModifyController(BaseController):
     JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})
 
     ################################################################################################################ 
-    #
+    # Called when laading the page to add or edit a service.
     ################################################################################################################ 
-    def GET_index(self, id):
+    def GET_index(self, id=None):
         # Mark the active tab.
         c.services_active = 'active'
                 
         # Load the data into the page.
-        page = ModifyPage()        
+        page = ModifyPage()
+        
+        # If we are loading data from an existing Service, load it.
         serviceID = id
-        page.serviceID = serviceID
         page = self.loadDataIntoPage(page, serviceID)
 
         # Render the page with the data.
@@ -49,20 +50,21 @@ class ModifyController(BaseController):
         # Setup the page to render.
         page.form_values = {}
         page.form_errors = {}
-        page.storedSvmButtonHtml = ''
-        page.initScript = ''
                 
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
         if(creatingNew):
             # We are creating a new service.
             page.newService = True
+            page.serviceID = ''            
             
             # URL to create a new Service VM.
             page.createSVMURL =  h.url_for(controller="modify", action='createSVM')
         else:
             # We are editing an existing service.
             page.newService = False
+            page.serviceID = serviceID
+            page.createSVMURL = ''           
                         
             # Get the data fields.
             serviceID = serviceID.strip()

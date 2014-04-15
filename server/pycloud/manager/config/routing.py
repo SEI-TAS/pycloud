@@ -11,24 +11,21 @@ def make_map():
     mapper = Mapper()
     connect = mapper.connect
 
-    # Note that all of this are relative to the base path, /manager. 
-    connect('root', '/', controller='services', action='index')
-    connect('home', '/home', controller='home', action='index')
+    # Note that all of these paths are relative to the base path, /manager. 
+    connect('/', controller='services', action='index')
+    connect('/home', controller='home', action='index')
     
-    connect('services', '/services', controller='services', action='listServices')
-    connect('services', '/services/removeService/{id}', controller='services', action='removeService')
+    connect('/services', controller='services', action='listServices')
+    connect('/services/removeService/{id}', controller='services', action='removeService')
     
-    connect('servicevms', '/servicevms', controller='servicevms', action='index')
-    connect('servicevms_startSVM', '/servicevms/startSVM/{id}', controller='servicevms', action='startSVM')
-    connect('servicevms_stopSVM', '/servicevms/stopSVM/{id}', controller='servicevms', action='stopSVM')
-    connect('servicevms_vnc', '/servicevms/openvnc/{id}', controller='servicevms', action='openvnc')
-    connect('/{controller}/{action}/{id}')
+    connect('/servicevms', controller='servicevms', action='index')
+    connect('/servicevms/startSVM/{id}', controller='servicevms', action='startSVM')
+    connect('/servicevms/stopSVM/{id}', controller='servicevms', action='stopSVM')
+    connect('/servicevms/openvnc/{id}', controller='servicevms', action='openvnc')
 
-    connect('modify', '/modify', controller='modify', action='index')
-    connect('modifysvm', '/modify/openSVM/{id}', controller='modify', action='openSVM')
-    connect('createsvm', '/modify/createSVM', controller='modify', action='createSVM')
-
-    #Example
-    # connect('/', coontroller='cloudlet', action='home')
+    connect('/modify', controller='modify', action='index')
+    connect('/modify/{id}', controller='modify', action='index')    
+    connect('/modify/createSVM', controller='modify', action='createSVM')
+    connect('/modify/openSVM/{id}', controller='modify', action='openSVM')
 
     return mapper
