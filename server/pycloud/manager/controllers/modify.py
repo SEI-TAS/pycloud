@@ -29,13 +29,13 @@ class ModifyController(BaseController):
     ################################################################################################################ 
     #
     ################################################################################################################ 
-    def GET_index(self):
+    def GET_index(self, id):
         # Mark the active tab.
         c.services_active = 'active'
                 
         # Load the data into the page.
         page = ModifyPage()        
-        serviceID = request.params.get("serviceId")
+        serviceID = id
         page.serviceID = serviceID
         page = self.loadDataIntoPage(page, serviceID)
 

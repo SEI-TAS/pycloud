@@ -76,14 +76,14 @@ class ServicesController(BaseController):
 ############################################################################################################
 # Helper function to generate buttons to see the list of SVMs and to start a new instace.
 ############################################################################################################        
-def generateSVMButtons(col_num, i, item):
-    # URL to start a new instance.
+def generateSVMButtons(col_num, i, item):    
+    # Link to the list of Service VM Instances.
+    svmListURL = h.url_for(controller='servicevms')
+
+    # URL to start a new SVM instance.
     startInstanceUrl = h.url_for(controller='servicevms', action='startSVM', id=item["service_id"])
     
-    # After starting the SVM, we will redirect to the Service VM list page.
-    svmListURL = h.url_for(controller='servicevms')
-    
-    # Create a button to the list of service VMs, and another to start a new instance.
+    # Create a button to the list of service VM Instances, and another to start a new instance.
     linkToSVMButton = HTML.button("View Instances", onclick=h.literal("window.location.href = '" + svmListURL + "';"), class_="btn btn-primary btn")
     newSVMButton = HTML.button("New Instance", onclick=h.literal("startSVM('"+ startInstanceUrl +"', '"+ svmListURL +"')"), class_="btn btn-primary btn")
 
@@ -94,14 +94,12 @@ def generateSVMButtons(col_num, i, item):
 # Helper function to generate buttons to edit or delete services.
 ############################################################################################################        
 def generateActionButtons(col_num, i, item):
-    # Link to edit the service.
-    editServiceURL = h.url_for(controller='modify')
+    # Link and button to edit the service.
+    editServiceURL = h.url_for(controller='modify', action='index', id=item["service_id"])
+    editButton = HTML.button("Edit Service", onclick=h.literal("window.location.href = '" + editServiceURL + "';"), class_="btn btn-primary btn")
     
     # Ajax URL to remove the service.
     removeServiceURL = h.url_for(controller='services', action='removeService', id=item["service_id"])
-
-    # Create a button to edit and a button to remove a service.
-    editButton = HTML.button("Edit Service", onclick=h.literal("window.location.href = '" + editServiceURL + "&serviceId=" + item["service_id"] + "';"), class_="btn btn-primary btn")
     removeButton = HTML.button("Remove Service", onclick="removeServiceConfirmation('" + removeServiceURL + "');", class_="btn btn-primary btn")
     
     # Render the buttons.

@@ -15,7 +15,7 @@ from pycloud.pycloud.pylons.lib import helpers as h
 log = logging.getLogger(__name__)
 
 ################################################################################################################
-# Controller for the ServiceVMs page.
+# Controller for the ServiceVMs Instances page.
 ################################################################################################################
 class ServiceVMsController(BaseController):
 
@@ -23,7 +23,7 @@ class ServiceVMsController(BaseController):
     JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})    
 
     ############################################################################################################
-    # Shows the list of running Service VMs.
+    # Shows the list of running Service VM instances.
     ############################################################################################################
     def GET_index(self):
         # Mark the active tab.
@@ -100,11 +100,12 @@ class ServiceVMsController(BaseController):
         return self.JSON_OK        
         
 ############################################################################################################
-# Helper function to generate a link for the service id.
+# Helper function to generate a link for the service id to the service details.
 ############################################################################################################        
 def generate_service_id_link(col_num, i, item):
-    serviceUrl = h.url_for(controller='services', action='index')
-    return HTML.td(HTML.a(item["service_id"], href=serviceUrl))   
+    editServiceURL = h.url_for(controller='modify', action='index', id=item["service_id"])
+    
+    return HTML.td(HTML.a(item["service_id"], href=editServiceURL))   
 
 ############################################################################################################
 # Helper function to generate actions for the service vms (stop and vnc buttons).
