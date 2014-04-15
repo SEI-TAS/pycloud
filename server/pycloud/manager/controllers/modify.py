@@ -156,20 +156,26 @@ class ModifyController(BaseController):
         svmManager = svmmanager.ServiceVMManager(g.cloudlet)
         
         # Parse the body of the request as JSON into a python object.
-        print request.body
+        # First remove URL quotes added to string, and then remove trailing "=" (no idea why it was there).
         parsedJsonString = urllib.unquote(request.body)[:-1]
-        print parsedJsonString
         fields = json.loads(parsedJsonString)        
         
         # Create an SVM and open a VNC window to modify the VM.
-        svmManager.createServiceVM(osType = fields['type'], 
-                                   sourceImage = fields['source'],
-                                   serviceId = fields['serviceId'], 
-                                   name = fields['serviceId'],
-                                   port = fields['port'])
+        newStoredServiceVM = svmManager.createServiceVM(osType = fields['type'], 
+                                                        sourceImage = fields['source'],
+                                                        serviceId = fields['serviceId'], 
+                                                        name = fields['serviceId'],
+                                                        port = fields['port'])
+        
+        # Return information about the created Stored SVM.
+        jsonDataStructure = { "FOLDER" : newStoredServiceVM.folder, \
+                              "DISK_IMAGE" : newStoredServiceVM.diskImageFilePath, \
+                              "STATE_IMAGE" : newStoredServiceVM.vmStateImageFilepath
+                            }
+        jsonDataString = json.dumps(jsonDataStructure)        
         
         # Everything went well.
-        return self.JSON_OK
+        return jsonDataString
 
     ############################################################################################################
     # Opens the Service VM in a VNC window for editing.

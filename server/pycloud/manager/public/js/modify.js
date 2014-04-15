@@ -30,10 +30,19 @@ function openCreateVNC()
       dataType: 'json',
       data: jsonData,      
       success: function( resp ) {
+        // Update Stored SVM fields with new SVM info.
+        storedSVMData = $.parseJSON(resp);
+        ssvmFolder = formSVM.find('#vmStoredFolder');
+        ssvmFolder.val(storedSVMData.FOLDER);        
+        ssvmDiskImagePath = formSVM.find('#vmDiskImageFile');
+        ssvmDiskImagePath.val(storedSVMData.DISK_IMAGE);
+        ssvmStateImagePath = formSVM.find('#vmStateImageFile');
+        ssvmStateImagePath.val(storedSVMData.STATE_IMAGE);        
+        
         // Notify that the process was successful.
         dialog.hide();
-        var alert = Alert('success', 'Stored Service VM was created successfully.');
-        alert.show();
+        //var alert = Alert('success', 'Stored Service VM was created successfully.');
+        //alert.show();
         console.log( 'Service VM was created successfully.');        
       },
       error: function( req, status, err ) {

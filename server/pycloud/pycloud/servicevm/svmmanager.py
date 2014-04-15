@@ -50,9 +50,9 @@ class ServiceVMManager(object):
             
         except storedvm.StoredVMException as e:
             print "Error creating Service VM: " + e.message 
-            return False
+            return None
         
-        return True
+        return newStoredServiceVM
             
     ################################################################################################################
     # Creates and runs a transient copy of a stored service VM present in the cache for user interaction.
