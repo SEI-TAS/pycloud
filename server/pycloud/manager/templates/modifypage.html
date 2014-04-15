@@ -18,7 +18,7 @@ ${parent.header()}
 
 <%block>
 
-<form class="form-service" method="post" action="${url_for('modify')}" role="form">
+<form id="service-form" class="form-service" method="post" action="${url_for('modify')}" role="form">
 
     <!-- GENERAL -->
     <div class="panel panel-primary col-sm-6">
@@ -91,7 +91,7 @@ ${parent.header()}
 		    </div>
 		    <div class="modal-body">
 		        <div class="well">
-		            <form id="new-svm-form" class="form-horizontal" action="${url_for('modify')}" method="post">
+		            <form id="new-svm-form" class="form-horizontal" action="${page.createSVMURL}" method="post">
 		            	${browse(id='sourceDiskImage', input_width=12, label=_('Source Disk Image'))}
 		                ${dropdown(id='osType', options={'Windows':'Windows','Linux':'Linux'}, input_width=12, label=_('OS Type'))}
 		            </form>
@@ -99,7 +99,7 @@ ${parent.header()}
 		    </div>
 		    <div class="modal-footer">
 		        <a href="#" class="btn" data-dismiss="modal">Cancel</a>
-		        <a href="#" class="btn btn-primary new-svm-action">Create</a>
+		        <a href="#" class="btn btn-primary new-svm-action" onclick="openCreateVNC()">Create</a>
 		    </div>
 	    </div>
     </div>

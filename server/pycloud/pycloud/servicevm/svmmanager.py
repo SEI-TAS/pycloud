@@ -11,7 +11,6 @@ import instancemanager
 import svmrepository
 import storedsvmfactory
 import svmfactory
-from pycloud.pycloud import cloudlet
 
 # For exceptions.
 from pycloud.pycloud.vm import vmrepository
@@ -33,11 +32,11 @@ class ServiceVMManager(object):
     ################################################################################################################
     # Creates and a new Service VM into the cache.
     ################################################################################################################
-    def createServiceVM(self, type, sourceImage, serviceId, name, port):
+    def createServiceVM(self, osType, sourceImage, serviceId, name, port):
         try:
             # Create it.
-            newStoredServiceVM = ssvmfactory.StoredServiceVMFactory.createFromDiskImage(self.cloudletConfig,
-                                                                             vmType=type,
+            newStoredServiceVM = storedsvmfactory.StoredServiceVMFactory.createFromDiskImage(self.cloudletConfig,
+                                                                             vmType=osType,
                                                                              sourceDiskImageFilePath=sourceImage,
                                                                              serviceId=serviceId, 
                                                                              serviceVMName=name, 
@@ -51,6 +50,9 @@ class ServiceVMManager(object):
             
         except storedvm.StoredVMException as e:
             print "Error creating Service VM: " + e.message 
+            return False
+        
+        return True
             
     ################################################################################################################
     # Creates and runs a transient copy of a stored service VM present in the cache for user interaction.

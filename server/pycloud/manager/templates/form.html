@@ -1,6 +1,6 @@
 <!-- Text input control -->
 <%def name="text(id, label=None, label_width=6, input_width=6, error_width=6, input_type='text', disabled=False)">
-<div class="form-group ${'has-error' if id in page.form_errors else ''}" id="${id}">
+<div class="form-group ${'has-error' if id in page.form_errors else ''}">
     % if label:
     <label for="${id}" class="col-sm-${label_width} control-label">${label}</label>
     % endif
@@ -17,7 +17,7 @@
 
 <!-- Dropdown control -->
 <%def name="dropdown(id, options, label=None, label_width=6, input_width=6, error_width=6, disabled=False)">
-<div class="form-group ${'has-error' if id in page.form_errors else ''}" id="${id}">
+<div class="form-group ${'has-error' if id in page.form_errors else ''}">
     % if label:
     <label for="${id}" class="col-sm-${label_width} control-label">${label}</label>
     % endif
@@ -38,7 +38,7 @@
 
 <!-- Browse control -->
 <%def name="browse(id, label=None, label_width=6, input_width=6, error_width=6, disabled=False)">
-<div class="form-group ${'has-error' if id in page.form_errors else ''}" id="${id}">
+<div class="form-group ${'has-error' if id in page.form_errors else ''}">
     % if label:
     <label for="${id}" class="col-sm-${label_width} control-label">${label}</label>
     % endif

@@ -26,6 +26,7 @@ def make_map():
 
     connect('modify', '/modify', controller='modify', action='index')
     connect('modifysvm', '/modify/openSVM/{id}', controller='modify', action='openSVM')
+    connect('createsvm', '/modify/createSVM', controller='modify', action='createSVM')
 
     #Example
     # connect('/', coontroller='cloudlet', action='home')

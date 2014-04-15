@@ -1,6 +1,7 @@
 import logging
 import os
 import json
+import urllib
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons import g
@@ -56,6 +57,9 @@ class ModifyController(BaseController):
         if(creatingNew):
             # We are creating a new service.
             page.newService = True
+            
+            # URL to create a new Service VM.
+            page.createSVMURL =  h.url_for(controller="modify", action='createSVM')
         else:
             # We are editing an existing service.
             page.newService = False
@@ -143,6 +147,31 @@ class ModifyController(BaseController):
         return page.render()
 
     ############################################################################################################
+    # Creates a new Service VM and opents it in a VNC window for editing.
+    # NOTE: The VNC window will only open on the computer running the server.
+    ############################################################################################################
+    def POST_createSVM(self):
+        # Get the manager.
+        print 'Creating SVM...'
+        svmManager = svmmanager.ServiceVMManager(g.cloudlet)
+        
+        # Parse the body of the request as JSON into a python object.
+        print request.body
+        parsedJsonString = urllib.unquote(request.body)[:-1]
+        print parsedJsonString
+        fields = json.loads(parsedJsonString)        
+        
+        # Create an SVM and open a VNC window to modify the VM.
+        svmManager.createServiceVM(osType = fields['type'], 
+                                   sourceImage = fields['source'],
+                                   serviceId = fields['serviceId'], 
+                                   name = fields['serviceId'],
+                                   port = fields['port'])
+        
+        # Everything went well.
+        return self.JSON_OK
+
+    ############################################################################################################
     # Opens the Service VM in a VNC window for editing.
     # NOTE: The VNC window will only open on the computer running the server.
     ############################################################################################################
@@ -154,5 +183,5 @@ class ModifyController(BaseController):
         svmManager.modifyServiceVM(id)
         
         # Everything went well.
-        return self.JSON_OK
+        return self.JSON_OK    
  
