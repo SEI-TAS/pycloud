@@ -116,21 +116,20 @@ class ServiceVMController(BaseController):
             return self.JSON_NOT_OK        
 
         # Check the flags that indicates whether we could join an existing instance.
-        isolated = request.GET['serviceId']
-        if(isolated is None):
-            # If no value was sent, set true by default.
-            isolated = "true"
+        isolated = request.params.get('isolated', True)
+        if isinstance(isolated, str):
+            isolated = isolated.lower() in ("yes", "true", "t", "1")
+
         
         # Start the Service VM on a random port.
         print '\n*************************************************************************************************'        
         timelog.TimeLog.stamp("Request received: start VM with service id " + serviceId)
         
         # Check if we will want to try to join an existing VM.
-        joinIfPossible = False
-        if(isolated == "false"):
+        joinIfPossible = not isolated
+        if joinIfPossible:
             print "Will join existing VM if possible."
-            joinIfPossible = True
-            
+
         # Get our current IP, the one that the client requesting this is seeing.
         # The HTTP_HOST header will also have the port after a colon, so we remove it.
         hostIp = request.environ['HTTP_HOST'].split(':')[0]
