@@ -118,11 +118,21 @@ class ModifyController(BaseController):
         # Load the current Stored SVM info.
         # Note that we have to use the original service id to find the data, 
         # since it may have been changed by the user.
-        originalServiceID = request.params.get("originalServiceID")
-        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
-        storedServiceVM = serviceVmRepo.findServiceVM(originalServiceID)
+        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)        
+        originalServiceID = request.params.get("originalServiceID", None)
 
-        # Change the values.
+        # Check if we have an originalServiceID value; if not, it means this is a new service.        
+        if(originalServiceID is not None):
+            # We have an original id; load the data from the cache.
+            storedServiceVM = serviceVmRepo.findServiceVM(originalServiceID)
+        else:
+            # New service; we have to create a new record.
+            # Since for now the Service exists only inside a Stored SVM, if we got here it means
+            # that the Stored SVM was created first through this same page. We need
+            # to get then the Stored SVM using the newly input service id.
+            storedServiceVM = serviceVmRepo.findServiceVM(serviceID)
+
+        # Set or change the values.
         storedServiceVM.metadata.serviceId = serviceID
         storedServiceVM.metadata.servicePort = servicePort
         
@@ -132,7 +142,7 @@ class ModifyController(BaseController):
         storedServiceVM.protect()
         
         # If the service ID changed, rename the folders (as it needs to have the correct id).
-        if(originalServiceID != serviceID):
+        if(originalServiceID is not None and originalServiceID != serviceID):
             serviceVmRepo.renameStoredVM(originalServiceID, serviceID)
         
         # Load the data into the page.
