@@ -1,5 +1,40 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
+// Checks that the minimum inputs have been submitted.
+/////////////////////////////////////////////////////////////////////////////////////
+function validateSubmission()
+{
+    // Get all the edited fields of the svm.
+    var svm_info = {};
+    svm_info.serviceId = $('#serviceID').val();
+    svm_info.port = $('#servicePort').val();
+    svm_info.folder = $('#vmStoredFolder').val();
+    
+    // Validate that we have all the necessary info.
+    var errorHeader = 'You must enter a value for ';
+    var errorMsg = '';
+    if(svm_info.serviceId == '')
+        errorMsg = errorHeader + ' service id.';
+    else if(svm_info.port == '')
+        errorMsg = errorHeader + ' service port.';
+    else if(svm_info.folder == '')
+        errorMsg = 'You must create a Service VM.';
+        
+    // If an input is missing, notify the user and stop the process.
+    if(errorMsg != '')
+    {
+        var alertBox = Alert('danger', errorMsg, null);
+        alertBox.show();
+        return false;
+    }        
+        
+    // If everything is ok, submit the form.
+    var serviceForm = $('#service-form');    
+    serviceForm.submit();
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
 // Function to start a VNC window to create an SVM.
 /////////////////////////////////////////////////////////////////////////////////////
 function openCreateVNC()
@@ -35,8 +70,8 @@ function openCreateVNC()
     // If an input is missing, notify the user and stop the process.
     if(errorMsg != '')
     {
-        var alert = Alert('danger', errorMsg, modalDiv);
-        alert.show();
+        var alertBox = Alert('danger', errorMsg, modalDiv);
+        alertBox.show();
         return;
     }
     
@@ -64,8 +99,8 @@ function openCreateVNC()
                 
                 // Notify about the error.
                 console.log( 'Something went wrong' );
-                var alert = Alert('danger', 'Stored Service VM could not be created.', modalDiv);
-                alert.show();
+                var alertBox = Alert('danger', 'Stored Service VM could not be created.', modalDiv);
+                alertBox.show();
             }
             else
             {
@@ -88,8 +123,8 @@ function openCreateVNC()
                 
                 // Notify that the process was successful.
                 console.log( 'Service VM was created successfully.');        
-                var alert = Alert('success', 'Stored Service VM was created successfully.', null);
-                alert.show();
+                var alertBox = Alert('success', 'Stored Service VM was created successfully.', null);
+                alertBox.show();
             }
         },
         error: function( req, status, err ) {
@@ -98,8 +133,8 @@ function openCreateVNC()
             
             // Notify about the error.
             console.log( 'Something went wrong', status, err );
-            var alert = Alert('danger', 'Stored Service VM could not be created.', modalDiv);
-            alert.show();        
+            var alertBox = Alert('danger', 'Stored Service VM could not be created.', modalDiv);
+            alertBox.show();        
       }
     });
     
@@ -126,8 +161,8 @@ function openEditVNC(vncUrl)
       success: function( resp ) {
         // Notify that the process was successful.
         dialog.hide();
-        var alert = Alert('success', 'Stored Service VM was modified successfully.', null);
-        alert.show();
+        var alertBox = Alert('success', 'Stored Service VM was modified successfully.', null);
+        alertBox.show();
         console.log( 'Service VM was modified successfully.');        
       },
       error: function( req, status, err ) {
@@ -136,8 +171,8 @@ function openEditVNC(vncUrl)
             
             // Notify about the error.
             console.log( 'Something went wrong', status, err );
-            var alert = Alert('danger', 'Stored Service VM could not be opened for modification.', null);
-            alert.show();       
+            var alertBox = Alert('danger', 'Stored Service VM could not be opened for modification.', null);
+            alertBox.show();       
       }
     });
     
@@ -149,6 +184,6 @@ function openEditVNC(vncUrl)
 /////////////////////////////////////////////////////////////////////////////////////
 function showEditSuccess()
 {
-    var alert = Alert('success', 'Service was modified successfully.');
-    alert.show();
+    var alertBox = Alert('success', 'Service was modified successfully.');
+    alertBox.show();
 }
