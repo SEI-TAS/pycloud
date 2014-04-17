@@ -23,9 +23,9 @@ def make_map():
     connect('/servicevms/stopSVM/{id}', controller='servicevms', action='stopSVM')
     connect('/servicevms/openvnc/{id}', controller='servicevms', action='openvnc')
 
-    connect('/modify', controller='modify', action='index')
-    connect('/modify/{id}', controller='modify', action='index')    
-    connect('/modify/createSVM', controller='modify', action='createSVM')
-    connect('/modify/openSVM/{id}', controller='modify', action='openSVM')
+    connect('/service/add', controller='modify', action='index')
+    connect('/service/createSVM', controller='modify', action='createSVM')
+    connect('/service/openSVM/{id}', controller='modify', action='openSVM')
+    connect('/service/edit/{id}', controller='modify', action='index')    
 
     return mapper

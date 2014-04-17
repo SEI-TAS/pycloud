@@ -6,6 +6,7 @@ import urllib
 from pylons import request, response, session, tmpl_context as c, url
 from pylons import g
 from pylons.templating import render_mako as render
+from pylons.controllers.util import redirect_to
 
 from webhelpers.html import HTML
 
@@ -50,6 +51,12 @@ class ModifyController(BaseController):
         # Setup the page to render.
         page.form_values = {}
         page.form_errors = {}
+        
+        # URL to create a new Service VM.
+        page.createSVMURL =  h.url_for(controller="modify", action='createSVM')
+        
+        # URL to open an SVM.
+        page.openSVMURL = h.url_for(controller="modify", action='openSVM')
                 
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
@@ -57,9 +64,6 @@ class ModifyController(BaseController):
             # We are creating a new service.
             page.newService = True
             page.serviceID = ''            
-            
-            # URL to create a new Service VM.
-            page.createSVMURL =  h.url_for(controller="modify", action='createSVM')
         else:
             # We are editing an existing service.
             page.newService = False
@@ -70,9 +74,6 @@ class ModifyController(BaseController):
             serviceID = serviceID.strip()
             serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
             storedServiceVM = serviceVmRepo.findServiceVM(serviceID)
-            
-            # Add link to open an SVM.
-            page.openSVMURL = h.url_for(controller="modify", action='openSVM', id=serviceID)
             
             # Set the data fields.
             page.form_values['serviceID'] = serviceID
@@ -115,16 +116,16 @@ class ModifyController(BaseController):
         reqMinMem           = request.params.get("reqMinMem")
         reqIdealMem         = request.params.get("reqIdealMem")
 
-        print serviceID + ": " + serviceDescription + ": " + reqMinMem
+        #print serviceID + ": " + serviceDescription + ": " + reqMinMem
         
         # Load the current Stored SVM info.
         # Note that we have to use the original service id to find the data, 
         # since it may have been changed by the user.
         serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)        
-        originalServiceID = request.params.get("originalServiceID", None)
+        originalServiceID = request.params.get("originalServiceID", '')
 
         # Check if we have an originalServiceID value; if not, it means this is a new service.        
-        if(originalServiceID is not None):
+        if(originalServiceID != ''):
             # We have an original id; load the data from the cache.
             storedServiceVM = serviceVmRepo.findServiceVM(originalServiceID)
         else:
@@ -144,19 +145,11 @@ class ModifyController(BaseController):
         storedServiceVM.protect()
         
         # If the service ID changed, rename the folders (as it needs to have the correct id).
-        if(originalServiceID is not None and originalServiceID != serviceID):
+        if(originalServiceID != '' and originalServiceID != serviceID):
             serviceVmRepo.renameStoredVM(originalServiceID, serviceID)
         
-        # Load the data into the page.
-        page = ModifyPage()
-        page.serviceID = serviceID
-        page = self.loadDataIntoPage(page, serviceID)
-        
-        # Add a notification to the user about the changes.
-        page.initScript = 'document.getElementsByTagName("body")[0].addEventListener("load", showEditSuccess, false);';
-        
         # Render the page.
-        return page.render()
+        return redirect_to(controller='services')
 
     ############################################################################################################
     # Creates a new Service VM and opents it in a VNC window for editing.
@@ -173,20 +166,30 @@ class ModifyController(BaseController):
         fields = json.loads(parsedJsonString)        
         
         # Create an SVM and open a VNC window to modify the VM.
-        newStoredServiceVM = svmManager.createServiceVM(osType = fields['type'], 
-                                                        sourceImage = fields['source'],
-                                                        serviceId = fields['serviceId'], 
-                                                        name = fields['serviceId'],
-                                                        port = fields['port'])
+        try:
+            newStoredServiceVM = svmManager.createServiceVM(osType = fields['type'], 
+                                                            sourceImage = fields['source'],
+                                                            serviceId = fields['serviceId'], 
+                                                            name = fields['serviceId'],
+                                                            port = fields['port'])
+            
+            #newStoredServiceVM.folder='/home/adminuser/cloudlet/pycloud/data/svmcache/test1'
+            #newStoredServiceVM.diskImageFilePath='/home/adminuser/cloudlet/pycloud/data/svmcache/test1/test1.qcow2'
+            #newStoredServiceVM.vmStateImageFilepath='/home/adminuser/cloudlet/pycloud/data/svmcache/test1/test1.qcow2.lqs'
+        except Exception as e:
+            # If there was a problem creating the SVM, return that there was an error.
+            print 'Error creating Service VM: ' + str(e);
+            return self.JSON_NOT_OK            
         
         # Return information about the created Stored SVM.
         jsonDataStructure = { "FOLDER" : newStoredServiceVM.folder, \
                               "DISK_IMAGE" : newStoredServiceVM.diskImageFilePath, \
-                              "STATE_IMAGE" : newStoredServiceVM.vmStateImageFilepath
-                            }
+                              "STATE_IMAGE" : newStoredServiceVM.vmStateImageFilepath  
+                            }      
         jsonDataString = json.dumps(jsonDataStructure)        
         
         # Everything went well.
+        print 'Returning newly created SVM data.' + jsonDataString
         return jsonDataString
 
     ############################################################################################################

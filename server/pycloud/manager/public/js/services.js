@@ -55,7 +55,8 @@ function removeService(removeUrl, redirectUrl)
       error: function( req, status, err ) {
         dialog.hide();
         console.log( 'something went wrong', status, err );
-        notify('error', 'There was a problem removing the service.');
+        var alert = Alert('danger', 'There was a problem removing the service.', null);
+        alert.show();     
       }
     });
 }

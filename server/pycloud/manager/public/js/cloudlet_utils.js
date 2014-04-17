@@ -19,15 +19,21 @@ function WaitDialog (headerText) {
 /////////////////////////////////////////////////////////////////////////////////////
 // Creates a notification to inform the user of an event.
 /////////////////////////////////////////////////////////////////////////////////////
-function Alert(level, message) {
+function Alert(level, message, alertContainer) {
     // Template for the alert message.
-    var alertDiv = $('<div id="alert-div" style="position: fixed; top: 55px; display: block;"><div class="alert alert-dismissable fade in alert-'+level+'" id="alert-element"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><div id="alert-text">'+message+'</div></div></div>');
+    var alertDiv = $('<div id="alert-div" style="position: fixed; top: 55px; display: block; width=50%; margin-left: auto; margin-right: auto;"><div class="alert alert-dismissable fade in alert-'+level+'" id="alert-element"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><div id="alert-text">'+message+'</div></div></div>');
 
     // Functions.
     return {
         show: function() {
+            // Set the container for the alert.
+            if(alertContainer == null)
+            {
+                alertContainer =  $('#navbar-container');
+            }
+            
             // Show the alert.
-            $('#navbar-container').append(alertDiv);
+           alertContainer.append(alertDiv);
             
             // Add timer to auto-close the alert after some time.
             alertElement = $('#alert-element');

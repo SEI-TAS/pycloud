@@ -18,7 +18,7 @@ ${parent.header()}
 
 <%block>
 
-<form id="service-form" class="form-service" method="post" action="${url_for('modify')}" role="form">
+<form id="service-form" class="form-service" method="post" action="${h.url_for(controller='modify')}" role="form">
 
     <!-- GENERAL -->
     <div class="panel panel-primary col-sm-6">
@@ -49,15 +49,12 @@ ${parent.header()}
     <div class="panel panel-primary col-sm-6">
         <div class="panel-heading"> Stored Service VM </div>
         <div class="panel-body">
-            ${text('vmStoredFolder', input_width=12, label=_('Stored VM Folder'))}
+            ${text('vmStoredFolder', input_width=12, label=_('Stored VM Folder'), disabled=True)}
             ${text('vmDiskImageFile', input_width=12, label=_('Disk Image File'), disabled=True)}
             ${text('vmStateImageFile', input_width=12, label=_('State Image File'), disabled=True)}
             
-		    % if page.newService:
-        	    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-new-servicevm">Create Service VM</button>
-      	    % else:
-          	    <button type="button" class="btn btn-primary" onclick="openEditVNC('${page.openSVMURL}')">Modify Service VM</button>
-            % endif
+    	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm" ${'disabled' if not page.newService else ''}>Create Service VM</button>
+      	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="openEditVNC('${page.openSVMURL}')" ${'disabled' if page.newService else ''}>Modify Service VM</button>
         </div>
     </div>
 
@@ -73,7 +70,7 @@ ${parent.header()}
     <div class="panel panel-primary col-sm-12">
         <div class="panel-body">
             <div class="form-group col-sm-12">
-                <button type="reset"  class="btn btn-default btn-primary col-sm-offset-1 col-sm-4" name="cancelButton" id="cancelButton">Cancel</button>
+                <button type="reset"  class="btn btn-default btn-primary col-sm-offset-1 col-sm-4" name="cancelButton" id="cancelButton">Undo Changes</button>
                 <button type="submit" class="btn btn-default btn-primary col-sm-offset-2 col-sm-4" name="submitButton" id="submitButton">Submit</button>
             </div>
         </div>
