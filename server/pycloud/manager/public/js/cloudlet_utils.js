@@ -3,15 +3,22 @@
 /////////////////////////////////////////////////////////////////////////////////////
 function WaitDialog (headerText) {
     // HTML for the modal dialog.
-    var pleaseWaitDiv = $('<div class="modal fade" id="pleaseWaitDialog" role="dialog" data-backdrop="static" data-keyboard="false"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h3>'+headerText+'...</h3></div><div class="modal-body"><div class="progress progress-striped active"><div class="progress-bar" role="progressbar" style="width: 100%;"></div></div></div></div></div></div>');
+    var pleaseWaitDiv = '<div class="wait-dialog modal fade" id="pleaseWaitDialog" role="dialog" data-backdrop="static" data-keyboard="false"><div class="modal-dialog" id="pleaseWaitModal"><div class="modal-content"><div class="modal-header"><h3>'+headerText+'...</h3></div><div class="modal-body"><div class="progress progress-striped active"><div class="progress-bar" role="progressbar" style="width: 100%;"></div></div></div></div></div></div>';
+    
+    // Remove the modal once it's closed. NOTE: this is not working.
+    $(document).on('hidden', '.wait-dialog', function () {
+        $(this).remove();
+    });    
     
     // Functions to show and hide the dialog.
     return {
         show: function() {
-            pleaseWaitDiv.modal();
+            $('body').append(pleaseWaitDiv);
+            $('.wait-dialog').show();
+            $('.wait-dialog').modal();
         },
         hide: function () {
-            pleaseWaitDiv.modal('hide');
+            $('.wait-dialog').modal('hide');
         },
     };
 }
