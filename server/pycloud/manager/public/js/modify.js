@@ -4,10 +4,6 @@
 /////////////////////////////////////////////////////////////////////////////////////
 function openCreateVNC()
 {
-    // Show progress bar.
-    var dialog = WaitDialog("Starting and Connecting to Service VM");
-    dialog.show();
-    
     // Get the modal div, which will be used later for alerts.
     var modalDiv = $('#modal-new-servicevm');
     
@@ -24,6 +20,29 @@ function openCreateVNC()
     svm_info.port = serviceForm.find('#servicePort').val();
     svm_info.serviceId = serviceForm.find('#serviceID').val();
     jsonData = JSON.stringify(svm_info);
+    
+    // Validate that we have all the necessary info.
+    var errorHeader = 'You must enter a value for ';
+    var errorMsg = '';
+    console.log(jsonData);
+    if(svm_info.source == '')
+        errorMsg = errorHeader + ' source disk image.';
+    else if(svm_info.serviceId == '')
+        errorMsg = errorHeader + ' service id.';
+    else if(svm_info.port == '')
+        errorMsg = errorHeader + ' service port.';
+        
+    // If an input is missing, notify the user and stop the process.
+    if(errorMsg != '')
+    {
+        var alert = Alert('danger', errorMsg, modalDiv);
+        alert.show();
+        return;
+    }
+    
+    // Show progress bar.
+    var dialog = WaitDialog("Starting and Connecting to Service VM");
+    dialog.show();    
 
     // Send the ajax request to start the VNC window.
     $.ajax({
