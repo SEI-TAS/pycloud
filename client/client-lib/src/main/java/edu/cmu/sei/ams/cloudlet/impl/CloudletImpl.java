@@ -37,6 +37,8 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
     private final InetAddress addr;
     private final int port;
 
+    private List<Service> servicesCache;
+
     public CloudletImpl(String name, InetAddress addr, int port)
     {
         this.name = name;
@@ -97,6 +99,13 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
         {
             log.error("Error getting services array from response!", e);
         }
+
+        if (servicesCache == null)
+            servicesCache = new ArrayList<Service>();
+
+        log.error("Caching " + ret.size() + " services");
+        servicesCache.clear();
+        servicesCache.addAll(ret);
 
         log.exit(ret);
         return ret;
@@ -191,6 +200,34 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
                 }
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Service getServiceById(String id) throws CloudletException
+    {
+        log.entry(id);
+        if (id == null)
+        {
+            log.exit(null);
+            return null;
+        }
+
+        if (servicesCache == null)
+            getServices();
+
+        for (Service service : servicesCache)
+        {
+            if (id.equalsIgnoreCase(service.getServiceId()))
+            {
+                log.exit(service);
+                return service;
+            }
+        }
+        log.exit(null);
+        return null;
     }
 
     /**

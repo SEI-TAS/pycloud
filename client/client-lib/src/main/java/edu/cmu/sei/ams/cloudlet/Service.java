@@ -22,9 +22,17 @@ public interface Service
 
     /**
      * Asks the server to start the service. Blocks until the service is started.
+     * This action will attempt to join an existing VM by default.
      * @return Immutable instance of the information regarding the started service
      */
     public ServiceVM startService();
+
+    /**
+     * Asks the server to start the service. Blocks until the service is started.
+     * @param join Specifies if we should join an existing VM or not
+     * @return Immutable instance of the information regarding the started service
+     */
+    public ServiceVM startService(boolean join);
 
     /**
      * Stops an instance of this service<br/>

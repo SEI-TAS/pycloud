@@ -66,8 +66,15 @@ public class ServiceImpl implements Service
     @Override
     public ServiceVM startService()
     {
+        return startService(true);
+    }
+
+    @Override
+    public ServiceVM startService(boolean join)
+    {
         ServiceVM ret = null;
         StartServiceCommand cmd = new StartServiceCommand(this);
+        cmd.setIsolated(!join);
         try
         {
             String jsonStr = mCloudlet.executeCommand(cmd);

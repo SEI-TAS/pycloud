@@ -18,6 +18,11 @@ public class StartServiceCommand extends CloudletCommand
         getArgs().put("serviceId", mService.getServiceId());
     }
 
+    public void setIsolated(boolean isolated)
+    {
+        getArgs().put("isolated", "" + isolated);
+    }
+
     @Override
     public String getPath()
     {
