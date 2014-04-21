@@ -126,7 +126,7 @@ public class CloudletSelectionActivity extends Activity
         protected void onPreExecute()
         {
             mProgressDialog = new ProgressDialog(CloudletSelectionActivity.this);
-            mProgressDialog.setTitle("Cloudlet");
+            mProgressDialog.setTitle("Cloudlet: " + cloudlet.getName());
             mProgressDialog.setIndeterminate(false);
             mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             mProgressDialog.setMessage("Starting service");
