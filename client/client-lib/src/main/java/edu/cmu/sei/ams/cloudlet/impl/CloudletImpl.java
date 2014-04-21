@@ -1,8 +1,8 @@
 package edu.cmu.sei.ams.cloudlet.impl;
 
-import edu.cmu.sei.ams.cloudlet.Cloudlet;
-import edu.cmu.sei.ams.cloudlet.CloudletError;
-import edu.cmu.sei.ams.cloudlet.Service;
+import edu.cmu.sei.ams.cloudlet.*;
+import edu.cmu.sei.ams.cloudlet.impl.cmds.CloudletCommand;
+import edu.cmu.sei.ams.cloudlet.impl.cmds.GetMetadataCommand;
 import edu.cmu.sei.ams.cloudlet.impl.cmds.GetServicesCommand;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -27,6 +27,7 @@ import java.util.List;
  * User: jdroot
  * Date: 3/19/14
  * Time: 4:05 PM
+ * CloudletImpl handles both the cloudlet metadata issuing commands to the cloudlet
  */
 public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
 {
@@ -36,6 +37,8 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
     private final InetAddress addr;
     private final int port;
 
+    private List<Service> servicesCache;
+
     public CloudletImpl(String name, InetAddress addr, int port)
     {
         this.name = name;
@@ -43,48 +46,48 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
         this.port = port;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName()
     {
         return name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public InetAddress getAddress()
     {
         return addr;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getPort()
     {
         return port;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public List<Service> getServices() throws Exception
+    public List<Service> getServices() throws CloudletException
     {
-        log.entry();
-
-        String result = executeCommand(new GetServicesCommand()); //CloudletCommand.GET_SERVICES.execute(this);
-
-        List<Service> ret = new ArrayList<Service>();
-
-        JSONObject obj = new JSONObject(result);
-        JSONArray services = obj.getJSONArray("services");
-        for (int x = 0; x < services.length(); x++)
-        {
-            JSONObject service = services.getJSONObject(x);
-            ret.add(new ServiceImpl(this, service));
-        }
-
-        log.exit(ret);
-        return ret;
+        return getServices(true);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @SuppressWarnings("deprecation")
-    public String executeCommand(edu.cmu.sei.ams.cloudlet.impl.cmds.CloudletCommand cmd) throws CloudletError
+    public String executeCommand(CloudletCommand cmd) throws CloudletException
     {
         log.entry(cmd.getMethod(), cmd.getPath());
 
@@ -100,6 +103,8 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
         {
             if (args == null)
                 args = "?";
+            else
+                args += "&";
             args += key + "=" + cmd.getArgs().get(key);
         }
 
@@ -140,19 +145,19 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
             log.info("Response object: " + response.getStatusLine().getReasonPhrase());
 
             if (code != 200)
-                throw new CloudletError(response.getStatusLine() + (responseText == null ? "" : ":\n" + responseText));
+                throw new CloudletException(response.getStatusLine() + (responseText == null ? "" : ":\n" + responseText));
 
             log.exit(responseText);
             return responseText;
         }
-        catch (CloudletError e)
+        catch (CloudletException e)
         {
             throw e; //Just pass it on
         }
         catch (Exception e)
         {
-            log.error("Error connecting to server!", e);
-            throw new CloudletError("Error sending command to server!", e);
+            log.error("Error connecting to " + getAddress() + ": " + e.getMessage());
+            throw new CloudletException("Error sending command to server!", e);
         }
         finally
         {
@@ -168,6 +173,87 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
                 }
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Service getServiceById(String id) throws CloudletException
+    {
+        log.entry(id);
+        if (id == null)
+        {
+            log.exit(null);
+            return null;
+        }
+
+        if (servicesCache == null)
+            getServices();
+
+        for (Service service : servicesCache)
+        {
+            if (id.equalsIgnoreCase(service.getServiceId()))
+            {
+                log.exit(service);
+                return service;
+            }
+        }
+        log.exit(null);
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CloudletSystemInfo getSystemInfo() throws CloudletException
+    {
+        String ret = this.executeCommand(new GetMetadataCommand());
+        return new CloudletSystemInfoImpl(new JSONObject(ret));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Service> getServices(boolean useCache) throws CloudletException
+    {
+        log.entry(useCache);
+
+        //If the caller wants us to use the cache, and the cache exists, return that
+        //We do not return the actual cache because we do not want external parties modifying it
+        if (useCache && servicesCache != null)
+            return new ArrayList<Service>(servicesCache);
+
+        String result = executeCommand(new GetServicesCommand()); //CloudletCommand.GET_SERVICES.execute(this);
+
+        List<Service> ret = new ArrayList<Service>();
+
+        try
+        {
+            JSONObject obj = new JSONObject(result);
+            JSONArray services = obj.getJSONArray("services");
+            for (int x = 0; x < services.length(); x++)
+            {
+                JSONObject service = services.getJSONObject(x);
+                ret.add(new ServiceImpl(this, service));
+            }
+        }
+        catch (Exception e)
+        {
+            log.error("Error getting services array from response!", e);
+        }
+
+        if (servicesCache == null)
+            servicesCache = new ArrayList<Service>();
+
+        log.error("Caching " + ret.size() + " services");
+        servicesCache.clear();
+        servicesCache.addAll(ret);
+
+        log.exit(ret);
+        return ret;
     }
 
     /**

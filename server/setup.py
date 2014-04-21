@@ -21,7 +21,8 @@ setup(
         "WebTest==1.4.3",        
         "mako>=0.5",
         "pymongo>=2.6.3",
-        "paramiko"
+        "paramiko",
+        "psutil==2.0.0"
         ],
     packages=find_packages(exclude=['ez_setup']),
     entry_points="""

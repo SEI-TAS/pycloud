@@ -8,6 +8,7 @@ import java.net.InetAddress;
  * User: jdroot
  * Date: 3/21/14
  * Time: 10:04 AM
+ * A collection of utilities for parsing JSON strings without throwing exceptions
  */
 public class CloudletUtilities
 {
@@ -39,6 +40,34 @@ public class CloudletUtilities
         return 0;
     }
 
+    static double getSafeDouble(String name, JSONObject json)
+    {
+        try
+        {
+            if (json.has(name))
+                return json.getDouble(name);
+        }
+        catch (Exception e)
+        {
+
+        }
+        return 0.0;
+    }
+
+    static long getSafeLong(String name, JSONObject json)
+    {
+        try
+        {
+            if (json.has(name))
+                return json.getLong(name);
+        }
+        catch (Exception e)
+        {
+
+        }
+        return 0l;
+    }
+
     static InetAddress getSafeInetAddress(String name, JSONObject json)
     {
         String value = getSafeString(name, json);
@@ -52,5 +81,19 @@ public class CloudletUtilities
         {
             return null;
         }
+    }
+
+    static JSONObject getSafeJsonObject(String name, JSONObject json)
+    {
+        try
+        {
+            if (json.has(name))
+                return json.getJSONObject(name);
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
     }
 }

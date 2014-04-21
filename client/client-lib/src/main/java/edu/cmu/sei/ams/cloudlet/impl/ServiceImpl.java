@@ -1,6 +1,6 @@
 package edu.cmu.sei.ams.cloudlet.impl;
 
-import edu.cmu.sei.ams.cloudlet.CloudletError;
+import edu.cmu.sei.ams.cloudlet.CloudletException;
 import edu.cmu.sei.ams.cloudlet.Service;
 import edu.cmu.sei.ams.cloudlet.ServiceVM;
 import edu.cmu.sei.ams.cloudlet.impl.cmds.StartServiceCommand;
@@ -27,6 +27,11 @@ public class ServiceImpl implements Service
 
     private ServiceVM serviceVM;
 
+    /**
+     * Creates an instance a service based on a specific cloudlet
+     * @param mCloudlet The cloudlet this service lives on
+     * @param json The json data describing this service
+     */
     ServiceImpl(CloudletCommandExecutor mCloudlet, JSONObject json)
     {
         this.serviceId = getSafeString("_id", json);
@@ -34,23 +39,42 @@ public class ServiceImpl implements Service
         this.mCloudlet = mCloudlet;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return
+     */
     @Override
     public String getServiceId()
     {
         return serviceId;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return
+     */
     @Override
     public String getDescription()
     {
         return description;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return
+     */
     @Override
     public ServiceVM startService()
     {
+        return startService(true);
+    }
+
+    @Override
+    public ServiceVM startService(boolean join)
+    {
         ServiceVM ret = null;
         StartServiceCommand cmd = new StartServiceCommand(this);
+        cmd.setIsolated(!join);
         try
         {
             String jsonStr = mCloudlet.executeCommand(cmd);
@@ -58,13 +82,17 @@ public class ServiceImpl implements Service
             ret = new ServiceVMImpl(mCloudlet, this, obj);
             this.serviceVM = ret;
         }
-        catch (CloudletError e)
+        catch (CloudletException e)
         {
             log.error("Error starting service", e);
         }
         return ret;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return
+     */
     @Override
     public boolean stopService()
     {
@@ -77,12 +105,20 @@ public class ServiceImpl implements Service
         return ret;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return
+     */
     @Override
     public ServiceVM getServiceVM()
     {
         return serviceVM;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return
+     */
     @Override
     public String toString()
     {

@@ -8,28 +8,13 @@
     Cached Services
 </%block>
 
-<table class="table table-striped table-bordered table-condensed">
-    ${page.servicesGrid}
-</table>
+<div class="panel panel-default">
+  <div class="panel-body">
+    <table class="table table-striped table-bordered table-condensed">
+        ${page.servicesGrid}
+    </table>
+    <a class="btn btn-large btn-success" href="${h.url_for(controller='modify')}">Add Service</a>
+  </div>
+</div>
 
-<script>
-    // Function to start a Service VM through Ajax, and redirect to the given page.
-    function startSVM(startUrl, redirectUrl)
-    {
-        // Show progress bar.
-        var dialog = WaitDialog("Starting Service VM Instance");
-        dialog.show();
-        
-        // Send the ajax request to start the service vm.
-        $.ajax({
-          url: startUrl,
-          dataType: 'json',
-          success: function( resp ) {
-            window.location.href = redirectUrl;
-          },
-          error: function( req, status, err ) {
-            console.log( 'something went wrong', status, err );
-          }
-        });
-    }    
-</script>
+<script src="/manager/js/services.js"></script>

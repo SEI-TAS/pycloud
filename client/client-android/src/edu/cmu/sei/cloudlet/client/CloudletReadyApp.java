@@ -1,6 +1,7 @@
 package edu.cmu.sei.cloudlet.client;
 
 import edu.cmu.sei.ams.cloudlet.Service;
+import edu.cmu.sei.ams.cloudlet.ServiceVM;
 import edu.cmu.sei.cloudlet.client.models.ServiceVMInstance;
 import edu.cmu.sei.cloudlet.client.synth.ui.VMSynthesisActivity;
 import android.app.Activity;
@@ -51,6 +52,17 @@ public class CloudletReadyApp
         m_intentAction = service.getServiceId() + INTENT_ACTION_START_SUFFIX;
         addr = service.getServiceVM().getAddress().getHostAddress();
         port = service.getServiceVM().getPort();
+
+        log.info("Creating app: " + m_intentAction);
+        log.info("Address: " + addr);
+        log.info("Port: " + port);
+    }
+
+    public CloudletReadyApp(ServiceVM serviceVM)
+    {
+        m_intentAction = serviceVM.getServiceId() + INTENT_ACTION_START_SUFFIX;
+        addr = serviceVM.getAddress().getHostAddress();
+        port = serviceVM.getPort();
 
         log.info("Creating app: " + m_intentAction);
         log.info("Address: " + addr);

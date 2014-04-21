@@ -10,8 +10,8 @@ import shutil
 # To handle VMs.
 from pycloud.pycloud.vm import runningvm
 
-# To create Running Service VMs (from this same package).
-import runningsvmfactory
+# To create Service VMs (from this same package).
+import svmfactory
 import storedservicevm
 
 # To get info about existing VMs (from this same package).
@@ -117,7 +117,7 @@ class ServiceVMInstance(object):
         
         print '\n*************************************************************************************************'        
         print "Resuming VM."
-        self.runningSVM = runningsvmfactory.RunningSVMFactory.createRunningVM(storedVM=clonedStoredServiceVM,
+        self.runningSVM = svmfactory.ServiceVMFactory.createServiceVM(storedVM=clonedStoredServiceVM,
                                                                                         vmId=self.instanceId,
                                                                                         showVNC=showVNC,
                                                                                         sshHostPort=self.sshHostPort,

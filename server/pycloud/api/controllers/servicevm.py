@@ -14,11 +14,10 @@ import urlparse
 # Controller to derive from.
 from pycloud.pycloud.pylons.lib.base import BaseController
 
-# Repository to look for SVMs, and manager to handle running instances.
-from pycloud.pycloud.servicevm import svmrepository
+# Manager to handle running instances, and logging util.
 from pycloud.pycloud.servicevm import instancemanager
-
 from pycloud.pycloud.utils import timelog
+from pycloud.pycloud.pylons.lib.util import asjson
 
 log = logging.getLogger(__name__)
 
@@ -27,8 +26,8 @@ log = logging.getLogger(__name__)
 ################################################################################################################
 class ServiceVMController(BaseController):
     
-    # Manager of running VMs.
-    runningVMManager = None
+    # Manager of service VMs instances.
+    instanceManager = None
     
     JSON_OK = json.dumps({"STATUS" : "OK" })
     JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})    
@@ -38,7 +37,7 @@ class ServiceVMController(BaseController):
     ################################################################################################################ 
     def __init__(self):
         # Create the manager for running instances.
-        self.runningVMManager = g.cloudlet.instanceManager
+        self.instanceManager = g.cloudlet.instanceManager
 
     ################################################################################################################    
     # Cleans up any open resources.
@@ -52,6 +51,7 @@ class ServiceVMController(BaseController):
     # Get a list of the services in the VM. In realiy, for now at least, it actually get a list of services that
     # have associated ServiceVMs in the cache.
     ################################################################################################################
+    @asjson
     def GET_listServices(self):
         print '\n*************************************************************************************************'
         timelog.TimeLog.reset()
@@ -65,18 +65,16 @@ class ServiceVMController(BaseController):
         servicesList = []
     	for storedVMId in vmList:
             storedVM = vmList[storedVMId]
-            serviceInfo = {'_id':storedVM.metadata.serviceId,
-                           'description':storedVM.name}
+            serviceInfo = {'_id': storedVM.metadata.serviceId,
+                           'description': storedVM.name}
             servicesList.append(serviceInfo)        
         
         # Create a JSON response to indicate the result.
-        jsonDataStructure = { "services" : servicesList }
-        jsonDataString = json.dumps(jsonDataStructure)
+        jsonDataStructure = {"services": servicesList}
         
         # Send the response.
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
-        responseText = jsonDataString
-        return responseText  
+        return jsonDataStructure
             
     ################################################################################################################
     # Called to check if a specific service is already provided by a cached Service VM on this server.
@@ -108,6 +106,10 @@ class ServiceVMController(BaseController):
     # - isolated: indicates if we want to run our own Service VM (true) or if we can share an existing one ("false")
     ################################################################################################################
     def GET_start(self):
+        # Start the Service VM on a random port.
+        print '\n*************************************************************************************************'        
+        timelog.TimeLog.stamp("Request received: start VM with service id " + serviceId)
+
         # Get variables.
         serviceId = request.GET['serviceId']
         if(serviceId is None):
@@ -116,27 +118,26 @@ class ServiceVMController(BaseController):
             return self.JSON_NOT_OK        
 
         # Check the flags that indicates whether we could join an existing instance.
-        isolated = request.GET['serviceId']
-        if(isolated is None):
-            # If no value was sent, set true by default.
-            isolated = "true"
+        isolated = request.params.get('isolated', True)
+        if not isinstance(isolated, bool): # Will only be bool if it was none and the default was set
+            isolated = isolated.lower() in ("yes", "true", "t", "1")
+
         
         # Start the Service VM on a random port.
         print '\n*************************************************************************************************'        
         timelog.TimeLog.stamp("Request received: start VM with service id " + serviceId)
         
         # Check if we will want to try to join an existing VM.
-        joinIfPossible = False
-        if(isolated == "false"):
+        joinIfPossible = not isolated
+        if joinIfPossible:
             print "Will join existing VM if possible."
-            joinIfPossible = True
-            
+
         # Get our current IP, the one that the client requesting this is seeing.
         # The HTTP_HOST header will also have the port after a colon, so we remove it.
         hostIp = request.environ['HTTP_HOST'].split(':')[0]
 
         # Start or join a VM.
-        instanceInfo = self.runningVMManager.getServiceVMInstance(serviceId=serviceId, joinExisting=joinIfPossible)
+        instanceInfo = self.instanceManager.getServiceVMInstance(serviceId=serviceId, joinExisting=joinIfPossible)
         print "Assigned VM running with id %s on IP '%s' and port %d" % (instanceInfo.instanceId, hostIp, instanceInfo.serviceHostPort)
                 
         # Create a JSON response to indicate the IP and port of the Service VM (the IP will be the same as the hosts's as
@@ -170,7 +171,7 @@ class ServiceVMController(BaseController):
         timelog.TimeLog.stamp("Request received: stop VM with instance id " + instanceId)
         
         # Stop the Service VM.        
-        success = self.runningVMManager.stopServiceVMInstance(instanceId)
+        success = self.instanceManager.stopServiceVMInstance(instanceId)
         if(success):
             print "VM with instance id %s stopped" % instanceId
             responseText = self.JSON_OK

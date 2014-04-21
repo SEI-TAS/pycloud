@@ -8,17 +8,12 @@
 # Used to parse command-line arguments.
 import argparse
 
-# Manager of VM stuff.
-from pycloud.pycloud.vm import storedvm
-from pycloud.pycloud.servicevm import instancemanager
-from pycloud.pycloud.servicevm import svmrepository
-from pycloud.pycloud.servicevm import ssvmfactory
-from pycloud.pycloud.servicevm import runningsvmfactory
+# For SVM management.
+from pycloud.pycloud.servicevm import svmmanager
+
+# For config management.
 from pycloud.pycloud.utils import config
 from pycloud.pycloud import cloudlet
-
-# For exceptions.
-from pycloud.pycloud.vm import vmrepository
 
 ################################################################################################################
 # Global constants.
@@ -34,12 +29,6 @@ CMD_LIST_VM = "list"
 CMD_TEST_SSH = "test_ssh"
 CMD_MODIFY = "modify"
 COMMAND_LIST = [CMD_CREATE_VM, CMD_RUN_VM, CMD_LIST_VM, CMD_TEST_SSH, CMD_MODIFY]
-
-################################################################################################################
-# Global variables.
-################################################################################################################
-
-g_cloudletConfig = None
 
 ################################################################################################################
 # Parse the basic commands.
@@ -102,146 +91,46 @@ def parseTestSshCommandArguments():
     parsedArguments = parser.parse_known_args()[0]
     
     return parsedArguments 
-
- ################################################################################################################
-# Creates and a new Service VM.
-################################################################################################################
-def commandCreateVM(arguments):
-    try:
-        # Create it.
-        newStoredServiceVM = ssvmfactory.StoredServiceVMFactory.createFromDiskImage(g_cloudletConfig,
-                                                                         vmType=arguments.type,
-                                                                         sourceDiskImageFilePath=arguments.sourceImage,
-                                                                         serviceId=arguments.serviceId, 
-                                                                         serviceVMName=arguments.name, 
-                                                                         servicePort=arguments.port)
-        
-        # Store it in the repo.
-        print "Saving ServiceVM."
-        serviceVMRepository = svmrepository.ServiceVMRepository(g_cloudletConfig)
-        serviceVMRepository.addStoredVM(newStoredServiceVM)
-        print "ServiceVM stored in repository."            
-        
-    except storedvm.StoredVMException as e:
-        print "Error creating Service VM: " + e.message 
-        
-################################################################################################################
-# Creates and runs a transient copy of a stored service VM present in the cache.
-################################################################################################################
-def commandRunVM(arguments):
-    try:   
-        # Run a VM with a VNC GUI.
-        instanceMan = instancemanager.ServiceVMInstanceManager(g_cloudletConfig)
-        runningInstance = instanceMan.getServiceVMInstance(serviceId=arguments.serviceId,
-                                                           showVNC=True)
-
-        # After we unblocked because the user closed the GUI, we just kill the VM.
-        instanceMan.stopServiceVMInstance(runningInstance.instanceId)
-    except instancemanager.ServiceVMInstanceManagerException as e:
-        print "Error running Service VM: " + e.message
-        
-################################################################################################################
-# Allows the modification of an existing ServiceVM from the cache.
-################################################################################################################
-def commandModifyVM(arguments):        
-    try:     
-        # Get the VM, and make it writeable.
-        serviceId = arguments.serviceId
-        serviceVMRepository = svmrepository.ServiceVMRepository(g_cloudletConfig)
-        storedServiceVM = serviceVMRepository.getStoredServiceVM(serviceId)
-        storedServiceVM.unprotect()
-        
-        # Run the VM with GUI and store its state.
-        defaultMaintenanceServiceHostPort = 16001
-        runningSVM = runningsvmfactory.RunningSVMFactory.createRunningVM(storedVM=storedServiceVM,
-                                                                         showVNC=True,
-                                                                         serviceHostPort=defaultMaintenanceServiceHostPort)
-        runningSVM.suspendToFile()
-        
-        # Destroy the running VM.
-        runningSVM.destroy()     
-        
-        # Make the stored VM read only again.
-        storedServiceVM.protect()
-    except instancemanager.ServiceVMInstanceManagerException as e:
-        print "Error modifying Service VM: " + e.message
-        
-################################################################################################################
-# Prints a list of Service VMs in the cache.
-################################################################################################################
-def commandListVM():
-    try:
-        # Get a list and print it.
-        serviceVmRepo = svmrepository.ServiceVMRepository(g_cloudletConfig)
-        vmList = serviceVmRepo.getVMListAsString()
-        print '\nService VM List:'
-        print vmList
-    except vmrepository.VMRepositoryException as e:
-        print "Error getting list of Server VMs: " + e.message
-        
-################################################################################################################
-# Tests an SSH connection to a VM.
-################################################################################################################
-def commandTestSSH(arguments):
-    instanceMan = None
-    runningInstance = None        
-    try:
-        # Create the manager and access the VM.
-        instanceMan = instancemanager.ServiceVMInstanceManager(g_cloudletConfig)
-        runningInstance = instanceMan.getServiceVMInstance(serviceId=arguments.serviceId,
-                                                           showVNC=False)
-        
-        # Send commands.
-        runningInstance.uploadFile(arguments.sfilepath, arguments.dfilepath)
-        result = runningInstance.executeCommand(arguments.command)
-        print 'Result of command: ' + result
-        
-        # Close connection.
-        runningInstance.closeSSHConnection()
-        
-    except instancemanager.ServiceVMInstanceManagerException as e:
-        print "Error testing ssh connection: " + e.message     
-    finally:
-        # Cleanup.
-        if(instanceMan != None and runningInstance != None):
-            instanceMan.stopServiceVMInstance(runningInstance.instanceId) 
     
 ################################################################################################################
 # Main entry point of the tool.
 ################################################################################################################
 def main():
-
     # Load the config. (TODO: this is a hacky way of sharing the devini file with Pylons).
     # NOTE: here pycloud.util.config is creating a dictionary of configurations in the default
     # section of development.ini. This is similar to what is created by Pylons when loading
     # a configuraton, tough pylons.config has more information. Since Cloudlet uses only the basic
     # dictionary values, the dictionary we load here is equivalent to the pylons.config object.
     configuration = config.Configuration.getDefaults(MAIN_CONFIG_FILE)
-    global g_cloudletConfig
-    g_cloudletConfig = cloudlet.Cloudlet(configuration)
+    cloudletConfig = cloudlet.Cloudlet(configuration)
     
+    # Create the cache manager.
+    svmCacheManager = svmmanager.ServiceVMManager(cloudletConfig)
+    
+    # Get the command.
     command = parseCommand() 
     print 'Command: ' + command
     
+    # Choose the action depending on the command.
     if(command == CMD_CREATE_VM):
         # Parse the commands for overlay creation and create it.
         arguments = parseCreateCommandArguments()
-        commandCreateVM(arguments)
+        svmCacheManager.createServiceVM(arguments.type, arguments.sourceImage, arguments.serviceId, arguments.name, arguments.port)
     
     elif(command == CMD_RUN_VM):
         # Parse the commands for vm running and create it.
         arguments = parseRunVmCommandArguments()
-        commandRunVM(arguments)
+        svmCacheManager.runServiceVMInstance(arguments.serviceId)
             
     elif(command == CMD_MODIFY):
         # Parse the commands for vm modification.
         arguments = parseModifyVmCommandArguments()
-        commandModifyVM(arguments)
+        svmCacheManager.modifyServiceVM(arguments.serviceId)
             
     elif(command == CMD_LIST_VM):
-        commandListVM()
+        svmCacheManager.listServiceVMs()
             
     elif(command == CMD_TEST_SSH):
         # Parse the commands for vm running and create it.
         arguments = parseTestSshCommandArguments()
-        commandTestSSH(arguments)
+        svmCacheManager.testSSH(arguments.serviceId, arguments.sfilepath, arguments.dfilepath, arguments.command)

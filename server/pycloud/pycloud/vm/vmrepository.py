@@ -61,7 +61,7 @@ class VMRepository(object):
                 # Add the id and name to the list.
                 vmList[vmId] = storedVM                
             except storedvm.StoredVMException as ex:
-                print 'Ignoring invalid Stored VM folder: %s' % vmId
+                print 'Ignoring invalid Stored VM folder: %s (%s)' % (vmId, ex.message)
         
         # Return the dictionary
         return vmList
@@ -131,3 +131,13 @@ class VMRepository(object):
         
         # Protect the stored VM from accidental deletion.
         storedVM.protect()
+
+    ################################################################################################################
+    # Renames a stored VM by changing its id.
+    ################################################################################################################        
+    def renameStoredVM(self, vmId, newVmId):
+        # Clear everything up from the VM folder.
+        vmFolder = self.getStoredVMFolder(vmId)
+        if(os.path.exists(vmFolder)):
+            newVmFolder = os.path.join(self.vmRepositoryFolder, newVmId)
+            os.rename(vmFolder, newVmFolder)

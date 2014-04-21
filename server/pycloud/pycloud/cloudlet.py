@@ -2,8 +2,10 @@ __author__ = 'jdroot'
 
 from pymongo import Connection
 from pymongo.errors import ConnectionFailure
-
 from pycloud.pycloud.servicevm import instancemanager
+from pycloud.pycloud.mongo.model import AttrDict
+import psutil
+import os
 
 # Singleton object to maintain intra- and inter-app variables.
 g_singletonCloudlet = None
@@ -51,7 +53,34 @@ class Cloudlet(object):
         self.newVmFolder = config['pycloud.servicevm.new_folder']        
         self.newVmWinXml = config['pycloud.servicevm.win_xml_template']
         self.newVmLinXml = config['pycloud.servicevm.lin_xml_template']
-        
+
+
+
         # TODO: this introduces an ungly circular dependency...
         # Create the ServiceVM Instance Manager, which will be used by several apps.
         self.instanceManager = instancemanager.ServiceVMInstanceManager(self)
+
+    def system_information(self):
+        return Cloudlet_Metadata()
+
+
+class Cpu_Info(AttrDict):
+
+    def __init__(self):
+        self.max_cores = psutil.cpu_count()
+        self.usage = psutil.cpu_percent(interval=0.1)
+
+
+class Memory_Info(AttrDict):
+
+    def __init__(self):
+        mem = psutil.virtual_memory()
+        self.max_memory = mem.total
+        self.free_memory = mem.free
+
+
+class Cloudlet_Metadata(AttrDict):
+
+    def __init__(self):
+        self.memory_info = Memory_Info()
+        self.cpu_info = Cpu_Info()

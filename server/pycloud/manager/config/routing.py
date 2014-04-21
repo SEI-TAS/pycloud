@@ -11,18 +11,21 @@ def make_map():
     mapper = Mapper()
     connect = mapper.connect
 
-    # Note that all of this are relative to the base path, /manager.    
+    # Note that all of these paths are relative to the base path, /manager. 
+    connect('/', controller='services', action='index')
+    connect('/home', controller='home', action='index')
+    
+    connect('/services', controller='services', action='listServices')
+    connect('/services/removeService/{id}', controller='services', action='removeService')
+    
+    connect('/servicevms', controller='servicevms', action='index')
+    connect('/servicevms/startSVM/{id}', controller='servicevms', action='startSVM')
+    connect('/servicevms/stopSVM/{id}', controller='servicevms', action='stopSVM')
+    connect('/servicevms/openvnc/{id}', controller='servicevms', action='openvnc')
 
-
-    connect('home', '/home', controller='home', action='index')
-    connect('services', '/services', controller='services', action='index')
-    connect('servicevms', '/servicevms', controller='servicevms', action='index')
-    connect('servicevms_vnc', '/servicevms/openvnc/{id}', controller='servicevms', action='openvnc')
-    connect('/{controller}/{action}/{id}')
-
-    connect('modify', '/modify', controller='modify', action='index')
-
-    #Example
-    # connect('/', coontroller='cloudlet', action='home')
+    connect('/service/add', controller='modify', action='index')
+    connect('/service/createSVM', controller='modify', action='createSVM')
+    connect('/service/openSVM/{id}', controller='modify', action='openSVM')
+    connect('/service/edit/{id}', controller='modify', action='index')    
 
     return mapper

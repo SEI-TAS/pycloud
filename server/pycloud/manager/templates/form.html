@@ -1,0 +1,54 @@
+<!-- Text input control -->
+<%def name="text(id, label=None, label_width=6, input_width=6, error_width=6, input_type='text', disabled=False)">
+<div class="form-group ${'has-error' if id in page.form_errors else ''}">
+    % if label:
+    <label for="${id}" class="control-label">${label}</label>
+    % endif
+    <div class="">
+        <input type="${input_type}" class="form-control" placeholder="${label}" name="${id}" id="${id}" value="${page.form_values[id] if id in page.form_values else ''}" ${'disabled' if disabled else ''} />
+    </div>
+    % if id in c.form_errors:
+    <div class="">
+        <label for="${id}" class="control-label error">${c.form_errors[id]}</label>
+    </div>
+    % endif
+</div>
+</%def>
+
+<!-- Dropdown control -->
+<%def name="dropdown(id, options, label=None, label_width=6, input_width=6, error_width=6, disabled=False)">
+<div class="form-group ${'has-error' if id in page.form_errors else ''}">
+    % if label:
+    <label for="${id}" class="control-label">${label}</label>
+    % endif
+    <div class="">
+    	<select class="form-control" placeholder="${label}" id="${id}" ${'disabled' if disabled else ''}>
+    		% for value, text in options.iteritems():
+    			<option value="${value}" ${'selected' if (id in page.form_values and page.form_values['id'] == value) else ''}>${text}</option> 
+    		% endfor
+    	</select>
+    </div>
+    % if id in c.form_errors:
+    <div class="">
+        <label for="${id}" class="control-label error">${c.form_errors[id]}</label>
+    </div>
+    % endif
+</div>
+</%def>
+
+<!-- Browse control -->
+<%def name="browse(id, label=None, label_width=6, input_width=6, error_width=6, disabled=False)">
+<div class="form-group ${'has-error' if id in page.form_errors else ''}">
+    % if label:
+    <label for="${id}" class="col-sm-${label_width} control-label">${label}</label>
+    % endif
+    <div class="col-sm-${input_width}">
+    	<input type="file" class="form-control" placeholder="${label}" id="${id}" ${'disabled' if disabled else ''} />
+    </div>
+    % if id in c.form_errors:
+    <div class="col-sm-${error_width}}">
+        <label for="${id}" class="control-label error">${c.form_errors[id]}</label>
+    </div>
+    % endif
+</div>
+</%def>
