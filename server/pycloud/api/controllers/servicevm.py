@@ -108,14 +108,15 @@ class ServiceVMController(BaseController):
     def GET_start(self):
         # Start the Service VM on a random port.
         print '\n*************************************************************************************************'        
-        timelog.TimeLog.stamp("Request received: start VM with service id " + serviceId)
 
         # Get variables.
         serviceId = request.GET['serviceId']
         if(serviceId is None):
             # If we didnt get a valid one, just return an error message.
             print "No service id to be started was received."
-            return self.JSON_NOT_OK        
+            return self.JSON_NOT_OK
+
+        timelog.TimeLog.stamp("Request received: start VM with service id " + serviceId)
 
         # Check the flags that indicates whether we could join an existing instance.
         isolated = request.params.get('isolated', True)
