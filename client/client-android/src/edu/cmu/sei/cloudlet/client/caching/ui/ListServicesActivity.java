@@ -205,38 +205,6 @@ public class ListServicesActivity extends Activity
         }
     }
 
-    private class StartServiceAsync extends AsyncTask<Service, Void, ServiceVM>
-    {
-        @Override
-        protected void onPreExecute()
-        {
-            mProgressDialog = new ProgressDialog(ListServicesActivity.this);
-            mProgressDialog.setTitle("Starting VM");
-            mProgressDialog.setIndeterminate(false);
-            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mProgressDialog.setMessage("Starting service vm");
-            mProgressDialog.show();
-        }
-
-        @Override
-        protected ServiceVM doInBackground(Service... services)
-        {
-            Service s = services[0];
-            return s.startService();
-        }
-
-        @Override
-        protected void onPostExecute(ServiceVM vm)
-        {
-            if (mProgressDialog != null)
-                mProgressDialog.dismiss();
-            if (vm != null)
-                Toast.makeText(ListServicesActivity.this, "Service started!", Toast.LENGTH_SHORT).show();
-            else
-                Toast.makeText(ListServicesActivity.this, "Error while starting service!", Toast.LENGTH_SHORT).show();
-        }
-    }
-
     private class GetServicesListAsync extends AsyncTask<Void, Void, List<Service>>
     {
 
