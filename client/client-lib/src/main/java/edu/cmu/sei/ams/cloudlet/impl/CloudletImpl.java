@@ -79,36 +79,7 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
     @Override
     public List<Service> getServices() throws CloudletException
     {
-        log.entry();
-
-        String result = executeCommand(new GetServicesCommand()); //CloudletCommand.GET_SERVICES.execute(this);
-
-        List<Service> ret = new ArrayList<Service>();
-
-        try
-        {
-            JSONObject obj = new JSONObject(result);
-            JSONArray services = obj.getJSONArray("services");
-            for (int x = 0; x < services.length(); x++)
-            {
-                JSONObject service = services.getJSONObject(x);
-                ret.add(new ServiceImpl(this, service));
-            }
-        }
-        catch (Exception e)
-        {
-            log.error("Error getting services array from response!", e);
-        }
-
-        if (servicesCache == null)
-            servicesCache = new ArrayList<Service>();
-
-        log.error("Caching " + ret.size() + " services");
-        servicesCache.clear();
-        servicesCache.addAll(ret);
-
-        log.exit(ret);
-        return ret;
+        return getServices(true);
     }
 
     /**
@@ -132,6 +103,8 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
         {
             if (args == null)
                 args = "?";
+            else
+                args += "&";
             args += key + "=" + cmd.getArgs().get(key);
         }
 
@@ -238,6 +211,49 @@ public class CloudletImpl implements Cloudlet, CloudletCommandExecutor
     {
         String ret = this.executeCommand(new GetMetadataCommand());
         return new CloudletSystemInfoImpl(new JSONObject(ret));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Service> getServices(boolean useCache) throws CloudletException
+    {
+        log.entry(useCache);
+
+        //If the caller wants us to use the cache, and the cache exists, return that
+        //We do not return the actual cache because we do not want external parties modifying it
+        if (useCache && servicesCache != null)
+            return new ArrayList<Service>(servicesCache);
+
+        String result = executeCommand(new GetServicesCommand()); //CloudletCommand.GET_SERVICES.execute(this);
+
+        List<Service> ret = new ArrayList<Service>();
+
+        try
+        {
+            JSONObject obj = new JSONObject(result);
+            JSONArray services = obj.getJSONArray("services");
+            for (int x = 0; x < services.length(); x++)
+            {
+                JSONObject service = services.getJSONObject(x);
+                ret.add(new ServiceImpl(this, service));
+            }
+        }
+        catch (Exception e)
+        {
+            log.error("Error getting services array from response!", e);
+        }
+
+        if (servicesCache == null)
+            servicesCache = new ArrayList<Service>();
+
+        log.error("Caching " + ret.size() + " services");
+        servicesCache.clear();
+        servicesCache.addAll(ret);
+
+        log.exit(ret);
+        return ret;
     }
 
     /**

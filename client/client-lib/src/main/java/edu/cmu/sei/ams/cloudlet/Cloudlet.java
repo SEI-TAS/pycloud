@@ -32,10 +32,18 @@ public interface Cloudlet
 
     /**
      * Gets a list of services available on this Cloudlet
-     * @return
-     * @throws Exception can throw exceptions when server is unreachable or bad data is returned
+     * @return list of services
+     * @throws CloudletException can throw exceptions when server is unreachable or bad data is returned
      */
     public List<Service> getServices() throws CloudletException;
+
+    /**
+     * Gets a list of services available on this Cloudlet
+     * @param useCache flag to specify if we should used our cached list
+     * @return list of services
+     * @throws CloudletException can throw exceptions when server is unreachable or bad data is returned
+     */
+    public List<Service> getServices(boolean useCache) throws CloudletException;
 
     /**
      * Will locate a service based on the ID of the service

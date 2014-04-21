@@ -119,4 +119,35 @@ public class CloudletFinder
         log.exit(ret);
         return ret;
     }
+
+    /**
+     * Will locate all nearby services for a Cloudlet.
+     * @return List of Service Ids
+     */
+    public static List<String> findAllNearbyServices()
+    {
+        log.entry();
+        List<Cloudlet> cloudlets = findCloudlets();
+        List<String> ret = new ArrayList<String>();
+
+        for (Cloudlet cloudlet : cloudlets)
+        {
+            try
+            {
+                List<Service> services = cloudlet.getServices();
+                for (Service service : services)
+                {
+                    if (!ret.contains(service.getServiceId()))
+                        ret.add(service.getServiceId());
+                }
+            }
+            catch (CloudletException e)
+            {
+                log.error("Error getting services for cloudlet: " + cloudlet.getName(), e);
+            }
+        }
+
+        log.exit(ret);
+        return ret;
+    }
 }
