@@ -66,9 +66,14 @@ class ServicesController(BaseController):
     # Shows the list of cached Services.
     ############################################################################################################        
     def GET_removeService(self, id):
-        # Remove the stored service VM from the repository.
-        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
-        serviceVmRepo.deleteStoredVM(id)  
+        try:
+            # Remove the stored service VM from the repository.
+            serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
+            serviceVmRepo.deleteStoredVM(id)  
+        except Exception as e:
+            # If there was a problem removing the service, return that there was an error.
+            print 'Error removing Service: ' + str(e);
+            return self.JSON_NOT_OK
         
         # Everything went well.
         return self.JSON_OK        
