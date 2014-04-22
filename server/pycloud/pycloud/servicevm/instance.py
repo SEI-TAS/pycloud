@@ -73,7 +73,7 @@ class ServiceVMInstance(object):
         # Try to connect to an existing running VM.
         try:
             self.runningSVM.connectToRunningVM()
-        except VirtualMachineException as ex:
+        except runningvm.VirtualMachineException as ex:
             print 'Error connecting to existing instance: ' + str(ex)
             raise ServiceVMException('Could not connect to existing instance with id %s.' % str(instanceId))
 

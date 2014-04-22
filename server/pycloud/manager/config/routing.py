@@ -18,10 +18,10 @@ def make_map():
     connect('/services', controller='services', action='listServices')
     connect('/services/removeService/{id}', controller='services', action='removeService')
     
-    connect('/servicevms', controller='servicevms', action='index')
-    connect('/servicevms/startSVM/{id}', controller='servicevms', action='startSVM')
-    connect('/servicevms/stopSVM/{id}', controller='servicevms', action='stopSVM')
-    connect('/servicevms/openvnc/{id}', controller='servicevms', action='openvnc')
+    connect('/instances', controller='instances', action='index')
+    connect('/instances/startInstance/{id}', controller='instances', action='startInstance')
+    connect('/instances/stopInstance/{id}', controller='instances', action='stopInstance')
+    connect('/instances/openvnc/{id}', controller='instances', action='openVNC')
 
     connect('/service/add', controller='modify', action='index')
     connect('/service/createSVM', controller='modify', action='createSVM')

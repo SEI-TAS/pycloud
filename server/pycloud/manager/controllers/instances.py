@@ -9,7 +9,7 @@ from webhelpers.html.grid import Grid
 from webhelpers.html import HTML
 
 from pycloud.pycloud.pylons.lib.base import BaseController
-from pycloud.manager.lib.pages import ServiceVMsPage
+from pycloud.manager.lib.pages import InstancesPage
 from pycloud.pycloud.pylons.lib import helpers as h
 
 log = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 ################################################################################################################
 # Controller for the ServiceVMs Instances page.
 ################################################################################################################
-class ServiceVMsController(BaseController):
+class InstancesController(BaseController):
 
     JSON_OK = json.dumps({"STATUS" : "OK" })
     JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})    
@@ -51,14 +51,14 @@ class ServiceVMsController(BaseController):
         instancesGrid.column_formats["action"] = generate_action_buttons
 
         # Pass the grid and render the page.
-        svmPage = ServiceVMsPage()
-        svmPage.instancesGrid = instancesGrid
-        return svmPage.render()
+        instancesPage = InstancesPage()
+        instancesPage.instancesGrid = instancesGrid
+        return instancesPage.render()
         
     ############################################################################################################
     # Opens a VNC window to a running Service VM Instance.
     ############################################################################################################
-    def GET_openvnc(self, id):
+    def GET_openVNC(self, id):
         # Get a list of running ServiceVM instances.
         instanceManager = g.cloudlet.instanceManager
         instanceList = instanceManager.getServiceVMInstances()
@@ -80,10 +80,15 @@ class ServiceVMsController(BaseController):
     ############################################################################################################
     # Starts a new SVM instance of the Service.
     ############################################################################################################        
-    def GET_startSVM(self, id):
-        # Use the common Instance Manager to start a new instance for the given Service ID.
-        instanceManager = g.cloudlet.instanceManager
-        instanceManager.getServiceVMInstance(serviceId=id)
+    def GET_startInstance(self, id):
+        try:
+            # Use the common Instance Manager to start a new instance for the given Service ID.        
+            instanceManager = g.cloudlet.instanceManager
+            instanceManager.getServiceVMInstance(serviceId=id)
+        except Exception as e:
+            # If there was a problem starting the instance, return that there was an error.
+            print 'Error starting Service VM Instance: ' + str(e);
+            return self.JSON_NOT_OK     
         
         # Everything went well.
         return self.JSON_OK        
@@ -91,10 +96,15 @@ class ServiceVMsController(BaseController):
     ############################################################################################################
     # Stops an existing instance.
     ############################################################################################################        
-    def GET_stopSVM(self, id):
-        # Use the common Instance Manager to stop an existing instance with the given ID.
-        instanceManager = g.cloudlet.instanceManager
-        instanceManager.stopServiceVMInstance(instanceId=id)
+    def GET_stopInstance(self, id):
+        try:    
+            # Use the common Instance Manager to stop an existing instance with the given ID.
+            instanceManager = g.cloudlet.instanceManager
+            instanceManager.stopServiceVMInstance(instanceId=id)
+        except Exception as e:
+            # If there was a problem stopping the instance, return that there was an error.
+            print 'Error stopping Service VM Instance: ' + str(e);
+            return self.JSON_NOT_OK               
         
         # Everything went well.
         return self.JSON_OK        
@@ -112,11 +122,11 @@ def generate_service_id_link(col_num, i, item):
 ############################################################################################################        
 def generate_action_buttons(col_num, i, item):
     # Button to stop an instance.
-    stopUrl = h.url_for(controller='servicevms', action='stopSVM', id=item["instance_id"])
+    stopUrl = h.url_for(controller='instances', action='stopInstance', id=item["instance_id"])
     stopButtonHtml = HTML.button("Stop", onclick=h.literal("stopSVM('"+ stopUrl +"')"), class_="btn btn-primary btn")
 
     # Button to open VNC window.
-    vncUrl = h.url_for(controller='servicevms', action='openvnc', id=item["instance_id"])
+    vncUrl = h.url_for(controller='instances', action='openVNC', id=item["instance_id"])
     vncButtonHtml = HTML.button("Open VNC", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
 
     # Render the buttons with the Ajax code to stop the SVM.    

@@ -78,10 +78,10 @@ class ServicesController(BaseController):
 ############################################################################################################        
 def generateSVMButtons(col_num, i, item):    
     # Link to the list of Service VM Instances.
-    svmListURL = h.url_for(controller='servicevms')
+    svmListURL = h.url_for(controller='instances')
 
     # URL to start a new SVM instance.
-    startInstanceUrl = h.url_for(controller='servicevms', action='startSVM', id=item["service_id"])
+    startInstanceUrl = h.url_for(controller='instances', action='startInstance', id=item["service_id"])
     
     # Create a button to the list of service VM Instances, and another to start a new instance.
     linkToSVMButton = HTML.button("View Instances", onclick=h.literal("window.location.href = '" + svmListURL + "';"), class_="btn btn-primary btn")
@@ -100,7 +100,7 @@ def generateActionButtons(col_num, i, item):
     
     # Ajax URL to remove the service.
     removeServiceURL = h.url_for(controller='services', action='removeService', id=item["service_id"])
-    removeButton = HTML.button("Remove Service", onclick="removeServiceConfirmation('" + removeServiceURL + "');", class_="btn btn-primary btn")
+    removeButton = HTML.button("Remove Service", onclick="removeServiceConfirmation('" + removeServiceURL + "', '" + item["service_id"] + "');", class_="btn btn-primary btn")
     
     # Render the buttons.
     return HTML.td(editButton + " " + removeButton  )       
