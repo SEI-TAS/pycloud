@@ -6,6 +6,7 @@ import edu.cmu.sei.ams.cloudlet.ServiceVM;
  * User: jdroot
  * Date: 3/25/14
  * Time: 5:00 PM
+ * The stop vm command
  */
 public class StopVMInstanceCommand extends CloudletCommand
 {

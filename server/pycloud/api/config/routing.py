@@ -25,6 +25,8 @@ def make_map():
     connect('getAppList', '/app/getList', controller='apppush', action='getList')
     connect('getApp', '/app/getApp', controller='apppush', action='getApp')
 
+    connect('metadata', '/cloudlet_info', controller='cloudlet', action='metadata')
+
     #Example
     # connect('/', coontroller='cloudlet', action='home')
 

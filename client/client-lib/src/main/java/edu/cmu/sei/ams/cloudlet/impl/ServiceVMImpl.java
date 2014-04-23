@@ -37,6 +37,10 @@ public class ServiceVMImpl implements ServiceVM
         log.exit();
     }
 
+    /**
+     * {@inheritDoc}
+     * @return
+     */
     @Override
     public boolean stopVm()
     {
@@ -56,24 +60,40 @@ public class ServiceVMImpl implements ServiceVM
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @return
+     */
     @Override
     public String getServiceId()
     {
         return mService.getServiceId();
     }
 
+    /**
+     * {@inheritDoc}
+     * @return
+     */
     @Override
     public String getInstanceId()
     {
         return instanceId;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return
+     */
     @Override
     public InetAddress getAddress()
     {
         return addr;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return
+     */
     @Override
     public int getPort()
     {

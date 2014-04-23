@@ -17,6 +17,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 # Manager to handle running instances, and logging util.
 from pycloud.pycloud.servicevm import instancemanager
 from pycloud.pycloud.utils import timelog
+from pycloud.pycloud.pylons.lib.util import asjson
 
 log = logging.getLogger(__name__)
 
@@ -43,8 +44,62 @@ class ServiceVMController(BaseController):
     ################################################################################################################ 
     def cleanup(self):
         # Cleanup running vms.
-        if(self.instanceManager != None):
-            self.instanceManager.cleanup()
+        if(self.runningVMManager != None):
+            self.runningVMManager.cleanup()
+            
+    ################################################################################################################
+    # Get a list of the services in the VM. In realiy, for now at least, it actually get a list of services that
+    # have associated ServiceVMs in the cache.
+    ################################################################################################################
+    @asjson
+    def GET_listServices(self):
+        print '\n*************************************************************************************************'
+        timelog.TimeLog.reset()
+        timelog.TimeLog.stamp("Request received: get list of Services.")
+        
+        # Get the list of stored service vms in the cache.
+        serviceVmCache = svmrepository.ServiceVMRepository(g.cloudlet)
+        vmList = serviceVmCache.getStoredServiceVMList()
+
+        # Create an item list with the info to display.
+        servicesList = []
+    	for storedVMId in vmList:
+            storedVM = vmList[storedVMId]
+            serviceInfo = {'_id': storedVM.metadata.serviceId,
+                           'description': storedVM.name}
+            servicesList.append(serviceInfo)        
+        
+        # Create a JSON response to indicate the result.
+        jsonDataStructure = {"services": servicesList}
+        
+        # Send the response.
+        timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
+        return jsonDataStructure
+            
+    ################################################################################################################
+    # Called to check if a specific service is already provided by a cached Service VM on this server.
+    ################################################################################################################
+    def GET_find(self):
+        # Look for the VM in the repository.
+        serviceId = request.GET['serviceId']
+        vmFound = False
+        print '\n*************************************************************************************************'
+        timelog.TimeLog.reset()
+        timelog.TimeLog.stamp("Request received: find cached Service VM.")
+        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
+        vmEntry = serviceVmRepo.findServiceVM(serviceId)
+        if(vmEntry != None):
+            vmFound = True
+        
+        # Create a JSON response to indicate the result.
+        jsonDataStructure = { "VM_EXISTS" : str(vmFound)
+                            }
+        jsonDataString = json.dumps(jsonDataStructure)
+        
+        # Send the response.
+        timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
+        responseText = jsonDataString
+        return responseText          
         
     ################################################################################################################
     # Called to start a Service VM.
@@ -53,27 +108,31 @@ class ServiceVMController(BaseController):
     def GET_start(self):
         # Start the Service VM on a random port.
         print '\n*************************************************************************************************'        
-        timelog.TimeLog.stamp("Request received: start VM with service id " + serviceId)
 
         # Get variables.
         serviceId = request.GET['serviceId']
         if(serviceId is None):
             # If we didnt get a valid one, just return an error message.
             print "No service id to be started was received."
-            return self.JSON_NOT_OK        
+            return self.JSON_NOT_OK
+
+        timelog.TimeLog.stamp("Request received: start VM with service id " + serviceId)
 
         # Check the flags that indicates whether we could join an existing instance.
-        isolated = request.GET['serviceId']
-        if(isolated is None):
-            # If no value was sent, set true by default.
-            isolated = "true"
+        isolated = request.params.get('isolated', True)
+        if not isinstance(isolated, bool): # Will only be bool if it was none and the default was set
+            isolated = isolated.lower() in ("yes", "true", "t", "1")
 
+        
+        # Start the Service VM on a random port.
+        print '\n*************************************************************************************************'        
+        timelog.TimeLog.stamp("Request received: start VM with service id " + serviceId)
+        
         # Check if we will want to try to join an existing VM.
-        joinIfPossible = False
-        if(isolated == "false"):
+        joinIfPossible = not isolated
+        if joinIfPossible:
             print "Will join existing VM if possible."
-            joinIfPossible = True
-            
+
         # Get our current IP, the one that the client requesting this is seeing.
         # The HTTP_HOST header will also have the port after a colon, so we remove it.
         hostIp = request.environ['HTTP_HOST'].split(':')[0]
