@@ -1,5 +1,6 @@
 import logging
 import json
+import time
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
@@ -20,8 +21,8 @@ log = logging.getLogger(__name__)
 class InstancesController(BaseController):
 
     JSON_OK = json.dumps({"STATUS" : "OK" })
-    JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})    
-
+    JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})
+    
     ############################################################################################################
     # Shows the list of running Service VM instances.
     ############################################################################################################
@@ -35,7 +36,7 @@ class InstancesController(BaseController):
 
         # Create an item list with the info to display.
         gridItems = []
-    	for serviceVMInstanceId in instanceList:
+        for serviceVMInstanceId in instanceList:
             serviceVMInstance = instanceList[serviceVMInstanceId]
             newItem = {'instance_id':serviceVMInstance.instanceId,
                        'service_id':serviceVMInstance.serviceId,
@@ -46,7 +47,7 @@ class InstancesController(BaseController):
             gridItems.append(newItem)
 
         # Create and format the grid.
-    	instancesGrid = Grid(gridItems, ['instance_id', 'service_id', 'service_external_port', 'ssh_port', 'folder', 'action'])
+        instancesGrid = Grid(gridItems, ['instance_id', 'service_id', 'service_external_port', 'ssh_port', 'folder', 'action'])
         instancesGrid.column_formats["service_id"] = generate_service_id_link
         instancesGrid.column_formats["action"] = generate_action_buttons
 
@@ -71,8 +72,13 @@ class InstancesController(BaseController):
         # Get the instance associated with this id.
         svmInstance = instanceList[id]
         
-        # Try to start the VNC window (this will only work if done on the Cloudlet).
-        svmInstance.runningSVM.startVncAndWait(wait=False)
+        try:
+            # Try to start the VNC window (this will only work if done on the Cloudlet).
+            svmInstance.runningSVM.startVncAndWait(wait=False)
+        except Exception as e:        
+            # If there was a problem connecting through VNC, return that there was an error.
+            print 'Error opening VNC window: ' + str(e);
+            return self.JSON_NOT_OK     
         
         # Everything went well.
         return self.JSON_OK
@@ -107,7 +113,32 @@ class InstancesController(BaseController):
             return self.JSON_NOT_OK               
         
         # Everything went well.
-        return self.JSON_OK        
+        return self.JSON_OK
+    
+    ############################################################################################################
+    # Checks if there are changes in the instance list, and returns a changestamp of the change.
+    ############################################################################################################        
+    def GET_getLastChangestamp(self):
+        try:    
+            # Get the list of running instances.
+            instanceManager = g.cloudlet.instanceManager
+            instanceList = instanceManager.getServiceVMInstances()
+            
+            # Turn into a string for an easy comparison, and compare it to the last stored one.
+            separator = ','
+            currentInstancesIdList = separator.join(str(id) for id in instanceList)
+            if(instanceManager.instancesIdList != currentInstancesIdList):
+                # Update the list string, and update the timestamp.
+                instanceManager.instancesIdList = currentInstancesIdList
+                instanceManager.lastChangestamp = time.time()
+        except Exception as e:
+            # If there was a problem stopping the instance, return that there was an error.
+            print 'Error getting list of instance changes: ' + str(e);
+            return self.JSON_NOT_OK               
+        
+        # Return the timestamp.
+        jsonTimestamp = json.dumps({"LAST_CHANGE_STAMP" : str(instanceManager.lastChangestamp) })
+        return jsonTimestamp
         
 ############################################################################################################
 # Helper function to generate a link for the service id to the service details.

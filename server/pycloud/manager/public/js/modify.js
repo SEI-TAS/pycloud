@@ -83,14 +83,9 @@ function openCreateVNC()
         type: 'POST',
         dataType: 'json',
         data: jsonData,      
-        success: function( resp ) {
-            // Parse the response into a JSON structure.
-            jsonData = JSON.stringify(resp);
-            console.log(jsonData);
-            parsedJsonData = $.parseJSON(jsonData);
-            
+        success: function( resp ) {           
             // Check if we got an error.
-            if(parsedJsonData.hasOwnProperty('STATUS') && parsedJsonData.STATUS=='NOT OK')
+            if(!ajaxCallWasSuccessful(resp))
             {
                 // Dismiss the waiting dialog and notify the error.
                 dialog.hide();
@@ -99,6 +94,8 @@ function openCreateVNC()
             else
             {
                 // Update Stored SVM fields with new SVM info.
+                var jsonData = JSON.stringify(response);
+                var parsedJsonData = $.parseJSON(jsonData);
                 storedSVMData = parsedJsonData;
                 ssvmFolder = $('#vmStoredFolder');
                 ssvmFolder.val(storedSVMData.FOLDER);  
@@ -147,9 +144,19 @@ function openEditVNC(vncUrl)
         url: vncUrl,
         dataType: 'json',
         success: function( resp ) {
-            // Dismiss the waiting dialog and notify the success.
-            dialog.hide();
-            showAndLogSuccessMessage('Stored Service VM was modified successfully.');
+            // Check if we got an error.
+            if(!ajaxCallWasSuccessful(resp))
+            {
+                // Dismiss the waiting dialog and notify the error.
+                dialog.hide();
+                showAndLogErrorMessage('There was a problem opening the Stored Service VM for modification.');                
+            }
+            else
+            {
+                // Dismiss the waiting dialog and notify the success.
+                dialog.hide();
+                showAndLogSuccessMessage('Stored Service VM was modified successfully.');
+            }
       },
       error: function( req, status, err ) {
             // Dismiss the waiting dialog and notify the error.

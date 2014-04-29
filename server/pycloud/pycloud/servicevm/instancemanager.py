@@ -31,6 +31,12 @@ class ServiceVMInstanceManager(object):
 
     # Map of list of running VM instances, stored by service id.
     runningServices = {}
+    
+    # Unified list of the ids of the current running instances. Used for tracking changes in the list.
+    instancesIdList = '';
+    
+    # Timestamp of the last change.
+    lastChangestamp = 0;
 
     ################################################################################################################  
     # Cleans up the root folder for VMs instances.

@@ -54,7 +54,6 @@ function Alert(level, message, alertContainer) {
     };
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to show a notification and log it in the console.
 /////////////////////////////////////////////////////////////////////////////////////
@@ -83,4 +82,25 @@ function showAndLogErrorMessage(message, status, errorThrown, parent)
     window.console && console.log(message, status, errorThrown);
     var alertBox = Alert('danger', message, parent);
     alertBox.show();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to check if an Ajax call was successful.
+/////////////////////////////////////////////////////////////////////////////////////
+function ajaxCallWasSuccessful(response)
+{
+    // Parse the response into a JSON structure.
+    var jsonData = JSON.stringify(response);
+    //console.log(jsonData);
+    var parsedJsonData = $.parseJSON(jsonData);
+    
+    // Check if we got an error.
+    if(parsedJsonData.hasOwnProperty('STATUS') && parsedJsonData.STATUS=='NOT OK')
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }

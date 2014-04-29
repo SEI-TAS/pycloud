@@ -13,11 +13,8 @@ function startSVM(startUrl, redirectUrl)
         url: startUrl,
         dataType: 'json',
         success: function( resp ) {
-            // Parse the response into a JSON structure.
-            parsedJsonData = $.parseJSON(JSON.stringify(resp));
-                        
             // Check if we got an error.
-            if(parsedJsonData.hasOwnProperty('STATUS') && parsedJsonData.STATUS=='NOT OK')
+            if(!ajaxCallWasSuccessful(resp))
             {
                 // Dismiss the waiting dialog and notify the error.
                 dialog.hide();
@@ -63,11 +60,8 @@ function removeService(removeUrl)
         url: removeUrl,
         dataType: 'json',
         success: function( resp ) {
-            // Parse the response into a JSON structure.
-            parsedJsonData = $.parseJSON(JSON.stringify(resp));
-                        
             // Check if we got an error.
-            if(parsedJsonData.hasOwnProperty('STATUS') && parsedJsonData.STATUS=='NOT OK')
+            if(!ajaxCallWasSuccessful(resp))
             {
                 // Dismiss the waiting dialog and notify the error.
                 dialog.hide();
