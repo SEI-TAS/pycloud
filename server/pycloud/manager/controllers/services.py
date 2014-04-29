@@ -42,7 +42,7 @@ class ServicesController(BaseController):
 
         # Create an item list with the info to display.
         gridItems = []
-    	for storedVMId in vmList:
+        for storedVMId in vmList:
             storedVM = vmList[storedVMId]
             newItem = {'service_id':storedVM.metadata.serviceId,
                        'name':storedVM.name,
@@ -53,7 +53,7 @@ class ServicesController(BaseController):
             gridItems.append(newItem)
 
         # Create and fomat the grid.
-    	servicesGrid = Grid(gridItems, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances', 'actions'])
+        servicesGrid = Grid(gridItems, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances', 'actions'])
         servicesGrid.column_formats["service_vm_instances"] = generateSVMButtons
         servicesGrid.column_formats["actions"] = generateActionButtons
         
