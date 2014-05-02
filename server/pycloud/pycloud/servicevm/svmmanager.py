@@ -9,7 +9,7 @@
 from pycloud.pycloud.vm import storedvm
 import svmrepository
 import storedsvmfactory
-import svmfactory
+import svm
 
 # For exceptions.
 from pycloud.pycloud.vm import vmrepository
@@ -54,7 +54,7 @@ class ServiceVMManager(object):
         return newStoredServiceVM
             
     ################################################################################################################
-    # Allows the modification of an existing ServiceVM from the cache.
+    # Allows the modification of an existing Stored ServiceVM from the cache.
     ################################################################################################################
     def modifyServiceVM(self, serviceId):        
         try:     
@@ -65,9 +65,10 @@ class ServiceVMManager(object):
             
             # Run the VM with GUI and store its state.
             defaultMaintenanceServiceHostPort = 16001
-            serviceVM = svmfactory.ServiceVMFactory.createServiceVM(storedVM=storedServiceVM,
-                                                                             showVNC=True,
-                                                                             serviceHostPort=defaultMaintenanceServiceHostPort)
+            serviceVM = svm.ServiceVM()
+            serviceVM.createFromStoredVM(storedVM=storedServiceVM,
+                                         showVNC=True,
+                                         serviceHostPort=defaultMaintenanceServiceHostPort)
             serviceVM.suspendToFile()
             print 'Service VM stored.'
             

@@ -11,19 +11,11 @@ import shutil
 from pycloud.pycloud.vm import runningvm
 
 # To create Service VMs (from this same package).
-import svmfactory
+import svm
 import storedservicevm
 
 # To get info about existing VMs (from this same package).
 import svmrepository
-
-################################################################################################################
-# Exception type used in our system.
-################################################################################################################
-class ServiceVMException(Exception):
-    def __init__(self, message):
-        super(ServiceVMException, self).__init__(message)
-        self.message = message    
 
 ################################################################################################################
 # Representas a transient or temporary ServiceVM.
@@ -45,8 +37,8 @@ class ServiceVMInstance(object):
     # The path to the folder where the temporary folder for the transient VM should be stored.
     instancesRootFolder = None
     
-    # The actual running VM.
-    runningSVM = None
+    # The actual Service VM.
+    serviceVM = None
     
     ################################################################################################################
     # Constructor.
@@ -68,15 +60,9 @@ class ServiceVMInstance(object):
         storedVM.loadFromFolder(self.getInstanceFolder())
         
         # Create a running VM object with the data we have (this won't be connected yet to any existing running VM).
-        self.runningSVM = runningvm.RunningVM(id=self.instanceId, diskImageFile=storedVM.diskImageFilePath)
+        self.serviceVM = svm.ServiceVM()
+        self.serviceVM.connectToExistingVM(vmId=self.instanceId, diskImageFile=storedVM.diskImageFilePath)
         
-        # Try to connect to an existing running VM.
-        try:
-            self.runningSVM.connectToRunningVM()
-        except runningvm.VirtualMachineException as ex:
-            print 'Error connecting to existing instance: ' + str(ex)
-            raise ServiceVMException('Could not connect to existing instance with id %s.' % str(instanceId))
-
     ################################################################################################################  
     # Gets the folder where an instance will run.
     ################################################################################################################   
@@ -98,7 +84,7 @@ class ServiceVMInstance(object):
         serviceVmRepo = svmrepository.ServiceVMRepository(cloudletConfig)
         storedServiceVM = serviceVmRepo.findServiceVM(self.serviceId)
         if(storedServiceVM == None):
-            raise ServiceVMException("No valid VM for service id %s was found in the repository. " % self.serviceId)
+            raise svm.ServiceVMException("No valid VM for service id %s was found in the repository. " % self.serviceId)
         
         # Create a VM id for the running VM, and store it as our id.
         self.instanceId = runningvm.RunningVM.generateRandomId()
@@ -117,11 +103,11 @@ class ServiceVMInstance(object):
         
         print '\n*************************************************************************************************'        
         print "Resuming VM."
-        self.runningSVM = svmfactory.ServiceVMFactory.createServiceVM(storedVM=clonedStoredServiceVM,
-                                                                                        vmId=self.instanceId,
-                                                                                        showVNC=showVNC,
-                                                                                        sshHostPort=self.sshHostPort,
-                                                                                        serviceHostPort=self.serviceHostPort)
+        self.serviceVM = svm.ServiceVM(storedVM=clonedStoredServiceVM,
+                                        vmId=self.instanceId,
+                                        showVNC=showVNC,
+                                        sshHostPort=self.sshHostPort,
+                                        serviceHostPort=self.serviceHostPort)
 
         # Return our id.
         return self.instanceId
@@ -134,7 +120,7 @@ class ServiceVMInstance(object):
         try:
             # Destroy the transient VM.
             print "Stopping VM with id %s" % (self.instanceId)
-            self.runningSVM.destroy()
+            self.serviceVM.destroy()
             print "VM instance with id %s was stopped and destroyed" % (self.instanceId)
         finally:
             # We get rid of the instance folder.
@@ -147,23 +133,23 @@ class ServiceVMInstance(object):
     # Opens an SSH session.
     ################################################################################################################       
     def openSSHConnection(self):
-        self.runningSVM.openSSHConnection()        
+        self.serviceVM.openSSHConnection()        
         
     ################################################################################################################
     # Closes an SSH session.
     ################################################################################################################       
     def closeSSHConnection(self):
-        self.runningSVM.closeSSHConnection()
+        self.serviceVM.closeSSHConnection()
     
     ################################################################################################################
     # Uploads a file through SFTP to a running VM.
     # NOTE: destFilePath has to be a full file path, not only a folder.
     ################################################################################################################       
     def uploadFile(self, sourceFilePath, destFilePath):
-        self.runningSVM.uploadFile(sourceFilePath, destFilePath)
+        self.serviceVM.uploadFile(sourceFilePath, destFilePath)
         
     ################################################################################################################
     # Sends a command through SSH to a running VM.
     ################################################################################################################       
     def executeCommand(self, command):       
-        return self.runningSVM.executeCommand(command)
+        return self.serviceVM.executeCommand(command)
