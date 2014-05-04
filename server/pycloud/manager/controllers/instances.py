@@ -74,7 +74,7 @@ class InstancesController(BaseController):
         
         try:
             # Try to start the VNC window (this will only work if done on the Cloudlet).
-            svmInstance.runningSVM.startVncAndWait(wait=False)
+            svmInstance.serviceVM.startVncAndWait(wait=False)
         except Exception as e:        
             # If there was a problem connecting through VNC, return that there was an error.
             print 'Error opening VNC window: ' + str(e);

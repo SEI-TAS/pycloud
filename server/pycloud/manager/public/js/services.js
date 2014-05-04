@@ -41,7 +41,7 @@ function removeServiceConfirmation(removeUrl, serviceId)
     // Ask for confirmation.
     BootstrapDialog.confirm('Are you sure you want to delete <strong>'+serviceId+'</strong>?', function(result){
             if(result) {
-                removeService(removeUrl, redirectUrl);
+                removeService(removeUrl);
             }
         });
 }

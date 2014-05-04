@@ -22,6 +22,9 @@ import svmrepository
 ################################################################################################################
 class ServiceVMInstance(object):
     
+    # Prefix used to name Service VM instances.
+    SERVICE_VM_INSTANCE_PREFIX = 'svm-instance'    
+    
     # The id of this particular instance, which will be generate once it is started.
     instanceId = None
     
@@ -56,12 +59,16 @@ class ServiceVMInstance(object):
         self.instanceId = instanceId
         
         # Load information from the stored files.
-        storedVM = storedservicevm.StoredServiceVM(instanceId)
-        storedVM.loadFromFolder(self.getInstanceFolder())
+        instanceStoredSVM = storedservicevm.StoredServiceVM(instanceId)
+        instanceStoredSVM.loadFromFolder(self.getInstanceFolder())
         
         # Create a running VM object with the data we have (this won't be connected yet to any existing running VM).
-        self.serviceVM = svm.ServiceVM()
-        self.serviceVM.connectToExistingVM(vmId=self.instanceId, diskImageFile=storedVM.diskImageFilePath)
+        self.serviceVM = svm.ServiceVM(vmId=self.instanceId, 
+                                       prefix=self.SERVICE_VM_INSTANCE_PREFIX, 
+                                       diskImageFile=instanceStoredSVM.diskImageFilePath)
+        
+        # Connect to the existing VM.
+        self.serviceVM.connectToRunningVM()
         
     ################################################################################################################  
     # Gets the folder where an instance will run.
@@ -103,11 +110,11 @@ class ServiceVMInstance(object):
         
         print '\n*************************************************************************************************'        
         print "Resuming VM."
-        self.serviceVM = svm.ServiceVM(storedVM=clonedStoredServiceVM,
-                                        vmId=self.instanceId,
-                                        showVNC=showVNC,
-                                        sshHostPort=self.sshHostPort,
-                                        serviceHostPort=self.serviceHostPort)
+        self.serviceVM = svm.ServiceVM(vmId=self.instanceId, prefix=self.SERVICE_VM_INSTANCE_PREFIX)
+        self.serviceVM.startFromStoredSVM(storedVM=clonedStoredServiceVM,
+                                          showVNC=showVNC,
+                                          sshHostPort=self.sshHostPort,
+                                          serviceHostPort=self.serviceHostPort)
 
         # Return our id.
         return self.instanceId

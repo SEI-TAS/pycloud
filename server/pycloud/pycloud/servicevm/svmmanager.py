@@ -66,7 +66,7 @@ class ServiceVMManager(object):
             # Run the VM with GUI and store its state.
             defaultMaintenanceServiceHostPort = 16001
             serviceVM = svm.ServiceVM()
-            serviceVM.createFromStoredVM(storedVM=storedServiceVM,
+            serviceVM.startFromStoredSVM(storedVM=storedServiceVM,
                                          showVNC=True,
                                          serviceHostPort=defaultMaintenanceServiceHostPort)
             serviceVM.suspendToFile()

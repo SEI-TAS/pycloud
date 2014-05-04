@@ -94,7 +94,7 @@ function openCreateVNC()
             else
             {
                 // Update Stored SVM fields with new SVM info.
-                var jsonData = JSON.stringify(response);
+                var jsonData = JSON.stringify(resp);
                 var parsedJsonData = $.parseJSON(jsonData);
                 storedSVMData = parsedJsonData;
                 ssvmFolder = $('#vmStoredFolder');
