@@ -10,6 +10,7 @@ import argparse
 
 # For SVM management.
 from pycloud.pycloud.servicevm import svmmanager
+from pycloud.pycloud.servicevm import instancemanager
 
 # For config management.
 from pycloud.pycloud.utils import config
@@ -105,7 +106,7 @@ def main():
     cloudletConfig = cloudlet.Cloudlet(configuration)
     
     # Create the cache manager.
-    svmCacheManager = svmmanager.ServiceVMManager(cloudletConfig)
+    svmManager = svmmanager.ServiceVMManager(cloudletConfig)
     
     # Get the command.
     command = parseCommand() 
@@ -115,22 +116,54 @@ def main():
     if(command == CMD_CREATE_VM):
         # Parse the commands for overlay creation and create it.
         arguments = parseCreateCommandArguments()
-        svmCacheManager.createServiceVM(arguments.type, arguments.sourceImage, arguments.serviceId, arguments.name, arguments.port)
+        svmManager.createServiceVM(arguments.type, arguments.sourceImage, arguments.serviceId, arguments.name, arguments.port)
     
     elif(command == CMD_RUN_VM):
         # Parse the commands for vm running and create it.
         arguments = parseRunVmCommandArguments()
-        svmCacheManager.runServiceVMInstance(arguments.serviceId)
+
+        try:   
+            # Run a VM with a VNC GUI.
+            instanceMan = instancemanager.ServiceVMInstanceManager(cloudletConfig)
+            runningInstance = instanceMan.getServiceVMInstance(serviceId=arguments.serviceId,
+                                                               showVNC=True)
+
+            # After we unblocked because the user closed the GUI, we just kill the VM.
+            instanceMan.stopServiceVMInstance(runningInstance.instanceId)
+        except instancemanager.ServiceVMInstanceManagerException as e:
+            print "Error running Service VM: " + e.message
             
     elif(command == CMD_MODIFY):
         # Parse the commands for vm modification.
         arguments = parseModifyVmCommandArguments()
-        svmCacheManager.modifyServiceVM(arguments.serviceId)
+        svmManager.modifyServiceVM(arguments.serviceId)
             
     elif(command == CMD_LIST_VM):
-        svmCacheManager.listServiceVMs()
+        svmManager.listServiceVMs()
             
     elif(command == CMD_TEST_SSH):
         # Parse the commands for vm running and create it.
         arguments = parseTestSshCommandArguments()
-        svmCacheManager.testSSH(arguments.serviceId, arguments.sfilepath, arguments.dfilepath, arguments.command)
+        
+        instanceMan = None
+        runningInstance = None        
+        try:
+            # Create the manager and access the VM.
+            instanceMan = instancemanager.ServiceVMInstanceManager(cloudletConfig)
+            runningInstance = instanceMan.getServiceVMInstance(serviceId=arguments.serviceId,
+                                                               showVNC=False)
+            
+            # Send commands.
+            runningInstance.uploadFile(arguments.sfilepath, arguments.dfilepath)
+            result = runningInstance.executeCommand(arguments.command)
+            print 'Result of command: ' + result
+            
+            # Close connection.
+            runningInstance.closeSSHConnection()
+            
+        except instancemanager.ServiceVMInstanceManagerException as e:
+            print "Error testing ssh connection: " + e.message     
+        finally:
+            # Cleanup.
+            if(instanceMan != None and runningInstance != None):
+                instanceMan.stopServiceVMInstance(runningInstance.instanceId)         

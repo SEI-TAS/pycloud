@@ -78,13 +78,8 @@ class RunningVM(object):
         if(prefix != None):
             self.prefix = prefix
         
-        # Setup the disk image file info, if available
-        if(diskImageFile != None):
-            # Ensure that the disk image is an absolute path.
-            diskImageFile = os.path.abspath(diskImageFile)
-            
-            # Store information about the disk image.
-            self.diskImage = diskimage.DiskImage(diskImageFile)
+        # Setup the disk image file info, if available.
+        self.setDiskImage(diskImageFile)
         
         # Setup the port mapping info.
         self.portMappings = {}
@@ -94,6 +89,17 @@ class RunningVM(object):
             
         # Start with an empty VM.
         self.virtualMachine = None
+        
+    ################################################################################################################  
+    # Sets the disk image path and loads its metadata.
+    ################################################################################################################             
+    def setDiskImage(self, diskImageFile):
+        if(diskImageFile != None):
+            # Ensure that the disk image is an absolute path.
+            diskImageFile = os.path.abspath(diskImageFile)
+            
+            # Store information about the disk image.
+            self.diskImage = diskimage.DiskImage(diskImageFile)    
         
     ################################################################################################################  
     # Adds an forwarded port to the port mapping map.
@@ -126,11 +132,16 @@ class RunningVM(object):
         vncPort = runningVMElement.find("devices/graphics").get("port")
         
         # Connect through the VNC client and wait.
-        print 'Starting VNC GUI to VM, and waiting for user to close it.'
+        print 'Starting VNC GUI to VM.'
+        if(wait):        
+            print 'Waiting for user to close VNC GUI.'
         vncClient = vncclient.VNCClient()
         result = vncClient.connectAndWait(vncPort, wait)
-        print 'VNC GUI no longer running, stopped waiting.'
-        
+        if(wait):
+            print 'VNC GUI no longer running, stopped waiting.'
+        else:
+            print 'VNC GUI has been opened.'
+            
         # If there was a problem, destroy the VM.
         if(result == False):
             self.destroy()

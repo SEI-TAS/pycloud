@@ -53,3 +53,54 @@ function Alert(level, message, alertContainer) {
         },
     };
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to show a notification and log it in the console.
+/////////////////////////////////////////////////////////////////////////////////////
+function showAndLogSuccessMessage(message, parent)
+{
+    // Default value.
+    if(typeof(parent)==='undefined') parent = null;
+    
+    // Log and show alert.
+    window.console && console.log(message);
+    var alertBox = Alert('success', message, parent);
+    alertBox.show();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to show a notification and log it in the console.
+/////////////////////////////////////////////////////////////////////////////////////
+function showAndLogErrorMessage(message, status, errorThrown, parent)
+{
+    // Default values.
+    if(typeof(status)==='undefined') status = '';
+    if(typeof(errorThrown)==='undefined') errorThrown = '';
+    if(typeof(parent)==='undefined') parent = null;
+        
+    // Log and show alert.        
+    window.console && console.log(message, status, errorThrown);
+    var alertBox = Alert('danger', message, parent);
+    alertBox.show();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to check if an Ajax call was successful.
+/////////////////////////////////////////////////////////////////////////////////////
+function ajaxCallWasSuccessful(response)
+{
+    // Parse the response into a JSON structure.
+    var jsonData = JSON.stringify(response);
+    //console.log(jsonData);
+    var parsedJsonData = $.parseJSON(jsonData);
+    
+    // Check if we got an error.
+    if(parsedJsonData.hasOwnProperty('STATUS') && parsedJsonData.STATUS=='NOT OK')
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}

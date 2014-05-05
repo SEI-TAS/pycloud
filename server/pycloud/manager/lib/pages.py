@@ -8,5 +8,5 @@ from pycloud.pycloud.pylons.lib.pages import BasePage
 
 class HomePage(BasePage): pass
 class ServicesPage(BasePage): pass
-class ServiceVMsPage(BasePage): pass
+class InstancesPage(BasePage): pass
 class ModifyPage(BasePage): pass

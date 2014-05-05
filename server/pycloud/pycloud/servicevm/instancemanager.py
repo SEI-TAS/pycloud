@@ -9,6 +9,7 @@ import shutil
 
 # To handle the actual VMs (from this same package).
 import instance
+from pycloud.pycloud.servicevm import svm
 
 # To handle ports.
 from pycloud.pycloud.utils import portmanager
@@ -31,6 +32,12 @@ class ServiceVMInstanceManager(object):
 
     # Map of list of running VM instances, stored by service id.
     runningServices = {}
+    
+    # Unified list of the ids of the current running instances. Used for tracking changes in the list.
+    instancesIdList = '';
+    
+    # Timestamp of the last change.
+    lastChangestamp = 0;
 
     ################################################################################################################  
     # Cleans up the root folder for VMs instances.
@@ -69,7 +76,7 @@ class ServiceVMInstanceManager(object):
                     
                     # Stop the SVM instance.
                     svmInstance.stop()                    
-                except instance.ServiceVMException as exception:
+                except svm.ServiceVMException as exception:
                     # Could not connect to existing instance, probably folder was a leftover.
                     print 'Error stopping VM instance with id ' + instanceId + ' (probably folder had no associated VM): ' + str(exception)                
             

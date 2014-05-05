@@ -23,8 +23,7 @@ function validateSubmission()
     // If an input is missing, notify the user and stop the process.
     if(errorMsg != '')
     {
-        var alertBox = Alert('danger', errorMsg, null);
-        alertBox.show();
+        showAndLogErrorMessage(errorMsg);
         return false;
     }        
         
@@ -70,8 +69,7 @@ function openCreateVNC()
     // If an input is missing, notify the user and stop the process.
     if(errorMsg != '')
     {
-        var alertBox = Alert('danger', errorMsg, modalDiv);
-        alertBox.show();
+        showAndLogErrorMessage(errorMsg, '', '', modalDiv);
         return;
     }
     
@@ -85,26 +83,19 @@ function openCreateVNC()
         type: 'POST',
         dataType: 'json',
         data: jsonData,      
-        success: function( resp ) {
-            // Parse the response into a JSON structure.
-            jsonData = JSON.stringify(resp);
-            console.log(jsonData);
-            parsedJsonData = $.parseJSON(jsonData);
-            
+        success: function( resp ) {           
             // Check if we got an error.
-            if(parsedJsonData.hasOwnProperty('STATUS') && parsedJsonData.STATUS=='NOT OK')
+            if(!ajaxCallWasSuccessful(resp))
             {
-                // Dismiss the waiting dialog.
+                // Dismiss the waiting dialog and notify the error.
                 dialog.hide();
-                
-                // Notify about the error.
-                console.log( 'Something went wrong' );
-                var alertBox = Alert('danger', 'Stored Service VM could not be created.', modalDiv);
-                alertBox.show();
+                showAndLogErrorMessage('Stored Service VM could not be created.', '', '', modalDiv);
             }
             else
             {
                 // Update Stored SVM fields with new SVM info.
+                var jsonData = JSON.stringify(resp);
+                var parsedJsonData = $.parseJSON(jsonData);
                 storedSVMData = parsedJsonData;
                 ssvmFolder = $('#vmStoredFolder');
                 ssvmFolder.val(storedSVMData.FOLDER);  
@@ -122,19 +113,13 @@ function openCreateVNC()
                 $('#modal-new-servicevm').modal('hide');
                 
                 // Notify that the process was successful.
-                console.log( 'Service VM was created successfully.');        
-                var alertBox = Alert('success', 'Stored Service VM was created successfully.', null);
-                alertBox.show();
+                showAndLogSuccessMessage('Stored Service VM was created successfully.');
             }
         },
         error: function( req, status, err ) {
-            // Dismiss the waiting dialog.
+            // Dismiss the waiting dialog and notify.
             dialog.hide();
-            
-            // Notify about the error.
-            console.log( 'Something went wrong', status, err );
-            var alertBox = Alert('danger', 'Stored Service VM could not be created.', modalDiv);
-            alertBox.show();        
+            showAndLogErrorMessage('Stored Service VM could not be created.', status, err, modalDiv);
       }
     });
     
@@ -156,34 +141,29 @@ function openEditVNC(vncUrl)
 
     // Send the ajax request to start the VNC window.
     $.ajax({
-      url: vncUrl,
-      dataType: 'json',
-      success: function( resp ) {
-        // Notify that the process was successful.
-        dialog.hide();
-        var alertBox = Alert('success', 'Stored Service VM was modified successfully.', null);
-        alertBox.show();
-        console.log( 'Service VM was modified successfully.');        
+        url: vncUrl,
+        dataType: 'json',
+        success: function( resp ) {
+            // Check if we got an error.
+            if(!ajaxCallWasSuccessful(resp))
+            {
+                // Dismiss the waiting dialog and notify the error.
+                dialog.hide();
+                showAndLogErrorMessage('There was a problem opening the Stored Service VM for modification.');                
+            }
+            else
+            {
+                // Dismiss the waiting dialog and notify the success.
+                dialog.hide();
+                showAndLogSuccessMessage('Stored Service VM was modified successfully.');
+            }
       },
       error: function( req, status, err ) {
-            // Dismiss the waiting dialog.
+            // Dismiss the waiting dialog and notify the error.
             dialog.hide();
-            
-            // Notify about the error.
-            console.log( 'Something went wrong', status, err );
-            var alertBox = Alert('danger', 'Stored Service VM could not be opened for modification.', null);
-            alertBox.show();       
+            showAndLogErrorMessage('Stored Service VM could not be opened for modification.', status, err);
       }
     });
     
     return false;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////
-// Function to show a notification of a successful edit.
-/////////////////////////////////////////////////////////////////////////////////////
-function showEditSuccess()
-{
-    var alertBox = Alert('success', 'Service was modified successfully.');
-    alertBox.show();
 }
