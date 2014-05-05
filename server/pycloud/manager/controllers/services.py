@@ -42,7 +42,7 @@ class ServicesController(BaseController):
 
         # Create an item list with the info to display.
         gridItems = []
-    	for storedVMId in vmList:
+        for storedVMId in vmList:
             storedVM = vmList[storedVMId]
             newItem = {'service_id':storedVM.metadata.serviceId,
                        'name':storedVM.name,
@@ -53,7 +53,7 @@ class ServicesController(BaseController):
             gridItems.append(newItem)
 
         # Create and fomat the grid.
-    	servicesGrid = Grid(gridItems, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances', 'actions'])
+        servicesGrid = Grid(gridItems, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances', 'actions'])
         servicesGrid.column_formats["service_vm_instances"] = generateSVMButtons
         servicesGrid.column_formats["actions"] = generateActionButtons
         
@@ -66,9 +66,14 @@ class ServicesController(BaseController):
     # Shows the list of cached Services.
     ############################################################################################################        
     def GET_removeService(self, id):
-        # Remove the stored service VM from the repository.
-        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
-        serviceVmRepo.deleteStoredVM(id)  
+        try:
+            # Remove the stored service VM from the repository.
+            serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
+            serviceVmRepo.deleteStoredVM(id)  
+        except Exception as e:
+            # If there was a problem removing the service, return that there was an error.
+            print 'Error removing Service: ' + str(e);
+            return self.JSON_NOT_OK
         
         # Everything went well.
         return self.JSON_OK        
@@ -78,10 +83,10 @@ class ServicesController(BaseController):
 ############################################################################################################        
 def generateSVMButtons(col_num, i, item):    
     # Link to the list of Service VM Instances.
-    svmListURL = h.url_for(controller='servicevms')
+    svmListURL = h.url_for(controller='instances')
 
     # URL to start a new SVM instance.
-    startInstanceUrl = h.url_for(controller='servicevms', action='startSVM', id=item["service_id"])
+    startInstanceUrl = h.url_for(controller='instances', action='startInstance', id=item["service_id"])
     
     # Create a button to the list of service VM Instances, and another to start a new instance.
     linkToSVMButton = HTML.button("View Instances", onclick=h.literal("window.location.href = '" + svmListURL + "';"), class_="btn btn-primary btn")
@@ -100,7 +105,7 @@ def generateActionButtons(col_num, i, item):
     
     # Ajax URL to remove the service.
     removeServiceURL = h.url_for(controller='services', action='removeService', id=item["service_id"])
-    removeButton = HTML.button("Remove Service", onclick="removeServiceConfirmation('" + removeServiceURL + "');", class_="btn btn-primary btn")
+    removeButton = HTML.button("Remove Service", onclick="removeServiceConfirmation('" + removeServiceURL + "', '" + item["service_id"] + "');", class_="btn btn-primary btn")
     
     # Render the buttons.
     return HTML.td(editButton + " " + removeButton  )       

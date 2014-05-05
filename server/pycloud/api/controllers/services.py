@@ -40,7 +40,7 @@ class ServicesController(BaseController):
 
         # Create an item list with the info to display.
         servicesList = []
-    	for storedVMId in vmList:
+        for storedVMId in vmList:
             storedVM = vmList[storedVMId]
             serviceInfo = {'_id':storedVM.metadata.serviceId,
                            'description':storedVM.name}

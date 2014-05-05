@@ -7,10 +7,9 @@
 
 # Manager of VM stuff.
 from pycloud.pycloud.vm import storedvm
-import instancemanager
 import svmrepository
 import storedsvmfactory
-import svmfactory
+import svm
 
 # For exceptions.
 from pycloud.pycloud.vm import vmrepository
@@ -55,22 +54,7 @@ class ServiceVMManager(object):
         return newStoredServiceVM
             
     ################################################################################################################
-    # Creates and runs a transient copy of a stored service VM present in the cache for user interaction.
-    ################################################################################################################
-    def runServiceVMInstance(self, serviceId):
-        try:   
-            # Run a VM with a VNC GUI.
-            instanceMan = instancemanager.ServiceVMInstanceManager(self.cloudletConfig)
-            runningInstance = instanceMan.getServiceVMInstance(serviceId=serviceId,
-                                                               showVNC=True)
-
-            # After we unblocked because the user closed the GUI, we just kill the VM.
-            instanceMan.stopServiceVMInstance(runningInstance.instanceId)
-        except instancemanager.ServiceVMInstanceManagerException as e:
-            print "Error running Service VM: " + e.message
-            
-    ################################################################################################################
-    # Allows the modification of an existing ServiceVM from the cache.
+    # Allows the modification of an existing Stored ServiceVM from the cache.
     ################################################################################################################
     def modifyServiceVM(self, serviceId):        
         try:     
@@ -81,9 +65,10 @@ class ServiceVMManager(object):
             
             # Run the VM with GUI and store its state.
             defaultMaintenanceServiceHostPort = 16001
-            serviceVM = svmfactory.ServiceVMFactory.createServiceVM(storedVM=storedServiceVM,
-                                                                             showVNC=True,
-                                                                             serviceHostPort=defaultMaintenanceServiceHostPort)
+            serviceVM = svm.ServiceVM()
+            serviceVM.startFromStoredSVM(storedVM=storedServiceVM,
+                                         showVNC=True,
+                                         serviceHostPort=defaultMaintenanceServiceHostPort)
             serviceVM.suspendToFile()
             print 'Service VM stored.'
             
@@ -92,7 +77,7 @@ class ServiceVMManager(object):
             
             # Make the stored VM read only again.
             storedServiceVM.protect()
-        except instancemanager.ServiceVMInstanceManagerException as e:
+        except Exception as e:
             print "Error modifying Service VM: " + e.message
             
     ################################################################################################################
@@ -107,32 +92,4 @@ class ServiceVMManager(object):
             print vmList
         except vmrepository.VMRepositoryException as e:
             print "Error getting list of Server VMs: " + e.message
-            
-    ################################################################################################################
-    # Tests an SSH connection to a VM.
-    ################################################################################################################
-    def testSSH(self, serviceId, sfilepath, dfilepath, command):
-        instanceMan = None
-        runningInstance = None        
-        try:
-            # Create the manager and access the VM.
-            instanceMan = instancemanager.ServiceVMInstanceManager(self.cloudletConfig)
-            runningInstance = instanceMan.getServiceVMInstance(serviceId=serviceId,
-                                                               showVNC=False)
-            
-            # Send commands.
-            runningInstance.uploadFile(sfilepath, dfilepath)
-            result = runningInstance.executeCommand(command)
-            print 'Result of command: ' + result
-            
-            # Close connection.
-            runningInstance.closeSSHConnection()
-            
-        except instancemanager.ServiceVMInstanceManagerException as e:
-            print "Error testing ssh connection: " + e.message     
-        finally:
-            # Cleanup.
-            if(instanceMan != None and runningInstance != None):
-                instanceMan.stopServiceVMInstance(runningInstance.instanceId) 
-
     

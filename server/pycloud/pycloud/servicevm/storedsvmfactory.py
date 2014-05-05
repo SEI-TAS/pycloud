@@ -5,7 +5,7 @@
 import os.path
 
 # To handle VMs.
-from pycloud.pycloud.vm import runningvm
+from pycloud.pycloud.servicevm import svm
 
 # Metadata about a Service VM (from this same package).
 import svmmetadata
@@ -58,10 +58,10 @@ class StoredServiceVMFactory(object):
         # We start the VM and load a GUI so the user can modify it. We block till he finished. In this process the user
         # will convert the contents of this VM into an actual Service VM by loading it with the appropriate server.
         print "Loading VM for user access..."
-        virtualMachine = runningvm.RunningVM(diskImageFile = newDiskImage.filepath)
-        virtualMachine.addForwardedSshPort()
-        virtualMachine.start(xmlVmDescriptionFilepath, showVNC=True)
-        virtualMachine.suspendToFile()
+        serviceVM = svm.ServiceVM(diskImageFile = newDiskImage.filepath)
+        serviceVM.startFromDescriptor(xmlVmDescriptionFilepath=xmlVmDescriptionFilepath, showVNC=True)
+        print "VNC GUI closed, saving machine state..."
+        serviceVM.suspendToFile()
         print "Service VM stopped, and machine state saved."
 
         # Load our data from the folder where we just put everything into.
