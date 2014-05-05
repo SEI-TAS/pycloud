@@ -15,17 +15,6 @@ class Globals(object):
         # One instance of Globals is created during application
         # initialization and is available during requests via the
         # 'g' variable.
-        
-        # We will initialize our database connection here.
-        # host = config['pycloud.mongo.host']
-        # port = int(config['pycloud.mongo.port'])
-        # db = config['pycloud.mongo.db']
-        #
-        # try:
-        #     conn = Connection(host, port)
-        # except ConnectionFailure as error:
-        #     print error
-        #     raise Exception('Unable to connect to MongoDB')
 
         # Create or get instance of the singleton Cloudlet object.
         self.cloudlet = get_cloudlet_instance(config)

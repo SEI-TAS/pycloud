@@ -1,7 +1,7 @@
 
 __author__ = 'jdroot'
 
-from pylons import config
+from pylons import config, g
 from pycloud.pycloud.pylons.lib.app_globals import Globals
 from pycloud.pycloud.pylons.lib import helpers
 from mako.lookup import TemplateLookup

@@ -7,7 +7,10 @@ class AttrDict(dict):
 
     def __getattr__(self, attr):
         try:
-            return super(AttrDict, self).__getitem__(attr)
+            _value = super(AttrDict, self).__getitem__(attr)
+            if isinstance(_value, dict):
+                _value = AttrDict(_value)
+            return _value
         except KeyError as excn:
             raise AttributeError(excn)
 

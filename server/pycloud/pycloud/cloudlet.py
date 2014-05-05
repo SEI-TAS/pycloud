@@ -36,13 +36,15 @@ class Cloudlet(object):
         # DB information.
         host = config['pycloud.mongo.host']
         port = int(config['pycloud.mongo.port'])
-        db = config['pycloud.mongo.db']
+        dbName = config['pycloud.mongo.db']
 
         try:
             self.conn = Connection(host, port)
         except ConnectionFailure as error:
             print error
             raise Exception('Unable to connect to MongoDB')
+
+        self.db = self.conn[dbName]
             
         # Get information about folders to be used.
         self.svmCache = config['pycloud.servicevm.cache']
