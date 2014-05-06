@@ -14,9 +14,11 @@
         <p>
             Welcome to the Cloudlet Manager!
         </p>
-        <p>
-            Add a new service:  <a class="btn btn-large btn-success" href="${h.url_for(controller='modify')}">Add Service </a>
-        </p>
+        <ul>
+            <li>${h.link_to('Cached Services', h.url_for(controller='services'))}</li>
+            <li>${h.link_to('Service VM Instances', h.url_for(controller='instances'))}</li>
+            <li>${h.link_to('Cloudlet-Ready Apps', h.url_for(controller='instances'))}</li>
+        </ul>
     </div>
   </div>
 </div>  

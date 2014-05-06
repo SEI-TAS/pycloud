@@ -57,6 +57,9 @@ class ModifyController(BaseController):
         
         # URL to open an SVM.
         page.openSVMURL = h.url_for(controller="modify", action='openSVM')
+        
+        # URL to create an App.
+        page.createAppURL = h.url_for(controller="modify", action='openSVM')           
                 
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
@@ -202,7 +205,12 @@ class ModifyController(BaseController):
         
         # Open a VNC window to modify the VM.
         try:
-            svmManager.modifyServiceVM(id)
+            success = svmManager.modifyServiceVM(id)
+            
+            if(not success):
+                # If there was a problem opening the SVM, return that there was an error.
+                print 'Error opening Service VM. '
+                return self.JSON_NOT_OK                      
         except Exception as e:
             # If there was a problem opening the SVM, return that there was an error.
             print 'Error opening Service VM: ' + str(e);
