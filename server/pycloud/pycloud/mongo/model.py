@@ -9,7 +9,10 @@ class AttrDict(dict):
         try:
             _value = super(AttrDict, self).__getitem__(attr)
             if isinstance(_value, dict):
-                _value = AttrDict(_value)
+                if attr in self.__class__.variable_mapping:
+                    _value = self.__class__.variable_mapping[attr](_value)
+                else:
+                    _value = AttrDict(_value)
             return _value
         except KeyError as excn:
             raise AttributeError(excn)

@@ -37,6 +37,9 @@ class MetaObject(type):
             if isinstance(info.external, list):
                 new_class._external = info.external
 
+            if isinstance(info.mapping, dict):
+                new_class.variable_mapping = info.mapping
+
             # Setup find and find one static methods
             new_class.find = new_class._collection.find
             new_class.find_one = new_class._collection.find_one
