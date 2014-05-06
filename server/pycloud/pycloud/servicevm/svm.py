@@ -70,4 +70,4 @@ class ServiceVM(runningvm.RunningVM):
             super(ServiceVM, self).connectToRunningVM()
         except runningvm.VirtualMachineException as ex:
             print 'Error connecting to existing Service VM: ' + str(ex)
-            raise ServiceVMException('Could not connect to existing Service VM with id %s.' % str(vmId))
+            raise ServiceVMException('Could not connect to existing Service VM with id %s.' % str(self.id))
