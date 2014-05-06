@@ -53,8 +53,8 @@ ${parent.header()}
             ${text('vmDiskImageFile', input_width=12, label=_('Disk Image File'), disabled=True)}
             ${text('vmStateImageFile', input_width=12, label=_('State Image File'), disabled=True)}
             
-    	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm" ${'disabled' if not page.newService else ''}>Create Service VM</button>
-      	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="openEditVNC('${page.openSVMURL}')" ${'disabled' if page.newService else ''}>Modify Service VM</button>
+    	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm" ${'style="display:none;"' if not page.newService else ''}>Create Stored Service VM</button>
+      	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="openEditVNC('${page.openSVMURL}')" ${'style="display:none;"' if page.newService else ''}>Modify Stored Service VM</button>
         </div>
     </div>
 
@@ -70,7 +70,7 @@ ${parent.header()}
     <div class="panel panel-primary col-sm-12">
         <div class="panel-body">
             <div class="form-group col-sm-12">
-                <button type="reset"  class="btn btn-default btn-primary col-sm-offset-1 col-sm-4" name="cancelButton" id="cancelButton">Undo Changes</button>
+                <button type="button" class="btn btn-default col-sm-offset-1 col-sm-4" name="cancelButton" id="cancelButton" onclick="history.back()">Cancel</button>
                 <button type="button" class="btn btn-default btn-primary col-sm-offset-2 col-sm-4" name="submitButton" id="submitButton" onClick="validateSubmission();">Submit</button>
             </div>
         </div>
@@ -78,7 +78,7 @@ ${parent.header()}
 
 </form>
 
-<!-- Create New Service VM modal. -->
+<!-- Create New Stored Service VM modal. -->
 <div class="modal fade" id="modal-new-servicevm" role="dialog" data-backdrop="static">
 	<div class="modal-dialog">
 		<div class="modal-content">
