@@ -21,6 +21,7 @@ class AttrDict(dict):
             raise AttributeError(excn)
 
     def __setattr__(self, attr, value):
+        print 'Setting attr %s = %s on %s' % (attr, value, type(self))
         try:
             self[attr] = value
         except KeyError as excn:
@@ -33,6 +34,7 @@ class AttrDict(dict):
             raise AttributeError(excn)
 
     def __setitem__(self, key, value):
+        print 'Setting %s = %s on %s' % (key, value, type(self))
         _value = value
         # if isinstance(_value, dict):
         #     if self.__class__.variable_mapping:
