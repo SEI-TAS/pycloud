@@ -10,7 +10,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import timelog
 
-from pycloud.pycloud.model import Service
+from pycloud.pycloud.model import Service, VMImage
 
 log = logging.getLogger(__name__)
 
@@ -51,5 +51,21 @@ class ServicesController(BaseController):
             ret = {}
         # Send the response.
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
-        # responseText = jsonDataString
         return ret
+
+    @asjson
+    def GET_test(self):
+
+        service = Service()
+        service._id = 'edu.cmu.sei.ams.face_rec_service_opencv'
+        service.description = 'test'
+        service.num_users = 0
+        service.vm_image = VMImage()
+        service.vm_image.disk_image = "edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2"
+        service.vm_image.state_image = "edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs"
+        service.tags = ['a', 'b', 'c']
+        service.port = 1234
+
+        service.save()
+
+        return {}

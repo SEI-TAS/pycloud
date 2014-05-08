@@ -8,6 +8,7 @@ class MetaInfo(object):
 
     collection = None
     external = None
+    mapping = None
 
     def __init__(self, meta):
         self.__dict__.update(meta.__dict__)
@@ -36,9 +37,13 @@ class MetaObject(type):
             #Create the external attributes list and add it to the new class
             if isinstance(info.external, list):
                 new_class._external = info.external
+            else:
+                new_class._external = None
 
             if isinstance(info.mapping, dict):
                 new_class.variable_mapping = info.mapping
+            else:
+                new_class.variable_mapping = None
 
             # Setup find and find one static methods
             new_class.find = new_class._collection.find

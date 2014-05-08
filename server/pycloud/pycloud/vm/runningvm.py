@@ -58,12 +58,24 @@ class RunningVM(object):
     # The external port in the host which will be mapped to the internal SSH server port.
     sshHostPort = None
 
+    #static hypervisor field
+    _hypervisor = None
+
     ################################################################################################################
     # Generates a random ID, valid as a VM id.
     ################################################################################################################        
     @staticmethod   
     def generateRandomId():
         return str(uuid4())
+
+    ################################################################################################################
+    # Returns the hypervisor connection and will auto connect if the connection is null
+    ################################################################################################################
+    @staticmethod
+    def get_hypervisor():
+        if not RunningVM._hypervisor:
+            RunningVM._hypervisor = libvirt.open(RunningVM.HYPERVISOR_URI)
+        return RunningVM._hypervisor
     
     ################################################################################################################
     # Sets up internal values of the VM.
@@ -85,11 +97,20 @@ class RunningVM(object):
         self.portMappings = {}
         
         # Connect to the hypervisor.
-        self.hypervisor = libvirt.open(self.HYPERVISOR_URI)
+        # self.hypervisor = libvirt.open(self.HYPERVISOR_URI)
             
         # Start with an empty VM.
         self.virtualMachine = None
-        
+
+    ################################################################################################################
+    # Retreives the virtualmachine from the hypervisor
+    ################################################################################################################
+    def get_virtual_machine(self):
+        try:
+            return RunningVM.get_hypervisor().createXML(self.xmlDescriptorString, 0)
+        except:
+            raise
+
     ################################################################################################################  
     # Sets the disk image path and loads its metadata.
     ################################################################################################################             
@@ -161,7 +182,7 @@ class RunningVM(object):
         # Create and start a VM ("domain") through the hypervisor.
         print "Starting a new VM..."  
         try:         
-            self.virtualMachine = self.hypervisor.createXML(self.xmlDescriptorString, 0)
+            self.virtualMachine = RunningVM.get_hypervisor().createXML(self.xmlDescriptorString, 0)
         except:
             # Ensure we destroy the VM if there was some problem after creating it.
             self.destroy()
@@ -187,7 +208,7 @@ class RunningVM(object):
             raise VirtualMachineException('Error resuming VM: saved state file %s does not exist.' % savedState.savedStateFilename)
         
         # Load the XML description from the saved image file, and update it with this VM's information.
-        savedXmlDescriptorString = savedState.getStoredVmDescription(self.hypervisor)
+        savedXmlDescriptorString = savedState.getStoredVmDescription(RunningVM.get_hypervisor())
         self.__updateXmlDescriptorString(savedXmlDescriptorString)
         #print updatedXmlDescriptor
 
@@ -204,7 +225,7 @@ class RunningVM(object):
         # the memory image file has already been merged with this in the statement above.
         try:
             print "Resuming from VM image..."
-            self.hypervisor.restoreFlags(savedState.savedStateFilename, self.xmlDescriptorString, libvirt.VIR_DOMAIN_SAVE_RUNNING)
+            RunningVM.get_hypervisor().restoreFlags(savedState.savedStateFilename, self.xmlDescriptorString, libvirt.VIR_DOMAIN_SAVE_RUNNING)
         except libvirt.libvirtError as e:
             message = "Error resuming VM: %s for VM; error is: %s" % (str(self.id), str(e))           
             raise VirtualMachineException(message)            
@@ -225,7 +246,7 @@ class RunningVM(object):
     ################################################################################################################  
     def connectToRunningVM(self):
         try:
-            self.virtualMachine = self.hypervisor.lookupByUUIDString(self.id)
+            self.virtualMachine = RunningVM.get_hypervisor().lookupByUUIDString(self.id)
         except Exception as e:
             # This means the VM could not be found.
             print 'Error connecting to running VM: ' + str(e)
@@ -300,7 +321,7 @@ class RunningVM(object):
             self.closeSSHConnection()
             self.virtualMachine.destroy()
             self.virtualMachine = None
-        self.hypervisor.close()
+        # RunningVM.get_hypervisor().close()
 
     ################################################################################################################
     # Returns the default filename for the saved state of a VM, which is based on the disk image path.
@@ -484,3 +505,5 @@ class VirtualMachineDescriptor(object):
             qemuElement.append(Element(self.qemuArgNodeName, {'value':portRedirectionCommand}))
             qemuElement.append(Element(self.qemuArgNodeName, {'value':portRedirectionValue}))
             #break
+
+

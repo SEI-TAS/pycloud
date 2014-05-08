@@ -32,8 +32,11 @@ class AttrDict(dict):
     def __setitem__(self, key, value):
         _value = value
         if isinstance(_value, dict):
-            if key in self.__class__.variable_mapping:
-                _value = self.__class__.variable_mapping[key](_value)
+            if self.__class__.variable_mapping:
+                if key in self.__class__.variable_mapping:
+                    _value = self.__class__.variable_mapping[key](_value)
+                else:
+                    _value = AttrDict(_value)
             else:
                 _value = AttrDict(_value)
         return super(AttrDict, self).__setitem__(key, _value)
