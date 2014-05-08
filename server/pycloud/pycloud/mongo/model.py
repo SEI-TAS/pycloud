@@ -14,9 +14,7 @@ class AttrDict(dict):
             if type(_value) is dict:
                 if attr in self.__class__.variable_mapping:
                     _value = self.__class__.variable_mapping[attr](_value)
-                else:
-                    _value = AttrDict(_value)
-                self[attr] = _value # We overwrite the dict with the wrapper
+                    self[attr] = _value # We overwrite the dict with the wrapper
             return _value
         except KeyError as excn:
             raise AttributeError(excn)
@@ -35,16 +33,7 @@ class AttrDict(dict):
             raise AttributeError(excn)
 
     def __setitem__(self, key, value):
-        print 'Setting %s = %s on %s' % (key, value, type(self))
         _value = value
-        # if isinstance(_value, dict):
-        #     if self.__class__.variable_mapping:
-        #         if key in self.__class__.variable_mapping:
-        #             _value = self.__class__.variable_mapping[key](_value)
-        #         else:
-        #             _value = AttrDict(_value)
-        #     else:
-        #         _value = AttrDict(_value)
         return super(AttrDict, self).__setitem__(key, _value)
 
 
