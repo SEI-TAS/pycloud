@@ -11,11 +11,12 @@ class AttrDict(dict):
             print type(self)
             print self
             _value = super(AttrDict, self).__getitem__(attr)
-            if isinstance(_value, dict):
+            if type(_value) is dict:
                 if attr in self.__class__.variable_mapping:
                     _value = self.__class__.variable_mapping[attr](_value)
                 else:
                     _value = AttrDict(_value)
+                self[attr] = _value # We overwrite the dict with the wrapper
             return _value
         except KeyError as excn:
             raise AttributeError(excn)
