@@ -69,7 +69,7 @@ class ServicesController(BaseController):
         vm_image.disk_image = 'edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2'
         vm_image.state_image = 'edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs'
 
-        service.vm_image = vm_image
+        # service.vm_image = vm_image
 
         print 'VMImage: ', type(service.vm_image)
         print 'disk: ', service.vm_image.disk_image
@@ -80,4 +80,4 @@ class ServicesController(BaseController):
 
         service.save()
 
-        return vm_image
+        return service.vm_image
