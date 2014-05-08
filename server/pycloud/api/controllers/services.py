@@ -61,8 +61,9 @@ class ServicesController(BaseController):
         service.description = 'test'
         service.num_users = 0
         service.vm_image = VMImage()
-        service.vm_image.disk_image = "edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2"
-        service.vm_image.state_image = "edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs"
+
+        service.vm_image.disk_image = 'edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2'
+        service.vm_image.state_image = 'edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs'
         service.tags = ['a', 'b', 'c']
         service.port = 1234
 

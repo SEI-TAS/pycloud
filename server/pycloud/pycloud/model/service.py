@@ -1,8 +1,7 @@
 __author__ = 'jdroot'
 
 from pycloud.pycloud.mongo import Model
-from pycloud.pycloud.model.stored_svm import StoredSVM
-from pycloud.pycloud.cloudlet import g_singletonCloudlet as cloudlet
+from pycloud.pycloud.model.vmimage import VMImage
 
 
 class Service(Model):
@@ -11,7 +10,7 @@ class Service(Model):
         collection = "services"
         external = ['_id', 'description', 'version', 'tags']
         mapping = {
-            'stored_svm': StoredSVM
+            'vm_image': VMImage
         }
 
     def __init__(self, *args, **kwargs):
@@ -33,8 +32,9 @@ class Service(Model):
             return None
         return service
 
-    def start(self, join=False):
-        return cloudlet.instanceManager.start_service_vm(self, joinExisting=join)
+    def get_vm_instance(self, join=False):
+        pass
+        # return cloudlet.instanceManager.start_service_vm(self, joinExisting=join)
 
     # def get_service_vm(self, join=False):
     #     if join:
