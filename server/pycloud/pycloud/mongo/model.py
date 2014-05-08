@@ -7,6 +7,7 @@ class AttrDict(dict):
 
     def __getattr__(self, attr):
         try:
+            print 'getting attribute: ', attr
             _value = super(AttrDict, self).__getitem__(attr)
             if isinstance(_value, dict):
                 if attr in self.__class__.variable_mapping:
