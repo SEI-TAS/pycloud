@@ -104,6 +104,7 @@ class RunningVM(object):
 
     ################################################################################################################
     # Retreives the virtualmachine from the hypervisor
+    # TODO: Gracefully handle this error
     ################################################################################################################
     def get_virtual_machine(self):
         try:
