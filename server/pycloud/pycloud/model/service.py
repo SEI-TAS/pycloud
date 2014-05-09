@@ -46,7 +46,7 @@ class Service(Model):
         svm = ServiceVM()
         svm.generate_random_id()
         svm.service_id = self._id
-        svm.service_id = self.port
+        svm.service_port = self.port
         svm.vm_image = self.vm_image.clone(os.path.join(g.cloudlet.svm_temp_folder, svm['_id']))
         svm.start()
         svm.save()
