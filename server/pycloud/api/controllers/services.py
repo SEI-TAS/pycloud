@@ -61,13 +61,13 @@ class ServicesController(BaseController):
     def GET_test(self):
         f2 = open('./data/svmcache/edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs', 'r')
         hdr = LibvirtQemuMemoryHeader(f2)
-        f = open('/usr/home/cloudlet/basic_header.txt', 'r+')
+        f = open('/home/cloudlet/basic_header.txt', 'r+')
         f.write(hdr.xml)
         f.flush()
         f.close()
 
         xmlDescription = ServiceVM.get_hypervisor().saveImageGetXMLDesc('./data/svmcache/edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs', 0)
-        f = open('/usr/home/cloudlet/basic_header2.txt', 'r+')
+        f = open('/home/cloudlet/basic_header2.txt', 'r+')
         f.write(xmlDescription)
         f.flush()
         f.close()
