@@ -30,7 +30,7 @@ class ServiceVM(Model):
         self.vm_image = None
         self.prefix = 'VM'
         self.port_mappings = None
-        self.service_port
+        self.service_port = None
         self.service_id = None
         self.running = False
         super(ServiceVM, self).__init__(*args, **kwargs)
