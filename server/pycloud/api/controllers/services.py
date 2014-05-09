@@ -12,6 +12,10 @@ from pycloud.pycloud.utils import timelog
 
 from pycloud.pycloud.model import Service, VMImage
 
+# Used to modify UUID of a saved VM.
+import vmnetx
+from pycloud.pycloud.model.servicevm import ServiceVM
+
 log = logging.getLogger(__name__)
 
 
@@ -55,6 +59,18 @@ class ServicesController(BaseController):
 
     @asjson
     def GET_test(self):
-        service = Service.by_id('edu.cmu.sei.ams.face_rec_service_opencv')
-        svm = service.get_vm_instance()
-        return svm
+        hdr = vmnetx.LibvirtQemuMemoryHeader('./data/svmcache/edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs')
+        f = open('basic_header.txt', 'RW+')
+        f.write(hdr.xml)
+        f.flush()
+        f.close()
+
+        xmlDescription = ServiceVM.get_hypervisor().saveImageGetXMLDesc('./data/svmcache/edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs', 0)
+        f = open('basic_header2.txt', 'RW+')
+        f.write(xmlDescription)
+        f.flush()
+        f.close()
+
+        # service = Service.by_id('edu.cmu.sei.ams.face_rec_service_opencv')
+        # svm = service.get_vm_instance()
+        return 'ok'
