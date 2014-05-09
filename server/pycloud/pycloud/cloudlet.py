@@ -56,6 +56,8 @@ class Cloudlet(object):
         self.newVmWinXml = config['pycloud.servicevm.win_xml_template']
         self.newVmLinXml = config['pycloud.servicevm.lin_xml_template']
 
+        self.svm_temp_folder = config['pycloud.servicevm.instances_folder']
+
 
 
         # TODO: this introduces an ungly circular dependency...

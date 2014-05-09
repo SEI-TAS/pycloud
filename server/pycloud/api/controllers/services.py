@@ -55,29 +55,6 @@ class ServicesController(BaseController):
 
     @asjson
     def GET_test(self):
-
-        service = Service()
-        service._id = 'edu.cmu.sei.ams.face_rec_service_opencv'
-        service.description = 'test'
-        service.num_users = 0
-
-        service.vm_image = VMImage()
-        service.vm_image.disk_image = 'edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2'
-        service.vm_image.state_image = 'edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs'
-
-        vm_image = VMImage()
-        vm_image.disk_image = 'edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2'
-        vm_image.state_image = 'edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs'
-
-        # service.vm_image = vm_image
-
-        print 'VMImage: ', type(service.vm_image)
-        print 'disk: ', service.vm_image.disk_image
-        print 'state: ', service.vm_image.state_image
-
-        service.tags = ['a', 'b', 'c']
-        service.port = 1234
-
-        service.save()
-
-        return service.vm_image
+        service = Service.by_id('edu.cmu.sei.ams.face_rec_service_opencv')
+        svm = service.get_vm_instance()
+        return svm

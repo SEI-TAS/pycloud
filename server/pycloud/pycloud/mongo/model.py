@@ -7,9 +7,6 @@ class AttrDict(dict):
 
     def __getattr__(self, attr):
         try:
-            print 'getting attribute: ', attr
-            print type(self)
-            print self
             _value = super(AttrDict, self).__getitem__(attr)
             if type(_value) is dict:
                 if attr in self.__class__.variable_mapping:
@@ -20,7 +17,6 @@ class AttrDict(dict):
             raise AttributeError(excn)
 
     def __setattr__(self, attr, value):
-        print 'Setting attr %s = %s on %s' % (attr, value, type(self))
         try:
             self[attr] = value
         except KeyError as excn:

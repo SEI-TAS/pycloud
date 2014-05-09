@@ -41,7 +41,7 @@ class RunningVM(object):
     VM_NAME_PREFIX = 'vm'
     
     # ID for this VM
-    id = ''
+    # id = ''
     
     # Prefix for naming this VM.    
     prefix = VM_NAME_PREFIX
@@ -83,11 +83,11 @@ class RunningVM(object):
     def __init__(self, id=None, prefix=None, diskImageFile=None):
         # Set a unique id for this VM.
         self.id = id
-        if(self.id == None):
+        if not self.id:
             self.id = RunningVM.generateRandomId()
         
         # Optionally, set a prefix for VM names.
-        if(prefix != None):
+        if not prefix:
             self.prefix = prefix
         
         # Setup the disk image file info, if available.
