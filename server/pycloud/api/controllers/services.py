@@ -59,7 +59,7 @@ class ServicesController(BaseController):
 
     @asjson
     def GET_test(self):
-        f2 = open('./data/svmcache/edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs', 'r+')
+        f2 = open('./data/svmcache/edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs', 'r')
         hdr = LibvirtQemuMemoryHeader(f2)
         f = open('basic_header.txt', 'rw+')
         f.write(hdr.xml)
