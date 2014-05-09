@@ -59,14 +59,15 @@ class ServicesController(BaseController):
 
     @asjson
     def GET_test(self):
-        hdr = LibvirtQemuMemoryHeader('./data/svmcache/edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs')
-        f = open('basic_header.txt', 'RW+')
+        f2 = open('./data/svmcache/edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs', 'r+')
+        hdr = LibvirtQemuMemoryHeader(f2)
+        f = open('basic_header.txt', 'rw+')
         f.write(hdr.xml)
         f.flush()
         f.close()
 
         xmlDescription = ServiceVM.get_hypervisor().saveImageGetXMLDesc('./data/svmcache/edu.cmu.sei.ams.face_rec_service_opencv/face_opencv.qcow2.lqs', 0)
-        f = open('basic_header2.txt', 'RW+')
+        f = open('basic_header2.txt', 'rw+')
         f.write(xmlDescription)
         f.flush()
         f.close()
