@@ -94,6 +94,8 @@ class ServiceVM(Model):
 
         # TODO: Handle setting the port mappings
 
+        print 'save_state.savedStateFilename = ', saved_state.savedStateFilename
+
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
         # The XML descriptor is given since some things have changed, though effectively it is not used here since
         # the memory image file has already been merged with this in the statement above.
