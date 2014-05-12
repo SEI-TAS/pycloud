@@ -4,6 +4,7 @@ __author__ = 'jdroot'
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 from runningvm import VirtualMachineException
+import os
 
 ################################################################################################################
 # Represents an XML description of a VM.
