@@ -112,11 +112,11 @@ class InstancesController(BaseController):
     def GET_stopInstance(self, id):
         try:    
             # Use the common Instance Manager to stop an existing instance with the given ID.
-            instanceManager = g.cloudlet.instanceManager
-            instanceManager.stopServiceVMInstance(instanceId=id)
+            svm = ServiceVM.find_and_remove(id)
+            svm.destroy()
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
-            print 'Error stopping Service VM Instance: ' + str(e);
+            print 'Error stopping Service VM Instance: ' + str(e)
             return self.JSON_NOT_OK               
         
         # Everything went well.
