@@ -19,7 +19,7 @@ def make_map():
     connect('/services/removeService/{id}', controller='services', action='removeService')
     
     connect('/instances', controller='instances', action='index')
-    connect('/instances/startInstance/{id}', controller='instances', action='startInstance')
+    connect('/instances/startInstance/{sid}', controller='instances', action='startInstance')
     connect('/instances/stopInstance/{id}', controller='instances', action='stopInstance')
     connect('/instances/openvnc/{id}', controller='instances', action='openVNC')
     connect('/instances/lastchange', controller='instances', action='getLastChangestamp')
