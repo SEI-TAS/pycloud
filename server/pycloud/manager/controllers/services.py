@@ -63,7 +63,6 @@ class ServicesController(BaseController):
         
     ############################################################################################################
     # Shows the list of cached Services.
-    # TODO: Update to use new model
     ############################################################################################################        
     def GET_removeService(self, id):
         try:
