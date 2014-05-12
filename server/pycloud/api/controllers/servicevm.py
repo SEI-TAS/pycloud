@@ -12,6 +12,7 @@ import json
 import urlparse
 
 # Controller to derive from.
+from pycloud.pycloud.model import Service
 from pycloud.pycloud.pylons.lib.base import BaseController
 
 # Manager to handle running instances, and logging util.
@@ -51,56 +52,40 @@ class ServiceVMController(BaseController):
     # Called to start a Service VM.
     # - isolated: indicates if we want to run our own Service VM (true) or if we can share an existing one ("false")
     ################################################################################################################
+    @asjson
     def GET_start(self):
         # Start the Service VM on a random port.
         print '\n*************************************************************************************************'        
 
         # Get variables.
-        serviceId = request.GET['serviceId']
-        if(serviceId is None):
+        sid = request.GET['serviceId']
+        if(sid is None):
             # If we didnt get a valid one, just return an error message.
             print "No service id to be started was received."
-            return self.JSON_NOT_OK
+            return {}
 
-        timelog.TimeLog.stamp("Request received: start VM with service id " + serviceId)
+        timelog.TimeLog.stamp("Request received: start VM with service id " + sid)
 
         # Check the flags that indicates whether we could join an existing instance.
-        isolated = request.params.get('isolated', True)
-        if not isinstance(isolated, bool): # Will only be bool if it was none and the default was set
-            isolated = isolated.lower() in ("yes", "true", "t", "1")
+        join = request.params.get('join', False)
 
-        
-        # Start the Service VM on a random port.
-        print '\n*************************************************************************************************'        
-        timelog.TimeLog.stamp("Request received: start VM with service id " + serviceId)
-        
-        # Check if we will want to try to join an existing VM.
-        joinIfPossible = not isolated
-        if joinIfPossible:
-            print "Will join existing VM if possible."
-
-        # Get our current IP, the one that the client requesting this is seeing.
-        # The HTTP_HOST header will also have the port after a colon, so we remove it.
-        hostIp = request.environ['HTTP_HOST'].split(':')[0]
-
-        # Start or join a VM.
-        instanceInfo = self.instanceManager.getServiceVMInstance(serviceId=serviceId, joinExisting=joinIfPossible)
-        print "Assigned VM running with id %s on IP '%s' and port %d" % (instanceInfo.instanceId, hostIp, instanceInfo.serviceHostPort)
-                
-        # Create a JSON response to indicate the IP and port of the Service VM (the IP will be the same as the hosts's as
-        # it is using port forwarding, and the host port is the one returned by the VMM which configured the forwarding.        
-        jsonDataStructure = { "IP_ADDRESS" : hostIp, \
-                              "PORT" : instanceInfo.serviceHostPort, \
-                              "INSTANCE_ID" : instanceInfo.instanceId
-                            }
-        jsonDataString = json.dumps(jsonDataStructure)
-        print "Service VM Info: IP: %s, port: %s, instance id: %s" % (hostIp, str(instanceInfo.serviceHostPort), instanceInfo.instanceId)
-        
-        # Send the response.
-        timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
-        timelog.TimeLog.writeToFile()
-        responseText = jsonDataString
-        return responseText
+        service = Service.by_id(sid)
+        if service:
+            # Get a ServiceVM instance
+            svm = service.get_vm_instance(join=join)
+            try:
+                # Start the instance, if it works, save it and return ok
+                if not svm.running:
+                    svm.start()
+                    svm.save()
+                    # Send the response.
+                    timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
+                    timelog.TimeLog.writeToFile()
+                return svm
+            except Exception as e:
+                # If there was a problem starting the instance, return that there was an error.
+                print 'Error starting Service VM Instance: ' + str(e)
+                return {}
     
     ################################################################################################################
     # Called to stop a running instance of a Service VM.
