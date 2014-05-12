@@ -11,6 +11,8 @@ from pycloud.pycloud.model.vmimage import VMImage
 from pycloud.pycloud.vm.vmsavedstate import VMSavedState
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineDescriptor
 from pycloud.pycloud.utils import portmanager
+from pylons import g
+import os
 
 
 ################################################################################################################
@@ -60,6 +62,21 @@ class ServiceVM(Model):
         if not ServiceVM._hypervisor:
             ServiceVM._hypervisor = libvirt.open(ServiceVM._HYPERVISOR_URI)
         return ServiceVM._hypervisor
+
+    ################################################################################################################
+    # Lookup a specific instance by its uuid
+    ################################################################################################################
+    @staticmethod
+    def _get_virtual_machine(uuid):
+        return ServiceVM.get_hypervisor().lookupByUUIDString(uuid)
+
+    ################################################################################################################
+    # Cleanly and safely gets a ServiceVM and stops it
+    ################################################################################################################
+    @staticmethod
+    def find_and_remove(svm_id):
+        # Find the right service and remove it. find_and_modify will only return the document with matching id
+        return ServiceVM.find_and_modify(query={'_id', svm_id}, remove=True)
 
     ################################################################################################################
     # Generates a random ID, valid as a VM id.
@@ -135,4 +152,34 @@ class ServiceVM(Model):
         self.running = True
 
         return self
+
+    ################################################################################################################
+    # Stop this service VM
+    ################################################################################################################
+    def stop(self):
+        # Check if this instance is actually running
+        if not self.running:
+            return
+
+        print "Stopping Service VM with instance id %s" % self._id
+
+        # TODO: self.closeSSHConnection()
+
+        vm = ServiceVM._get_virtual_machine(self._id)
+        if not vm:  # No VM for this ID found
+            return
+
+        try:
+            vm.destroy()
+        finally:
+            self.running = False
+
+    ################################################################################################################
+    # Will delete this VM (and stop it if it is currently running)
+    ################################################################################################################
+    def destroy(self):
+        if self.running:
+            self.stop()
+        self.vm_image.cleanup(os.path.join(g.cloudlet.svm_temp_folder, self._id))
+        ServiceVM.find_and_remove(self._id)
 

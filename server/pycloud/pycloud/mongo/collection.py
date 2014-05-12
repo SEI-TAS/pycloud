@@ -3,6 +3,7 @@ __author__ = 'jdroot'
 from pymongo.collection import Collection
 from cursor import MongoCursor
 
+
 class MongoCollection(Collection):
 
     def __init__(self, *args, **kwargs):
@@ -16,6 +17,12 @@ class MongoCollection(Collection):
 
     def find_one(self, *args, **kwargs):
         document = super(MongoCollection, self).find_one(*args, **kwargs)
+        if document:
+            return self.obj_class(document)
+        return None
+
+    def find_and_modify(self, *args, **kwargs):
+        document = super(MongoCollection, self).find_and_modify(*args, **kwargs)
         if document:
             return self.obj_class(document)
         return None

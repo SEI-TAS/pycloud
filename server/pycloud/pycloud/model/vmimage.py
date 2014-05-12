@@ -78,3 +78,13 @@ class VMImage(DictObject):
         # Check the state_image
         if os.path.exists(self.state_image) and os.path.isfile(self.state_image):
             os.chmod(self.disk_image, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH)
+
+    ################################################################################################################
+    # Cleans up the files, if this is a clone it will delete the files
+    ################################################################################################################
+    def cleanup(self, image_folder):
+        if self.cloned:
+            if image_folder:
+                if os.path.exists(image_folder):
+                    if os.path.isdir(image_folder):
+                        shutil.rmtree(image_folder)
