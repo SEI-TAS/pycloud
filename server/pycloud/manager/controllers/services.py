@@ -86,7 +86,7 @@ def generateSVMButtons(col_num, i, item):
     svmListURL = h.url_for(controller='instances')
 
     # URL to start a new SVM instance.
-    startInstanceUrl = h.url_for(controller='instances', action='startInstance', id=item["service_id"])
+    startInstanceUrl = h.url_for(controller='instances', action='startInstance', sid=item["service_id"])
     
     # Create a button to the list of service VM Instances, and another to start a new instance.
     linkToSVMButton = HTML.button("View Instances", onclick=h.literal("window.location.href = '" + svmListURL + "';"), class_="btn btn-primary btn")
