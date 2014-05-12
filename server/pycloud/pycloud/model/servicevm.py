@@ -38,7 +38,7 @@ class ServiceVM(Model):
         self._id = None
         self.vm_image = None
         self.prefix = 'VM'
-        self.port_mappings = None
+        self.port_mappings = {}
         self.service_port = None
         self.port = None  # Used to show the external port
         self.service_id = None
@@ -90,6 +90,8 @@ class ServiceVM(Model):
 
         # Set up the port mappings
         self.port = portmanager.PortManager.generateRandomAvailablePort()
+        if not self.port_mappings:  # Create a blank dict if the port mappings are empty (shouldn't happen)
+            self.port_mappings = {}
         self.port_mappings[self.service_port] = self.port
         xml_descriptor.setPortRedirection(self.port_mappings)
 
