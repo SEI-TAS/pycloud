@@ -13,6 +13,15 @@ from pycloud.pycloud.vm.vmsavedstate import VMSavedState
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineDescriptor
 
 
+################################################################################################################
+# Exception type used in our system.
+################################################################################################################
+class VirtualMachineException(Exception):
+    def __init__(self, message):
+        super(VirtualMachineException, self).__init__(message)
+        self.message = message
+
+
 class ServiceVM(Model):
     class Meta:
         collection = "service_vms"
@@ -77,10 +86,23 @@ class ServiceVM(Model):
         xml_descriptor.setUuid(self._id)
         xml_descriptor.setName(self.prefix + '-' + self._id)
 
-        # Get the resulting XML string
+        # Get the resulting XML string and save it
         updated_xml_descriptor = xml_descriptor.getAsString()
         saved_state.updateStoredVmDescription(updated_xml_descriptor)
 
-        # NOW START THE VM
+        # TODO: Handle setting the port mappings
 
+        # Restore a VM to the state indicated in the associated memory image file, in running mode.
+        # The XML descriptor is given since some things have changed, though effectively it is not used here since
+        # the memory image file has already been merged with this in the statement above.
+        try:
+            print "Resuming from VM image..."
+            RunningVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
+        except libvirt.libvirtError as e:
+            message = "Error resuming VM: %s for VM; error is: %s" % (str(self.id), str(e))
+            raise VirtualMachineException(message)
+
+        self.running = True
+
+        return self
 
