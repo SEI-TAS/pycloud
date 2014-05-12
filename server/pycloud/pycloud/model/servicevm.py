@@ -84,6 +84,9 @@ class ServiceVM(Model):
         saved_xml_descriptor = saved_state.getStoredVmDescription(ServiceVM.get_hypervisor())
         xml_descriptor = VirtualMachineDescriptor(saved_xml_descriptor)
 
+        # Set the disk image in the description of the VM.
+        xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')
+
         # Change the ID and Name
         xml_descriptor.setUuid(self._id)
         xml_descriptor.setName(self.prefix + '-' + self._id)
