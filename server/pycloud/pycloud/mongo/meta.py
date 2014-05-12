@@ -48,7 +48,7 @@ class MetaObject(type):
             # Setup find and find one static methods
             new_class.find = new_class._collection.find
             new_class.find_one = new_class._collection.find_one
-            new_class.find_and_modify = new_class._collection.find_and_modify()
+            new_class.find_and_modify = new_class._collection.find_and_modify
             new_class.external = external
 
         return new_class
