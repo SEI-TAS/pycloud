@@ -55,7 +55,5 @@ class ServicesController(BaseController):
 
     @asjson
     def GET_test(self):
-        svm = ServiceVM.find_and_modify({
-            'remove': True
-        })
+        svm = ServiceVM.find_and_modify(remove=True)
         return svm
