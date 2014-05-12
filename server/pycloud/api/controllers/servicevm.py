@@ -85,7 +85,7 @@ class ServiceVMController(BaseController):
             except Exception as e:
                 # If there was a problem starting the instance, return that there was an error.
                 print 'Error starting Service VM Instance: ' + str(e)
-                return {}
+        return {}
     
     ################################################################################################################
     # Called to stop a running instance of a Service VM.
