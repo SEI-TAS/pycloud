@@ -11,6 +11,7 @@ from pycloud.pycloud.vm.runningvm import RunningVM
 from pycloud.pycloud.model.vmimage import VMImage
 from pycloud.pycloud.vm.vmsavedstate import VMSavedState
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineDescriptor
+from pycloud.pycloud.utils import portmanager
 
 
 ################################################################################################################
@@ -25,7 +26,7 @@ class VirtualMachineException(Exception):
 class ServiceVM(Model):
     class Meta:
         collection = "service_vms"
-        external = ['_id', 'service_id', 'running']
+        external = ['_id', 'service_id', 'running', 'port']
         mapping = {
             'vm_image': VMImage
         }
@@ -40,6 +41,7 @@ class ServiceVM(Model):
         self.prefix = 'VM'
         self.port_mappings = None
         self.service_port = None
+        self.port = None  # Used to show the external port
         self.service_id = None
         self.running = False
         super(ServiceVM, self).__init__(*args, **kwargs)
@@ -87,6 +89,11 @@ class ServiceVM(Model):
         # Set the disk image in the description of the VM.
         xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')
 
+        # Set up the port mappings
+        self.port = portmanager.PortManager.generateRandomAvailablePort()
+        self.port_mappings[self.service_port] = self.port
+        xml_descriptor.setPortRedirection(self.port_mappings)
+
         # Change the ID and Name
         xml_descriptor.setUuid(self._id)
         xml_descriptor.setName(self.prefix + '-' + self._id)
@@ -94,13 +101,6 @@ class ServiceVM(Model):
         # Get the resulting XML string and save it
         updated_xml_descriptor = xml_descriptor.getAsString()
         saved_state.updateStoredVmDescription(updated_xml_descriptor)
-
-        # TODO: Handle setting the port mappings
-
-        print 'save_state.savedStateFilename = ', saved_state.savedStateFilename
-
-        print '\n\nXML Descriptor:\n', updated_xml_descriptor
-        print '\n\n'
 
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
         # The XML descriptor is given since some things have changed, though effectively it is not used here since

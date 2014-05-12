@@ -61,4 +61,6 @@ class ServicesController(BaseController):
     def GET_test(self):
         service = Service.by_id('edu.cmu.sei.ams.face_rec_service_opencv')
         svm = service.get_vm_instance()
+        svm.start()
+        svm.save()
         return svm
