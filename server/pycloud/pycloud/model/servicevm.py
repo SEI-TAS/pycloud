@@ -96,6 +96,9 @@ class ServiceVM(Model):
 
         print 'save_state.savedStateFilename = ', saved_state.savedStateFilename
 
+        print '\n\nXML Descriptor:\n', updated_xml_descriptor
+        print '\n\n'
+
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
         # The XML descriptor is given since some things have changed, though effectively it is not used here since
         # the memory image file has already been merged with this in the statement above.
