@@ -12,6 +12,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.servicevm import svmrepository
 from pycloud.manager.lib.pages import ServicesPage
 from pycloud.pycloud.pylons.lib import helpers as h
+from pycloud.pycloud.model import Service
 
 log = logging.getLogger(__name__)
 
@@ -37,23 +38,22 @@ class ServicesController(BaseController):
         c.services_active = 'active'
     
         # Get a list of existing stored VMs in the cache.
-        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
-        vmList = serviceVmRepo.getStoredServiceVMList()
+
+        services = Service.find()
 
         # Create an item list with the info to display.
-        gridItems = []
-        for storedVMId in vmList:
-            storedVM = vmList[storedVMId]
-            newItem = {'service_id':storedVM.metadata.serviceId,
-                       'name':storedVM.name,
-                       'service_internal_port':storedVM.metadata.servicePort,
-                       'stored_service_vm_folder':storedVM.folder,
-                       'service_vm_instances':'SVM',
-                       'actions':'Action'}
-            gridItems.append(newItem)
+        grid_items = []
+        for service in services:
+            new_item = {'service_id': service['_id'],
+                       'name': service.description,
+                       'service_internal_port': service.port,
+                       'stored_service_vm_folder': service.vm_image.disk_image,
+                       'service_vm_instances': 'SVM',
+                       'actions': 'Action'}
+            grid_items.append(new_item)
 
         # Create and fomat the grid.
-        servicesGrid = Grid(gridItems, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances', 'actions'])
+        servicesGrid = Grid(grid_items, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances', 'actions'])
         servicesGrid.column_formats["service_vm_instances"] = generateSVMButtons
         servicesGrid.column_formats["actions"] = generateActionButtons
         
