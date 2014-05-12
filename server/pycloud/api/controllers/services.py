@@ -10,7 +10,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import timelog
 
-from pycloud.pycloud.model import Service
+from pycloud.pycloud.model import Service, ServiceVM
 
 log = logging.getLogger(__name__)
 
@@ -55,8 +55,7 @@ class ServicesController(BaseController):
 
     @asjson
     def GET_test(self):
-        service = Service.by_id('edu.cmu.sei.ams.face_rec_service_opencv')
-        svm = service.get_vm_instance()
-        svm.start()
-        svm.save()
+        svm = ServiceVM.find_and_modify({
+            'remove': True
+        })
         return svm

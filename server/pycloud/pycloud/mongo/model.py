@@ -36,9 +36,5 @@ class AttrDict(dict):
 class Model(AttrDict):
     __metaclass__ = MetaObject
 
-    @staticmethod
-    def find_one(*args, **kwargs):
-        return Model._collection.find_one(args, kwargs)
-
     def save(self, *args, **kwargs):
         self._collection.save(self, *args, **kwargs)
