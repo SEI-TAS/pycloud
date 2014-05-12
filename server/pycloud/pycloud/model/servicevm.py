@@ -73,6 +73,8 @@ class ServiceVM(Model):
         # Make sure libvirt can read our files
         self.vm_image.unprotect()
 
+        print 'vm_image.state_image = ', self.vm_image.state_image
+
         # Get the saved state and make sure it is populated
         if not self.vm_image.state_image:
             pass  # TODO: self.vm_image.state_image = self.getDefaultSavedStateFile()
