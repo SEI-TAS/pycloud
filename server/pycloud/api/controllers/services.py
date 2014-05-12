@@ -59,6 +59,6 @@ class ServicesController(BaseController):
 
     @asjson
     def GET_test(self):
-        # service = Service.by_id('edu.cmu.sei.ams.face_rec_service_opencv')
-        # svm = service.get_vm_instance()
-        return 'ok'
+        service = Service.by_id('edu.cmu.sei.ams.face_rec_service_opencv')
+        svm = service.get_vm_instance()
+        return svm
