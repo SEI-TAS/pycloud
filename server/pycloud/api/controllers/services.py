@@ -10,11 +10,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import timelog
 
-from pycloud.pycloud.model import Service, VMImage
-
-# Used to modify UUID of a saved VM.
-from pycloud.pycloud.vm.vmnetx import LibvirtQemuMemoryHeader
-from pycloud.pycloud.model.servicevm import ServiceVM
+from pycloud.pycloud.model import Service
 
 log = logging.getLogger(__name__)
 
