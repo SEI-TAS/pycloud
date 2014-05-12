@@ -7,7 +7,6 @@ import libvirt
 from uuid import uuid4
 
 from pycloud.pycloud.mongo import Model
-from pycloud.pycloud.vm.runningvm import RunningVM
 from pycloud.pycloud.model.vmimage import VMImage
 from pycloud.pycloud.vm.vmsavedstate import VMSavedState
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineDescriptor
@@ -107,7 +106,7 @@ class ServiceVM(Model):
         # the memory image file has already been merged with this in the statement above.
         try:
             print "Resuming from VM image..."
-            RunningVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
+            ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
         except libvirt.libvirtError as e:
             message = "Error resuming VM: %s for VM; error is: %s" % (str(self._id), str(e))
             raise VirtualMachineException(message)
