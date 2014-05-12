@@ -68,6 +68,29 @@ class ServiceVM(Model):
         self._id = str(uuid4())
 
     ################################################################################################################
+    # Add a port mapping
+    ################################################################################################################
+    def add_port_mapping(self, host_port, guest_port):
+        if not self.port_mappings:
+            self.port_mappings = {}
+
+        # If you are setting the services port we need to set the external port
+        if guest_port == self.service_port:
+            self.port = host_port
+
+        self.port_mappings[str(host_port)] = guest_port
+
+    ################################################################################################################
+    # Gets the port mappings in the form int -> int instead of str -> int
+    ################################################################################################################
+    def _get_libvirt_port_mappings(self):
+        ret = {}
+        if self.port_mappings:
+            for key, value in self.port_mappings.iteritems():
+                ret[int(key)] = value
+        return ret
+
+    ################################################################################################################
     # Start this service vm
     ################################################################################################################
     def start(self):
@@ -88,12 +111,10 @@ class ServiceVM(Model):
         # Set the disk image in the description of the VM.
         xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')
 
-        # Set up the port mappings
-        self.port = portmanager.PortManager.generateRandomAvailablePort()
-        if not self.port_mappings:  # Create a blank dict if the port mappings are empty (shouldn't happen)
-            self.port_mappings = {}
-        self.port_mappings[self.service_port] = self.port
-        xml_descriptor.setPortRedirection(self.port_mappings)
+        # Create a new port if we do not have an external port already
+        if not self.port:
+            self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.service_port)
+        xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
 
         # Change the ID and Name
         xml_descriptor.setUuid(self._id)
