@@ -76,7 +76,7 @@ class ServiceVM(Model):
     @staticmethod
     def find_and_remove(svm_id):
         # Find the right service and remove it. find_and_modify will only return the document with matching id
-        return ServiceVM.find_and_modify(query={'_id', svm_id}, remove=True)
+        return ServiceVM.find_and_modify(query={'_id': svm_id}, remove=True)
 
     ################################################################################################################
     # Generates a random ID, valid as a VM id.
