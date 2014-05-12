@@ -12,7 +12,7 @@ from webhelpers.html import HTML
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import InstancesPage
 from pycloud.pycloud.pylons.lib import helpers as h
-from pycloud.pycloud.model import Service
+from pycloud.pycloud.model import Service, ServiceVM
 
 log = logging.getLogger(__name__)
 
@@ -31,25 +31,24 @@ class InstancesController(BaseController):
     def GET_index(self):
         # Mark the active tab.
         c.servicevms_active = 'active'
-        
-        # Get a list of running ServiceVM instances.
-        instanceManager = g.cloudlet.instanceManager
-        instanceList = instanceManager.getServiceVMInstances()
 
-        # Create an item list with the info to display.
-        gridItems = []
-        for serviceVMInstanceId in instanceList:
-            serviceVMInstance = instanceList[serviceVMInstanceId]
-            newItem = {'instance_id':serviceVMInstance.instanceId,
-                       'service_id':serviceVMInstance.serviceId,
-                       'service_external_port':serviceVMInstance.serviceHostPort,
-                       'ssh_port':serviceVMInstance.sshHostPort,                       
-                       'folder':serviceVMInstance.getInstanceFolder(),
-                       'action':'Stop'}
-            gridItems.append(newItem)
+        svms = ServiceVM.find()
+
+        grid_items = []
+        for svm in svms:
+            grid_items.append(
+                {
+                    'instance_id': svm['_id'],
+                    'service_id': svm.service_id,
+                    'service_external_port': svm.port,
+                    'ssh_port': 0,
+                    'folder': svm.vm_image.disk_image,
+                    'action': 'Stop'
+                }
+            )
 
         # Create and format the grid.
-        instancesGrid = Grid(gridItems, ['instance_id', 'service_id', 'service_external_port', 'ssh_port', 'folder', 'action'])
+        instancesGrid = Grid(grid_items, ['instance_id', 'service_id', 'service_external_port', 'ssh_port', 'folder', 'action'])
         instancesGrid.column_formats["service_id"] = generate_service_id_link
         instancesGrid.column_formats["action"] = generate_action_buttons
 
