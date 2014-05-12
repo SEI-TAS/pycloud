@@ -56,7 +56,9 @@ class Cloudlet(object):
         self.newVmWinXml = config['pycloud.servicevm.win_xml_template']
         self.newVmLinXml = config['pycloud.servicevm.lin_xml_template']
 
+        # New config params
         self.svm_temp_folder = config['pycloud.servicevm.instances_folder']
+        self.service_cache = config['pycloud.servicevm.cache']
 
 
 

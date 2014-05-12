@@ -71,7 +71,7 @@ class ServiceVM(Model):
         return ServiceVM.get_hypervisor().lookupByUUIDString(uuid)
 
     ################################################################################################################
-    # Cleanly and safely gets a ServiceVM and stops it
+    # Cleanly and safely gets a ServiceVM and removes it from the database
     ################################################################################################################
     @staticmethod
     def find_and_remove(svm_id):

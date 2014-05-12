@@ -28,6 +28,10 @@ class Service(Model):
         self.min_memory = None
         super(Service, self).__init__(*args, **kwargs)
 
+    ################################################################################################################
+    # Locate a service by its ID
+    ################################################################################################################
+    # noinspection PyBroadException
     @staticmethod
     def by_id(sid=None):
         try:
@@ -35,6 +39,14 @@ class Service(Model):
         except:
             return None
         return service
+
+    ################################################################################################################
+    # Cleanly and safely gets a Service and removes it from the database
+    ################################################################################################################
+    @staticmethod
+    def find_and_remove(sid):
+        # Find the right service and remove it. find_and_modify will only return the document with matching id
+        return Service.find_and_modify(query={'_id': sid}, remove=True)
 
     def get_vm_instance(self, join=False):
         if join:
@@ -51,3 +63,12 @@ class Service(Model):
         # svm.start()
         # svm.save()
         return svm
+
+    ################################################################################################################
+    # Removes this Service and all of its files
+    ################################################################################################################
+    def destroy(self):
+        # Make sure we are no longer in the database
+        Service.find_and_remove(self._id)
+        # Delete our backing files
+        self.vm_image.cleanup(os.path.join(g.cloudlet.service_cache, self._id), force=True)

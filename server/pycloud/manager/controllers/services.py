@@ -67,12 +67,12 @@ class ServicesController(BaseController):
     ############################################################################################################        
     def GET_removeService(self, id):
         try:
-            # Remove the stored service VM from the repository.
-            serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
-            serviceVmRepo.deleteStoredVM(id)  
+            service = Service.find_and_remove(id)
+            if service:
+                service.destroy()
         except Exception as e:
             # If there was a problem removing the service, return that there was an error.
-            print 'Error removing Service: ' + str(e);
+            print 'Error removing Service: ' + str(e)
             return self.JSON_NOT_OK
         
         # Everything went well.
