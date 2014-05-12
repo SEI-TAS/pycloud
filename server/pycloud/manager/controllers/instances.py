@@ -12,6 +12,7 @@ from webhelpers.html import HTML
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import InstancesPage
 from pycloud.pycloud.pylons.lib import helpers as h
+from pycloud.pycloud.model import Service
 
 log = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ class InstancesController(BaseController):
     
     ############################################################################################################
     # Shows the list of running Service VM instances.
+    # TODO: Update to use new model
     ############################################################################################################
     def GET_index(self):
         # Mark the active tab.
@@ -58,6 +60,7 @@ class InstancesController(BaseController):
         
     ############################################################################################################
     # Opens a VNC window to a running Service VM Instance.
+    # TODO: Update to use new model
     ############################################################################################################
     def GET_openVNC(self, id):
         # Get a list of running ServiceVM instances.
@@ -86,18 +89,23 @@ class InstancesController(BaseController):
     ############################################################################################################
     # Starts a new SVM instance of the Service.
     ############################################################################################################        
-    def GET_startInstance(self, id):
-        try:
-            # Use the common Instance Manager to start a new instance for the given Service ID.        
-            instanceManager = g.cloudlet.instanceManager
-            instanceManager.getServiceVMInstance(serviceId=id)
-        except Exception as e:
-            # If there was a problem starting the instance, return that there was an error.
-            print 'Error starting Service VM Instance: ' + str(e);
-            return self.JSON_NOT_OK     
-        
-        # Everything went well.
-        return self.JSON_OK        
+    def GET_startInstance(self, sid):
+        # Look for the service with this id
+        service = Service.by_id(sid)
+        if service:
+            # Get a ServiceVM instance
+            svm = service.get_vm_instance()
+            try:
+                # Start the instance, if it works, save it and return ok
+                svm.start()
+                svm.save()
+                return self.JSON_OK
+            except Exception as e:
+                # If there was a problem starting the instance, return that there was an error.
+                print 'Error starting Service VM Instance: ' + str(e)
+                return self.JSON_NOT_OK
+
+        return self.JSON_NOT_OK
 
     ############################################################################################################
     # Stops an existing instance.

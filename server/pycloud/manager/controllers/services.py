@@ -38,7 +38,6 @@ class ServicesController(BaseController):
         c.services_active = 'active'
     
         # Get a list of existing stored VMs in the cache.
-
         services = Service.find()
 
         # Create an item list with the info to display.
@@ -64,6 +63,7 @@ class ServicesController(BaseController):
         
     ############################################################################################################
     # Shows the list of cached Services.
+    # TODO: Update to use new model
     ############################################################################################################        
     def GET_removeService(self, id):
         try:
