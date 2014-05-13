@@ -62,7 +62,7 @@ class ServiceVMController(BaseController):
                 except Exception as e:
                     # If there was a problem starting the instance, return that there was an error.
                     print 'Error starting Service VM Instance: ' + str(e)
-                    abort(500, '400 Bad Request - %s' % str(e))
+                    abort(500, '500 Internal Server Error - %s' % str(e))
             else:
                 abort(400, '400 Bad Request - service for %s not found' % sid)
 
