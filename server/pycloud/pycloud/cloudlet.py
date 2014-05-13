@@ -6,9 +6,9 @@ import psutil
 import os
 import shutil
 from pycloud.pycloud.servicevm import instancemanager
-from pycloud.pycloud.mongo.model import AttrDict
 from pycloud.pycloud.utils import portmanager
 from pycloud.pycloud.vm.vmutils import destroy_all_vms
+import pycloud.pycloud.mongo.model as model
 
 
 # Singleton object to maintain intra- and inter-app variables.
@@ -101,14 +101,14 @@ class Cloudlet(object):
 
 
 
-class Cpu_Info(AttrDict):
+class Cpu_Info(model.AttrDict):
 
     def __init__(self):
         self.max_cores = psutil.cpu_count()
         self.usage = psutil.cpu_percent(interval=0.1)
 
 
-class Memory_Info(AttrDict):
+class Memory_Info(model.AttrDict):
 
     def __init__(self):
         mem = psutil.virtual_memory()
@@ -116,7 +116,7 @@ class Memory_Info(AttrDict):
         self.free_memory = mem.free
 
 
-class Cloudlet_Metadata(AttrDict):
+class Cloudlet_Metadata(model.AttrDict):
 
     def __init__(self):
         self.memory_info = Memory_Info()
