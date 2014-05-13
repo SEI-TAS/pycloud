@@ -57,15 +57,6 @@ class ServicesController(BaseController):
 
     @asjson
     def GET_test(self):
-        app = App()
-        app.name = 'face'
-        app.description = 'performs face recognition'
-        app.package_name = 'edu.cmu.sei.rtss.cloudlet.facerec'
-        app.service_id = 'edu.cmu.sei.ams.face_rec_service'
-        app.md5sum = '1325ed86fd781efa6761169600fdae21'
-        app.app_version = ''
-        app.min_android_version = '9'
-        app.tags = ['face', 'c++']
-        app.apk_file = './data/apks/face/FaceRecognitionAndroidClient.apk'
-        app.save()
+        app = App.find_one()
+        print type(app['_id'])
         return app
