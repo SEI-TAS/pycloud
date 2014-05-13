@@ -55,8 +55,8 @@ class ServiceVMController(BaseController):
         print '\n*************************************************************************************************'        
 
         # Get variables.
-        sid = request.GET['serviceId']
-        if(sid is None):
+        sid = request.params.get('serviceId', None)
+        if not sid:
             # If we didnt get a valid one, just return an error message.
             print "No service id to be started was received."
             return {}
@@ -89,7 +89,7 @@ class ServiceVMController(BaseController):
     ################################################################################################################
     def GET_stop(self):
         # Check that we got an instance id.
-        svm_id = request.GET['instanceId']
+        svm_id = request.params.get('instanceId', None)
         if not svm_id:
             # If we didnt get a valid one, just return an error message.
             abort(400, '400 Bad Request - must provide instance id')
