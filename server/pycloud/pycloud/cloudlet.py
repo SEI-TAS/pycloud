@@ -3,8 +3,10 @@ __author__ = 'jdroot'
 from pymongo import Connection
 from pymongo.errors import ConnectionFailure
 import psutil
-import os, shutil
+import os
+import shutil
 from pycloud.pycloud.servicevm import instancemanager
+from pycloud.pycloud.mongo import set_connection
 from pycloud.pycloud.mongo.model import AttrDict
 from pycloud.pycloud.utils import portmanager
 from pycloud.pycloud.vm.vmutils import destroy_all_vms
@@ -48,6 +50,8 @@ class Cloudlet(object):
             raise Exception('Unable to connect to MongoDB')
 
         self.db = self.conn[dbName]
+        # Give the connection to mongo
+        set_connection(self.db)
             
         # Get information about folders to be used.
         self.svmCache = config['pycloud.servicevm.cache']

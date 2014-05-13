@@ -1,7 +1,7 @@
 __author__ = 'jdroot'
 
+from pycloud.pycloud.mongo import get_conn
 from collection import MongoCollection
-from pylons import g
 
 
 class MetaInfo(object):
@@ -31,7 +31,7 @@ class MetaObject(type):
             info.collection = info.collection or name.lower()
 
             # Create the collection and add it to the new class
-            coll = MongoCollection(g.cloudlet.db, info.collection, obj_class=new_class)
+            coll = MongoCollection(get_conn(), info.collection, obj_class=new_class)
             new_class._collection = coll
 
             #Create the external attributes list and add it to the new class
