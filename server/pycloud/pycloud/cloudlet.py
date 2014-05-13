@@ -50,8 +50,6 @@ class Cloudlet(object):
             raise Exception('Unable to connect to MongoDB')
 
         self.db = self.conn[dbName]
-        # Give the connection to mongo
-        set_connection(self.db)
             
         # Get information about folders to be used.
         self.svmCache = config['pycloud.servicevm.cache']
