@@ -6,7 +6,6 @@ import psutil
 import os
 import shutil
 from pycloud.pycloud.servicevm import instancemanager
-from pycloud.pycloud.mongo import set_connection
 from pycloud.pycloud.mongo.model import AttrDict
 from pycloud.pycloud.utils import portmanager
 from pycloud.pycloud.vm.vmutils import destroy_all_vms
