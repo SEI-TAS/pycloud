@@ -16,10 +16,10 @@ g_singletonCloudlet = None
 ################################################################################################################
 # Creates the Cloudlet singleton, or gets an instance of it if it had been already created.
 ################################################################################################################
-def get_cloudlet_instance(config):    
+def get_cloudlet_instance(config=None):
     # Only create it if we don't have a reference already.
     global g_singletonCloudlet
-    if(g_singletonCloudlet == None):
+    if not g_singletonCloudlet:
         print 'Creating Cloudlet singleton.'
         g_singletonCloudlet = Cloudlet(config)
 
@@ -70,13 +70,12 @@ class Cloudlet(object):
         # Create the ServiceVM Instance Manager, which will be used by several apps.
         self.instanceManager = instancemanager.ServiceVMInstanceManager(self)
 
-        self._cleanup_system()
 
     @staticmethod
     def system_information():
         return Cloudlet_Metadata()
 
-    def _cleanup_system(self):
+    def cleanup_system(self):
         # Shutdown all running VMs
         destroy_all_vms()
 
