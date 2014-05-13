@@ -218,3 +218,28 @@ class ServiceVM(Model):
         self.vm_image.cleanup(os.path.join(g.cloudlet.svm_temp_folder, self._id))
         ServiceVM.find_and_remove(self._id)
 
+    ################################################################################################################
+    # Will destroy all virtual machines that are running
+    ################################################################################################################
+    @staticmethod
+    def destroy_all_vms():
+        print 'Shutting down all running virtual machines'
+        vm_ids = ServiceVM.get_hypervisor().listDomainsID()
+        for vm_id in vm_ids:
+            vm = ServiceVM.get_hypervisor().lookupByID(vm_id)
+            print '\tShutting down \'VM-%s\'' % uuidstr(vm.UUID())
+
+
+################################################################################################################
+# Helper to convert normal uuid to string
+################################################################################################################
+def uuidstr(rawuuid):
+    hx = ['0', '1', '2', '3', '4', '5', '6', '7',
+          '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
+    uuid = []
+    for i in range(16):
+        uuid.append(hx[((ord(rawuuid[i]) >> 4) & 0xf)])
+        uuid.append(hx[(ord(rawuuid[i]) & 0xf)])
+        if i == 3 or i == 5 or i == 7 or i == 9:
+            uuid.append('-')
+    return "".join(uuid)

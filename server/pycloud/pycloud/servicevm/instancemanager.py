@@ -103,12 +103,12 @@ class ServiceVMInstanceManager(object):
         # Store the config object.
         self.cloudletConfig = cloudletConfig
         
-        # Stop any leftover VMs from a previous session, if any.
-        self.cleanupRunningInstances()
-   
-        # Cleanup the VMs instances folder.
-        self.cleanupInstancesFolder()
-        portmanager.PortManager.clearPorts()
+        # # Stop any leftover VMs from a previous session, if any.
+        # self.cleanupRunningInstances()
+        #
+        # # Cleanup the VMs instances folder.
+        # self.cleanupInstancesFolder()
+        # portmanager.PortManager.clearPorts()
         
     ################################################################################################################  
     # Starts an instance of a Service VM, or joins an existing one.

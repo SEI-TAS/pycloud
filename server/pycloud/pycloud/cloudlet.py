@@ -5,7 +5,8 @@ from pymongo.errors import ConnectionFailure
 from pycloud.pycloud.servicevm import instancemanager
 from pycloud.pycloud.mongo.model import AttrDict
 import psutil
-import os
+from pycloud.pycloud.utils import portmanager
+from pycloud.pycloud.model import ServiceVM
 
 # Singleton object to maintain intra- and inter-app variables.
 g_singletonCloudlet = None
@@ -63,11 +64,31 @@ class Cloudlet(object):
 
 
         # TODO: this introduces an ungly circular dependency...
+        # TODO: self.instanceManager should be removed
         # Create the ServiceVM Instance Manager, which will be used by several apps.
         self.instanceManager = instancemanager.ServiceVMInstanceManager(self)
 
-    def system_information(self):
+        self._cleanup_system()
+
+    @staticmethod
+    def system_information():
         return Cloudlet_Metadata()
+
+    def _cleanup_system(self):
+        # Shutdown all running VMs
+        ServiceVM.destroy_all_vms()
+
+        self._clean_instances_folder()
+        self._remove_service_vms()
+
+        # Clear all ports
+        portmanager.PortManager.clearPorts()
+
+    def _clean_instances_folder(self):
+        pass
+
+    def _remove_service_vms(self):
+        pass
 
 
 class Cpu_Info(AttrDict):
