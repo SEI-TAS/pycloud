@@ -1,24 +1,20 @@
 import logging
 
 # Pylon imports.
-from pylons import request, response, session, tmpl_context as c, url
-from pylons.controllers.util import abort, redirect
+from pylons import request
 from pylons import g
 from paste import fileapp
 
 # For serializing JSON data.
 import json
 
-# To get our IP.
-import urlparse
-
 # To handle basic OS stuff.
 import os
 
 # Controller to derive from.
 from pycloud.pycloud.pylons.lib.base import BaseController
-
 from pycloud.pycloud.utils import timelog
+from pycloud.pycloud.model import App
 
 log = logging.getLogger(__name__)
 
@@ -37,35 +33,12 @@ class AppPushController(BaseController):
         timelog.TimeLog.reset()
         timelog.TimeLog.stamp("Request for stored apps received.")
             
-        # Create a single json from the json for individual apps. 
-        path = os.path.dirname(os.path.abspath(g.cloudlet.appFolder))        
-        apps = []
-        for root, dirs, files in os.walk(path):  # @UnusedVariable
-            # Loop over all subfolders, one for each app.
-            for subdirname in dirs:
-                subdirpath = os.path.join(path,subdirname)
-                for r, d, f in os.walk(subdirpath):  # @UnusedVariable
-                    # Loop over all files in that subfolder to find a JSON one.
-                    for filename in f:
-                        if filename.endswith(".json"):
-                            # Construct the full path for the json file.
-                            jsonfile = os.path.join(r, filename)
-                            jsonfile = os.path.join(root, jsonfile)
-                            print jsonfile
-                            
-                            # Open the json file and add the contents to the array of json contents. 
-                            json_data = open(jsonfile)
-                            apps.append(json.load(json_data))
-    
-        # Create a JSON response that includes all the json content from all metadata files.
-        jsonDataStructure = { 'apps' : apps }
-        jsonDataString = json.dumps(jsonDataStructure, indent=2)
+        apps = App.find()
         
         # Send the response.
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
         timelog.TimeLog.writeToFile()
-        responseText = jsonDataString
-        return responseText       
+        return apps
         
     ################################################################################################################
     # Called to get an app from the server.

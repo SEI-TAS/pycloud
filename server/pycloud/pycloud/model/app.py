@@ -1,6 +1,6 @@
 __author__ = 'jdroot'
 
-from pycloud.pycloud.mongo import Model
+from pycloud.pycloud.mongo import Model, ObjectID
 
 class App(Model):
     class Meta:
@@ -23,3 +23,17 @@ class App(Model):
         self.tags = None
         self.apk_file = None
         super(App, self).__init__(*args, **kwargs)
+
+    ################################################################################################################
+    # Locate an App by its ID
+    ################################################################################################################
+    @staticmethod
+    def by_id(oid=None):
+        rid = oid
+        if not isinstance(rid, ObjectID):
+            # noinspection PyBroadException
+            try:
+                rid = ObjectID(rid)
+            except:
+                return None
+        return App.find_one({'_id': rid})
