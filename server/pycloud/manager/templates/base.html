@@ -28,27 +28,33 @@
         <script src="/manager/js/jquery-1.11.0.min.js"></script>            
     </head>
     <body>
-
-        ${navbar()}
-
-        <div class="container">
-
-            <div class="header">
-                <%block name="header">
-                    <h1>
-                        <%block name="title"/>
-                    </h1>
-                </%block>
+        
+        <div id="wrap">
+    
+            ${navbar()}
+    
+            <div class="container-fluid">
+    
+                <div class="header">
+                    <%block name="header">
+                        <h1>
+                            <%block name="title"/>
+                        </h1>
+                    </%block>
+                </div>
+    
+                ${next.body()}
+    
             </div>
+            <div id="push"></div>
+        </div>
 
-            ${next.body()}
-
-            <div class="footer navbar-fixed-bottom">
-                <%block name="footer">
-                    Software Engineering Institute of Carnegie Mellon University
-                </%block>
+        <div id="footer">
+            <div class="container-fluid">
+                Software Engineering Institute of Carnegie Mellon University
             </div>
         </div>
+
     </body>
 
     <!-- Bootstrap core JavaScript

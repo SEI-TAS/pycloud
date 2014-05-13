@@ -7,6 +7,7 @@ from pylons import g
 
 from webhelpers.html.grid import Grid
 from webhelpers.html import HTML
+from webhelpers.html import literal
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.servicevm import svmrepository
@@ -92,7 +93,7 @@ def generateSVMButtons(col_num, i, item):
     newSVMButton = HTML.button("New Instance", onclick=h.literal("startSVM('"+ startInstanceUrl +"', '"+ svmListURL +"')"), class_="btn btn-primary btn")
 
     # Render the buttons.
-    return HTML.td(linkToSVMButton + " " + newSVMButton)
+    return HTML.td(linkToSVMButton + literal("&nbsp;") + newSVMButton)
     
 ############################################################################################################
 # Helper function to generate buttons to edit or delete services.
@@ -107,4 +108,4 @@ def generateActionButtons(col_num, i, item):
     removeButton = HTML.button("Remove Service", onclick="removeServiceConfirmation('" + removeServiceURL + "', '" + item["service_id"] + "');", class_="btn btn-primary btn")
     
     # Render the buttons.
-    return HTML.td(editButton + " " + removeButton  )       
+    return HTML.td(editButton + literal("&nbsp;") + removeButton  )       

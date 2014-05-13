@@ -8,6 +8,7 @@ from pylons import g
 
 from webhelpers.html.grid import Grid
 from webhelpers.html import HTML
+from webhelpers.html import literal
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import InstancesPage
@@ -168,4 +169,4 @@ def generate_action_buttons(col_num, i, item):
     vncButtonHtml = HTML.button("Open VNC", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
 
     # Render the buttons with the Ajax code to stop the SVM.    
-    return HTML.td(stopButtonHtml + " " + vncButtonHtml)
+    return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml)

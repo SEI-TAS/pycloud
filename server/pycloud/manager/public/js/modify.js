@@ -105,8 +105,8 @@ function openCreateVNC()
                 ssvmStateImagePath.val(storedSVMData.STATE_IMAGE);
                 
                 // Upate the buttons to reflect that we can now modify the SVM.
-                $('#new-svm-button').prop('disabled', true);
-                $('#modify-svm-button').prop('disabled', false);      
+                $('#new-svm-button').prop('style', 'display:none;');
+                $('#modify-svm-button').prop('style', 'display:inline;');      
         
                 // Dismiss the waiting dialog and the modal.
                 dialog.hide();

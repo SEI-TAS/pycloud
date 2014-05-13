@@ -77,8 +77,11 @@ class ServiceVMManager(object):
             
             # Make the stored VM read only again.
             storedServiceVM.protect()
+            
+            return True
         except Exception as e:
             print "Error modifying Service VM: " + e.message
+            return False
             
     ################################################################################################################
     # Prints a list of Service VMs in the cache.
@@ -90,6 +93,8 @@ class ServiceVMManager(object):
             vmList = serviceVmRepo.getVMListAsString()
             print '\nService VM List:'
             print vmList
+            return True
         except vmrepository.VMRepositoryException as e:
             print "Error getting list of Server VMs: " + e.message
+            return False
     
