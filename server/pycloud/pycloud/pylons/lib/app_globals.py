@@ -1,10 +1,8 @@
 """The application's Globals object"""
 
 from pylons import config
-from pymongo import Connection
-from pymongo.errors import ConnectionFailure
 
-from pycloud.pycloud.cloudlet import get_cloudlet_instance
+import pycloud.pycloud.cloudlet as cloudlet
 
 class Globals(object):
 
@@ -17,5 +15,5 @@ class Globals(object):
         # 'g' variable.
 
         # Create or get instance of the singleton Cloudlet object.
-        self.cloudlet = get_cloudlet_instance(config)
+        self.cloudlet = cloudlet.get_cloudlet_instance(config)
  

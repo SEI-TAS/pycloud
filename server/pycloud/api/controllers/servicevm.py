@@ -64,7 +64,7 @@ class ServiceVMController(BaseController):
                     print 'Error starting Service VM Instance: ' + str(e)
                     abort(500, '500 Internal Server Error - %s' % str(e))
             else:
-                abort(400, '400 Bad Request - service for %s not found' % sid)
+                abort(400, '404 Not Found - service vm for %s not found' % sid)
 
     ################################################################################################################
     # Called to stop a running instance of a Service VM.
@@ -81,16 +81,16 @@ class ServiceVMController(BaseController):
             timelog.TimeLog.stamp("Request received: stop VM with instance id " + svm_id)
 
             # Stop the Service VM.
-            try:
-                svm = ServiceVM.find_and_remove(svm_id)
-                if not svm:
-                    abort(400, '400 Bad Request - service for %s not found' % svm_id)
-                else:
+            svm = ServiceVM.find_and_remove(svm_id)
+            if not svm:
+                abort(404, '404 Not Found - service vm for %s not found' % svm_id)
+            else:
+                try:
                     svm.destroy()
                     timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
                     timelog.TimeLog.writeToFile()
                     return {}
-            except Exception as e:
-                # If there was a problem stopping the instance, return that there was an error.
-                print 'Error stopping Service VM Instance: ' + str(e)
-                abort(500, '500 Internal Server Error - %s' % str(e))
+                except Exception as e:
+                    # If there was a problem stopping the instance, return that there was an error.
+                    print 'Error stopping Service VM Instance: ' + str(e)
+                    abort(500, '500 Internal Server Error - %s' % str(e))

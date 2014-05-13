@@ -2,6 +2,7 @@ import logging
 
 # Pylon imports.
 from pylons import request
+from pylons.controllers.util import abort
 
 # Controller to derive from.
 from pycloud.pycloud.pylons.lib.base import BaseController
@@ -10,7 +11,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import timelog
 
-from pycloud.pycloud.model import Service, ServiceVM
+from pycloud.pycloud.model import Service, App
 
 log = logging.getLogger(__name__)
 
@@ -42,19 +43,20 @@ class ServicesController(BaseController):
     @asjson
     def GET_find(self):
         # Look for the VM in the repository.
-        serviceId = request.GET['serviceId']
+        sid = request.params.get('serviceId', None)
         print '\n*************************************************************************************************'
         timelog.TimeLog.reset()
         timelog.TimeLog.stamp("Request received: find cached Service VM.")
-        ret = Service.by_id(serviceId)
+        ret = Service.by_id(sid)
         if not ret:
-            ret = {}
-        # Send the response.
-        timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
-        return ret
+            abort(404, '404 Not Found - service for %s not found' % sid)
+        else:
+            # Send the response.
+            timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
+            return ret
 
     @asjson
     def GET_test(self):
-        svm = ServiceVM.find_and_modify(remove=True)
-        svm.destroy()
-        return svm
+        app = App.find_one()
+        print type(app['_id'])
+        return app

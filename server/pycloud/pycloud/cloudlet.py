@@ -2,25 +2,29 @@ __author__ = 'jdroot'
 
 from pymongo import Connection
 from pymongo.errors import ConnectionFailure
-from pycloud.pycloud.servicevm import instancemanager
-from pycloud.pycloud.mongo.model import AttrDict
 import psutil
 import os
+import shutil
+from pycloud.pycloud.servicevm import instancemanager
+from pycloud.pycloud.utils import portmanager
+from pycloud.pycloud.vm.vmutils import destroy_all_vms
+import pycloud.pycloud.mongo.model as model
+
 
 # Singleton object to maintain intra- and inter-app variables.
-g_singletonCloudlet = None
+_g_singletonCloudlet = None
 
 ################################################################################################################
 # Creates the Cloudlet singleton, or gets an instance of it if it had been already created.
 ################################################################################################################
-def get_cloudlet_instance(config):    
+def get_cloudlet_instance(config=None):
     # Only create it if we don't have a reference already.
-    global g_singletonCloudlet
-    if(g_singletonCloudlet == None):
+    global _g_singletonCloudlet
+    if not _g_singletonCloudlet:
         print 'Creating Cloudlet singleton.'
-        g_singletonCloudlet = Cloudlet(config)
+        _g_singletonCloudlet = Cloudlet(config)
 
-    return g_singletonCloudlet
+    return _g_singletonCloudlet
 
 ################################################################################################################
 # Singleton that will contain common resources: config values, db connections, common managers.
@@ -60,21 +64,48 @@ class Cloudlet(object):
         self.service_cache = config['pycloud.servicevm.cache']
 
         # TODO: this introduces an ungly circular dependency...
+        # TODO: self.instanceManager should be removed
         # Create the ServiceVM Instance Manager, which will be used by several apps.
         self.instanceManager = instancemanager.ServiceVMInstanceManager(self)
 
-    def system_information(self):
+        print 'cloudlet created.'
+
+
+    @staticmethod
+    def system_information():
         return Cloudlet_Metadata()
 
+    def cleanup_system(self):
+        destroy_all_vms()
+        self._clean_instances_folder()
+        self._remove_service_vms()
+        portmanager.PortManager.clearPorts()
 
-class Cpu_Info(AttrDict):
+    def _clean_instances_folder(self):
+        print 'Cleaning up \'%s\'' % self.svm_temp_folder
+        if os.path.exists(self.svm_temp_folder):
+            print '\tDeleting all files in \'%s\'' % self.svm_temp_folder
+            shutil.rmtree(self.svm_temp_folder)
+        if not os.path.exists(self.svm_temp_folder):
+            print '\tMaking folder \'%s\'' % self.svm_temp_folder
+            os.makedirs(self.svm_temp_folder)
+        print 'Done cleaning up \'%s\'' % self.svm_temp_folder
+
+    def _remove_service_vms(self):
+        from pycloud.pycloud.model import ServiceVM
+        ServiceVM._collection.drop()
+
+
+
+
+class Cpu_Info(model.AttrDict):
 
     def __init__(self):
         self.max_cores = psutil.cpu_count()
         self.usage = psutil.cpu_percent(interval=0.1)
 
 
-class Memory_Info(AttrDict):
+class Memory_Info(model.AttrDict):
 
     def __init__(self):
         mem = psutil.virtual_memory()
@@ -82,7 +113,7 @@ class Memory_Info(AttrDict):
         self.free_memory = mem.free
 
 
-class Cloudlet_Metadata(AttrDict):
+class Cloudlet_Metadata(model.AttrDict):
 
     def __init__(self):
         self.memory_info = Memory_Info()

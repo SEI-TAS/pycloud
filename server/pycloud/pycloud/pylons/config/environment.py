@@ -1,8 +1,9 @@
 
 __author__ = 'jdroot'
 
-from pylons import config, g
+from pylons import config
 from pycloud.pycloud.pylons.lib.app_globals import Globals
+from pycloud.pycloud.cloudlet import get_cloudlet_instance
 from pycloud.pycloud.pylons.lib import helpers
 from mako.lookup import TemplateLookup
 import os
@@ -24,6 +25,10 @@ def load_environment(make_map_function, root_path, global_conf={}, app_conf={}):
     config['debug'] = True
     config['pylons.g'] = Globals()
     config['pylons.h'] = helpers
+
+    # Clean up the system. This must be called after the object is already created
+    get_cloudlet_instance().cleanup_system()
+
 
 
     config["pylons.g"].mako_lookup = TemplateLookup(
