@@ -3,7 +3,7 @@ __author__ = 'jdroot'
 from pymongo import Connection
 from pymongo.errors import ConnectionFailure
 import psutil
-
+import os, shutil
 from pycloud.pycloud.servicevm import instancemanager
 from pycloud.pycloud.mongo.model import AttrDict
 from pycloud.pycloud.utils import portmanager
@@ -82,16 +82,24 @@ class Cloudlet(object):
 
         self._clean_instances_folder()
         self._remove_service_vms()
-        self._clear_ports()
+
+        # Clean up all of the ports
+        portmanager.PortManager.clearPorts()
 
     def _clean_instances_folder(self):
-        pass
+        print 'Cleaning up \'%s\'' % self.svm_temp_folder
+        if os.path.exists(self.svm_temp_folder):
+            print '\tDeleting all files in \'%s\'' % self.svm_temp_folder
+            shutil.rmtree(self.svm_temp_folder)
+        if not os.path.exists(self.svm_temp_folder):
+            print '\tMaking folder \'%s\'' % self.svm_temp_folder
+            os.makedirs(self.svm_temp_folder)
+        print 'Done cleaning up \'%s\'' % self.svm_temp_folder
 
     def _remove_service_vms(self):
+        # This gets hard because we cannot reference ServiceVM until after this object is created
         pass
 
-    def _clear_ports(self):
-        portmanager.PortManager.clearPorts()
 
 
 class Cpu_Info(AttrDict):

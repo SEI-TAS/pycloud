@@ -40,8 +40,10 @@ def uuidstr(rawuuid):
 # Will destroy all virtual machines that are running
 ################################################################################################################
 def destroy_all_vms():
-    print 'Shutting down all running virtual machines'
+    print 'Shutting down all running virtual machines:'
     vm_ids = hypervisor().listDomainsID()
     for vm_id in vm_ids:
-        vm = hypervisor().lookupByID(vm_id)
         print '\tShutting down \'VM-%s\'' % uuidstr(vm.UUID())
+        vm = hypervisor().lookupByID(vm_id)
+        vm.destroy()
+    print 'All machines shutdown'
