@@ -6,7 +6,7 @@ from pycloud.pycloud.servicevm import instancemanager
 from pycloud.pycloud.mongo.model import AttrDict
 import psutil
 from pycloud.pycloud.utils import portmanager
-from pycloud.pycloud.model import ServiceVM
+from pycloud.pycloud.model.vmutils import destroy_all_vms
 
 # Singleton object to maintain intra- and inter-app variables.
 g_singletonCloudlet = None
@@ -76,19 +76,20 @@ class Cloudlet(object):
 
     def _cleanup_system(self):
         # Shutdown all running VMs
-        ServiceVM.destroy_all_vms()
+        destroy_all_vms()
 
         self._clean_instances_folder()
         self._remove_service_vms()
-
-        # Clear all ports
-        portmanager.PortManager.clearPorts()
+        self._clear_ports()
 
     def _clean_instances_folder(self):
         pass
 
     def _remove_service_vms(self):
         pass
+
+    def _clear_ports(self):
+        portmanager.PortManager.clearPorts()
 
 
 class Cpu_Info(AttrDict):
