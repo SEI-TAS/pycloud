@@ -2,15 +2,11 @@ import logging
 
 # Pylon imports.
 from pylons import request
-from pylons import g
 from pylons.controllers.util import abort
 from paste import fileapp
 
 # For serializing JSON data.
 import json
-
-# To handle basic OS stuff.
-import os
 
 # Controller to derive from.
 from pycloud.pycloud.pylons.lib.base import BaseController
@@ -18,6 +14,7 @@ from pycloud.pycloud.utils import timelog
 from pycloud.pycloud.model import App
 
 log = logging.getLogger(__name__)
+
 
 ################################################################################################################
 # Class that handles Service VM related HTTP requests to a Cloudlet.
