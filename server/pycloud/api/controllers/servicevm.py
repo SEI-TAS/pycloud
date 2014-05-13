@@ -1,26 +1,23 @@
 import logging
 
 # Pylon imports.
-from pylons import request, response, session, tmpl_context as c, url
-from pylons.controllers.util import abort, redirect
+from pylons import request
+from pylons.controllers.util import abort
 from pylons import g
 
 # For serializing JSON data.
 import json
 
-# To get our IP.
-import urlparse
-
 # Controller to derive from.
-from pycloud.pycloud.model import Service
+from pycloud.pycloud.model import Service, ServiceVM
 from pycloud.pycloud.pylons.lib.base import BaseController
 
 # Manager to handle running instances, and logging util.
-from pycloud.pycloud.servicevm import instancemanager
 from pycloud.pycloud.utils import timelog
 from pycloud.pycloud.pylons.lib.util import asjson
 
 log = logging.getLogger(__name__)
+
 
 ################################################################################################################
 # Class that handles Service VM related HTTP requests to a Cloudlet.
@@ -92,26 +89,25 @@ class ServiceVMController(BaseController):
     ################################################################################################################
     def GET_stop(self):
         # Check that we got an instance id.
-        instanceId = request.GET['instanceId']
-        if(instanceId is None):
+        svm_id = request.GET['instanceId']
+        if not svm_id:
             # If we didnt get a valid one, just return an error message.
-            print "No instance id to be stopped was received."
-            return self.JSON_NOT_OK
-
-        print '\n*************************************************************************************************'
-        timelog.TimeLog.reset()        
-        timelog.TimeLog.stamp("Request received: stop VM with instance id " + instanceId)
-        
-        # Stop the Service VM.        
-        success = self.instanceManager.stopServiceVMInstance(instanceId)
-        if(success):
-            print "VM with instance id %s stopped" % instanceId
-            responseText = self.JSON_OK
+            abort(400, '400 Bad Request - must provide instance id')
         else:
-            print "VM with instance id %s could not be stopped" % instanceId
-            responseText = self.JSON_NOT_OK
-        
-        # Send the response.
-        timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
-        timelog.TimeLog.writeToFile()
-        return responseText
+            print '\n*************************************************************************************************'
+            timelog.TimeLog.reset()
+            timelog.TimeLog.stamp("Request received: stop VM with instance id " + svm_id)
+
+            # Stop the Service VM.
+            try:
+                svm = ServiceVM.find_and_remove(svm_id)
+                if not svm:
+                    abort(400, '400 Bad Request - service for %s not found' % svm_id)
+                else:
+                    svm.destroy()
+                    timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
+                    timelog.TimeLog.writeToFile()
+            except Exception as e:
+                # If there was a problem stopping the instance, return that there was an error.
+                print 'Error stopping Service VM Instance: ' + str(e)
+                abort(500, '400 Bad Request - service for %s not found' % svm_id)
