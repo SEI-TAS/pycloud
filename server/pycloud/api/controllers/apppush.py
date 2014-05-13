@@ -49,7 +49,7 @@ class AppPushController(BaseController):
         if not app_id:
             # If we didnt get a valid one, just return an error message.
             print "No app name to be retrieved was received."
-            abort(400, '400 Bad Request - must provide app id')
+            abort(400, '400 Bad Request - must provide app_id')
         
         print '\n*************************************************************************************************'    
         timelog.TimeLog.reset()
@@ -58,7 +58,7 @@ class AppPushController(BaseController):
         app = App.by_id(app_id)
         if not app:
             print "No app found for specified id"
-            abort(404, '404 Not Found - app with id %s was not found' % app_id)
+            abort(404, '404 Not Found - app with id "%s" was not found' % app_id)
                                 
         # Log that we are responding.
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
