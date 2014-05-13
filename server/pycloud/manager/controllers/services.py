@@ -10,7 +10,6 @@ from webhelpers.html import HTML
 from webhelpers.html import literal
 
 from pycloud.pycloud.pylons.lib.base import BaseController
-from pycloud.pycloud.servicevm import svmrepository
 from pycloud.manager.lib.pages import ServicesPage
 from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.model import Service

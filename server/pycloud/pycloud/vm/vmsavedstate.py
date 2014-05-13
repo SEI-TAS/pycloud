@@ -23,6 +23,13 @@ class VMSavedState(object):
         self.savedStateFilename = VMSavedState.getCorrectFilepath(savedStateFile)
         
     ################################################################################################################
+    # Returns the default filename for the saved state of a VM, which is based on the given path.
+    ################################################################################################################     
+    @staticmethod 
+    def getDefaultSavedStateFile(self, filepath):
+        return self.getCorrectFilepath(filepath)        
+        
+    ################################################################################################################
     # Returns the default filename
     ################################################################################################################
     @staticmethod     

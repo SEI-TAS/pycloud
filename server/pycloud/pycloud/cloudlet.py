@@ -57,10 +57,7 @@ class Cloudlet(object):
         self.newVmLinXml = config['pycloud.servicevm.lin_xml_template']
 
         # New config params
-        self.svm_temp_folder = config['pycloud.servicevm.instances_folder']
         self.service_cache = config['pycloud.servicevm.cache']
-
-
 
         # TODO: this introduces an ungly circular dependency...
         # Create the ServiceVM Instance Manager, which will be used by several apps.

@@ -15,7 +15,6 @@ from pycloud.pycloud.utils import portmanager
 from pylons import g
 import os
 
-
 ################################################################################################################
 # Exception type used in our system.
 ################################################################################################################
@@ -115,37 +114,73 @@ class ServiceVM(Model):
             for key, value in self.port_mappings.iteritems():
                 ret[int(key)] = value
         return ret
-
+    
     ################################################################################################################
-    # Start this service vm
-    ################################################################################################################
-    def start(self):
-        # Make sure libvirt can read our files
-        self.vm_image.unprotect()
-
-        # Get the saved state and make sure it is populated
-        if not self.vm_image.state_image:
-            pass  # TODO: self.vm_image.state_image = self.getDefaultSavedStateFile()
-        saved_state = VMSavedState(self.vm_image.state_image)
-
-        # Get the descriptor and inflate it to something we can work with
-        saved_xml_descriptor = saved_state.getStoredVmDescription(ServiceVM.get_hypervisor())
+    # Updates an XML containing the description of the VM with the current info of this VM.
+    ################################################################################################################    
+    def _update_descriptor(self, saved_xml_descriptor):
+        # Get the descriptor and inflate it to something we can work with.
         xml_descriptor = VirtualMachineDescriptor(saved_xml_descriptor)
 
         # Set the disk image in the description of the VM.
         xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')
 
-        # Create a new port if we do not have an external port already
+        # Create a new port if we do not have an external port already.
         if not self.port:
             self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.service_port)
         xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
 
-        # Change the ID and Name
+        # Change the ID and Name.
         xml_descriptor.setUuid(self._id)
         xml_descriptor.setName(self.prefix + '-' + self._id)
 
-        # Get the resulting XML string and save it
+        # Get the resulting XML string and return it.
         updated_xml_descriptor = xml_descriptor.getAsString()
+        return updated_xml_descriptor
+
+    ################################################################################################################
+    # Create a new service VM from a given template.
+    ################################################################################################################
+    def create(self, vmXmlTemplateFile):
+        # Check that the XML description file exists.
+        if(not os.path.exists(vmXmlTemplateFile)):
+            raise VirtualMachineException("VM description file %s for VM creation does not exist." % vmXmlTemplateFile)
+         
+        # Load the XML template and update it with this VM's information.
+        template_xml_descriptor = (open(vmXmlTemplateFile, "r").read())
+        updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)    
+        
+        # Create and start a VM ("domain") through the hypervisor.
+        print "Starting a new VM..."  
+        try:         
+            ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
+        except:
+            # Ensure we destroy the VM if there was some problem after creating it.
+            self.destroy()
+            raise
+        
+        # Indicate we are running, as creation of a VM automatically starts it.
+        self.running = True
+
+    ################################################################################################################
+    # Start this service vm
+    ################################################################################################################
+    def start(self):
+        # Check if we are already running.
+        if(self.running):
+            return self
+        
+        # Make sure libvirt can read our files
+        self.vm_image.unprotect()
+
+        # Get the saved state and make sure it is populated
+        saved_state = VMSavedState(self.vm_image.state_image)
+
+        # Get the descriptor and update it.
+        saved_xml_descriptor = saved_state.getStoredVmDescription(ServiceVM.get_hypervisor())
+        updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
+        
+        # Update the state image with the updated descriptor.
         saved_state.updateStoredVmDescription(updated_xml_descriptor)
 
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
@@ -203,11 +238,42 @@ class ServiceVM(Model):
         vm = ServiceVM._get_virtual_machine(self._id)
         if not vm:  # No VM for this ID found
             return
-
+        
+        # Save the state, if our image is not cloned.
+        if not self.vm_image.cloned:
+            self._save_state()
+            
+        # Destroy it.
         try:
             vm.destroy()
         finally:
             self.running = False
+
+    ################################################################################################################
+    # Pauses a VM and stores its memory state to a disk file.
+    ################################################################################################################          
+    def _save_state(self):
+        # Get the VM.
+        vm = ServiceVM._get_virtual_machine(self._id)     
+        
+        # We indicate that we want want to use as much bandwidth as possible to store the VM's memory when suspending.
+        unlimitedBandwidth = 1000000    # In Gpbs
+        vm.migrateSetMaxSpeed(unlimitedBandwidth, 0)
+        
+        # We first pause the VM.
+        result = vm.suspend()
+        if(result == -1):
+            raise VirtualMachineException("Cannot pause VM: %s", str(self._id))
+        
+        # Store the VM's memory state to a disk image file.
+        print "Storing VM memory state to file %s" % self.vm_image.state_image
+        result = 0
+        try:
+            result = vm.save(self.vm_image.state_image)
+        except libvirt.libvirtError, e:
+            raise VirtualMachineException(str(e))
+        if result != 0:
+            raise VirtualMachineException("Cannot save memory state to file %s", str(self._id))
 
     ################################################################################################################
     # Will delete this VM (and stop it if it is currently running)

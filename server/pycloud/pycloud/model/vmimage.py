@@ -9,6 +9,11 @@ import os
 # Used to change file permissions
 import stat
 
+# For disk image management.
+from pycloud.pycloud.vm import diskimage
+from pycloud.pycloud.vm import qcowdiskimage
+from pycloud.pycloud.vm.vmsavedstate import VMSavedState
+
 from pycloud.pycloud.mongo import DictObject
 
 ################################################################################################################
@@ -71,6 +76,20 @@ class VMImage(DictObject):
             # Clean up the directory we just created
             os.rmdir(destination_folder)
             raise
+
+    ################################################################################################################
+    # Creates a VM Image from a source file.
+    ################################################################################################################ 
+    def create(self, sourceDiskImageFilePath, destDiskImageFilePath):               
+        # Create a new disk image from the source image.
+        print "VM disk image creation step."
+        sourceDiskImage = diskimage.DiskImage(sourceDiskImageFilePath)
+        self.disk_image = destDiskImageFilePath
+        newDiskImage = qcowdiskimage.Qcow2DiskImage(self.disk_image)
+        newDiskImage.createFromOtherType(sourceDiskImage)
+        
+        # Set a default value for the saved state image file.
+        self.state_image = VMSavedState.getDefaultSavedStateFile(self.disk_image)           
 
     ################################################################################################################
     # Protects a VM Image by making it read-only.
