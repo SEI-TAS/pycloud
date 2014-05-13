@@ -2,11 +2,13 @@ __author__ = 'jdroot'
 
 from pymongo import Connection
 from pymongo.errors import ConnectionFailure
+import psutil
+
 from pycloud.pycloud.servicevm import instancemanager
 from pycloud.pycloud.mongo.model import AttrDict
-import psutil
 from pycloud.pycloud.utils import portmanager
-from pycloud.pycloud.model.vmutils import destroy_all_vms
+from pycloud.pycloud.vm.vmutils import destroy_all_vms
+
 
 # Singleton object to maintain intra- and inter-app variables.
 g_singletonCloudlet = None
