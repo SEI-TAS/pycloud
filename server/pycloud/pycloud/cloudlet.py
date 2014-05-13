@@ -11,19 +11,19 @@ from pycloud.pycloud.vm.vmutils import destroy_all_vms
 
 
 # Singleton object to maintain intra- and inter-app variables.
-g_singletonCloudlet = None
+_g_singletonCloudlet = None
 
 ################################################################################################################
 # Creates the Cloudlet singleton, or gets an instance of it if it had been already created.
 ################################################################################################################
 def get_cloudlet_instance(config=None):
     # Only create it if we don't have a reference already.
-    global g_singletonCloudlet
-    if not g_singletonCloudlet:
+    global _g_singletonCloudlet
+    if not _g_singletonCloudlet:
         print 'Creating Cloudlet singleton.'
-        g_singletonCloudlet = Cloudlet(config)
+        _g_singletonCloudlet = Cloudlet(config)
 
-    return g_singletonCloudlet
+    return _g_singletonCloudlet
 
 ################################################################################################################
 # Singleton that will contain common resources: config values, db connections, common managers.
@@ -69,6 +69,8 @@ class Cloudlet(object):
         # TODO: self.instanceManager should be removed
         # Create the ServiceVM Instance Manager, which will be used by several apps.
         self.instanceManager = instancemanager.ServiceVMInstanceManager(self)
+
+        print 'cloudlet created.'
 
 
     @staticmethod
