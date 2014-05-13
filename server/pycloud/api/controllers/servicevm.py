@@ -89,7 +89,8 @@ class ServiceVMController(BaseController):
                     svm.destroy()
                     timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
                     timelog.TimeLog.writeToFile()
+                    return {}
             except Exception as e:
                 # If there was a problem stopping the instance, return that there was an error.
                 print 'Error stopping Service VM Instance: ' + str(e)
-                abort(500, '400 Bad Request - %s' % str(e))
+                abort(500, '500 Internal Server Error - %s' % str(e))
