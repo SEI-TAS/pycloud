@@ -171,21 +171,21 @@ class ServiceVM(Model):
         xml_descriptor = VirtualMachineDescriptor(vm_xml_string)
         
         # We can now get the VNC port, which was automatically allocated by libvirt/qemu.
-        vncPort = xml_descriptor.getVNCPort()
+        vnc_port = xml_descriptor.getVNCPort()
         
         # Connect through the VNC client and wait if required.
         print 'Starting VNC GUI to VM.'
-        if(wait):        
+        if wait:
             print 'Waiting for user to close VNC GUI.'
-        vncClient = VNCClient()
-        success = vncClient.connectAndWait(vncPort, wait)
-        if(wait):
+        vnc_client = VNCClient()
+        success = vnc_client.connectAndWait(vnc_port, wait)
+        if wait:
             print 'VNC GUI no longer running, stopped waiting.'
         else:
             print 'VNC GUI has been opened.'
             
         # If there was a problem, destroy the VM.
-        if(not success):
+        if not success:
             self.destroy()
 
     ################################################################################################################
