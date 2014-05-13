@@ -68,10 +68,12 @@ class ModifyController(BaseController):
             # We are creating a new service.
             page.newService = True
             page.serviceID = ''
+            page.serviceIDChangeDisabled = False
         else:
             # We are editing an existing service.
             page.newService = False
             page.serviceID = serviceID.strip()
+            page.serviceIDChangeDisabled = True
             
             # Look for the service with this id.
             service = Service.by_id(serviceID)
@@ -89,10 +91,11 @@ class ModifyController(BaseController):
                 page.form_values['reqIdealMem'] = service.ideal_memory
             
                 # VM Image values.
-                #if(service.vm_image.disk_image != ''):
-                #    page.form_values['vmStoredFolder'] = os.path.dirname(service.vm_image.disk_image)
-                #page.form_values['vmDiskImageFile'] = service.vm_image.disk_image
-                #page.form_values['vmStateImageFile'] = service.vm_image.state_image
+                if(service.vm_image.disk_image):
+                    page.form_values['vmStoredFolder'] = os.path.dirname(service.vm_image.disk_image)
+                    page.form_values['vmDiskImageFile'] = service.vm_image.disk_image
+                if(service.vm_image.state_image):
+                    page.form_values['vmStateImageFile'] = service.vm_image.state_image
 
         return page
 
@@ -110,6 +113,7 @@ class ModifyController(BaseController):
             service = Service()
         
         # Service
+        service._id         = serviceId
         service.version     = request.params.get("serviceVersion")
         service.description = request.params.get("serviceDescription")
         service.tags        = request.params.get("serviceTags")
@@ -134,23 +138,7 @@ class ModifyController(BaseController):
         
         # Create or update the information.
         service.save()
-        
-        # Load the current Stored SVM info.
-        # Note that we have to use the original service id to find the data, 
-        # since it may have been changed by the user.
-        #originalServiceID = request.params.get("originalServiceID", '')
-
-        # Check if we have an originalServiceID value; if not, it means this is a new service.        
-        #if(originalServiceID != ''):
-            # We have an original id; load the data from the cache.
-        #   storedServiceVM = serviceVmRepo.findServiceVM(originalServiceID)
-        #else:
-        #    storedServiceVM = serviceVmRepo.findServiceVM(serviceID)
-        
-        # If the service ID changed, rename the folders (as it needs to have the correct id).
-        #if(originalServiceID != '' and originalServiceID != serviceID):
-        #    serviceVmRepo.renameStoredVM(originalServiceID, serviceID)
-        
+               
         # Render the page.
         return redirect_to(controller='services')
 

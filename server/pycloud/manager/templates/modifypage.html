@@ -29,7 +29,7 @@ ${parent.header()}
                 <div class="panel-heading"> General </div>
                 <div class="panel-body">
                     <input type="hidden" name="originalServiceID" id="originalServiceID" value='${page.serviceID}' />
-                    ${text('serviceID', input_width=12, label=_('Service ID'))}
+                    ${text('serviceID', input_width=12, label=_('Service ID'), disabled=page.serviceIDChangeDisabled)}
                     ${text('serviceVersion', input_width=12, label=_('Service Version'))}
                     ${text('serviceDescription', input_width=12, label=_('Description'))}
                     ${text('serviceTags', input_width=12, label=_('Tags'))}
