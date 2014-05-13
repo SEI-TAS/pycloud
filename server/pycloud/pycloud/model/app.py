@@ -12,7 +12,7 @@ class App(Model):
         }
 
     def __init__(self, *args, **kwargs):
-        self._id = None
+        # self._id = None  # Commented out make Mongo auto populate it
         self.name = None
         self.service_id = None
         self.description = None
