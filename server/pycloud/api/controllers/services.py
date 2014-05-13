@@ -11,7 +11,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import timelog
 
-from pycloud.pycloud.model import Service, ServiceVM
+from pycloud.pycloud.model import Service, App
 
 log = logging.getLogger(__name__)
 
@@ -57,6 +57,14 @@ class ServicesController(BaseController):
 
     @asjson
     def GET_test(self):
-        svm = ServiceVM.find_and_modify(remove=True)
-        svm.destroy()
-        return svm
+        app = App()
+        app.name = 'face'
+        app.description = 'performs face recognition'
+        app.package_name = 'edu.cmu.sei.rtss.cloudlet.facerec'
+        app.service_id = 'edu.cmu.sei.ams.face_rec_service'
+        app.md5sum = '1325ed86fd781efa6761169600fdae21'
+        app.app_version = ''
+        app.min_android_version = '9'
+        app.tags = ['face', 'c++']
+        app.apk_file = './data/apks/face/FaceRecognitionAndroidClient.apk'
+        return app
