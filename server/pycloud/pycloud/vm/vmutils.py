@@ -43,7 +43,7 @@ def destroy_all_vms():
     print 'Shutting down all running virtual machines:'
     vm_ids = hypervisor().listDomainsID()
     for vm_id in vm_ids:
-        print '\tShutting down \'VM-%s\'' % uuidstr(vm.UUID())
         vm = hypervisor().lookupByID(vm_id)
+        print '\tShutting down \'VM-%s\'' % uuidstr(vm.UUID())
         vm.destroy()
     print 'All machines shutdown'
