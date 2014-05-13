@@ -3,10 +3,6 @@ import logging
 # Pylon imports.
 from pylons import request
 from pylons.controllers.util import abort
-from pylons import g
-
-# For serializing JSON data.
-import json
 
 # Controller to derive from.
 from pycloud.pycloud.model import Service, ServiceVM
@@ -23,27 +19,12 @@ log = logging.getLogger(__name__)
 # Class that handles Service VM related HTTP requests to a Cloudlet.
 ################################################################################################################
 class ServiceVMController(BaseController):
-    
-    # Manager of service VMs instances.
-    instanceManager = None
-    
-    JSON_OK = json.dumps({"STATUS" : "OK" })
-    JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})    
-
-    ################################################################################################################    
-    # Sets up the initial resources.
-    ################################################################################################################ 
-    def __init__(self):
-        # Create the manager for running instances.
-        self.instanceManager = g.cloudlet.instanceManager
 
     ################################################################################################################    
     # Cleans up any open resources.
     ################################################################################################################ 
     def cleanup(self):
-        # Cleanup running vms.
-        if(self.runningVMManager != None):
-            self.runningVMManager.cleanup()
+        pass
         
     ################################################################################################################
     # Called to start a Service VM.
