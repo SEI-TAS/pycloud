@@ -58,32 +58,33 @@ class ServiceVMController(BaseController):
         sid = request.params.get('serviceId', None)
         if not sid:
             # If we didnt get a valid one, just return an error message.
-            print "No service id to be started was received."
-            return {}
+            abort(400, '400 Bad Request - must provide service id')
+        else:
+            timelog.TimeLog.stamp("Request received: start VM with service id " + sid)
 
-        timelog.TimeLog.stamp("Request received: start VM with service id " + sid)
+            # Check the flags that indicates whether we could join an existing instance.
+            join = request.params.get('join', False)
 
-        # Check the flags that indicates whether we could join an existing instance.
-        join = request.params.get('join', False)
+            service = Service.by_id(sid)
+            if service:
+                # Get a ServiceVM instance
+                svm = service.get_vm_instance(join=join)
+                try:
+                    # Start the instance, if it works, save it and return the svm
+                    if not svm.running:
+                        svm.start()
+                        svm.save()
+                        # Send the response.
+                        timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
+                        timelog.TimeLog.writeToFile()
+                    return svm
+                except Exception as e:
+                    # If there was a problem starting the instance, return that there was an error.
+                    print 'Error starting Service VM Instance: ' + str(e)
+                    abort(500, '400 Bad Request - %s' % str(e))
+            else:
+                abort(400, '400 Bad Request - service for %s not found' % sid)
 
-        service = Service.by_id(sid)
-        if service:
-            # Get a ServiceVM instance
-            svm = service.get_vm_instance(join=join)
-            try:
-                # Start the instance, if it works, save it and return ok
-                if not svm.running:
-                    svm.start()
-                    svm.save()
-                    # Send the response.
-                    timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
-                    timelog.TimeLog.writeToFile()
-                return svm
-            except Exception as e:
-                # If there was a problem starting the instance, return that there was an error.
-                print 'Error starting Service VM Instance: ' + str(e)
-        return {}
-    
     ################################################################################################################
     # Called to stop a running instance of a Service VM.
     ################################################################################################################
@@ -110,4 +111,4 @@ class ServiceVMController(BaseController):
             except Exception as e:
                 # If there was a problem stopping the instance, return that there was an error.
                 print 'Error stopping Service VM Instance: ' + str(e)
-                abort(500, '400 Bad Request - service for %s not found' % svm_id)
+                abort(500, '400 Bad Request - %s' % str(e))
