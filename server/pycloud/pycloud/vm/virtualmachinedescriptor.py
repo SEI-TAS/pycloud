@@ -29,8 +29,15 @@ class VirtualMachineDescriptor(object):
     def getAsString(self):
         xmlString = ElementTree.tostring(self.xmlRoot)
         return xmlString
+    
+    ################################################################################################################
+    # Returns the port the VNC server is listening on, if any.
+    ################################################################################################################
+    def getVNCPort(self):
+        vncPort = self.xmlRoot.find("devices/graphics").get("port")
+        return vncPort    
 
-        ################################################################################################################
+    ################################################################################################################
     # Sets the path to the main disk image.
     ################################################################################################################
     def setDiskImage(self, newDiskImagePath, newDiskType):

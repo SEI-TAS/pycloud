@@ -10,6 +10,7 @@ from pycloud.pycloud.mongo import Model
 from pycloud.pycloud.model.vmimage import VMImage
 from pycloud.pycloud.vm.vmsavedstate import VMSavedState
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineDescriptor
+from pycloud.pycloud.vm.vncclient import VNCClient
 from pycloud.pycloud.utils import portmanager
 from pylons import g
 import os
@@ -97,11 +98,13 @@ class ServiceVM(Model):
         if not self.port_mappings:
             self.port_mappings = {}
 
-        # If you are setting the services port we need to set the external port
+        # If you are setting the services port we need to set the external port in a particular attribute.
         if guest_port == self.service_port:
-            self.port = host_port
+            self.port = host_port   
 
+        # Add the actual mapping.
         self.port_mappings[str(host_port)] = guest_port
+        print('Setting up port forwarding from host port ' + str(host_port) + ' to guest port ' + str(guest_port))
 
     ################################################################################################################
     # Gets the port mappings in the form int -> int instead of str -> int
@@ -158,6 +161,32 @@ class ServiceVM(Model):
         self.running = True
 
         return self
+
+    ################################################################################################################
+    # Starts a VNC connection with a GUI, and, if given in the argument, waits until it is closed.
+    ################################################################################################################            
+    def open_vnc(self, wait=True):
+        # We have to get the XML description of the running machine to find the port available for VNC.
+        vm_xml_string = ServiceVM._get_virtual_machine(self._id).XMLDesc(libvirt.VIR_DOMAIN_XML_SECURE)
+        xml_descriptor = VirtualMachineDescriptor(vm_xml_string)
+        
+        # We can now get the VNC port, which was automatically allocated by libvirt/qemu.
+        vncPort = xml_descriptor.getVNCPort()
+        
+        # Connect through the VNC client and wait if required.
+        print 'Starting VNC GUI to VM.'
+        if(wait):        
+            print 'Waiting for user to close VNC GUI.'
+        vncClient = VNCClient()
+        success = vncClient.connectAndWait(vncPort, wait)
+        if(wait):
+            print 'VNC GUI no longer running, stopped waiting.'
+        else:
+            print 'VNC GUI has been opened.'
+            
+        # If there was a problem, destroy the VM.
+        if(not success):
+            self.destroy()
 
     ################################################################################################################
     # Stop this service VM

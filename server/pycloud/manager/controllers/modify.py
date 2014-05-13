@@ -14,6 +14,7 @@ from pycloud.pycloud.servicevm import svmrepository
 from pycloud.pycloud.servicevm import svmmanager
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib import helpers as h
+from pycloud.pycloud.model import Service, ServiceVM, VMImage
 
 from pycloud.manager.lib.pages import ModifyPage
 
@@ -47,7 +48,7 @@ class ModifyController(BaseController):
     ################################################################################################################ 
     # Loads data about the stored service vm into a page, and returns the filled page.
     ################################################################################################################         
-    def loadDataIntoPage(self, page, serviceID):
+    def loadDataIntoPage(self, page, serviceID):                  
         # Setup the page to render.
         page.form_values = {}
         page.form_errors = {}
@@ -66,28 +67,32 @@ class ModifyController(BaseController):
         if(creatingNew):
             # We are creating a new service.
             page.newService = True
-            page.serviceID = ''            
+            page.serviceID = ''
         else:
             # We are editing an existing service.
             page.newService = False
-            page.serviceID = serviceID
-            page.createSVMURL = ''           
-                        
-            # Get the data fields.
-            serviceID = serviceID.strip()
-            serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)
-            storedServiceVM = serviceVmRepo.findServiceVM(serviceID)
+            page.serviceID = serviceID.strip()
+            
+            # Look for the service with this id.
+            service = Service.by_id(serviceID)
             
             # Set the data fields.
             page.form_values['serviceID'] = serviceID
-            if (storedServiceVM is not None):
+            if service:
                 # Metadata values.
-                page.form_values['servicePort'] = storedServiceVM.metadata.servicePort
+                page.form_values['servicePort'] = service.port
+                page.form_values['serviceDescription'] = service.description
+                page.form_values['serviceVersion'] = service.version
+                page.form_values['serviceTags'] = service.tags
+                page.form_values['numClientsSupported'] = service.num_users
+                page.form_values['reqMinMem'] = service.min_memory
+                page.form_values['reqIdealMem'] = service.ideal_memory
             
-                # Stored SVM values.
-                page.form_values['vmStoredFolder'] = os.path.dirname(storedServiceVM.diskImageFilePath)
-                page.form_values['vmDiskImageFile'] = storedServiceVM.diskImageFilePath
-                page.form_values['vmStateImageFile'] = storedServiceVM.vmStateImageFilepath
+                # VM Image values.
+                #if(service.vm_image.disk_image != ''):
+                #    page.form_values['vmStoredFolder'] = os.path.dirname(service.vm_image.disk_image)
+                #page.form_values['vmDiskImageFile'] = service.vm_image.disk_image
+                #page.form_values['vmStateImageFile'] = service.vm_image.state_image
 
         return page
 
@@ -98,12 +103,22 @@ class ModifyController(BaseController):
         # Mark the active tab.
         c.services_active = 'active'
         
+        # Look for the service with this id.
+        serviceId = request.params.get("serviceID").strip()
+        service = Service.by_id(serviceId)
+        if not service:
+            service = Service()
+        
         # Service
-        serviceID           = request.params.get("serviceID")
-        serviceVersion      = request.params.get("serviceVersion")
-        serviceDescription  = request.params.get("serviceDescription")
-        serviceTags         = request.params.get("serviceTags")
-        servicePort         = request.params.get("servicePort")
+        service.version     = request.params.get("serviceVersion")
+        service.description = request.params.get("serviceDescription")
+        service.tags        = request.params.get("serviceTags")
+        service.port        = request.params.get("servicePort")
+        service.num_users   = request.params.get("numClientsSupported")
+
+        # Requirements
+        service.min_memory   = request.params.get("reqMinMem")
+        service.ideal_memory = request.params.get("reqIdealMem")
 
         # App
         appName             = request.params.get("appName")
@@ -112,44 +127,29 @@ class ModifyController(BaseController):
         appPackage          = request.params.get("appPackage")
         appFilename         = request.params.get("appFilename")
 
-        # VM
-        vmStoredFolder      = request.params.get("vmStoredFolder")
-
-        # Requirements
-        reqMinMem           = request.params.get("reqMinMem")
-        reqIdealMem         = request.params.get("reqIdealMem")
-
-        #print serviceID + ": " + serviceDescription + ": " + reqMinMem
+        # VM Image info.
+        service.vm_image = VMImage()
+        service.vm_image.disk_image = request.params.get("vmDiskImageFile")
+        service.vm_image.state_image = request.params.get("vmStateImageFile")
+        
+        # Create or update the information.
+        service.save()
         
         # Load the current Stored SVM info.
         # Note that we have to use the original service id to find the data, 
         # since it may have been changed by the user.
-        serviceVmRepo = svmrepository.ServiceVMRepository(g.cloudlet)        
-        originalServiceID = request.params.get("originalServiceID", '')
+        #originalServiceID = request.params.get("originalServiceID", '')
 
         # Check if we have an originalServiceID value; if not, it means this is a new service.        
-        if(originalServiceID != ''):
+        #if(originalServiceID != ''):
             # We have an original id; load the data from the cache.
-            storedServiceVM = serviceVmRepo.findServiceVM(originalServiceID)
-        else:
-            # New service; we have to create a new record.
-            # Since for now the Service exists only inside a Stored SVM, if we got here it means
-            # that the Stored SVM was created first through this same page. We need
-            # to get then the Stored SVM using the newly input service id.
-            storedServiceVM = serviceVmRepo.findServiceVM(serviceID)
-
-        # Set or change the values.
-        storedServiceVM.metadata.serviceId = serviceID
-        storedServiceVM.metadata.servicePort = servicePort
-        
-        # Store them back to file.
-        storedServiceVM.unprotect()
-        storedServiceVM.metadata.writeToFile(storedServiceVM.metadataFilePath)
-        storedServiceVM.protect()
+        #   storedServiceVM = serviceVmRepo.findServiceVM(originalServiceID)
+        #else:
+        #    storedServiceVM = serviceVmRepo.findServiceVM(serviceID)
         
         # If the service ID changed, rename the folders (as it needs to have the correct id).
-        if(originalServiceID != '' and originalServiceID != serviceID):
-            serviceVmRepo.renameStoredVM(originalServiceID, serviceID)
+        #if(originalServiceID != '' and originalServiceID != serviceID):
+        #    serviceVmRepo.renameStoredVM(originalServiceID, serviceID)
         
         # Render the page.
         return redirect_to(controller='services')

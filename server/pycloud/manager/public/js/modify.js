@@ -17,8 +17,8 @@ function validateSubmission()
         errorMsg = errorHeader + ' service id.';
     else if(svm_info.port == '')
         errorMsg = errorHeader + ' service port.';
-    else if(svm_info.folder == '')
-        errorMsg = 'You must create a Service VM.';
+    //else if(svm_info.folder == '')
+    //    errorMsg = 'You must create a Service VM.';
         
     // If an input is missing, notify the user and stop the process.
     if(errorMsg != '')
