@@ -96,7 +96,7 @@ class Cloudlet(object):
 
     def _remove_service_vms(self):
         from pycloud.pycloud.model import ServiceVM
-        print 'imported ServiceVM successfully'
+        ServiceVM._collection.drop()
 
 
 
