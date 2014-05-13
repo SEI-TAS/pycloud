@@ -67,4 +67,5 @@ class ServicesController(BaseController):
         app.min_android_version = '9'
         app.tags = ['face', 'c++']
         app.apk_file = './data/apks/face/FaceRecognitionAndroidClient.apk'
+        app.save()
         return app
