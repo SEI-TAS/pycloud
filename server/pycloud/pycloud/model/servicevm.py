@@ -23,8 +23,11 @@ class VirtualMachineException(Exception):
         super(VirtualMachineException, self).__init__(message)
         self.message = message
 
-
+################################################################################################################
+# Represents a runtime ServiceVM, idependent on whether it has a cloned or original disk image.
+################################################################################################################
 class ServiceVM(Model):
+    # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
         collection = "service_vms"
         external = ['_id', 'service_id', 'running', 'port']
@@ -36,6 +39,9 @@ class ServiceVM(Model):
     _HYPERVISOR_URI = "qemu:///session"
     _hypervisor = None
 
+    ################################################################################################################
+    # Constructor.
+    ################################################################################################################
     def __init__(self, *args, **kwargs):
         self._id = None
         self.vm_image = None
@@ -71,7 +77,7 @@ class ServiceVM(Model):
         return ServiceVM.get_hypervisor().lookupByUUIDString(uuid)
 
     ################################################################################################################
-    # Cleanly and safely gets a ServiceVM and removes it from the database
+    # Cleanly and safely gets a ServiceVM and removes it from the database.
     ################################################################################################################
     @staticmethod
     def find_and_remove(svm_id):
