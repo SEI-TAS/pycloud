@@ -1,6 +1,7 @@
 __author__ = 'jdroot'
 
 from pycloud.pycloud.mongo import Model, ObjectID
+import os
 
 class App(Model):
     class Meta:
@@ -37,3 +38,6 @@ class App(Model):
             except:
                 return None
         return App.find_one({'_id': rid})
+
+    def file_name(self):
+        return os.path.basename(self.apk_file)
