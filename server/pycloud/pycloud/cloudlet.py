@@ -78,13 +78,9 @@ class Cloudlet(object):
         return Cloudlet_Metadata()
 
     def cleanup_system(self):
-        # Shutdown all running VMs
         destroy_all_vms()
-
         self._clean_instances_folder()
         self._remove_service_vms()
-
-        # Clean up all of the ports
         portmanager.PortManager.clearPorts()
 
     def _clean_instances_folder(self):
@@ -98,8 +94,9 @@ class Cloudlet(object):
         print 'Done cleaning up \'%s\'' % self.svm_temp_folder
 
     def _remove_service_vms(self):
-        # This gets hard because we cannot reference ServiceVM until after this object is created
-        pass
+        from pycloud.pycloud.model import ServiceVM
+        print 'imported ServiceVM successfully'
+
 
 
 

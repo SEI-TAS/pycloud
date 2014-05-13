@@ -1,8 +1,6 @@
 """The application's Globals object"""
 
 from pylons import config
-from pymongo import Connection
-from pymongo.errors import ConnectionFailure
 
 from pycloud.pycloud.cloudlet import get_cloudlet_instance
 
