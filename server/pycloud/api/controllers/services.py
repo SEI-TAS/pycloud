@@ -43,7 +43,7 @@ class ServicesController(BaseController):
     @asjson
     def GET_find(self):
         # Look for the VM in the repository.
-        sid = request.GET['serviceId']
+        sid = request.params.get('serviceId', None)
         print '\n*************************************************************************************************'
         timelog.TimeLog.reset()
         timelog.TimeLog.stamp("Request received: find cached Service VM.")
