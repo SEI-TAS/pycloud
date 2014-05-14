@@ -38,6 +38,9 @@ class ServiceVM(Model):
     # URI used to connect to the local hypervisor.
     _HYPERVISOR_URI = "qemu:///session"
     _hypervisor = None
+    
+    # Constants.
+    SSH_INTERNAL_PORT = 22
 
     ################################################################################################################
     # Constructor.
@@ -49,6 +52,7 @@ class ServiceVM(Model):
         self.port_mappings = {}
         self.service_port = None
         self.port = None  # Used to show the external port
+        self.ssh_port = None
         self.service_id = None
         self.running = False
         super(ServiceVM, self).__init__(*args, **kwargs)
@@ -111,7 +115,11 @@ class ServiceVM(Model):
 
         # If you are setting the services port we need to set the external port in a particular attribute.
         if guest_port == self.service_port:
-            self.port = host_port   
+            self.port = host_port
+            
+        # If you are setting the SSH port we need to set the external port in a particular attribute.
+        if guest_port == self.SSH_INTERNAL_PORT:
+            self.ssh_port = host_port               
 
         # Add the actual mapping.
         self.port_mappings[str(host_port)] = guest_port
@@ -140,6 +148,8 @@ class ServiceVM(Model):
         # Create a new port if we do not have an external port already.
         if not self.port:
             self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.service_port)
+        if not self.ssh_port:
+            self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.SSH_INTERNAL_PORT)            
         xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
 
         # Change the ID and Name.
@@ -202,6 +212,7 @@ class ServiceVM(Model):
         try:
             print "Resuming from VM image..."
             ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
+            print "Resumed from VM image."
         except libvirt.libvirtError as e:
             message = "Error resuming VM: %s for VM; error is: %s" % (str(self._id), str(e))
             raise VirtualMachineException(message)

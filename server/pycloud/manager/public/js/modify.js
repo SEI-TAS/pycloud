@@ -17,8 +17,8 @@ function validateSubmission()
         errorMsg = errorHeader + ' service id.';
     else if(svm_info.port == '')
         errorMsg = errorHeader + ' service port.';
-    //else if(svm_info.folder == '')
-    //    errorMsg = 'You must create a Service VM.';
+    else if(svm_info.folder == '')
+        errorMsg = 'You must create a VM Image.';
         
     // If an input is missing, notify the user and stop the process.
     if(errorMsg != '')
@@ -107,7 +107,7 @@ function openCreateVNC()
                 ssvmStateImagePath = $('#vmStateImageFile');
                 ssvmStateImagePath.val(vm_image.state_image);
                 ssvmStateImagePathVal = $('#vmStateImageFileValue');
-                ssvmStateImagePathVa.val(vm_image.state_image);                
+                ssvmStateImagePathVal.val(vm_image.state_image);                
                 
                 // Upate the buttons to reflect that we can now modify the SVM.
                 $('#new-svm-button').prop('style', 'display:none;');

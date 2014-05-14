@@ -46,7 +46,7 @@ class VMImage(DictObject):
         if not os.path.exists(original):
             raise DiskImageException("Source image file does not exist (%s)." % original)
 
-        new_file = os.path.join(destination_folder, os.path.basename(original))
+        new_file = os.path.abspath(os.path.join(destination_folder, os.path.basename(original)))
 
         # Simply copy the file.
         print "Copying image %s to new disk image %s..." % (os.path.basename(original), destination_folder)
@@ -75,7 +75,7 @@ class VMImage(DictObject):
             if(link_to_source):
                 # Create a shallow qcow2 file pointing at the original image, instead of copying it, for faster startup.
                 # ret.disk_image = VMImage._clone_file_to_folder(destination_folder, self.disk_image)
-                ret.disk_image = os.path.join(destination_folder, os.path.basename(self.disk_image))
+                ret.disk_image = os.path.abspath(os.path.join(destination_folder, os.path.basename(self.disk_image)))
                 clonedDiskImage = qcowdiskimage.Qcow2DiskImage(ret.disk_image)
                 clonedDiskImage.linkToBackingFile(self.disk_image)
             else:
@@ -101,8 +101,8 @@ class VMImage(DictObject):
             
             # Update our paths to reflect the move.
             source_dir = os.path.dirname(self.disk_image)
-            self.disk_image = os.path.join(destination_folder, os.path.basename(self.disk_image))
-            self.state_image = os.path.join(destination_folder, os.path.basename(self.state_image))
+            self.disk_image = os.path.abspath(os.path.join(destination_folder, os.path.basename(self.disk_image)))
+            self.state_image = os.path.abspath(os.path.join(destination_folder, os.path.basename(self.state_image)))
             
             # Remove our original folder.
             os.rmdir(source_dir)

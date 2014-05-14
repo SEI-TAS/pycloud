@@ -44,7 +44,7 @@ class InstancesController(BaseController):
                     'instance_id': svm['_id'],
                     'service_id': svm.service_id,
                     'service_external_port': svm.port,
-                    'ssh_port': 0,
+                    'ssh_port': svm.ssh_port,
                     'folder': os.path.dirname(svm.vm_image.disk_image),
                     'action': 'Stop'
                 }

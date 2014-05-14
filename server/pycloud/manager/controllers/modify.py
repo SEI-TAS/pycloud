@@ -186,7 +186,7 @@ class ModifyController(BaseController):
             # Create the VM (this will also start it).
             print "Creating and starting VM for user access..."
             svm.vm_image = new_vm_image
-            svm.port = fields['port']
+            svm.service_port = fields['port']
             #svm.addForwardedSshPort()            
             svm.create(template_xml_file)
             

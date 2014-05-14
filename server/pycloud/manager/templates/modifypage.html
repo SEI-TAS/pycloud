@@ -47,16 +47,16 @@ ${parent.header()}
         
             <!-- STORAGE -->
             <div class="panel panel-info col-sm-12">
-                <div class="panel-heading"> Stored Service VM </div>
+                <div class="panel-heading"> VM Image</div>
                 <div class="panel-body">
-                    ${text('vmStoredFolder', input_width=12, label=_('Stored VM Folder'), disabled=True)}
+                    ${text('vmStoredFolder', input_width=12, label=_('VM Image Folder'), disabled=True)}
                     ${text('vmDiskImageFile', input_width=12, label=_('Disk Image File'), disabled=True)}
                     ${text('vmStateImageFile', input_width=12, label=_('State Image File'), disabled=True)}
                     ${hidden('vmDiskImageFileValue')}
                     ${hidden('vmStateImageFileValue')}
                     
-            	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm" ${'style="display:none;"' if not page.newService else ''}>Create Stored Service VM</button>
-              	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="openEditVNC('${page.openSVMURL}')" ${'style="display:none;"' if page.newService else ''}>Modify Stored Service VM</button>
+            	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm" ${'style="display:none;"' if not page.newService else ''}>Create VM Image</button>
+              	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="openEditVNC('${page.openSVMURL}')" ${'style="display:none;"' if page.newService else ''}>Modify VM Image</button>
                 </div>
             </div>
             
