@@ -1,5 +1,6 @@
 import logging
 import json
+import os.path
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
@@ -46,7 +47,7 @@ class ServicesController(BaseController):
             new_item = {'service_id': service['_id'],
                        'name': service.description,
                        'service_internal_port': service.port,
-                       'stored_service_vm_folder': service.vm_image.disk_image,
+                       'stored_service_vm_folder': os.path.dirname(service.vm_image.disk_image),
                        'service_vm_instances': 'SVM',
                        'actions': 'Action'}
             grid_items.append(new_item)

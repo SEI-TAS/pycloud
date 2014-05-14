@@ -1,3 +1,12 @@
+<!-- Hidden input control -->
+<%def name="hidden(id, input_type='hidden')">
+<div class="form-group">
+    <div class="">
+        <input type="${input_type}" class="form-control" name="${id}" id="${id}" value="${page.form_values[id] if id in page.form_values else ''}" />
+    </div>
+</div>
+</%def>
+
 <!-- Text input control -->
 <%def name="text(id, label=None, label_width=6, input_width=6, error_width=6, input_type='text', disabled=False)">
 <div class="form-group ${'has-error' if id in page.form_errors else ''}">

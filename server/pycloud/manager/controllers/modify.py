@@ -91,12 +91,16 @@ class ModifyController(BaseController):
                 page.form_values['reqMinMem'] = service.min_memory
                 page.form_values['reqIdealMem'] = service.ideal_memory
             
-                # VM Image values.
+                # VM Image values. The ...Value fields are for storing data, while the others are for
+                # showing it only. Since the vmDiskImageFile and vmStateImageFile fields are disabled,
+                # (read-only) their value is not sent, and we have to store that value in hidden variables.
                 if(service.vm_image.disk_image):
                     page.form_values['vmStoredFolder'] = os.path.dirname(service.vm_image.disk_image)
                     page.form_values['vmDiskImageFile'] = service.vm_image.disk_image
+                    page.form_values['vmDiskImageFileValue'] = service.vm_image.disk_image
                 if(service.vm_image.state_image):
                     page.form_values['vmStateImageFile'] = service.vm_image.state_image
+                    page.form_values['vmStateImageFileValue'] = service.vm_image.state_image
 
         return page
 
@@ -108,7 +112,11 @@ class ModifyController(BaseController):
         c.services_active = 'active'
         
         # Look for the service with this id.
-        serviceId = request.params.get("serviceID").strip()
+        serviceId = request.params.get("serviceID")
+        if not serviceId:
+            serviceId = request.params.get("originalServiceID")
+        serviceId = serviceId.strip()
+        print 'Creating new service with id ' + serviceId
         service = Service.by_id(serviceId)
         if not service:
             service = Service()
@@ -134,8 +142,8 @@ class ModifyController(BaseController):
 
         # VM Image info.
         service.vm_image = VMImage()
-        service.vm_image.disk_image = request.params.get("vmDiskImageFile")
-        service.vm_image.state_image = request.params.get("vmStateImageFile")
+        service.vm_image.disk_image = request.params.get("vmDiskImageFileValue")
+        service.vm_image.state_image = request.params.get("vmStateImageFileValue")
         
         # Create or update the information.
         service.save()
@@ -160,11 +168,11 @@ class ModifyController(BaseController):
         fields = json.loads(parsedJsonString)        
         
         # Create an SVM and open a VNC window to modify the VM.
-        serviceId = fields['serviceId']
+        svm.service_id = fields['serviceId']
         try:
             # Set up a new VM image.
             temp_svm_folder = os.path.join(g.cloudlet.newVmFolder, svm._id)
-            new_disk_image = os.path.join(temp_svm_folder, serviceId)
+            new_disk_image = os.path.join(temp_svm_folder, svm.service_id)
             new_vm_image = VMImage()
             new_vm_image.create(fields['source'], new_disk_image)
                         
@@ -182,7 +190,7 @@ class ModifyController(BaseController):
             #svm.addForwardedSshPort()            
             svm.create(template_xml_file)
             
-            # Start the VM and open a synchronous VNC window to it.
+            # Open a synchronous VNC window to it.
             print "Loading VM for user access..."
             svm.open_vnc(wait=True)
             
@@ -193,7 +201,7 @@ class ModifyController(BaseController):
             
             # Permanently store the VM.
             print 'Moving Service VM Image to cache.'
-            svm.vm_image.move(os.path.join(g.cloudlet.svmCache, serviceId))
+            svm.vm_image.move(os.path.join(g.cloudlet.svmCache, svm.service_id))
         except Exception as e:
             # If there was a problem creating the SVM, return that there was an error.
             print 'Error creating Service VM: ' + str(e);
@@ -213,12 +221,32 @@ class ModifyController(BaseController):
         
         # Open a VNC window to modify the VM.
         try:
-            success = svmManager.modifyServiceVM(id)
+            # Get the service info.
+            service = Service.by_id(id)
             
-            if(not success):
-                # If there was a problem opening the SVM, return that there was an error.
-                print 'Error opening Service VM. '
-                return self.JSON_NOT_OK                      
+            # Get the service vm, and enable modification to its files.
+            svm = service.get_root_vm()
+            svm.vm_image.unprotect()
+
+            # Start the VM for interactive modification.
+            print "Starting VM for user access..."
+            # svm.addForwardedSshPort()
+            svm.start()
+
+            # Open a synchronous VNC window to it.
+            print "Loading VM for user access..."
+            svm.open_vnc(wait=True)
+            
+            # Save the VM state.
+            print "VNC GUI closed, saving machine state..."
+            svm.stop()
+            print "Service VM stopped, and machine state saved."
+            
+            # Destroy the service VM.
+            svm.destroy()     
+            
+            # Make the VM image read only again.
+            svm.vm_image.protect()
         except Exception as e:
             # If there was a problem opening the SVM, return that there was an error.
             print 'Error opening Service VM: ' + str(e);

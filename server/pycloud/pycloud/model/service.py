@@ -62,15 +62,24 @@ class Service(Model):
             for svm in svms:
                 return svm  # Return the first ServiceVM we found
 
-        #If no ServiceVMs for that ID were found, or join=False, create a new one
+        # If no ServiceVMs for that ID were found, or join=False, create a new one.
         svm = ServiceVM()
         svm.generate_random_id()
         svm.service_id = self._id
         svm.service_port = self.port
         svm.vm_image = self.vm_image.clone(os.path.join(g.cloudlet.svmInstancesFolder, svm['_id']))
-        # svm.start()
-        # svm.save()
         return svm
+    
+    ################################################################################################################
+    # Returns a VM linked to the original VM image so that it can be modified.
+    ################################################################################################################
+    def get_root_vm(self):
+        svm = ServiceVM()
+        svm.generate_random_id()
+        svm.service_id = self._id
+        svm.service_port = self.port
+        svm.vm_image = self.vm_image
+        return svm    
 
     ################################################################################################################
     # Removes this Service and all of its files

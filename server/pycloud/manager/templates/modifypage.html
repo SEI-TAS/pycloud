@@ -1,6 +1,7 @@
 <%namespace file="form.html" import="text"/>
 <%namespace file="form.html" import="dropdown"/>
 <%namespace file="form.html" import="browse"/>
+<%namespace file="form.html" import="hidden"/>
 
 <%inherit file="base.html"/>
 
@@ -28,7 +29,7 @@ ${parent.header()}
             <div class="panel panel-info col-sm-12">
                 <div class="panel-heading"> General </div>
                 <div class="panel-body">
-                    <input type="hidden" name="originalServiceID" id="originalServiceID" value='${page.serviceID}' />
+                    <input type="hidden" name="originalServiceID" id="originalServiceID" value="${page.serviceID}" />
                     ${text('serviceID', input_width=12, label=_('Service ID'), disabled=page.serviceIDChangeDisabled)}
                     ${text('serviceVersion', input_width=12, label=_('Service Version'))}
                     ${text('serviceDescription', input_width=12, label=_('Description'))}
@@ -51,6 +52,8 @@ ${parent.header()}
                     ${text('vmStoredFolder', input_width=12, label=_('Stored VM Folder'), disabled=True)}
                     ${text('vmDiskImageFile', input_width=12, label=_('Disk Image File'), disabled=True)}
                     ${text('vmStateImageFile', input_width=12, label=_('State Image File'), disabled=True)}
+                    ${hidden('vmDiskImageFileValue')}
+                    ${hidden('vmStateImageFileValue')}
                     
             	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm" ${'style="display:none;"' if not page.newService else ''}>Create Stored Service VM</button>
               	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="openEditVNC('${page.openSVMURL}')" ${'style="display:none;"' if page.newService else ''}>Modify Stored Service VM</button>

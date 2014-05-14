@@ -1,6 +1,7 @@
 import logging
 import json
 import time
+import os.path
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
@@ -14,6 +15,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import InstancesPage
 from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.model import Service, ServiceVM
+from pycloud.pycloud.pylons.lib.util import asjson
 
 log = logging.getLogger(__name__)
 
@@ -43,7 +45,7 @@ class InstancesController(BaseController):
                     'service_id': svm.service_id,
                     'service_external_port': svm.port,
                     'ssh_port': 0,
-                    'folder': svm.vm_image.disk_image,
+                    'folder': os.path.dirname(svm.vm_image.disk_image),
                     'action': 'Stop'
                 }
             )
@@ -63,21 +65,17 @@ class InstancesController(BaseController):
     # TODO: Update to use new model
     ############################################################################################################
     def GET_openVNC(self, id):
-        # Get a list of running ServiceVM instances.
-        instanceManager = g.cloudlet.instanceManager
-        instanceList = instanceManager.getServiceVMInstances()
-
-        if id not in instanceList:
-            # If we didn't get a valid id, just return an error message.
-            print "Instance id " + id + " was not found on the list of running instances."
-            return self.JSON_NOT_OK
+        try:            
+            # Get the instance associated with this id.
+            svm = ServiceVM.by_id(id)
             
-        # Get the instance associated with this id.
-        svmInstance = instanceList[id]
-        
-        try:
+            if not svm:
+                # If we didn't get a valid id, just return an error message.
+                print "Service VM id " + id + " was not found on the list of running instances."
+                return self.JSON_NOT_OK            
+            
             # Try to start the VNC window (this will only work if done on the Cloudlet).
-            svmInstance.serviceVM.startVncAndWait(wait=False)
+            svm.open_vnc(wait=False)
         except Exception as e:        
             # If there was a problem connecting through VNC, return that there was an error.
             print 'Error opening VNC window: ' + str(e);
@@ -125,28 +123,29 @@ class InstancesController(BaseController):
     
     ############################################################################################################
     # Checks if there are changes in the instance list, and returns a changestamp of the change.
-    ############################################################################################################        
+    ############################################################################################################    
+    @asjson    
     def GET_getLastChangestamp(self):
         try:    
             # Get the list of running instances.
-            instanceManager = g.cloudlet.instanceManager
-            instanceList = instanceManager.getServiceVMInstances()
+            svm_list = ServiceVM.find()
+            return 
             
             # Turn into a string for an easy comparison, and compare it to the last stored one.
             separator = ','
-            currentInstancesIdList = separator.join(str(id) for id in instanceList)
-            if(instanceManager.instancesIdList != currentInstancesIdList):
+            #currentInstancesIdList = separator.join(str(id) for id in svm_list)
+            #if(instanceManager.instancesIdList != currentInstancesIdList):
                 # Update the list string, and update the timestamp.
-                instanceManager.instancesIdList = currentInstancesIdList
-                instanceManager.lastChangestamp = time.time()
+                #instanceManager.instancesIdList = currentInstancesIdList
+                #instanceManager.lastChangestamp = time.time()
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
             print 'Error getting list of instance changes: ' + str(e);
             return self.JSON_NOT_OK               
         
         # Return the timestamp.
-        jsonTimestamp = json.dumps({"LAST_CHANGE_STAMP" : str(instanceManager.lastChangestamp) })
-        return jsonTimestamp
+        #jsonTimestamp = json.dumps({"LAST_CHANGE_STAMP" : str(instanceManager.lastChangestamp) })
+        #return jsonTimestamp
         
 ############################################################################################################
 # Helper function to generate a link for the service id to the service details.

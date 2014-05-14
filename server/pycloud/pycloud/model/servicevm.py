@@ -52,6 +52,18 @@ class ServiceVM(Model):
         self.service_id = None
         self.running = False
         super(ServiceVM, self).__init__(*args, **kwargs)
+        
+    ################################################################################################################
+    # Locate a servicevm by its ID
+    ################################################################################################################
+    # noinspection PyBroadException
+    @staticmethod
+    def by_id(svm_id=None):
+        try:
+            service_vm = ServiceVM.find_one({'_id': svm_id})
+        except:
+            return None
+        return service_vm        
 
     ################################################################################################################
     # Generates a random ID, valid as a VM id.

@@ -102,8 +102,12 @@ function openCreateVNC()
                 ssvmFolder.val(getFileDirectory(vm_image.disk_image));  
                 ssvmDiskImagePath = $('#vmDiskImageFile');
                 ssvmDiskImagePath.val(vm_image.disk_image);
+                ssvmDiskImagePathVal = $('#vmDiskImageFileValue');
+                ssvmDiskImagePathVal.val(vm_image.disk_image);                
                 ssvmStateImagePath = $('#vmStateImageFile');
                 ssvmStateImagePath.val(vm_image.state_image);
+                ssvmStateImagePathVal = $('#vmStateImageFileValue');
+                ssvmStateImagePathVa.val(vm_image.state_image);                
                 
                 // Upate the buttons to reflect that we can now modify the SVM.
                 $('#new-svm-button').prop('style', 'display:none;');

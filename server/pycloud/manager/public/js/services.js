@@ -28,6 +28,7 @@ function startSVM(startUrl, redirectUrl)
             }
         },
         error: function( req, status, err ) {
+            dialog.hide();
             showAndLogErrorMessage('Service VM Instance could not be started.', status, err );
         }
     });
