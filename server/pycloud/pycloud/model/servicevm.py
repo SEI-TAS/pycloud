@@ -139,7 +139,7 @@ class ServiceVM(Model):
         return updated_xml_descriptor
 
     ################################################################################################################
-    # Create a new service VM from a given template.
+    # Create a new service VM from a given template, and start it.
     ################################################################################################################
     def create(self, vmXmlTemplateFile):
         # Check that the XML description file exists.
@@ -150,20 +150,21 @@ class ServiceVM(Model):
         template_xml_descriptor = (open(vmXmlTemplateFile, "r").read())
         updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)    
         
-        # Create and start a VM ("domain") through the hypervisor.
+        # Create a VM ("domain") through the hypervisor.
         print "Starting a new VM..."  
-        try:         
+        try:
             ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
         except:
             # Ensure we destroy the VM if there was some problem after creating it.
             self.destroy()
             raise
         
-        # Indicate we are running, as creation of a VM automatically starts it.
+        # When creating we start running.
         self.running = True
 
     ################################################################################################################
     # Start this service vm
+    # TODO: call "resume" if there is no saved state?
     ################################################################################################################
     def start(self):
         # Check if we are already running.
@@ -245,7 +246,11 @@ class ServiceVM(Model):
             
         # Destroy it.
         try:
-            vm.destroy()
+            vm = ServiceVM._get_virtual_machine(self._id)
+            if vm:            
+                vm.destroy()
+        except:
+            print 'VM not found while destroying it.'
         finally:
             self.running = False
 
@@ -281,5 +286,5 @@ class ServiceVM(Model):
     def destroy(self):
         if self.running:
             self.stop()
-        self.vm_image.cleanup(os.path.join(g.cloudlet.svm_temp_folder, self._id))
+        self.vm_image.cleanup()
         ServiceVM.find_and_remove(self._id)

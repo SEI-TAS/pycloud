@@ -13,6 +13,7 @@ import stat
 from pycloud.pycloud.vm import diskimage
 from pycloud.pycloud.vm import qcowdiskimage
 from pycloud.pycloud.vm.vmsavedstate import VMSavedState
+from pycloud.pycloud.utils import fileutils
 
 from pycloud.pycloud.mongo import DictObject
 
@@ -57,7 +58,7 @@ class VMImage(DictObject):
     ################################################################################################################
     # Will clone the disk and state image files to the specified folder
     ################################################################################################################
-    def clone(self, destination_folder):
+    def clone(self, destination_folder, link_to_source=True):
         # Check if the destination folder already exists
         if os.path.exists(destination_folder):
             # This is an error, as we don't want to overwrite an existing disk image with a source.
@@ -69,27 +70,76 @@ class VMImage(DictObject):
         try:
             ret = VMImage()
             ret.cloned = True
-            ret.disk_image = VMImage._clone_file_to_folder(destination_folder, self.disk_image)
             ret.state_image = VMImage._clone_file_to_folder(destination_folder, self.state_image)
+            
+            if(link_to_source):
+                # Create a shallow qcow2 file pointing at the original image, instead of copying it, for faster startup.
+                # ret.disk_image = VMImage._clone_file_to_folder(destination_folder, self.disk_image)
+                ret.disk_image = os.path.join(destination_folder, os.path.basename(self.disk_image))
+                clonedDiskImage = qcowdiskimage.Qcow2DiskImage(ret.disk_image)
+                clonedDiskImage.linkToBackingFile(self.disk_image)
+            else:
+                ret.disk_image = VMImage._clone_file_to_folder(destination_folder, self.disk_image)
+                
             return ret
         except:
             # Clean up the directory we just created
             os.rmdir(destination_folder)
             raise
+        
+    ################################################################################################################
+    # Move the VM Image to the given folder.
+    ################################################################################################################ 
+    def move(self, destination_folder):
+        try:
+            # We will overrite any existing vm image already stored with the same name.
+            fileutils.FileUtils.recreateFolder(destination_folder)
+            
+            # Move the files.
+            shutil.move(self.disk_image, destination_folder)
+            shutil.move(self.state_image, destination_folder)
+            
+            # Update our paths to reflect the move.
+            source_dir = os.path.dirname(self.disk_image)
+            self.disk_image = os.path.join(destination_folder, os.path.basename(self.disk_image))
+            self.state_image = os.path.join(destination_folder, os.path.basename(self.state_image))
+            
+            # Remove our original folder.
+            os.rmdir(source_dir)
+        except:
+            # Clean up the directory we just created
+            os.rmdir(destination_folder)
+            raise            
 
     ################################################################################################################
-    # Creates a VM Image from a source file.
+    # Creates a VM Image from a source file. This converts the source image from whatever format into qcow2.
     ################################################################################################################ 
-    def create(self, sourceDiskImageFilePath, destDiskImageFilePath):               
-        # Create a new disk image from the source image.
-        print "VM disk image creation step."
-        sourceDiskImage = diskimage.DiskImage(sourceDiskImageFilePath)
-        self.disk_image = destDiskImageFilePath
-        newDiskImage = qcowdiskimage.Qcow2DiskImage(self.disk_image)
-        newDiskImage.createFromOtherType(sourceDiskImage)
-        
-        # Set a default value for the saved state image file.
-        self.state_image = VMSavedState.getDefaultSavedStateFile(self.disk_image)           
+    def create(self, sourceDiskImageFilePath, destDiskImageFilePath):
+        try:
+            # Clean up the folder first.
+            fileutils.FileUtils.recreateFolder(os.path.dirname(destDiskImageFilePath))
+            
+            # Create a new disk image from the source image.
+            print "VM disk image creation step."
+            newDiskImage = qcowdiskimage.Qcow2DiskImage(destDiskImageFilePath)
+            self.disk_image = newDiskImage.filepath
+            
+            # Disk file will be copied or converted depending on the type.
+            if(diskimage.DiskImage.getDiskImageType(sourceDiskImageFilePath) == diskimage.DiskImage.TYPE_QCOW2):
+                # If it is of our target type, just copy it.
+                copied_image = VMImage._clone_file_to_folder(os.path.dirname(destDiskImageFilePath), sourceDiskImageFilePath)
+                os.rename(copied_image, self.disk_image)
+            else:
+                # Convert from original type.
+                sourceDiskImage = diskimage.DiskImage(sourceDiskImageFilePath)        
+                newDiskImage.createFromOtherType(sourceDiskImage)
+            
+            # Set a default value for the saved state image file.
+            self.state_image = VMSavedState.getDefaultSavedStateFile(self.disk_image)
+        except:
+            # Delete the folder with the temp data.
+            shutil.rmtree(os.path.dirname(destDiskImageFilePath))
+            raise
 
     ################################################################################################################
     # Protects a VM Image by making it read-only.
@@ -102,7 +152,7 @@ class VMImage(DictObject):
 
         # Check the state_image
         if os.path.exists(self.state_image) and os.path.isfile(self.state_image):
-            os.chmod(self.disk_image,
+            os.chmod(self.state_image,
                      stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH )                
 
     ################################################################################################################
@@ -116,15 +166,16 @@ class VMImage(DictObject):
 
         # Check the state_image
         if os.path.exists(self.state_image) and os.path.isfile(self.state_image):
-            os.chmod(self.disk_image,
+            os.chmod(self.state_image,
                      stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH)
 
     ################################################################################################################
     # Cleans up the files, if this is a clone it will delete the files. Force will delete if cloned.
     ################################################################################################################
-    def cleanup(self, image_folder, force=False):
+    def cleanup(self, force=False):
         if self.cloned or force:
-            if image_folder:
-                if os.path.exists(image_folder):
-                    if os.path.isdir(image_folder):
-                        shutil.rmtree(image_folder)
+            image_folder = os.path.dirname(self.disk_image)
+            if os.path.exists(image_folder):
+                if os.path.isdir(image_folder):
+                    print 'Removing VM image folder.'
+                    shutil.rmtree(image_folder)

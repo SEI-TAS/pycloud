@@ -82,14 +82,14 @@ class Cloudlet(object):
         portmanager.PortManager.clearPorts()
 
     def _clean_instances_folder(self):
-        print 'Cleaning up \'%s\'' % self.svm_temp_folder
-        if os.path.exists(self.svm_temp_folder):
-            print '\tDeleting all files in \'%s\'' % self.svm_temp_folder
-            shutil.rmtree(self.svm_temp_folder)
-        if not os.path.exists(self.svm_temp_folder):
-            print '\tMaking folder \'%s\'' % self.svm_temp_folder
-            os.makedirs(self.svm_temp_folder)
-        print 'Done cleaning up \'%s\'' % self.svm_temp_folder
+        print 'Cleaning up \'%s\'' % self.svmInstancesFolder
+        if os.path.exists(self.svmInstancesFolder):
+            print '\tDeleting all files in \'%s\'' % self.svmInstancesFolder
+            shutil.rmtree(self.svmInstancesFolder)
+        if not os.path.exists(self.svmInstancesFolder):
+            print '\tMaking folder \'%s\'' % self.svmInstancesFolder
+            os.makedirs(self.svmInstancesFolder)
+        print 'Done cleaning up \'%s\'' % self.svmInstancesFolder
 
     def _remove_service_vms(self):
         from pycloud.pycloud.model import ServiceVM

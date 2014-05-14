@@ -96,13 +96,14 @@ function openCreateVNC()
                 // Update Stored SVM fields with new SVM info.
                 var jsonData = JSON.stringify(resp);
                 var parsedJsonData = $.parseJSON(jsonData);
-                storedSVMData = parsedJsonData;
+                console.log(parsedJsonData);
+                vm_image = parsedJsonData;
                 ssvmFolder = $('#vmStoredFolder');
-                ssvmFolder.val(storedSVMData.FOLDER);  
+                ssvmFolder.val(getFileDirectory(vm_image.disk_image));  
                 ssvmDiskImagePath = $('#vmDiskImageFile');
-                ssvmDiskImagePath.val(storedSVMData.DISK_IMAGE);
+                ssvmDiskImagePath.val(vm_image.disk_image);
                 ssvmStateImagePath = $('#vmStateImageFile');
-                ssvmStateImagePath.val(storedSVMData.STATE_IMAGE);
+                ssvmStateImagePath.val(vm_image.state_image);
                 
                 // Upate the buttons to reflect that we can now modify the SVM.
                 $('#new-svm-button').prop('style', 'display:none;');
@@ -166,4 +167,17 @@ function openEditVNC(vncUrl)
     });
     
     return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Helper function.
+/////////////////////////////////////////////////////////////////////////////////////
+function getFileDirectory(filePath) 
+{
+  if (filePath.indexOf("/") == -1) { // windows
+    return filePath.substring(0, filePath.lastIndexOf('\\'));
+  } 
+  else { // unix
+    return filePath.substring(0, filePath.lastIndexOf('/'));
+  }
 }

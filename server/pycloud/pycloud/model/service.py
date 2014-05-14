@@ -78,5 +78,6 @@ class Service(Model):
     def destroy(self):
         # Make sure we are no longer in the database
         Service.find_and_remove(self._id)
+        
         # Delete our backing files
-        self.vm_image.cleanup(os.path.join(g.cloudlet.service_cache, self._id), force=True)
+        self.vm_image.cleanup()
