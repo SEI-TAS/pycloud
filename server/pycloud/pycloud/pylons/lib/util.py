@@ -83,6 +83,7 @@ def _json_convert(obj):
     converted into json.
     """
     # Filters on external
+    print 'converting: ', type(obj)
     obj = obj_to_dict(obj)
     if hasattr(obj, 'iteritems') or hasattr(obj, 'items'):  # PY3 support
         return dict(((k, _json_convert(v)) for k, v in obj.iteritems()))

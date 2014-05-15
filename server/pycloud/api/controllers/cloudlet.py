@@ -7,6 +7,7 @@ from pycloud.pycloud.utils import timelog
 from pycloud.pycloud.cloudlet import Cloudlet
 from pycloud.pycloud.model import Service, App
 
+
 class CloudletController(BaseController):
 
     @asjson
@@ -16,10 +17,10 @@ class CloudletController(BaseController):
         ret = Cloudlet.system_information()
 
         if bool_param('services'):
-            ret.services = asjson(Service.find())
+            ret.services = Service.find()
 
         if bool_param('apps'):
-            ret.apps = asjson(App.find())
+            ret.apps = App.find()
 
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
         return ret
