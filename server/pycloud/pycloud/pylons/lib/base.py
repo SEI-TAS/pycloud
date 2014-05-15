@@ -37,7 +37,7 @@ class BaseController(WSGIController):
 
 
 def bool_param(name, default=False):
-    ret = request.params.get('name', default)
+    ret = request.params.get(name, default)
     if not isinstance(ret, bool):
         ret = ret.upper() in ['T', 'TRUE', 'Y', 'YES']
     return ret
