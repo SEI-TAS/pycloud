@@ -190,7 +190,7 @@ class ServiceVM(Model):
     ################################################################################################################
     def start(self):
         # Check if we are already running.
-        if(self.running):
+        if self.running:
             return self
         
         # Make sure libvirt can read our files
@@ -213,11 +213,10 @@ class ServiceVM(Model):
             print "Resuming from VM image..."
             ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
             print "Resumed from VM image."
+            self.running = True
         except libvirt.libvirtError as e:
             message = "Error resuming VM: %s for VM; error is: %s" % (str(self._id), str(e))
             raise VirtualMachineException(message)
-
-        self.running = True
 
         return self
 
