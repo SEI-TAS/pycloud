@@ -30,7 +30,7 @@ def asjson(f):
     def _handler(ret):
         print '_handler: ', type(ret)
         if isinstance(ret, Cursor):
-            obj = list(dumps(v) for v in ret)
+            obj = list(v for v in ret)
             ret = {ret.collection.name: obj}
             print 'created cursor dump: ', ret
         return dumps(ret)
