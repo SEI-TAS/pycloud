@@ -28,7 +28,7 @@ class ServiceVMController(BaseController):
         
     ################################################################################################################
     # Called to start a Service VM.
-    # - isolated: indicates if we want to run our own Service VM (true) or if we can share an existing one ("false")
+    # - join: indicates if we want to run our own Service VM (false) or if we can share an existing one (true)
     ################################################################################################################
     @asjson
     def GET_start(self):
@@ -45,6 +45,8 @@ class ServiceVMController(BaseController):
 
             # Check the flags that indicates whether we could join an existing instance.
             join = request.params.get('join', False)
+            if not isinstance(join, bool):
+                join = join.upper() in ['T', 'TRUE', 'Y', 'YES']
 
             service = Service.by_id(sid)
             if service:

@@ -1,7 +1,7 @@
 __author__ = 'jdroot'
 
 from pylons.controllers import WSGIController
-from pylons import c, g, request, response
+from pylons import g, request
 
 # Creating this just to have it for the future
 class BaseController(WSGIController):
@@ -34,3 +34,10 @@ class BaseController(WSGIController):
 
     def post(self):
         pass
+
+
+def bool_param(name, default=False):
+    ret = request.params.get('name', default)
+    if not isinstance(ret, bool):
+        ret = ret.upper() in ['T', 'TRUE', 'Y', 'YES']
+    return ret
