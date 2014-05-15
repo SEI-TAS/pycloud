@@ -5,24 +5,30 @@ from pymongo.cursor import Cursor
 
 
 def asjson(f):
-    def _handler(ret):
+    def _handle_cursor(ret):
         if isinstance(ret, Cursor):
             obj = []
             for item in ret:
                 obj.append(obj_to_dict(item))
+            return obj
+
+    def _handler(ret):
+        if isinstance(ret, Cursor):
+            obj = _handle_cursor(ret)
             ret = dict_to_json({ret.collection.name: obj})
         else:
             ret = dict_to_json(obj_to_dict(ret))
         return ret
     if hasattr(f, '__call__'):
         def _asjson(*args):
-            ret = f
-            if hasattr(ret, '__call__'):
-                ret = f(*args)
-                return _handler(ret)
+            ret = f(*args)
+            return _handler(ret)
         return _asjson
     else:
-        return _handler(f)
+        if isinstance(f, Cursor):
+            return _handle_cursor(f)
+        else:
+            return _handler(f)
 
 
 def obj_to_dict(obj):
