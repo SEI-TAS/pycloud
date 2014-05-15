@@ -50,6 +50,7 @@ def obj_to_dict(obj):
     if hasattr(ret, 'external'):
         if hasattr(ret.external, '__call__'):
             ret = ret.external()
+    print 'obj_to_dict returning: ', type(ret)
     return ret
 
 
@@ -80,9 +81,11 @@ def _json_convert(obj):
 
 
 def default(obj):
+    print 'running default on: ', type(obj)
     if isinstance(obj, ObjectId):
         return str(obj)  # Modified to return str(obj) instead of {$oid: str(obj)}
     if isinstance(obj, Cursor):  # If we have a cursor, convert every item
+        print 'processing a cursor!'
         return list(_json_convert(v) for v in obj)
     if isinstance(obj, DBRef):
         return _json_convert(obj.as_doc())
