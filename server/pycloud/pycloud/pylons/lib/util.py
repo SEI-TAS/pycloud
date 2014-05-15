@@ -28,18 +28,17 @@ from pymongo.cursor import Cursor
 def asjson(f):
     # Handler to handle the result
     def _handler(ret):
+        # We need to wrap cursor in dict if it is the only item
         if isinstance(ret, Cursor):
-            # obj = list(v for v in ret)
             ret = {ret.collection.name: ret}
         return dumps(ret)
 
-    # Result of a function call
+    # If f is a function, we must return a callable function
     if hasattr(f, '__call__'):
         def _asjson(*args):
-            ret = f(*args)
-            return _handler(ret)
+            return _handler(f(*args))
         return _asjson
-    else:
+    else:  # Otherwise, just handle the result
         return _handler(f)
 
 

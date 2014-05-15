@@ -17,9 +17,6 @@ class CloudletController(BaseController):
         ret = Cloudlet.system_information()
 
         if bool_param('services'):
-            print '\n\n'
-            print 'Services: ', asjson(Service.find())
-            print '\n\n'
             ret.services = Service.find()
 
         if bool_param('apps'):

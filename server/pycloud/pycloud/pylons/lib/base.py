@@ -36,6 +36,7 @@ class BaseController(WSGIController):
         pass
 
 
+# Get a boolean from a request param
 def bool_param(name, default=False):
     ret = request.params.get(name, default)
     if not isinstance(ret, bool):
