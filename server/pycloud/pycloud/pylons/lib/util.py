@@ -42,7 +42,7 @@ def asjson(f):
             return _handler(ret)
         return _asjson
     else:
-        _handler(f)
+        return _handler(f)
 
 
 def obj_to_dict(obj):
