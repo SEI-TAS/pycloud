@@ -82,22 +82,21 @@ def _json_convert(obj):
     """Recursive helper method that converts BSON types so they can be
     converted into json.
     """
+    # Filters on external
+    obj = obj_to_dict(obj)
     if hasattr(obj, 'iteritems') or hasattr(obj, 'items'):  # PY3 support
-        print 'Using iteritems on: ', type(obj)
         return dict(((k, _json_convert(v)) for k, v in obj.iteritems()))
-    elif hasattr(obj, '__iter__') and not isinstance(obj, string_types):
-        print 'using iter'
-        return list((_json_convert(v) for v in obj))
     try:
         return default(obj)
     except TypeError:
         return obj
 
+
 def default(obj):
     if isinstance(obj, ObjectId):
         return str(obj)  # Modified to return str(obj) instead of {$oid: str(obj)}
-    if isinstance(obj, Cursor):
-        pass
+    if isinstance(obj, Cursor):  # If we have a cursor, convert every item
+        return list(_json_convert(v) for v in obj)
     if isinstance(obj, DBRef):
         return _json_convert(obj.as_doc())
     if isinstance(obj, datetime.datetime):
