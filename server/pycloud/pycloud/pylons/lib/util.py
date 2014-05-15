@@ -28,9 +28,9 @@ from pymongo.cursor import Cursor
 def asjson(f):
     # Handler to handle the result
     def _handler(ret):
-        # if isinstance(ret, Cursor):
-        #     obj = list(v for v in ret)
-        #     ret = {ret.collection.name: obj}
+        if isinstance(ret, Cursor):
+            # obj = list(v for v in ret)
+            ret = {ret.collection.name: ret}
         return dumps(ret)
 
     # Result of a function call
