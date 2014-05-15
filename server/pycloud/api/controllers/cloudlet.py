@@ -14,6 +14,6 @@ class CloudletController(BaseController):
         timelog.TimeLog.reset()
         timelog.TimeLog.stamp("Request received: get metadata.")
         ret = Cloudlet.system_information()
-        ret.services = Service.find()
+        ret.services = asjson(Service.find())
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
         return ret
