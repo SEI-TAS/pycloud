@@ -3,10 +3,9 @@ __author__ = 'jdroot'
 from bson.json_util import dumps
 from pymongo.cursor import Cursor
 
-def asjson(f):
-    def _asjson(*args):
-        ret = f(*args)
 
+def asjson(f):
+    def _handler(ret):
         if isinstance(ret, Cursor):
             obj = []
             for item in ret:
@@ -15,7 +14,16 @@ def asjson(f):
         else:
             ret = dict_to_json(obj_to_dict(ret))
         return ret
-    return _asjson
+    if hasattr(f, '__call__'):
+        def _asjson(*args):
+            ret = f
+            if hasattr(ret, '__call__'):
+                ret = f(*args)
+                return _handler(ret)
+        return _asjson
+    else:
+        return _handler(f)
+
 
 def obj_to_dict(obj):
     ret = obj
@@ -24,11 +32,13 @@ def obj_to_dict(obj):
             ret = ret.external()
     return ret
 
+
 def dict_to_json(obj):
     ret = obj
     if isinstance(ret, Cursor) or isinstance(ret, dict):
         ret = dumps(ret)
     return ret
+
 
 def dump(obj):
     for attr in dir(obj):
