@@ -96,11 +96,58 @@ function ajaxCallWasSuccessful(response)
     
     // Check if we got an error.
     if(parsedJsonData.hasOwnProperty('STATUS') && parsedJsonData.STATUS=='NOT OK')
-    {
         return false;
-    }
     else
-    {
         return true;
-    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to correctly reload a page.
+/////////////////////////////////////////////////////////////////////////////////////
+function reloadPage()
+{
+    //window.location.href = window.location.href;
+    window.location.reload();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to post json data through AJAX and reload after the response.
+/////////////////////////////////////////////////////////////////////////////////////
+function ajaxPostAndReload(postURL, jsonData, waitDialogText, modal)
+{
+    // Check if we got a modal.
+    if(typeof(modal)==='undefined') modal = null;
+    
+    // Show progress bar.
+    var dialog = WaitDialog(waitDialogText);
+    dialog.show();
+    
+    // Send the ajax request to start the service vm.
+    $.ajax({
+        url: postURL,
+        dataType: 'json',
+        method: 'POST',
+        data: jsonData,
+        success: function( resp ) {
+            // Check if we got an error.
+            if(!ajaxCallWasSuccessful(resp))
+            {
+                // Dismiss the waiting dialog and notify the error.
+                dialog.hide();
+                showAndLogErrorMessage('There was a problem removing the app.', '', '', modal);
+            }
+            else
+            {             
+                // Dismiss dialog.
+                dialog.hide();
+                
+                // Reload page to show changes.
+                reloadPage();
+            }
+        },
+        error: function( req, status, err ) {
+            dialog.hide();
+            showAndLogErrorMessage('There was a problem removing the app.', status, err, modal);
+        }
+    });
 }

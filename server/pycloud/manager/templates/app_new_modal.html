@@ -1,0 +1,38 @@
+<%namespace file="form.html" import="text"/>
+<%namespace file="form.html" import="dropdown"/>
+<%namespace file="form.html" import="browse"/>
+<%namespace file="form.html" import="hidden"/>
+
+<!-- Create New App modal. -->
+<div class="modal fade" id="modal-new-app" role="dialog" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">x</button>
+                <h3><div id="edit-modal-title">Edit App</div></h3>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    <form id="new-app-form" class="form-horizontal" action="${h.url_for(controller='apps', action='edit')}" method="post">
+                        ${hidden('appId')}
+                        ${text('appName', input_width=12, label=_('Name'))}
+                        ${dropdown('appServiceId', options=page.stored_services, input_width=12, label=_('Service Id'))}
+                        ${text('appDescription', input_width=12, label=_('Description'))}
+                        ${text('appVersion', input_width=12, label=_('Version'))}
+                        ${text('appPackage', input_width=12, label=_('Package'))}
+                        ${text('appTags', input_width=12, label=_('Tags'))}
+                        ${dropdown(id='appOS', options={'Android':'Android'}, input_width=12, label=_('Target OS'))}
+                        ${text('appOSVersion', input_width=12, label=_('Min OS Version'))}
+                        ${browse('appFilename', input_width=12, label=_('Apk File'))}                        
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                <a href="#" class="btn btn-primary new-app-action" id="edit-app-button" onclick="createApp()">Edit</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/manager/js/apps.js"></script>

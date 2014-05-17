@@ -10,8 +10,6 @@ from pylons.controllers.util import redirect_to
 
 from webhelpers.html import HTML
 
-from pycloud.pycloud.servicevm import svmrepository
-from pycloud.pycloud.servicevm import svmmanager
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.model import Service, ServiceVM, VMImage
@@ -61,7 +59,7 @@ class ModifyController(BaseController):
         page.openSVMURL = h.url_for(controller="modify", action='openSVM')
         
         # URL to create an App.
-        page.createAppURL = h.url_for(controller="modify", action='openSVM')           
+        page.createAppURL = h.url_for(controller="modify", action='openSVM')
                 
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
@@ -132,13 +130,6 @@ class ModifyController(BaseController):
         # Requirements
         service.min_memory   = request.params.get("reqMinMem")
         service.ideal_memory = request.params.get("reqIdealMem")
-
-        # App
-        appName             = request.params.get("appName")
-        appDescription      = request.params.get("appDescription")
-        appVersion          = request.params.get("appVersion")
-        appPackage          = request.params.get("appPackage")
-        appFilename         = request.params.get("appFilename")
 
         # VM Image info.
         service.vm_image = VMImage()
@@ -215,10 +206,7 @@ class ModifyController(BaseController):
     # Opens the Service VM in a VNC window for editing.
     # NOTE: The VNC window will only open on the computer running the server.
     ############################################################################################################
-    def GET_openSVM(self, id):
-        # Get the manager.
-        svmManager = svmmanager.ServiceVMManager(g.cloudlet)
-        
+    def GET_openSVM(self, id):        
         # Open a VNC window to modify the VM.
         try:
             # Get the service info.
