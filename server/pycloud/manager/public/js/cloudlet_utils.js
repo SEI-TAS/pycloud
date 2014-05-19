@@ -5,20 +5,19 @@ function WaitDialog (headerText) {
     // HTML for the modal dialog.
     var pleaseWaitDiv = '<div class="wait-dialog modal fade" id="pleaseWaitDialog" role="dialog" data-backdrop="static" data-keyboard="false"><div class="modal-dialog" id="pleaseWaitModal"><div class="modal-content"><div class="modal-header"><h3>'+headerText+'...</h3></div><div class="modal-body"><div class="progress progress-striped active"><div class="progress-bar" role="progressbar" style="width: 100%;"></div></div></div></div></div></div>';
     
-    // Remove the modal once it's closed. NOTE: this is not working.
-    $(document).on('hidden', '.wait-dialog', function () {
-        $(this).remove();
-    });    
-    
     // Functions to show and hide the dialog.
     return {
         show: function() {
+            // If there were any previous wait dialogs leftovers, remove them.
+            $('#pleaseWaitDialog').remove();
+            
+            // Apend a new wait dialog and show it.
             $('body').append(pleaseWaitDiv);
             $('.wait-dialog').show();
             $('.wait-dialog').modal();
         },
         hide: function () {
-            $('.wait-dialog').modal('hide');
+            $('.wait-dialog').modal('hide');            
         },
     };
 }
@@ -85,17 +84,26 @@ function showAndLogErrorMessage(message, status, errorThrown, parent)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
+// If passed a json object, just returns it; if it is a string, it jsonieses it.
+/////////////////////////////////////////////////////////////////////////////////////
+function getAsJson(response)
+{
+    // Parse the response into a JSON structure if needed.
+    console.log(response);
+    var parsedJsonData = response;
+    if(typeof(parsedJsonData)==='string')
+        parsedJsonData = $.parseJSON(response);    
+    console.log(parsedJsonData);
+    return parsedJsonData;    
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
 // Function to check if an Ajax call was successful.
 /////////////////////////////////////////////////////////////////////////////////////
-function ajaxCallWasSuccessful(response)
-{
-    // Parse the response into a JSON structure.
-    var jsonData = JSON.stringify(response);
-    //console.log(jsonData);
-    var parsedJsonData = $.parseJSON(jsonData);
-    
+function ajaxCallWasSuccessful(jsonObject)
+{    
     // Check if we got an error.
-    if(parsedJsonData.hasOwnProperty('STATUS') && parsedJsonData.STATUS=='NOT OK')
+    if(jsonObject.hasOwnProperty('STATUS') && jsonObject.STATUS=='NOT OK')
         return false;
     else
         return true;
@@ -113,49 +121,24 @@ function reloadPage()
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to post json data through AJAX and reload after the response.
 /////////////////////////////////////////////////////////////////////////////////////
-function ajaxPostAndReload(postURL, jsonData, waitDialogText, modal)
+function ajaxSimplePost(postURL, dataDict, waitDialogText, onSuccess, modal)
 {
-    // Check if we got a modal.
-    if(typeof(modal)==='undefined') modal = null;
-    
-    // Show progress bar.
-    var dialog = WaitDialog(waitDialogText);
-    dialog.show();
-    
-    // Send the ajax request.
-    $.ajax({
-        url: postURL,
-        dataType: 'json',
-        method: 'POST',
-        data: jsonData,
-        success: function( resp ) {
-            // Check if we got an error.
-            if(!ajaxCallWasSuccessful(resp))
-            {
-                // Dismiss the waiting dialog and notify the error.
-                dialog.hide();
-                showAndLogErrorMessage('There was a problem ' + waitDialogText.lower() + '.', '', '', modal);
-            }
-            else
-            {             
-                // Dismiss dialog.
-                dialog.hide();
-                
-                // Reload page to show changes.
-                reloadPage();
-            }
-        },
-        error: function( req, status, err ) {
-            dialog.hide();
-            showAndLogErrorMessage('There was a problem ' + waitDialogText.lower() + '.', status, err, modal);
-        }
-    });
+    var fileId = null;
+    ajaxPost(postURL, dataDict, waitDialogText, onSuccess, fileId, modal);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
-// Function to post data and a file through AJAX and reload after the response.
+// Function to post json data through AJAX and reload after the response, with a file.
 /////////////////////////////////////////////////////////////////////////////////////
-function ajaxFileUploadAndReload(fileId, postURL, dataDict, waitDialogText, modal)
+function ajaxFilePost(postURL, dataDict, waitDialogText, onSuccess, fileId, modal)
+{
+    ajaxPost(postURL, dataDict, waitDialogText, onSuccess, fileId, modal);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to post json data through AJAX and reload after the response.
+/////////////////////////////////////////////////////////////////////////////////////
+function ajaxPost(postURL, dataDict, waitDialogText, onSuccess, fileId, modal)
 {
     // Check if we got a modal.
     if(typeof(modal)==='undefined') modal = null;
@@ -164,22 +147,13 @@ function ajaxFileUploadAndReload(fileId, postURL, dataDict, waitDialogText, moda
     var dialog = WaitDialog(waitDialogText);
     dialog.show();
     
-    // Send the ajax request to upload the data.
-    $('#' + fileId).ajaxfileupload({
-        'action': postURL,
-        'params': dataDict,
-        'valid_extensions': ['apk'],
-        'onComplete': function(resp) {
-            console.log('Uploading finished.');
-            console.log(resp); 
-            // Parse the response into a JSON structure.
-            var jsonData = JSON.stringify(resp);
-            //console.log(jsonData);
-            var parsedJsonData = $.parseJSON(jsonData); 
-            console.log(parsedJsonData);           
-
+    // Define our success handler.
+    var successHandler = function (response) {
+            // Ensure we have a json response.
+            var jsonObject = getAsJson(response);
+        
             // Check if we got an error.
-            if(!ajaxCallWasSuccessful(resp))
+            if(!ajaxCallWasSuccessful(jsonObject))
             {
                 // Dismiss the waiting dialog and notify the error.
                 dialog.hide();
@@ -187,15 +161,62 @@ function ajaxFileUploadAndReload(fileId, postURL, dataDict, waitDialogText, moda
             }
             else
             {             
-                // Dismiss dialog.
+                // Dismiss dialog and do what we defined for success.
                 dialog.hide();
-                
-                // Reload page to show changes.
-                reloadPage();
-            }
-        }
-    });
+                onSuccess(jsonObject);
+            }        
+    };
     
-    // Actually trigger the upload.
-    $('#' + fileId).change();    
+    // Check if we have a file or not, to see what post function to use.
+    if(fileId === null)
+    {
+        // Send a regular ajax request.
+        $.ajax({
+            url: postURL,
+            method: 'POST',
+            data: dataDict,
+            success: function( resp ) {
+                successHandler(resp);
+            },
+            error: function( req, status, err ) {
+                dialog.hide();
+                showAndLogErrorMessage('There was a problem ' + waitDialogText.toLowerCase() + '.', status, err, modal);
+            }
+        });
+    }
+    else
+    {
+        // Prepare the ajax request to upload the data.
+        $('#' + fileId).ajaxfileupload({
+            'action': postURL,
+            'params': dataDict,
+            'valid_extensions': ['apk'],
+            'onComplete': function(resp) {
+                console.log('Uploading finished.');
+                successHandler(resp);
+            }
+        });
+        
+        // Actually trigger the ajax call with upload.
+        $('#' + fileId).change();          
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Generic function to validate mandatory fields.
+/////////////////////////////////////////////////////////////////////////////////////
+function validateMandatoryField(fieldValue, fieldName, modal)
+{
+    // Validate that we have all the necessary info.
+    var errorHeader = 'You must enter a value for the ';
+    //console.log('<' + fieldValue + ">");
+    if(typeof(fieldValue) === 'undefined' || fieldValue == null || fieldValue === '')
+    {
+        // If an input is missing, notify the user and stop the process.        
+        var errorMsg = errorHeader + ' ' + fieldName.toLowerCase() + '.';
+        showAndLogErrorMessage(errorMsg, "", "", modal);
+        return false;
+    }
+    
+    return true;
 }

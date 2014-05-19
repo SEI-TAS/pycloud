@@ -85,14 +85,9 @@ class AppsController(BaseController):
     ############################################################################################################
     @asjson    
     def POST_get_data(self):
-        # Parse the body of the request as JSON into a python object.
-        # First remove URL quotes added to string, and then remove trailing "=" (no idea why it is there).
-        parsedJsonString = urllib.unquote(request.body)[:-1]
-        fields = json.loads(parsedJsonString)
-        print 'App data request received, data: ' + parsedJsonString
-                
-        # Get a list of existing stored apps.
-        app_id = ObjectId(fields['appId'])
+        # Get the data for the given app.
+        print 'App data request received, data: ' + request.params.get('appId')        
+        app_id = ObjectId(request.params.get('appId'))
         app = App.by_id(app_id)
         
         if not app:
@@ -114,7 +109,7 @@ class AppsController(BaseController):
                 app = App()
             else:
                 # Get the existing app from the DB, if it can be found.
-                print 'Updating app'
+                print 'Updating app with id ' + request.params.get('appId')
                 app = App.by_id(ObjectId(request.params.get('appId')))                
                 if not app:
                     # If there was a problem getting the app to update, return a json-formated error.
@@ -129,17 +124,29 @@ class AppsController(BaseController):
             app.package_name = request.params.get('package')
             app.tags = request.params.get('tags')
             app.min_android_version = request.params.get('minOsVersion')
-            app.apk_file = os.path.join(os.path.abspath(g.cloudlet.appFolder), request.params.get('appNewFile').filename)
             
-            # Store the file in the folder first.
-            apk_file_dest = open(app.apk_file, 'w')            
-            shutil.copyfileobj(request.params.get('appNewFile').file, apk_file_dest)
-            
-            # TODO add these to the DB. md5 will have to be calculated.
-            app.md5sum = None
+            # Check if we are uploading a new apk.
+            if(request.params.get('appNewFile') != None):
+                print 'Updating file: ' + str(request.params.get('appNewFile'))
+                app.apk_file = os.path.join(os.path.abspath(g.cloudlet.appFolder), request.params.get('appNewFile').filename)
+                
+                # Store the file in the folder first.
+                apk_file_dest = open(app.apk_file, 'w')            
+                shutil.copyfileobj(request.params.get('appNewFile').file, apk_file_dest)
+                
+                # TODO add these to the DB. md5 will have to be calculated.
+                app.md5sum = None
             
             # Save the new/updated app to the DB.
             app.save()
+            
+            if(request.params.get('appNewFile') != None):
+                # Rename the app file to be unique and update its filename in the DB.
+                new_apk_filename = os.path.join(os.path.dirname(app.apk_file), str(app._id) + '-' + os.path.basename(app.apk_file))
+                os.rename(app.apk_file, new_apk_filename)
+                app.apk_file = new_apk_filename
+                app.save()
+            
             print 'App data stored.'
         except Exception as e:
             # If there was a problem creating the app, return a json-formated error.
@@ -166,6 +173,10 @@ class AppsController(BaseController):
             appId = ObjectId(fields['appId'])
             app = App.find_and_remove(appId)
             
+            # Try to remove the app file.
+            if(os.path.isfile(app.apk_file)):
+                os.remove(app.apk_file)
+            
             # Check if we succeeded.
             if app:
                 print 'App removed.'
@@ -185,7 +196,7 @@ class AppsController(BaseController):
 def generateActionButtons(col_num, i, item):
     # Link and button to edit the app.
     getAppDataURL = h.url_for(controller='apps', action='get_data')
-    editButton = HTML.button("Edit App", onclick=literal("loadAppData('" + getAppDataURL + "', '" + str(item["id"]) + "')"), class_="btn btn-primary")
+    editButton = HTML.button("Edit App", onclick=literal("showEditAppModal('" + getAppDataURL + "', '" + str(item["id"]) + "')"), class_="btn btn-primary")
 
     # Ajax URL to remove the app.
     removeAppURL = h.url_for(controller='apps', action='remove')

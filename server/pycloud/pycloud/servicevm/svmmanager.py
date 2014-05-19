@@ -48,7 +48,7 @@ class ServiceVMManager(object):
             print "ServiceVM stored in repository."            
             
         except storedvm.StoredVMException as e:
-            print "Error creating Service VM: " + e.message 
+            print "Error creating Service VM : " + e.message 
             return None
         
         return newStoredServiceVM
