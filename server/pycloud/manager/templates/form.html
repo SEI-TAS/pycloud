@@ -31,7 +31,7 @@
     <label for="${id}" class="control-label">${label}</label>
     % endif
     <div class="">
-    	<select class="form-control" placeholder="${label}" id="${id}" ${'disabled' if disabled else ''}>
+    	<select class="form-control" placeholder="${label}" id="${id}" name="${id}"  ${'disabled' if disabled else ''}>
     		% for value, text in options.iteritems():
     			<option value="${value}" ${'selected' if (id in page.form_values and page.form_values['id'] == value) else ''}>${text}</option> 
     		% endfor
@@ -52,7 +52,7 @@
     <label for="${id}" class="col-sm-${label_width} control-label">${label}</label>
     % endif
     <div class="col-sm-${input_width}">
-    	<input type="file" class="form-control" placeholder="${label}" id="${id}" ${'disabled' if disabled else ''} />
+    	<input type="file" class="form-control" placeholder="${label}" id="${id}" name="${id}" ${'disabled' if disabled else ''} />
     </div>
     % if id in c.form_errors:
     <div class="col-sm-${error_width}}">

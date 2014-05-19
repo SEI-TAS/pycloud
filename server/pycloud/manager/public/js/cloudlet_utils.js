@@ -122,7 +122,7 @@ function ajaxPostAndReload(postURL, jsonData, waitDialogText, modal)
     var dialog = WaitDialog(waitDialogText);
     dialog.show();
     
-    // Send the ajax request to start the service vm.
+    // Send the ajax request.
     $.ajax({
         url: postURL,
         dataType: 'json',
@@ -134,7 +134,7 @@ function ajaxPostAndReload(postURL, jsonData, waitDialogText, modal)
             {
                 // Dismiss the waiting dialog and notify the error.
                 dialog.hide();
-                showAndLogErrorMessage('There was a problem removing the app.', '', '', modal);
+                showAndLogErrorMessage('There was a problem ' + waitDialogText.lower() + '.', '', '', modal);
             }
             else
             {             
@@ -147,7 +147,55 @@ function ajaxPostAndReload(postURL, jsonData, waitDialogText, modal)
         },
         error: function( req, status, err ) {
             dialog.hide();
-            showAndLogErrorMessage('There was a problem removing the app.', status, err, modal);
+            showAndLogErrorMessage('There was a problem ' + waitDialogText.lower() + '.', status, err, modal);
         }
     });
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to post data and a file through AJAX and reload after the response.
+/////////////////////////////////////////////////////////////////////////////////////
+function ajaxFileUploadAndReload(fileId, postURL, dataDict, waitDialogText, modal)
+{
+    // Check if we got a modal.
+    if(typeof(modal)==='undefined') modal = null;
+    
+    // Show progress bar.
+    var dialog = WaitDialog(waitDialogText);
+    dialog.show();
+    
+    // Send the ajax request to upload the data.
+    $('#' + fileId).ajaxfileupload({
+        'action': postURL,
+        'params': dataDict,
+        'valid_extensions': ['apk'],
+        'onComplete': function(resp) {
+            console.log('Uploading finished.');
+            console.log(resp); 
+            // Parse the response into a JSON structure.
+            var jsonData = JSON.stringify(resp);
+            //console.log(jsonData);
+            var parsedJsonData = $.parseJSON(jsonData); 
+            console.log(parsedJsonData);           
+
+            // Check if we got an error.
+            if(!ajaxCallWasSuccessful(resp))
+            {
+                // Dismiss the waiting dialog and notify the error.
+                dialog.hide();
+                showAndLogErrorMessage('There was a problem ' + waitDialogText.toLowerCase() + '.', '', '', modal);
+            }
+            else
+            {             
+                // Dismiss dialog.
+                dialog.hide();
+                
+                // Reload page to show changes.
+                reloadPage();
+            }
+        }
+    });
+    
+    // Actually trigger the upload.
+    $('#' + fileId).change();    
 }

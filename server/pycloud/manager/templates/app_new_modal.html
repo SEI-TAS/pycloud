@@ -13,7 +13,7 @@
             </div>
             <div class="modal-body">
                 <div class="well">
-                    <form id="new-app-form" class="form-horizontal" action="${h.url_for(controller='apps', action='edit')}" method="post">
+                    <form id="new-app-form" class="form-horizontal" action="${h.url_for(controller='apps', action='edit')}" method="post" enctype="multipart/form-data">
                         ${hidden('appId')}
                         ${text('appName', input_width=12, label=_('Name'))}
                         ${dropdown('appServiceId', options=page.stored_services, input_width=12, label=_('Service Id'))}
@@ -23,7 +23,7 @@
                         ${text('appTags', input_width=12, label=_('Tags'))}
                         ${dropdown(id='appOS', options={'Android':'Android'}, input_width=12, label=_('Target OS'))}
                         ${text('appOSVersion', input_width=12, label=_('Min OS Version'))}
-                        ${browse('appFilename', input_width=12, label=_('Apk File'))}                        
+                        ${browse('appNewFile', input_width=12, label=_('Upload New File'))}
                     </form>
                 </div>
             </div>
@@ -36,3 +36,5 @@
 </div>
 
 <script src="/manager/js/apps.js"></script>
+<script src="/manager/js/jquery.ajaxfileupload.js"></script>
+

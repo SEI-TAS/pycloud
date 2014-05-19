@@ -1,6 +1,8 @@
 import logging
 import json
 import urllib
+import os.path
+import shutil
 
 from bson import ObjectId
 
@@ -17,7 +19,6 @@ from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.manager.lib.pages import AppsPage
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.model import App, Service
-
 
 log = logging.getLogger(__name__)
 
@@ -60,12 +61,13 @@ class AppsController(BaseController):
                        'description': app.description,
                        'version': app.app_version,
                        'min_android_version': app.min_android_version,
+                       'apk_file': app.apk_file,
                        'actions': 'Edit',
                        'id': app._id}
             grid_items.append(new_item)
 
         # Create and fomat the grid.
-        appsGrid = Grid(grid_items, ['name', 'service_id', 'description', 'version', 'min_android_version', 'actions'])
+        appsGrid = Grid(grid_items, ['name', 'service_id', 'description', 'version', 'min_android_version', 'apk_file', 'actions'])
         appsGrid.column_formats["actions"] = generateActionButtons
         
         # Prepare service list.
@@ -101,39 +103,39 @@ class AppsController(BaseController):
         return app
 
     ############################################################################################################
-    # Load
+    # Creates or updates an app.
     ############################################################################################################
     @asjson
     def POST_edit(self):
-        # Parse the body of the request as JSON into a python object.
-        # First remove URL quotes added to string, and then remove trailing "=" (no idea why it is there).
-        parsedJsonString = urllib.unquote(request.body)[:-1]
-        fields = json.loads(parsedJsonString)
-        print 'App creation request received, data: ' + parsedJsonString    
-        
         try:
             # Create a new app object if we are adding, or get the current if we are updating.
-            if fields['appId'] == '':
+            if request.params.get('appId') == '':
+                print 'Creating new app'
                 app = App()
             else:
                 # Get the existing app from the DB, if it can be found.
-                app = App.by_id(ObjectId(fields['appId']))                
+                print 'Updating app'
+                app = App.by_id(ObjectId(request.params.get('appId')))                
                 if not app:
                     # If there was a problem getting the app to update, return a json-formated error.
                     print 'Error getting app to modify: app was not found'
                     return self.JSON_NOT_OK
             
             # Set the values for all the apps' fields.
-            app.name = fields['name']
-            app.service_id = fields['serviceId']
-            app.description = fields['description']
-            app.app_version = fields['version']
-            app.package_name = fields['package']
-            app.tags = fields['tags']
-            app.min_android_version = fields['minOsVersion']
+            app.name = request.params.get('name')
+            app.service_id = request.params.get('serviceId')
+            app.description = request.params.get('description')
+            app.app_version = request.params.get('version')
+            app.package_name = request.params.get('package')
+            app.tags = request.params.get('tags')
+            app.min_android_version = request.params.get('minOsVersion')
+            app.apk_file = os.path.join(os.path.abspath(g.cloudlet.appFolder), request.params.get('appNewFile').filename)
             
-            # TODO add these to the DB. APK will be different, md5 will have to be calculated.
-            app.apk_file = None
+            # Store the file in the folder first.
+            apk_file_dest = open(app.apk_file, 'w')            
+            shutil.copyfileobj(request.params.get('appNewFile').file, apk_file_dest)
+            
+            # TODO add these to the DB. md5 will have to be calculated.
             app.md5sum = None
             
             # Save the new/updated app to the DB.
@@ -146,8 +148,8 @@ class AppsController(BaseController):
         
         # Everything went well.
         print 'Returning success'
-        return self.JSON_OK    
-        
+        return self.JSON_OK   
+
     ############################################################################################################
     # Removes a stored app.
     ############################################################################################################

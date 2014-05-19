@@ -15,20 +15,19 @@ function createApp()
     newApp.package = appForm.find('#appPackage').val();
     newApp.tags = appForm.find('#appTags').val();
     newApp.minOsVersion = appForm.find('#appOSVersion').val();
-    newApp.fileName = appForm.find('#appFilename').val();
-    jsonData = JSON.stringify(newApp);
+    //newApp.fileName = appForm.find('#appNewFile').val();
     
-    // Check fi we are adding or editing.
+    // Check if we are adding or editing.
     if(newApp.appId == '')
         dialogText = "Creating App";
     else
         dialogText = "Updating App";
-    
+   
     // Post through ajax and reload with changes.
     var newAppModal = $('#modal-new-app');    
     var postUrl = appForm.attr('action');    
-    ajaxPostAndReload(postUrl, jsonData, dialogText, newAppModal);    
-    
+    ajaxFileUploadAndReload("appNewFile", postUrl, newApp, dialogText, newAppModal);
+        
     return false;
 }
 
@@ -47,6 +46,7 @@ function showNewAppModal()
     appForm.find('#appPackage').val('');
     appForm.find('#appTags').val('');
     appForm.find('#appOSVersion').val('');
+    appForm.find('#appNewFile').val('');
     
     // Update texts.
     $('#edit-modal-title').text('Create New App');
@@ -91,7 +91,7 @@ function loadAppData(getDataURL, id)
                 // Update fields with the received app info.
                 var jsonData = JSON.stringify(resp);
                 var parsedJsonData = $.parseJSON(jsonData);
-                console.log(parsedJsonData);
+                console.log(jsonData);
                 app_info = parsedJsonData;
                 
                 // Set all the fields.
@@ -103,7 +103,7 @@ function loadAppData(getDataURL, id)
                 appForm.find('#appPackage').val(app_info.package_name);
                 appForm.find('#appTags').val(app_info.tags);
                 appForm.find('#appOSVersion').val(app_info.min_android_version);
-                //appForm.find('#appFilename').val(app_info.apk_file);
+                appForm.find('#appNewFile').val('');
         
                 // Show the modal.
                 $('#modal-new-app').modal('show');
