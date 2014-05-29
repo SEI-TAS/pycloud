@@ -174,6 +174,7 @@ class ModifyController(BaseController):
             temp_svm_folder = os.path.join(g.cloudlet.newVmFolder, svm._id)
             new_disk_image = os.path.join(temp_svm_folder, svm.service_id)
             new_vm_image = VMImage()
+            print 'calling VMImage#create with "%s" and "%s"' % (fields['source'], new_disk_image)
             new_vm_image.create(fields['source'], new_disk_image)
                         
             # Get the XML descriptor from the config.
