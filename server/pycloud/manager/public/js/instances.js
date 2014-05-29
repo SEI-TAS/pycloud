@@ -76,8 +76,7 @@ function reloadChecker(changesUrl)
         dataType: 'json',            
         success: function (resp) {
             // Parse the response into a JSON structure.
-            var jsonData = JSON.stringify(resp);
-            var parsedJsonData = $.parseJSON(jsonData);
+            var parsedJsonData = $.parseJSON(resp);
 
             // Check if we got a correctly formed JSON.
             if(parsedJsonData.hasOwnProperty('LAST_CHANGE_STAMP'))

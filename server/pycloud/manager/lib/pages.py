@@ -10,3 +10,4 @@ class HomePage(BasePage): pass
 class ServicesPage(BasePage): pass
 class InstancesPage(BasePage): pass
 class ModifyPage(BasePage): pass
+class AppsPage(BasePage): pass

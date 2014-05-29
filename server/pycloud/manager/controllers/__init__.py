@@ -20,6 +20,7 @@ def load_controllers():
     from pycloud.manager.controllers.services import ServicesController
     from pycloud.manager.controllers.instances import InstancesController
     from pycloud.manager.controllers.modify import ModifyController
+    from pycloud.manager.controllers.apps import AppsController
 
     # Cache the controllers in a look up map
     controllers.update((name.lower(), obj) for name, obj in locals().iteritems())

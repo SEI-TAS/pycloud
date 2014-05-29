@@ -11,21 +11,9 @@ function validateSubmission()
     svm_info.folder = $('#vmStoredFolder').val();
     
     // Validate that we have all the necessary info.
-    var errorHeader = 'You must enter a value for ';
-    var errorMsg = '';
-    if(svm_info.serviceId == '')
-        errorMsg = errorHeader + ' service id.';
-    else if(svm_info.port == '')
-        errorMsg = errorHeader + ' service port.';
-    else if(svm_info.folder == '')
-        errorMsg = 'You must create a VM Image.';
-        
-    // If an input is missing, notify the user and stop the process.
-    if(errorMsg != '')
-    {
-        showAndLogErrorMessage(errorMsg);
-        return false;
-    }        
+    if(!validateMandatoryField(svm_info.serviceId, "Service Id")) return false;
+    if(!validateMandatoryField(svm_info.port, "Service Port")) return false;
+    if(!validateMandatoryField(svm_info.folder, "VM Image")) return false;
         
     // If everything is ok, submit the form.
     var serviceForm = $('#service-form');    
@@ -56,22 +44,9 @@ function openCreateVNC()
     jsonData = JSON.stringify(svm_info);
     
     // Validate that we have all the necessary info.
-    var errorHeader = 'You must enter a value for ';
-    var errorMsg = '';
-    console.log(jsonData);
-    if(svm_info.source == '')
-        errorMsg = errorHeader + ' source disk image.';
-    else if(svm_info.serviceId == '')
-        errorMsg = errorHeader + ' service id.';
-    else if(svm_info.port == '')
-        errorMsg = errorHeader + ' service port.';
-        
-    // If an input is missing, notify the user and stop the process.
-    if(errorMsg != '')
-    {
-        showAndLogErrorMessage(errorMsg, '', '', modalDiv);
-        return;
-    }
+    if(!validateMandatoryField(svm_info.serviceId, "Service Id", modalDiv)) return false;
+    if(!validateMandatoryField(svm_info.port, "Service Port", modalDiv)) return false;
+    if(!validateMandatoryField(svm_info.source, "VM Image", modalDiv)) return false;
     
     // Show progress bar.
     var dialog = WaitDialog("Starting and Connecting to Service VM");
@@ -94,8 +69,7 @@ function openCreateVNC()
             else
             {
                 // Update Stored SVM fields with new SVM info.
-                var jsonData = JSON.stringify(resp);
-                var parsedJsonData = $.parseJSON(jsonData);
+                var parsedJsonData = $.parseJSON(resp);
                 console.log(parsedJsonData);
                 vm_image = parsedJsonData;
                 ssvmFolder = $('#vmStoredFolder');

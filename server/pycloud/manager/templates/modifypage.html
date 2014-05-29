@@ -58,18 +58,7 @@ ${parent.header()}
             	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm" ${'style="display:none;"' if not page.newService else ''}>Create VM Image</button>
               	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="openEditVNC('${page.openSVMURL}')" ${'style="display:none;"' if page.newService else ''}>Modify VM Image</button>
                 </div>
-            </div>
-            
-            <!-- APP -->
-            <div class="panel panel-info col-sm-12">
-                <div class="panel-heading"> Cloudlet-Ready App </div>
-                <div class="panel-body">
-                    ${dropdown(id='osType', options={'App1':'App1','App2':'App2'}, input_width=12, label=_('App'))}
-                    
-                    <button type="button" class="btn btn-primary" id="new-app-button" data-toggle="modal" data-target="#modal-new-app">Add New App</button>                    
-                </div>
-            </div>
-            
+            </div>           
             
         </div>
     </div>        
@@ -108,35 +97,6 @@ ${parent.header()}
 		        <a href="#" class="btn btn-primary new-svm-action" onclick="openCreateVNC()">Create</a>
 		    </div>
 	    </div>
-    </div>
-</div>
-
-<!-- Create New App modal. -->
-<div class="modal fade" id="modal-new-app" role="dialog" data-backdrop="static">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">x</button>
-                <h3>Create New App</h3>
-            </div>
-            <div class="modal-body">
-                <div class="well">
-                    <form id="new-app-form" class="form-horizontal" action="${page.createAppURL}" method="post">
-                        ${text('appName', input_width=12, label=_('Name'))}
-                        ${text('appDescription', input_width=12, label=_('Description'))}
-                        ${text('appVersion', input_width=12, label=_('Version'))}
-                        ${text('appPackage', input_width=12, label=_('Package'))}
-                        ${dropdown(id='appOS', options={'Android':'Android'}, input_width=12, label=_('Target OS'))}
-                        ${text('appOSVersion', input_width=12, label=_('Min OS Version'))}
-                        ${browse('appFilename', input_width=12, label=_('Apk File'))}                        
-                    </form>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
-                <a href="#" class="btn btn-primary new-app-action" onclick="createApp()">Create</a>
-            </div>
-        </div>
     </div>
 </div>
 

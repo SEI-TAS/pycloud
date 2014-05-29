@@ -27,6 +27,13 @@ def make_map():
     connect('/service/add', controller='modify', action='index')
     connect('/service/createSVM', controller='modify', action='createSVM')
     connect('/service/openSVM/{id}', controller='modify', action='openSVM')
-    connect('/service/edit/{id}', controller='modify', action='index')    
+    connect('/service/edit/{id}', controller='modify', action='index')
+    
+    connect('/apps', controller='apps', action='index')
+    connect('/apps/list', controller='apps', action='list')
+    connect('/apps/get', controller='apps', action='get_data')
+    connect('/apps/add', controller='apps', action='add')
+    connect('/apps/edit/{id}', controller='apps', action='edit')
+    connect('/apps/remove/{id}', controller='apps', action='remove')
 
     return mapper
