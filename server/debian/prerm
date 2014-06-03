@@ -1,0 +1,8 @@
+#!/bin/sh
+#We need to remove libvirt from our local env before we can actually uninstall
+
+PYCLOUD_ENV="/usr/share/python/python-pycloud/lib/python2.7/site-packages/"
+
+VIRT=$PYCLOUD_ENV"libvirt*"
+
+rm $VIRT

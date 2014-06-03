@@ -1,0 +1,5 @@
+python-pycloud (0.1) precise; urgency=medium
+
+  * Initial release. (Closes: #0)
+
+ -- James Root <jdroot@sei.cmu.edu>  Fri, 30 May 2014 11:38:51 -0400

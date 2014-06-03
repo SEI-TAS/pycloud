@@ -1,0 +1,17 @@
+#!/bin/sh
+PYCLOUD_ENV="/usr/share/python/python-pycloud/lib/python2.7/site-packages/"
+
+#Get the standard site-packages
+SITE_PACKAGES=`python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"`
+
+#Link libvirt to our local virtualenv
+echo "Linking libvirt to pycloud virtualenv"
+VIRT="$SITE_PACKAGES/libvirt*"
+ln -s -v $VIRT -t $PYCLOUD_ENV
+echo "Done linking lib"
+
+#Change permission on /var/pycloud so all users can access it
+echo "Creating /var/pycloud"
+mkdir -p /var/pycloud
+echo "Changing /var/pycloud permissions"
+chmod 777 /var/pycloud

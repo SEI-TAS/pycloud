@@ -1,31 +1,27 @@
 __author__ = 'jdroot'
 
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import setup, find_packages
+from setuptools import setup, find_packages
+from pip.req import parse_requirements
+
+#Parse the requirements file
+reqs = [str(ir.req) for ir in parse_requirements('requirements.txt')]
 
 setup(
     name='pycloud',
     version='0.1',
     description='Cloudlet Server',
     author='Software Engineering Institute',
-    author_email='',
+    author_email='James Root <jdroot@sei.cmu.edu>',
     url='',
-    install_requires=[
-        "Pylons==0.9.7",
-        "Routes==1.11",
-        "webob==1.0.8",
-        "WebTest==1.4.3",        
-        "mako>=0.5",
-        "pymongo>=2.6.3",
-        "paramiko",
-        "psutil==2.0.0"
-        ],
+    install_requires=reqs,
     packages=find_packages(exclude=['ez_setup']),
+    package_data={
+        'pycloud': ['*.html', '*.xml']
+    },
     entry_points="""
+    [console_scripts]
+    pycloud=pycloud:main
+
     [paste.app_factory]
     api = pycloud.api:make_app
     manager = pycloud.manager:make_app
@@ -33,5 +29,5 @@ setup(
     [paste.app_install]
     api = pylons.util:PylonsInstaller
     manager = pylons.util:PylonsInstaller
-    """,
-    )
+    """
+)

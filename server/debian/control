@@ -1,0 +1,24 @@
+Source: python-pycloud
+Section: python
+Priority: optional
+Maintainer: James Root <jdroot@sei.cmu.edu>
+Uploaders: James Root <jdroot@sei.cmu.edu>
+Build-Depends: debhelper (>= 7.0.50~), python (>= 2.6.6-3), python-dev
+Build-Depends-Indep: python-setuptools (>= 0.6c1)
+Standards-Version: 3.9.1
+X-Python-Version: >= 2.5
+
+Package: python-pycloud
+Architecture: all
+Depends: ${python:Depends},
+         ${misc:Depends},
+         python-pkg-resources,
+         python-setuptools (>= 0.6c1),
+         qemu-kvm,
+         libvirt-bin,
+         gvncviewer,
+         python-libvirt,
+         mongodb,
+         libnss-mdns,
+         avahi-daemon
+Description:

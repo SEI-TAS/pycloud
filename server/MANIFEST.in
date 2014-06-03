@@ -1,0 +1,2 @@
+include pycloud/manager/templates/*.html
+include pycloud/pycloud/vm/*.xml
