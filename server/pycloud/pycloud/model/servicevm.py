@@ -148,9 +148,9 @@ class ServiceVM(Model):
         # Create a new port if we do not have an external port already.
         if not self.port:
             self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.service_port)
-        # if not self.ssh_port:
-        #     self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.SSH_INTERNAL_PORT)
-        xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
+        if not self.ssh_port:
+            self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.SSH_INTERNAL_PORT)
+        # xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
 
         # Change the ID and Name.
         xml_descriptor.setUuid(self._id)
