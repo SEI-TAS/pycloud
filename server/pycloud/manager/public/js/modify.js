@@ -48,59 +48,30 @@ function openCreateVNC()
     if(!validateMandatoryField(svm_info.port, "Service Port", modalDiv)) return false;
     if(!validateMandatoryField(svm_info.source, "VM Image", modalDiv)) return false;
     
-    // Show progress bar.
-    var dialog = WaitDialog("Starting and Connecting to Service VM");
-    dialog.show();    
-
-    // Send the ajax request to start the VNC window.
-    $.ajax({
-        url: actionURL,
-        type: 'POST',
-        dataType: 'json',
-        data: jsonData,      
-        success: function( resp ) {           
-            // Check if we got an error.
-            if(!ajaxCallWasSuccessful(resp))
-            {
-                // Dismiss the waiting dialog and notify the error.
-                dialog.hide();
-                showAndLogErrorMessage('Stored Service VM could not be created.', '', '', modalDiv);
-            }
-            else
-            {
-                // Update Stored SVM fields with new SVM info.
-                var parsedJsonData = $.parseJSON(resp);
-                console.log(parsedJsonData);
-                vm_image = parsedJsonData;
-                ssvmFolder = $('#vmStoredFolder');
-                ssvmFolder.val(getFileDirectory(vm_image.disk_image));  
-                ssvmDiskImagePath = $('#vmDiskImageFile');
-                ssvmDiskImagePath.val(vm_image.disk_image);
-                ssvmDiskImagePathVal = $('#vmDiskImageFileValue');
-                ssvmDiskImagePathVal.val(vm_image.disk_image);                
-                ssvmStateImagePath = $('#vmStateImageFile');
-                ssvmStateImagePath.val(vm_image.state_image);
-                ssvmStateImagePathVal = $('#vmStateImageFileValue');
-                ssvmStateImagePathVal.val(vm_image.state_image);                
-                
-                // Upate the buttons to reflect that we can now modify the SVM.
-                $('#new-svm-button').prop('style', 'display:none;');
-                $('#modify-svm-button').prop('style', 'display:inline;');      
+    // Handler to load data when received.
+    var successHandler = function(vm_image) {
+        // Update Stored SVM fields with new SVM info.
+        ssvmFolder = $('#vmStoredFolder');
+        ssvmFolder.val(getFileDirectory(vm_image.disk_image));  
+        ssvmDiskImagePath = $('#vmDiskImageFile');
+        ssvmDiskImagePath.val(vm_image.disk_image);
+        ssvmDiskImagePathVal = $('#vmDiskImageFileValue');
+        ssvmDiskImagePathVal.val(vm_image.disk_image);                
+        ssvmStateImagePath = $('#vmStateImageFile');
+        ssvmStateImagePath.val(vm_image.state_image);
+        ssvmStateImagePathVal = $('#vmStateImageFileValue');
+        ssvmStateImagePathVal.val(vm_image.state_image);                
         
-                // Dismiss the waiting dialog and the modal.
-                dialog.hide();
-                $('#modal-new-servicevm').modal('hide');
-                
-                // Notify that the process was successful.
-                showAndLogSuccessMessage('Stored Service VM was created successfully.');
-            }
-        },
-        error: function( req, status, err ) {
-            // Dismiss the waiting dialog and notify.
-            dialog.hide();
-            showAndLogErrorMessage('Stored Service VM could not be created.', status, err, modalDiv);
-      }
-    });
+        // Upate the buttons to reflect that we can now modify the SVM.
+        $('#new-svm-button').prop('style', 'display:none;');
+        $('#modify-svm-button').prop('style', 'display:inline;');      
+
+        // Notify that the process was successful.
+        showAndLogSuccessMessage('Stored Service VM was created successfully.');
+    };
+    
+    // Do the post to get data and load the modal.
+    ajaxSimplePost(actionURL, jsonData, "Starting and Connecting to Service VM", successHandler, $('#modal-new-servicevm'));       
     
     return false;
 }
@@ -110,40 +81,18 @@ function openCreateVNC()
 /////////////////////////////////////////////////////////////////////////////////////
 function openEditVNC(vncUrl)
 {
-    // Show progress bar.
-    var dialog = WaitDialog("Starting and Connecting to Service VM");
-    dialog.show();
-    
     // Add the service ID to the URL.
     serviceId = $('#serviceID').val();
     vncUrl = vncUrl + "/" + serviceId;
-
-    // Send the ajax request to start the VNC window.
-    $.ajax({
-        url: vncUrl,
-        dataType: 'json',
-        success: function( resp ) {
-            // Check if we got an error.
-            if(!ajaxCallWasSuccessful(resp))
-            {
-                // Dismiss the waiting dialog and notify the error.
-                dialog.hide();
-                showAndLogErrorMessage('There was a problem opening the Stored Service VM for modification.');                
-            }
-            else
-            {
-                // Dismiss the waiting dialog and notify the success.
-                dialog.hide();
-                showAndLogSuccessMessage('Stored Service VM was modified successfully.');
-            }
-      },
-      error: function( req, status, err ) {
-            // Dismiss the waiting dialog and notify the error.
-            dialog.hide();
-            showAndLogErrorMessage('Stored Service VM could not be opened for modification.', status, err);
-      }
-    });
     
+    // Handler to load data when received.
+    var successHandler = function(response) {
+        showAndLogSuccessMessage('VM Image was modified successfully.');
+    };
+    
+    // Do the post to get data and load the modal.
+    ajaxSimplePost(vncUrl, {}, "Starting and Connecting to Service VM", successHandler);    
+
     return false;
 }
 

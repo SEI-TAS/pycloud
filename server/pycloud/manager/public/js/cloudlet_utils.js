@@ -13,11 +13,12 @@ function WaitDialog (headerText) {
             
             // Apend a new wait dialog and show it.
             $('body').append(pleaseWaitDiv);
-            $('.wait-dialog').show();
-            $('.wait-dialog').modal();
+            $('#pleaseWaitDialog').show();
+            $('#pleaseWaitDialog').modal();
         },
         hide: function () {
-            $('.wait-dialog').modal('hide');            
+            var waitDialog = $('#pleaseWaitDialog');
+            waitDialog.modal('hide');
         },
     };
 }

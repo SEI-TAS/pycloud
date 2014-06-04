@@ -24,8 +24,8 @@ log = logging.getLogger(__name__)
 ################################################################################################################
 class ModifyController(BaseController):
 
-    JSON_OK = json.dumps({"STATUS" : "OK" })
-    JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})
+    JSON_OK = {"STATUS" : "OK" }
+    JSON_NOT_OK = { "STATUS" : "NOT OK"}
 
     ################################################################################################################ 
     # Called when laading the page to add or edit a service.
@@ -207,6 +207,7 @@ class ModifyController(BaseController):
     # Opens the Service VM in a VNC window for editing.
     # NOTE: The VNC window will only open on the computer running the server.
     ############################################################################################################
+    @asjson
     def GET_openSVM(self, id):        
         # Open a VNC window to modify the VM.
         try:
