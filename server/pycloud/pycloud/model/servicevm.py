@@ -149,7 +149,7 @@ class ServiceVM(Model):
         if not self.port:
             self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.service_port)
         if not self.ssh_port:
-            self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.SSH_INTERNAL_PORT)            
+            self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.SSH_INTERNAL_PORT)
         xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
 
         # Change the ID and Name.
@@ -169,8 +169,11 @@ class ServiceVM(Model):
             raise VirtualMachineException("VM description file %s for VM creation does not exist." % vmXmlTemplateFile)
          
         # Load the XML template and update it with this VM's information.
-        template_xml_descriptor = (open(vmXmlTemplateFile, "r").read())
-        updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)    
+        template_xml_descriptor = open(vmXmlTemplateFile, "r").read()
+        updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)
+
+        print '\nXML:\n\n', updated_xml_descriptor
+        print '\n\n'
         
         # Create a VM ("domain") through the hypervisor.
         print "Starting a new VM..."  
