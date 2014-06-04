@@ -14,6 +14,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.model import Service, ServiceVM, VMImage
 from pycloud.pycloud.pylons.lib.util import asjson
+from pycloud.pycloud.pylons.lib.util import dumps
 
 from pycloud.manager.lib.pages import ModifyPage
 
@@ -197,6 +198,8 @@ class ModifyController(BaseController):
         except Exception as e:
             # If there was a problem creating the SVM, return that there was an error.
             print 'Error creating Service VM: ' + str(e);
+            if svm.vm_image:
+                svm.vm_image.cleanup(force=True)
             return self.JSON_NOT_OK            
         
         # Everything went well.
@@ -207,7 +210,6 @@ class ModifyController(BaseController):
     # Opens the Service VM in a VNC window for editing.
     # NOTE: The VNC window will only open on the computer running the server.
     ############################################################################################################
-    @asjson
     def GET_openSVM(self, id):        
         # Open a VNC window to modify the VM.
         try:
@@ -240,8 +242,8 @@ class ModifyController(BaseController):
         except Exception as e:
             # If there was a problem opening the SVM, return that there was an error.
             print 'Error opening Service VM: ' + str(e);
-            return self.JSON_NOT_OK                  
+            return dumps(self.JSON_NOT_OK)                  
         
         # Everything went well.
-        return self.JSON_OK    
+        return dumps(self.JSON_OK)    
  

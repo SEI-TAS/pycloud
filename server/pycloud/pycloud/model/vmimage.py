@@ -138,6 +138,7 @@ class VMImage(DictObject):
             self.state_image = VMSavedState.getDefaultSavedStateFile(self.disk_image)
         except:
             # Delete the folder with the temp data.
+            print 'Deleting temp folder due to error: ' + os.path.dirname(destDiskImageFilePath)
             shutil.rmtree(os.path.dirname(destDiskImageFilePath))
             raise
 
@@ -177,5 +178,5 @@ class VMImage(DictObject):
             image_folder = os.path.dirname(self.disk_image)
             if os.path.exists(image_folder):
                 if os.path.isdir(image_folder):
-                    print 'Removing VM image folder.'
+                    print 'Removing VM image folder: ' + image_folder
                     shutil.rmtree(image_folder)

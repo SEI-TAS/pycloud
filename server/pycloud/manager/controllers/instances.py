@@ -16,6 +16,7 @@ from pycloud.manager.lib.pages import InstancesPage
 from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.model import Service, ServiceVM
 from pycloud.pycloud.pylons.lib.util import asjson
+from pycloud.pycloud.pylons.lib.util import dumps
 
 log = logging.getLogger(__name__)
 
@@ -24,8 +25,8 @@ log = logging.getLogger(__name__)
 ################################################################################################################
 class InstancesController(BaseController):
 
-    JSON_OK = json.dumps({"STATUS" : "OK" })
-    JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})
+    JSON_OK = {"STATUS" : "OK" }
+    JSON_NOT_OK = { "STATUS" : "NOT OK"}
     
     ############################################################################################################
     # Shows the list of running Service VM instances.
@@ -72,21 +73,21 @@ class InstancesController(BaseController):
             if not svm:
                 # If we didn't get a valid id, just return an error message.
                 print "Service VM id " + id + " was not found on the list of running instances."
-                return self.JSON_NOT_OK            
+                return dumps(self.JSON_NOT_OK)       
             
             # Try to start the VNC window (this will only work if done on the Cloudlet).
             svm.open_vnc(wait=False)
         except Exception as e:        
             # If there was a problem connecting through VNC, return that there was an error.
             print 'Error opening VNC window: ' + str(e);
-            return self.JSON_NOT_OK     
+            return dumps(self.JSON_NOT_OK)  
         
         # Everything went well.
-        return self.JSON_OK
+        return dumps(self.JSON_OK)
 
     ############################################################################################################
     # Starts a new SVM instance of the Service.
-    ############################################################################################################        
+    ############################################################################################################  
     def GET_startInstance(self, sid):
         # Look for the service with this id
         service = Service.by_id(sid)
@@ -97,17 +98,17 @@ class InstancesController(BaseController):
                 # Start the instance, if it works, save it and return ok
                 svm.start()
                 svm.save()
-                return self.JSON_OK
+                return dumps(self.JSON_OK)
             except Exception as e:
                 # If there was a problem starting the instance, return that there was an error.
                 print 'Error starting Service VM Instance: ' + str(e)
-                return self.JSON_NOT_OK
+                return dumps(self.JSON_NOT_OK)
 
-        return self.JSON_NOT_OK
+        return dumps(self.JSON_NOT_OK)
 
     ############################################################################################################
     # Stops an existing instance.
-    ############################################################################################################        
+    ############################################################################################################
     def GET_stopInstance(self, id):
         try:    
             # Use the common Instance Manager to stop an existing instance with the given ID.
@@ -116,10 +117,10 @@ class InstancesController(BaseController):
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
             print 'Error stopping Service VM Instance: ' + str(e)
-            return self.JSON_NOT_OK               
+            return dumps(self.JSON_NOT_OK)               
         
         # Everything went well.
-        return self.JSON_OK
+        return dumps(self.JSON_OK)
     
     ############################################################################################################
     # Checks if there are changes in the instance list, and returns a changestamp of the change.

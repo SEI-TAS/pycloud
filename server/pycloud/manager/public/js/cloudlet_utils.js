@@ -125,7 +125,7 @@ function reloadPage()
 function ajaxSimplePost(postURL, dataDict, waitDialogText, onSuccess, modal)
 {
     var fileId = null;
-    ajaxPost(postURL, dataDict, waitDialogText, onSuccess, fileId, modal);
+    ajaxCall('POST', postURL, dataDict, waitDialogText, onSuccess, fileId, modal);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -133,13 +133,22 @@ function ajaxSimplePost(postURL, dataDict, waitDialogText, onSuccess, modal)
 /////////////////////////////////////////////////////////////////////////////////////
 function ajaxFilePost(postURL, dataDict, waitDialogText, onSuccess, fileId, modal)
 {
-    ajaxPost(postURL, dataDict, waitDialogText, onSuccess, fileId, modal);
+    ajaxCall('POST', postURL, dataDict, waitDialogText, onSuccess, fileId, modal);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to send json request through AJAX and reload after the response, with a file.
+/////////////////////////////////////////////////////////////////////////////////////
+function ajaxGet(getURL, waitDialogText, onSuccess, fileId, modal)
+{
+    var fileId = null;    
+    ajaxCall('GET', getURL, {}, waitDialogText, onSuccess, fileId, modal);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to post json data through AJAX and reload after the response.
 /////////////////////////////////////////////////////////////////////////////////////
-function ajaxPost(postURL, dataDict, waitDialogText, onSuccess, fileId, modal)
+function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, modal)
 {
     // Check if we got a modal.
     if(typeof(modal)==='undefined') modal = null;
@@ -174,7 +183,7 @@ function ajaxPost(postURL, dataDict, waitDialogText, onSuccess, fileId, modal)
         // Send a regular ajax request.
         $.ajax({
             url: postURL,
-            method: 'POST',
+            method: action,
             data: dataDict,
             success: function( resp ) {
                 successHandler(resp);

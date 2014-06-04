@@ -4,34 +4,12 @@
 /////////////////////////////////////////////////////////////////////////////////////
 function startSVM(startUrl, redirectUrl)
 {
-    // Show progress bar.
-    var dialog = WaitDialog("Starting Service VM Instance");
-    dialog.show();
+    var successHandler = function(response) {
+        window.location.href = redirectUrl;
+    };
     
-    // Send the ajax request to start the service vm.
-    $.ajax({
-        url: startUrl,
-        dataType: 'json',
-        success: function( resp ) {
-            // Check if we got an error.
-            if(!ajaxCallWasSuccessful(resp))
-            {
-                // Dismiss the waiting dialog and notify the error.
-                dialog.hide();
-                showAndLogErrorMessage('Service VM Instance could not be started.');
-            }
-            else
-            {      
-                // Go to the list of instances.
-                dialog.hide();      
-                window.location.href = redirectUrl;
-            }
-        },
-        error: function( req, status, err ) {
-            dialog.hide();
-            showAndLogErrorMessage('Service VM Instance could not be started.', status, err );
-        }
-    });
+    // Do the post to get data and load the modal.
+    ajaxGet(startUrl, "Starting Service VM Instance", successHandler);     
 } 
 
 /////////////////////////////////////////////////////////////////////////////////////

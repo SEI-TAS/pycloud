@@ -7,34 +7,12 @@
 /////////////////////////////////////////////////////////////////////////////////////
 function stopSVM(stopUrl)
 {
-    // Show progress bar.
-    var dialog = WaitDialog("Stopping Service VM Instance");
-    dialog.show();
+    var successHandler = function(response) {
+        reloadPage();
+    };
     
-    // Send the ajax request to start the service vm.
-    $.ajax({
-        url: stopUrl,
-        dataType: 'json',
-        success: function( resp ) {
-            // Check if we got an error.
-            if(!ajaxCallWasSuccessful(resp))
-            {
-                // Dismiss the waiting dialog and notify the error.
-                dialog.hide();
-                showAndLogErrorMessage('Service VM Instance could not be stopped.');
-            }
-            else
-            {            
-                // Hide the progress bar and reload the page to show the changes.
-                dialog.hide();
-                window.top.location=window.top.location;
-            }
-      },
-        error: function( req, status, err ) {
-            dialog.hide();
-            showAndLogErrorMessage('Service VM Instance could not be stopped.', status, err);
-      }
-    });
+    // Do the post to get data and load the modal.
+    ajaxGet(stopUrl, "Stopping Service VM Instance", successHandler);        
 }    
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -115,6 +93,6 @@ function reloadChecker(changesUrl)
 /////////////////////////////////////////////////////////////////////////////////////////////////
 $(document).ready( function () {
     // Start the load checker, which will check for changes continously.
-    console.log('Setting up reload checker:' + window.changeUrl);
-    reloadChecker(window.changeUrl);    
+    //console.log('Setting up reload checker:' + window.changeUrl);
+    //reloadChecker(window.changeUrl);    
 });    

@@ -91,7 +91,7 @@ function openEditVNC(vncUrl)
     };
     
     // Do the post to get data and load the modal.
-    ajaxSimplePost(vncUrl, {}, "Starting and Connecting to Service VM", successHandler);    
+    ajaxGet(vncUrl, "Starting and Connecting to Service VM", successHandler);    
 
     return false;
 }
