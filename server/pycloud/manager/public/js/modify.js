@@ -64,7 +64,9 @@ function openCreateVNC()
         
         // Upate the buttons to reflect that we can now modify the SVM.
         $('#new-svm-button').prop('style', 'display:none;');
-        $('#modify-svm-button').prop('style', 'display:inline;');      
+        $('#modify-svm-button').prop('style', 'display:inline;');    
+        
+        $('#modal-new-servicevm').modal('hide');  
 
         // Notify that the process was successful.
         showAndLogSuccessMessage('Stored Service VM was created successfully.');
