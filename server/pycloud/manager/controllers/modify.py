@@ -198,8 +198,8 @@ class ModifyController(BaseController):
         except Exception as e:
             # If there was a problem creating the SVM, return that there was an error.
             print 'Error creating Service VM: ' + str(e);
-            if svm.vm_image:
-                svm.vm_image.cleanup(force=True)
+            if new_vm_image:
+                new_vm_image.cleanup(force=True)
             return self.JSON_NOT_OK            
         
         # Everything went well.
