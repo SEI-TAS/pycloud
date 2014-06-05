@@ -162,8 +162,11 @@ class ModifyController(BaseController):
         # Create an SVM and open a VNC window to modify the VM.
         svm.service_id = fields['serviceId']
         try:
+            print 'newVmFolder: ', g.cloudlet.newVmFolder
+            print 'svm._id: ', svm._id
             # Set up a new VM image.
             temp_svm_folder = os.path.join(g.cloudlet.newVmFolder, svm._id)
+            print 'temp_svm_folder: ', temp_svm_folder
             new_disk_image = os.path.join(temp_svm_folder, svm.service_id)
             new_vm_image = VMImage()
             print 'calling VMImage#create with "%s" and "%s"' % (fields['source'], new_disk_image)
