@@ -206,7 +206,7 @@ class ModifyController(BaseController):
             return self.JSON_NOT_OK            
         
         # Everything went well.
-        print 'Returning newly created VM data.'
+        print 'Returning newly created VM data: ', svm.vm_image
         return svm.vm_image
 
     ############################################################################################################
