@@ -172,9 +172,6 @@ class ServiceVM(Model):
         template_xml_descriptor = open(vmXmlTemplateFile, "r").read()
         updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)
 
-        print '\nXML:\n\n', updated_xml_descriptor
-        print '\n\n'
-        
         # Create a VM ("domain") through the hypervisor.
         print "Starting a new VM..."  
         try:
