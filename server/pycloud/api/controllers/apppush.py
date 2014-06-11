@@ -10,6 +10,7 @@ import json
 
 # Controller to derive from.
 from pycloud.pycloud.pylons.lib.base import BaseController
+from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import timelog
 from pycloud.pycloud.model import App
 
@@ -26,6 +27,7 @@ class AppPushController(BaseController):
     ################################################################################################################
     # Called to get a list of apps available at the server.
     ################################################################################################################
+    @asjson
     def GET_getList(self):
         print '\n*************************************************************************************************'
         timelog.TimeLog.reset()
