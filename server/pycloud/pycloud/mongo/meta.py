@@ -57,7 +57,6 @@ class MetaObject(type):
 
 def external(obj):
     ret = obj
-    print 'external called on ', ret
     if hasattr(ret, '_external'):
         if isinstance(ret._external, list):
             ret = {}
