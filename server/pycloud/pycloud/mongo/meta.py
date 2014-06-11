@@ -36,6 +36,8 @@ class MetaObject(type):
 
             #Create the external attributes list and add it to the new class
             if isinstance(info.external, list):
+                print 'Mapping _external attributes for "%s"' % str(new_class)
+                print info.external
                 new_class._external = info.external
             else:
                 new_class._external = None
@@ -55,6 +57,7 @@ class MetaObject(type):
 
 def external(obj):
     ret = obj
+    print 'external called on ', ret
     if hasattr(ret, '_external'):
         if isinstance(ret._external, list):
             ret = {}
