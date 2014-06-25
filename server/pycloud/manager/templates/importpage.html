@@ -15,6 +15,6 @@
 
 <%block>
     <form id="service-form" class="form-service" method="post" action="${h.url_for('import_service')}" role="form">
-        <input type="file" id="path" webkitdirectory directory>
+        ${text(id='path', input_width=12, label=_('Service VM Path'))}
     </form>
 </%block>
