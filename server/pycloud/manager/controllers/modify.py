@@ -16,7 +16,7 @@ from pycloud.pycloud.model import Service, ServiceVM, VMImage
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.pylons.lib.util import dumps
 
-from pycloud.manager.lib.pages import ModifyPage
+from pycloud.manager.lib.pages import ModifyPage, ImportPage
 
 log = logging.getLogger(__name__)
 
@@ -44,6 +44,15 @@ class ModifyController(BaseController):
 
         # Render the page with the data.
         return page.render()
+
+    def GET_import(self):
+        # Mark the active tab.
+        c.services_active = 'active'
+
+        page = ImportPage()
+
+        return page.render()
+
     
     ################################################################################################################ 
     # Loads data about the stored service vm into a page, and returns the filled page.
