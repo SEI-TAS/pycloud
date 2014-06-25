@@ -24,7 +24,8 @@ def make_map():
     connect('/instances/openvnc/{id}', controller='instances', action='openVNC')
     connect('/instances/lastchange', controller='instances', action='getLastChangestamp')
 
-    connect('/service/add', controller='modify', action='index')
+    connect('add_service', '/service/add', controller='modify', action='index')
+    connect('import_service', '/service/import', controller='modify', action='import')
     connect('/service/createSVM', controller='modify', action='createSVM')
     connect('/service/openSVM/{id}', controller='modify', action='openSVM')
     connect('/service/edit/{id}', controller='modify', action='index')
