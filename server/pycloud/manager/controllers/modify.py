@@ -50,6 +50,8 @@ class ModifyController(BaseController):
         c.services_active = 'active'
 
         page = ImportPage()
+        page.form_values = {}
+        page.form_errors = {}
 
         return page.render()
 
