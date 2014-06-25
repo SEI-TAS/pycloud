@@ -14,5 +14,7 @@
 </%block>
 
 <%block>
-    <h1>import service</h1>
+    <form id="service-form" class="form-service" method="post" action="${h.url_for('import_service')}" role="form">
+        <input type="file" id="path" webkitdirectory directory>
+    </form>
 </%block>
