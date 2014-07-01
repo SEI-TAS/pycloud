@@ -55,6 +55,9 @@ class ModifyController(BaseController):
 
         return page.render()
 
+    def POST_import(self):
+        pass
+
     
     ################################################################################################################ 
     # Loads data about the stored service vm into a page, and returns the filled page.
