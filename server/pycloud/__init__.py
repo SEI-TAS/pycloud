@@ -4,7 +4,7 @@ def main(args=None):
         import sys
         args = sys.argv[1:]
     #Load the default config
-    config = '/var/pycloud/default.ini'
+    config = '/etc/cloudlet.ini'
     if len(args) > 0:
         config = args[0]
 
