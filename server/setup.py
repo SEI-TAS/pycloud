@@ -15,9 +15,7 @@ setup(
     url='',
     install_requires=reqs,
     packages=find_packages(exclude=['ez_setup']),
-    package_data={
-        '': ['*.html', '*.xml']
-    },
+    include_package_data=True,
     entry_points="""
     [console_scripts]
     pycloud=pycloud:main

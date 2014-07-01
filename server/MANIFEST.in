@@ -1,2 +1,3 @@
-include *.html
-include *.xml
+recursive-include pycloud/manager/public **.*
+recursive-include pycloud/manager/templates **.*
+recursive-include pycloud *.xml
