@@ -15,6 +15,12 @@ setup(
     url='',
     install_requires=reqs,
     packages=find_packages(exclude=['ez_setup']),
+    include_package_data=True,
+    package_data={
+        'templates': ['pycloud/manager/templates/*'],
+        'public': ['pycloud/manager/public/**.*'],
+        'xml': ['*.xml']
+    },
     entry_points="""
     [console_scripts]
     pycloud=pycloud:main
