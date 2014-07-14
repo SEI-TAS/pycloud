@@ -4,6 +4,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.model import Service
 from pylons import request, g
 import os
+import zipfile
 
 
 class ExportController(BaseController):
@@ -12,6 +13,9 @@ class ExportController(BaseController):
 
         service = Service.by_id(sid)
 
+        if not service:
+            return "Service Not Found"
+
         path = request.params.get("export_path")
         if not path:
             path = os.path.join(g.cloudlet.export_path, service['_id'] + ".csvm")
@@ -19,4 +23,9 @@ class ExportController(BaseController):
         print "Disk Image: ", service.vm_image.disk_image
         print "State Image: ", service.vm_image.state_image
 
-        return "Sid: " + sid + "<br>" + path
+        zipf = zipfile.ZipFile(path, "w")
+        zipf.write(service.vm_image.disk_image)
+        zipf.write(service.vm_image.state_image)
+        zipf.close()
+
+        return "Ok"
