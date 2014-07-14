@@ -63,6 +63,9 @@ class Cloudlet(object):
         # New config params
         self.service_cache = config['pycloud.servicevm.cache']
 
+        # Export
+        self.export_path = config['pycloud.export.default']
+
         # TODO: this introduces an ungly circular dependency...
         # TODO: self.instanceManager should be removed
         # Create the ServiceVM Instance Manager, which will be used by several apps.
