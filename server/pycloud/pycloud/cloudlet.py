@@ -82,6 +82,7 @@ class Cloudlet(object):
         destroy_all_vms()
         self._clean_instances_folder()
         self._remove_service_vms()
+        self._make_export_dir()
         portmanager.PortManager.clearPorts()
 
     def _clean_instances_folder(self):
@@ -98,6 +99,8 @@ class Cloudlet(object):
         from pycloud.pycloud.model import ServiceVM
         ServiceVM._collection.drop()
 
+    def _make_export_dir(self):
+        os.makedirs(self.export_path)
 
 
 
