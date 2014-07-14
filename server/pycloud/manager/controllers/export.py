@@ -23,7 +23,7 @@ class ExportController(BaseController):
         print "Disk Image: ", service.vm_image.disk_image
         print "State Image: ", service.vm_image.state_image
 
-        zipf = zipfile.ZipFile(path, "w")
+        zipf = zipfile.ZipFile(path, "w", allowZip64=True)  # Needed for files larger than 2gb
         zipf.write(service.vm_image.disk_image)
         zipf.write(service.vm_image.state_image)
         zipf.close()
