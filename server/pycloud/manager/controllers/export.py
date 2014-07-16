@@ -1,6 +1,7 @@
 __author__ = 'jdroot'
 
 from pycloud.pycloud.pylons.lib.base import BaseController
+from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.model import Service
 from pylons import request, g
 import os
@@ -24,9 +25,11 @@ class ExportController(BaseController):
 
 
 
-        zipf = tarfile.open(path, "w:gz")
-        zipf.add(service.vm_image.disk_image)
-        zipf.add(service.vm_image.state_image)
-        zipf.close()
+        tarf = tarfile.open(path, "w:gz")
+        tarf.add(service.vm_image.disk_image)
+        tarf.add(service.vm_image.state_image)
+        tarf.close()
+
+        print "Service", asjson(service)
 
         return "Ok"
