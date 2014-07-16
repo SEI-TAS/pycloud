@@ -6,6 +6,7 @@ from pycloud.pycloud.model import Service
 from pylons import request, g
 import os
 import tarfile
+import json
 
 class ExportController(BaseController):
 
@@ -25,11 +26,11 @@ class ExportController(BaseController):
 
 
 
-        tarf = tarfile.open(path, "w:gz")
-        tarf.add(service.vm_image.disk_image)
-        tarf.add(service.vm_image.state_image)
-        tarf.close()
+        # tarf = tarfile.open(path, "w:gz")
+        # tarf.add(service.vm_image.disk_image)
+        # tarf.add(service.vm_image.state_image)
+        # tarf.close()
 
-        print "Service", asjson(service)
+        print "Service", json.dumps(service)
 
         return "Ok"
