@@ -23,6 +23,7 @@ class Service(Model):
     ################################################################################################################
     def __init__(self, *args, **kwargs):
         self._id = None
+        self.service_id = None
         self.vm_image = None
         self.description = None
         self.version = None

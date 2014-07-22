@@ -74,7 +74,7 @@ class AppsController(BaseController):
         page.stored_services = {}
         services = Service.find()
         for service in services:
-            page.stored_services[service._id] = service._id;          
+            page.stored_services[service.service_id] = service.service_id
         
         # Pass the grid and render the page.
         page.appsGrid = appsGrid

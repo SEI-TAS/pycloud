@@ -44,12 +44,12 @@ class ServicesController(BaseController):
         # Create an item list with the info to display.
         grid_items = []
         for service in services:
-            new_item = {'service_id': service['_id'],
-                       'name': service.description,
-                       'service_internal_port': service.port,
-                       'stored_service_vm_folder': os.path.dirname(service.vm_image.disk_image),
-                       'service_vm_instances': 'SVM',
-                       'actions': 'Action'}
+            new_item = {'service_id': service.service_id,
+                        'name': service.description,
+                        'service_internal_port': service.port,
+                        'stored_service_vm_folder': os.path.dirname(service.vm_image.disk_image),
+                        'service_vm_instances': 'SVM',
+                        'actions': 'Action'}
             grid_items.append(new_item)
 
         # Create and fomat the grid.

@@ -135,7 +135,7 @@ class ModifyController(BaseController):
             service = Service()
         
         # Service
-        service._id         = serviceId
+        service.service_id  = serviceId
         service.version     = request.params.get("serviceVersion")
         service.description = request.params.get("serviceDescription")
         service.tags        = request.params.get("serviceTags")
