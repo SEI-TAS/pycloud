@@ -19,7 +19,7 @@ class ExportController(BaseController):
 
         path = request.params.get("export_path")
         if not path:
-            path = os.path.join(g.cloudlet.export_path, service['_id'] + ".csvm")
+            path = os.path.join(g.cloudlet.export_path, service.service_id + ".csvm")
 
         print "Disk Image: ", service.vm_image.disk_image
         print "State Image: ", service.vm_image.state_image
