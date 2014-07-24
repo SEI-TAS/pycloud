@@ -54,9 +54,3 @@ class ServicesController(BaseController):
             # Send the response.
             timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
             return ret
-
-    @asjson
-    def GET_test(self):
-        app = App.find_one()
-        print type(app['_id'])
-        return app
