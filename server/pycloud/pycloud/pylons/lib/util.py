@@ -42,14 +42,23 @@ def asjson(f):
     # If f is a function, we must return a callable function
     if hasattr(f, '__call__'):
         def _asjson(*args, **kwargs):
-            print "Args: ", args
-            print "Kwargs: ", kwargs
+            # Get the functions code
             co = f.func_code
+            # Check if the function has a kwargs argument.
+            # We cannot just check the name because it could be anything
+            # which means we have to check the flags. 0x08 is set if keywords is set
             varkeywords = co.co_flags & 0x08 > 0
-            if varkeywords:
-                return _handler(f(*args, **kwargs))
-            else:
-                return _handler(f(*args))
+
+            # If we do not have a kwargs arg we need to strip the passed in kwargs so it matches
+            if not varkeywords:
+                names = co.co_varnames
+                _kwargs = {}
+                for name in names:
+                    if name in kwargs:
+                        _kwargs[name] = kwargs[name]
+                kwargs = _kwargs
+
+            return _handler(f(*args, **kwargs))
         return _asjson
     else:  # Otherwise, just handle the result
         return _handler(f)
