@@ -5,11 +5,11 @@ from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.model import Service
 from pylons import request, g
 import os
-import tarfile
-import json
+
 
 class ExportController(BaseController):
 
+    @asjson
     def GET_export_svm(self, sid):
 
         service = Service.by_id(sid)
