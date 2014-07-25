@@ -31,6 +31,4 @@ class ExportController(BaseController):
         # tarf.add(service.vm_image.state_image)
         # tarf.close()
 
-        print "Service: ", json.dumps(service)
-
-        return "Ok"
+        return service.export()

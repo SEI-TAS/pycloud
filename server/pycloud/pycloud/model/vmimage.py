@@ -180,3 +180,9 @@ class VMImage(DictObject):
                 if os.path.isdir(image_folder):
                     print 'Removing VM image folder: ' + image_folder
                     shutil.rmtree(image_folder)
+
+    def export(self):
+        return {
+            "disk_image": self.disk_image,
+            "state_image": self.state_image
+        }

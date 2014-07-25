@@ -91,3 +91,20 @@ class Service(Model):
         
         # Delete our backing files
         self.vm_image.cleanup()
+
+    ################################################################################################################
+    # Removes this Service and all of its files
+    ################################################################################################################
+    def export(self):
+        # We manually turn the service in to a dict because @asjson forces external fields only
+        return {
+            "service_id": self.service_id,
+            "vm_image": self.vm_image.export(),
+            "description": self.description,
+            "version": self.version,
+            "tags": self.tags,
+            "port": self.port,
+            "num_users": self.num_users,
+            "ideal_memory": self.ideal_memory,
+            "min_memory": self.min_memory
+        }
