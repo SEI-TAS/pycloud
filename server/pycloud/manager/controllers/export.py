@@ -1,7 +1,7 @@
 __author__ = 'jdroot'
 
 from pycloud.pycloud.pylons.lib.base import BaseController
-from pycloud.pycloud.pylons.lib.util import asjson2
+from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.model import Service
 from pylons import request, g
 import os
@@ -9,7 +9,7 @@ import os
 
 class ExportController(BaseController):
 
-    @asjson2
+    @asjson
     def GET_export_svm(self, *args, **kwargs):
         sid = request.params.get("sid")
         service = Service.by_id(sid)
@@ -31,4 +31,4 @@ class ExportController(BaseController):
         # tarf.add(service.vm_image.state_image)
         # tarf.close()
 
-        return "this text should come out"
+        return service.export()
