@@ -42,6 +42,7 @@ def asjson(f):
     # If f is a function, we must return a callable function
     if hasattr(f, '__call__'):
         def _asjson(*args, **kwargs):
+            print "Args: ", args
             co = f.func_code
             varkeywords = co.co_flags & 0x08 > 0
             if varkeywords:
