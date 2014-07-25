@@ -183,6 +183,6 @@ class VMImage(DictObject):
 
     def export(self):
         return {
-            "disk_image": self.disk_image,
-            "state_image": self.state_image
+            "disk_image": os.path.basename(self.disk_image),
+            "state_image": os.path.basename(self.state_image)
         }
