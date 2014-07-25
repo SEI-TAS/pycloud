@@ -10,7 +10,7 @@ import os
 class ExportController(BaseController):
 
     @asjson2
-    def GET_export_svm(self):
+    def GET_export_svm(self, *args, **kwargs):
         sid = request.params.get("sid")
         service = Service.by_id(sid)
 
