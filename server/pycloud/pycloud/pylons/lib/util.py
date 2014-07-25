@@ -35,8 +35,8 @@ def asjson(f):
 
     # If f is a function, we must return a callable function
     if hasattr(f, '__call__'):
-        def _asjson(*args):
-            return _handler(f(*args))
+        def _asjson(*args, **kwargs):
+            return _handler(f(*args, **kwargs))
         return _asjson
     else:  # Otherwise, just handle the result
         return _handler(f)
