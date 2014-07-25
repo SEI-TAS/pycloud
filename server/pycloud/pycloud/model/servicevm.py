@@ -138,23 +138,25 @@ class ServiceVM(Model):
     ################################################################################################################
     # Updates an XML containing the description of the VM with the current info of this VM.
     ################################################################################################################    
-    def _update_descriptor(self, saved_xml_descriptor):
+    def _update_descriptor(self, saved_xml_descriptor, id_only=False):
         # Get the descriptor and inflate it to something we can work with.
         xml_descriptor = VirtualMachineDescriptor(saved_xml_descriptor)
 
-        # Set the disk image in the description of the VM.
-        xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')
-
-        # Create a new port if we do not have an external port already.
-        if not self.port:
-            self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.service_port)
-        if not self.ssh_port:
-            self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.SSH_INTERNAL_PORT)
-        xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
-
         # Change the ID and Name.
         xml_descriptor.setUuid(self._id)
-        xml_descriptor.setName(self.prefix + '-' + self._id)
+        xml_descriptor.setName(self.prefix + '-' + self._id)  
+
+        # If we only wanted to modify the id-related features, we wont go in here.
+        if not id_only:
+            # Set the disk image in the description of the VM.
+            xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')
+
+            # Create a new port if we do not have an external port already.
+            if not self.port:
+                self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.service_port)
+            if not self.ssh_port:
+                self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.SSH_INTERNAL_PORT)
+            xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
 
         # Get the resulting XML string and return it.
         updated_xml_descriptor = xml_descriptor.getAsString()
@@ -201,10 +203,11 @@ class ServiceVM(Model):
 
         # Get the descriptor and update it.
         saved_xml_descriptor = saved_state.getStoredVmDescription(ServiceVM.get_hypervisor())
+        updated_xml_descriptor_id_only = self._update_descriptor(saved_xml_descriptor, id_only=True)
         updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
         
         # Update the state image with the updated descriptor.
-        saved_state.updateStoredVmDescription(updated_xml_descriptor)
+        saved_state.updateStoredVmDescription(updated_xml_descriptor_id_only)
 
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
         # The XML descriptor is given since some things have changed, though effectively it is not used here since
