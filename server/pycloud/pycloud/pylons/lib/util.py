@@ -25,6 +25,12 @@ import re
 from pymongo.cursor import Cursor
 
 
+def asjson2(func):
+    def _func(*args, **kwargs):
+        return func(*args, **kwargs)
+    return _func
+
+
 def asjson(f):
     # Handler to handle the result
     def _handler(ret):
@@ -35,9 +41,8 @@ def asjson(f):
 
     # If f is a function, we must return a callable function
     if hasattr(f, '__call__'):
-        def _asjson(*args, **kwargs):
-            val = f(*args)
-            return _handler(val)
+        def _asjson(*args):
+            return _handler(f(*args))
         return _asjson
     else:  # Otherwise, just handle the result
         return _handler(f)
