@@ -43,6 +43,7 @@ def asjson(f):
     if hasattr(f, '__call__'):
         def _asjson(*args, **kwargs):
             print "Args: ", args
+            print "Kwargs: ", kwargs
             co = f.func_code
             varkeywords = co.co_flags & 0x08 > 0
             if varkeywords:
