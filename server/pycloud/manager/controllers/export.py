@@ -54,5 +54,5 @@ def add_string_to_tar(data=None, filename=None, tar=None):
 
     tarinfo = tarfile.TarInfo(name=filename)
     tarinfo.size = len(sio.buf)
-    tarinfo.mtime = current_milli_time()
+    tarinfo.mtime = time.time()
     tar.addfile(tarinfo=tarinfo, fileobj=sio)
