@@ -31,7 +31,7 @@ class ExportController(BaseController):
         # tar.add(service.vm_image.disk_image)
         #
         # tar.add(service.vm_image.state_image)
-        add_string_to_tar(data=service.export(), filename=service.service_id + ".json", tar=tar)
+        add_string_to_tar(data=service.export(), filename="service.json", tar=tar)
         tar.close()
 
         return path
@@ -39,7 +39,7 @@ class ExportController(BaseController):
 
 def add_file_to_tar(filepath=None, tar=None):
     name = os.path.basename(filepath)
-    tar.addfile(tarfile.TarInfo(name), file(filepath))
+    tar.add(filepath, arcname=name)
 
 
 def add_string_to_tar(data=None, filename=None, tar=None):
