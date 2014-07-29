@@ -7,6 +7,9 @@ from pylons import request, g
 import os
 import tarfile
 import StringIO
+import time
+
+current_milli_time = lambda: int(round(time.time() * 1000))
 
 
 class ExportController(BaseController):
@@ -51,5 +54,5 @@ def add_string_to_tar(data=None, filename=None, tar=None):
 
     tarinfo = tarfile.TarInfo(name=filename)
     tarinfo.size = len(sio.buf)
-    tarinfo.mtime = 0
+    tarinfo.mtime = current_milli_time()
     tar.addfile(tarinfo=tarinfo, fileobj=sio)
