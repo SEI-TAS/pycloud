@@ -26,12 +26,20 @@ class ExportController(BaseController):
         print "State Image: ", service.vm_image.state_image
 
         tar = tarfile.open(path, "w:gz")
-        tar.add(service.vm_image.disk_image)
-        tar.add(service.vm_image.state_image)
+        add_file_to_tar(filepath=service.vm_image.disk_image, tar=tar)
+        add_file_to_tar(filepath=service.vm_image.state_image, tar=tar)
+        # tar.add(service.vm_image.disk_image)
+        #
+        # tar.add(service.vm_image.state_image)
         add_string_to_tar(data=service.export(), filename=service.service_id + ".json", tar=tar)
         tar.close()
 
         return path
+
+
+def add_file_to_tar(filepath=None, tar=None):
+    name = os.path.basename(filepath)
+    tar.addfile(tarfile.TarInfo(name), file(filepath))
 
 
 def add_string_to_tar(data=None, filename=None, tar=None):
@@ -43,4 +51,5 @@ def add_string_to_tar(data=None, filename=None, tar=None):
 
     tarinfo = tarfile.TarInfo(name=filename)
     tarinfo.size = len(sio.buf)
+    tarinfo.mtime = 0
     tar.addfile(tarinfo=tarinfo, fileobj=sio)
