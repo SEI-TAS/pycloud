@@ -30,11 +30,11 @@ ${parent.header()}
                 <div class="panel-heading"> General </div>
                 <div class="panel-body">
                     <input type="hidden" name="originalServiceID" id="originalServiceID" value="${page.serviceID}" />
-                    ${text('serviceID', input_width=12, label=_('Service ID'), disabled=page.serviceIDChangeDisabled)}
+                    ${text('serviceID', input_width=12, label=_('Service ID'), disabled=page.serviceIDChangeDisabled, mandatory=True)}
+                    ${text('servicePort', input_width=12, label=_('Port'), mandatory=True)}
                     ${text('serviceVersion', input_width=12, label=_('Service Version'))}
                     ${text('serviceDescription', input_width=12, label=_('Description'))}
                     ${text('serviceTags', input_width=12, label=_('Tags'))}
-                    ${text('servicePort', input_width=12, label=_('Port'))}
                     ${text('numClientsSupported', input_width=12, label=_('Maximum Concurrent Clients'))}
                     ${text('reqMinMem', input_width=12, label=_('Min Memory (MB)'))}
                     ${text('reqIdealMem', input_width=12, label=_('Ideal Memory (MB)'))}                    
