@@ -37,6 +37,6 @@ def make_map():
     connect('/apps/remove/{id}', controller='apps', action='remove')
 
     connect('export_service', '/service/exportsvm/{sid}', controller='export', action='export_svm')
-    connect('import_service', '/service/importsvm', controller='importsvm', action='import')
+    connect('import_service', '/service/importsvm', controller='import', action='import')
 
     return mapper
