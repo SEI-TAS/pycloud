@@ -27,7 +27,7 @@ class Service(Model):
         self.vm_image = None
         self.description = None
         self.version = None
-        self.tags = None
+        self.tags = []
         self.port = None
         self.num_users = None
         self.ideal_memory = None
