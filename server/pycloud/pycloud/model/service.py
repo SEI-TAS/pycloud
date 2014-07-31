@@ -82,8 +82,7 @@ class Service(Model):
         svm.vm_image = self.vm_image
         return svm
 
-        ################################################################################################################
-
+    ################################################################################################################
     # Removes this Service and all of its files
     ################################################################################################################
     def destroy(self):
@@ -99,7 +98,6 @@ class Service(Model):
     def export(self):
         # We manually turn the service in to a dict because @asjson forces external fields only
         import json
-
         return json.dumps(
             {
                 "service_id": self.service_id,
