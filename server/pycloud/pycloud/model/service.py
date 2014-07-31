@@ -6,7 +6,7 @@ from pycloud.pycloud.model.servicevm import ServiceVM
 import os
 from pylons import g
 
-################################################################################################################
+# ###############################################################################################################
 # Represents a Service in the system.
 ################################################################################################################
 class Service(Model):
@@ -70,7 +70,7 @@ class Service(Model):
         svm.service_port = self.port
         svm.vm_image = self.vm_image.clone(os.path.join(g.cloudlet.svmInstancesFolder, svm['_id']))
         return svm
-    
+
     ################################################################################################################
     # Returns a VM linked to the original VM image so that it can be modified.
     ################################################################################################################
@@ -80,15 +80,16 @@ class Service(Model):
         svm.service_id = self.service_id
         svm.service_port = self.port
         svm.vm_image = self.vm_image
-        return svm    
+        return svm
 
-    ################################################################################################################
+        ################################################################################################################
+
     # Removes this Service and all of its files
     ################################################################################################################
     def destroy(self):
         # Make sure we are no longer in the database
         Service.find_and_remove(self.service_id)
-        
+
         # Delete our backing files
         self.vm_image.cleanup()
 
@@ -97,14 +98,18 @@ class Service(Model):
     ################################################################################################################
     def export(self):
         # We manually turn the service in to a dict because @asjson forces external fields only
-        return {
-            "service_id": self.service_id,
-            "vm_image": self.vm_image.export(),
-            "description": self.description,
-            "version": self.version,
-            "tags": self.tags,
-            "port": self.port,
-            "num_users": self.num_users,
-            "ideal_memory": self.ideal_memory,
-            "min_memory": self.min_memory
-        }
+        import json
+
+        return json.dumps(
+            {
+                "service_id": self.service_id,
+                "vm_image": self.vm_image.export(),
+                "description": self.description,
+                "version": self.version,
+                "tags": self.tags,
+                "port": self.port,
+                "num_users": self.num_users,
+                "ideal_memory": self.ideal_memory,
+                "min_memory": self.min_memory
+            }
+        )
