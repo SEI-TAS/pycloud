@@ -104,7 +104,7 @@ class Service(Model):
                 "vm_image": self.vm_image.export(),
                 "description": self.description,
                 "version": self.version,
-                "tags": [json.dumps(tag) for tag in self.tags],
+                "tags": [str(tag) for tag in self.tags],
                 "port": self.port,
                 "num_users": self.num_users,
                 "ideal_memory": self.ideal_memory,
