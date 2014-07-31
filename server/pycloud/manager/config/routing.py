@@ -25,7 +25,6 @@ def make_map():
     connect('/instances/lastchange', controller='instances', action='getLastChangestamp')
 
     connect('add_service', '/service/add', controller='modify', action='index')
-    connect('import_service', '/service/import', controller='modify', action='import')
     connect('/service/createSVM', controller='modify', action='createSVM')
     connect('/service/openSVM/{id}', controller='modify', action='openSVM')
     connect('/service/edit/{id}', controller='modify', action='index')
@@ -37,6 +36,7 @@ def make_map():
     connect('/apps/edit/{id}', controller='apps', action='edit')
     connect('/apps/remove/{id}', controller='apps', action='remove')
 
-    connect('/service/exportsvm/{sid}', controller='export', action='export_svm')
+    connect('export_service', '/service/exportsvm/{sid}', controller='export', action='export_svm')
+    connect('import_service', '/service/importsvm', controller='importsvm', action='import')
 
     return mapper
