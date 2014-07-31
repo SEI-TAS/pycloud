@@ -37,7 +37,7 @@ class ExportController(BaseController):
         # add_string_to_tar(data=service.export(), filename="service.json", tar=tar)
         # tar.close()
 
-        return type(service.tags)
+        return "" + type(service.tags)
 
 
 def add_file_to_tar(filepath=None, tar=None):
