@@ -33,7 +33,9 @@ class ImportController(BaseController):
         service_json = get_service_json(tar)
 
         print service_json
-        print type(service_json)
+        service = Service(service_json)
+
+        print "Service ID: ", service.service_id
 
 
         return service_json
