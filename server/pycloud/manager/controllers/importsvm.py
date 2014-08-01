@@ -5,7 +5,8 @@ from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.model import Service
 import tarfile
 import json
-from pylons import request
+import os
+from pylons import request, g
 
 
 def get_service_json(tar=None):
@@ -33,7 +34,13 @@ class ImportController(BaseController):
         tar = tarfile.open(filename, "r")
         service = Service(get_service_json(tar))
 
-        print service.vm_image.disk_image
+        svm_cache = g.cloudlet.svmCache
+        svm_path = os.path.join(svm_cache, service.service_id)
+
+        if os.path.exists(svm_path):
+            print "Path Exists"
+
+        print svm_path
 
 
         return service
