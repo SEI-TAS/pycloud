@@ -32,4 +32,8 @@ class ImportController(BaseController):
         tar = tarfile.open(filename, "r")
         service_json = get_service_json(tar)
 
+        print service_json
+        print type(service_json)
+
+
         return service_json
