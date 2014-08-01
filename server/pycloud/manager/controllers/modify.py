@@ -138,7 +138,7 @@ class ModifyController(BaseController):
         service.service_id  = serviceId
         service.version     = request.params.get("serviceVersion")
         service.description = request.params.get("serviceDescription")
-        service.tags        = request.params.get("serviceTags")
+        service.tags        = request.params.get("serviceTags").split(',')
         service.port        = request.params.get("servicePort")
         service.num_users   = request.params.get("numClientsSupported")
 
