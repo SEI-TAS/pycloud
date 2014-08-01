@@ -23,6 +23,7 @@ def get_service_json(tar=None):
 
 class ImportController(BaseController):
 
+    @asjson
     def GET_import(self):
         filename = request.params.get("filename")
 
@@ -30,12 +31,9 @@ class ImportController(BaseController):
             return {"error": "Invalid file"}
 
         tar = tarfile.open(filename, "r")
-        service_json = get_service_json(tar)
+        service = Service(get_service_json(tar))
 
-        print service_json
-        service = Service(service_json)
-
-        print "Service ID: ", service.service_id
+        print service.vm_image.disk_image
 
 
-        return service_json
+        return service
