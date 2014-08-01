@@ -16,7 +16,7 @@ def get_service_json(tar=None):
         pass
 
     f = tar.extractfile(member)
-    val = json.loads(val)
+    val = json.loads(f.read())
     f.close()
     return val
 
