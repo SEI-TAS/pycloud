@@ -35,10 +35,15 @@ class ImportController(BaseController):
         service = Service(get_service_json(tar))
 
         svm_cache = g.cloudlet.svmCache
-        svm_path = os.path.join(svm_cache, service.service_id)
+        svm_path = os.path.join(svm_cache, service.service_id) + "2"
 
         if os.path.exists(svm_path):
-            print "Path Exists"
+            return {"error": "Service already exists"}
+
+        os.makedirs(svm_path)
+
+        tar.extract(service.vm_image.disk_image, path=svm_path)
+        tar.extract(service.vm_image.state_image, path=svm_path)
 
         print svm_path
 
