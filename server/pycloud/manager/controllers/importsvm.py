@@ -34,18 +34,24 @@ class ImportController(BaseController):
         tar = tarfile.open(filename, "r")
         service = Service(get_service_json(tar))
 
+        service.service_id += "2"
+
         svm_cache = g.cloudlet.svmCache
-        svm_path = os.path.join(svm_cache, service.service_id) + "2"
+        svm_path = os.path.join(svm_cache, service.service_id)
+        disk_image = service.vm_image.disk_image
+        state_image = service.vm_image.state_image
 
         if os.path.exists(svm_path):
             return {"error": "Service already exists"}
 
         os.makedirs(svm_path)
 
-        tar.extract(service.vm_image.disk_image, path=svm_path)
-        tar.extract(service.vm_image.state_image, path=svm_path)
+        tar.extract(disk_image, path=svm_path)
+        tar.extract(state_image, path=svm_path)
 
-        print svm_path
+        service.vm_image.disk_image = os.path.join(svm_path, disk_image)
+        service.vm_image.state_image = os.path.join(svm_path, state_image)
 
+        service.save()
 
         return service
