@@ -80,7 +80,7 @@ class LibvirtQemuMemoryHeader(object):
                     self.XML_END_ALIGNMENT - 1) // self.XML_END_ALIGNMENT) *
                     self.XML_END_ALIGNMENT) - self.HEADER_LENGTH
         if len(self.xml) > xml_len - 1:
-            raise MemoryImageError('self.xml is too large')
+            raise MemoryImageError('New XML descriptor is bigger than the space available in the saved state file for the original XML descriptor.')
 
         # Calculate header
         header = [self.HEADER_MAGIC,

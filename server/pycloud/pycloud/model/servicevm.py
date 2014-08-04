@@ -201,14 +201,17 @@ class ServiceVM(Model):
         # Get the saved state and make sure it is populated
         saved_state = VMSavedState(self.vm_image.state_image)
 
-        # Get the descriptor and update it.
-        saved_xml_descriptor = saved_state.getStoredVmDescription(ServiceVM.get_hypervisor())
-        updated_xml_descriptor_id_only = self._update_descriptor(saved_xml_descriptor, id_only=True)
-        updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
-        
         # Update the state image with the updated descriptor.
+        # NOTE: this is only needed since libvirt wont allow us to change the ID of a VM being restored through its API. 
+        # Instead, we trick it by manually changing the ID of the saved state file, so the API won't know we changed it. 
+        raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription(ServiceVM.get_hypervisor())
+        updated_xml_descriptor_id_only = self._update_descriptor(raw_saved_xml_descriptor, id_only=True)
         saved_state.updateStoredVmDescription(updated_xml_descriptor_id_only)
 
+        # Get the descriptor and update it to include the current disk image path, port mappings, etc.
+        saved_xml_descriptor = saved_state.getStoredVmDescription(ServiceVM.get_hypervisor())
+        updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
+        
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
         # The XML descriptor is given since some things have changed, though effectively it is not used here since
         # the memory image file has already been merged with this in the statement above.
