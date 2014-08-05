@@ -4,7 +4,7 @@
 # Used for status handling.
 import sys  
 
-from pycloud.pycloud.servicevm import svmtool
+from pycloud.pycloud.vm import svmtool
 
 ################################################################################################################
 # The call to the actual main function.

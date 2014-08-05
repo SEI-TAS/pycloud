@@ -5,7 +5,6 @@ from pymongo.errors import ConnectionFailure
 import psutil
 import os
 import shutil
-from pycloud.pycloud.servicevm import instancemanager
 from pycloud.pycloud.utils import portmanager
 from pycloud.pycloud.vm.vmutils import destroy_all_vms
 import pycloud.pycloud.mongo.model as model
@@ -63,13 +62,7 @@ class Cloudlet(object):
         # New config params
         self.service_cache = config['pycloud.servicevm.cache']
 
-        # TODO: this introduces an ungly circular dependency...
-        # TODO: self.instanceManager should be removed
-        # Create the ServiceVM Instance Manager, which will be used by several apps.
-        self.instanceManager = instancemanager.ServiceVMInstanceManager(self)
-
         print 'cloudlet created.'
-
 
     @staticmethod
     def system_information():
