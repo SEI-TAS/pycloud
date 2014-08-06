@@ -10,18 +10,11 @@ from pycloud.pycloud.mongo import Model
 from pycloud.pycloud.model.vmimage import VMImage
 from pycloud.pycloud.vm.vmsavedstate import VMSavedState
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineDescriptor
+from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineException
 from pycloud.pycloud.vm.vncclient import VNCClient
 from pycloud.pycloud.utils import portmanager
 from pylons import g
 import os
-
-################################################################################################################
-# Exception type used in our system.
-################################################################################################################
-class VirtualMachineException(Exception):
-    def __init__(self, message):
-        super(VirtualMachineException, self).__init__(message)
-        self.message = message
 
 ################################################################################################################
 # Represents a runtime ServiceVM, idependent on whether it has a cloned or original disk image.
