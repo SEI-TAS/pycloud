@@ -3,7 +3,7 @@ __author__ = 'jdroot'
 # Used to parse the XML for the VirtualMachineDescriptor.
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
-from runningvm import VirtualMachineException
+from pycloud.pycloud.model.servicevm import VirtualMachineException
 import os
 
 ################################################################################################################
