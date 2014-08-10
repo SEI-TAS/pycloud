@@ -70,9 +70,6 @@ class LibvirtQemuMemoryHeader(object):
     def write(self, fh, extend=False):
         '''extend=True does not update the internal state used by
         seek_body().'''
-        # Remove extra spaces that are sometimes added by parsers.
-        self.xml = self.xml.replace(" />", "/>")
-        
         # Calculate new XML length
         xml_len = self._xml_len
         if extend and xml_len - 1 < len(self.xml) + self.XML_MINIMUM_PAD:
