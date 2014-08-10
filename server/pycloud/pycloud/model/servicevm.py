@@ -183,6 +183,7 @@ class ServiceVM(Model):
         print "Starting a new VM..."  
         try:
             ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
+            print "VM successfully created and started."
         except:
             # Ensure we destroy the VM if there was some problem after creating it.
             self.destroy()
@@ -192,15 +193,15 @@ class ServiceVM(Model):
         self.running = True
 
     ################################################################################################################
-    # Start this service vm
-    # TODO: call "resume" if there is no saved state?
+    # Start this service VM. 
+    # TODO: 
     ################################################################################################################
     def start(self):
         # Check if we are already running.
         if self.running:
             return self
         
-        # Make sure libvirt can read our files
+        # Make sure libvirt can write to our files (since the disk image will be modified by the VM).
         self.vm_image.unprotect()
 
         # Get the saved state and make sure it is populated
@@ -218,16 +219,26 @@ class ServiceVM(Model):
         updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
         
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
-        # The XML descriptor is given since some things have changed, though effectively it is not used here since
-        # the memory image file has already been merged with this in the statement above.
+        # The XML descriptor is given since some things need to be changed for the instance, mainly the disk image file and the mapped ports.
         try:
             print "Resuming from VM image..."
             ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
             print "Resumed from VM image."
             self.running = True
         except libvirt.libvirtError as e:
-            message = "Error resuming VM: %s for VM; error is: %s" % (str(self._id), str(e))
-            raise VirtualMachineException(message)
+            # If we could not resume the VM, discard the memory state and try to boot the VM from scratch.
+            print "Error resuming VM: %s for VM; error is: %s" % (str(self._id), str(e))
+            print "Discarding saved state and attempting to cold boot VM."
+            
+            # Simply try creating a new VM with the same disk image and XML descriptor.
+            try:
+                ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
+                self.running = True
+                print "VM reboot was successful."
+            except:
+                # Ensure we destroy the VM if there was some problem after creating it.
+                self.destroy()
+                raise
 
         return self
 
