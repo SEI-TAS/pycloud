@@ -3,6 +3,9 @@ __author__ = 'jdroot'
 # Import libvirt to access the virtualization API.
 import libvirt
 
+# For regexp matching.
+import re
+
 # Used to generate unique IDs for the VMs.
 from uuid import uuid4
 
@@ -154,6 +157,15 @@ class ServiceVM(Model):
         # Get the resulting XML string and return it.
         updated_xml_descriptor = xml_descriptor.getAsString()
         return updated_xml_descriptor
+    
+    ################################################################################################################
+    # Updates the name and id of an xml by simply replacing the text, without parsing, to ensure the result will
+    # be exactly the same as before.
+    ################################################################################################################    
+    def _update_raw_name_and_id(self, saved_xml_string):
+        updated_xml = re.sub(r"<uuid>[\w\-]+</uuid>", "<uuid>%s</uuid>" % self._id, saved_xml_string)
+        updated_xml = re.sub(r"<name>[\w\-]+</name>", "<name>%s</name>" % (self.prefix + '-' + self._id), updated_xml)
+        return updated_xml
 
     ################################################################################################################
     # Create a new service VM from a given template, and start it.
@@ -198,7 +210,7 @@ class ServiceVM(Model):
         # NOTE: this is only needed since libvirt wont allow us to change the ID of a VM being restored through its API. 
         # Instead, we trick it by manually changing the ID of the saved state file, so the API won't know we changed it. 
         raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription(ServiceVM.get_hypervisor())
-        updated_xml_descriptor_id_only = self._update_descriptor(raw_saved_xml_descriptor, id_only=True)
+        updated_xml_descriptor_id_only = self._update_raw_name_and_id(raw_saved_xml_descriptor)
         saved_state.updateStoredVmDescription(updated_xml_descriptor_id_only)
 
         # Get the descriptor and update it to include the current disk image path, port mappings, etc.
