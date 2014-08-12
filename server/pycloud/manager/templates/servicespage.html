@@ -1,5 +1,4 @@
 <%inherit file="base.html"/>
-<%namespace file="form.html" import="text"/>
 
 <%block name="header">
     ${parent.header()}
@@ -30,7 +29,10 @@
             <div class="modal-body">
                 <div class="well">
                     <form id="new-svm-form" class="form-horizontal" action="" method="post">
-                        ${text(id='csvm', input_width=12, label=_('Exported Cloudlet Service VM (.csvm)'))}
+                        <label for="csvm" class="control-label">Exported Cloudlet Service VM (.csvm)</label>
+                        <div class="">
+                            <input type="text" class="form-control" placeholder="Exported Cloudlet Service VM (.csvm)" name="csvm" id="csvm"/>
+                        </div>
                     </form>
                 </div>
             </div>
