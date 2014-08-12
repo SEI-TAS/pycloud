@@ -61,6 +61,7 @@ function removeService(removeUrl)
 
 function export_svm(url)
 {
+    console.log("export called");
     var dialog = WaitDialog("Exporting Service");
     dialog.show();
 
