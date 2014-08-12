@@ -106,6 +106,9 @@ def generateActionButtons(col_num, i, item):
     # Ajax URL to remove the service.
     removeServiceURL = h.url_for(controller='services', action='removeService', id=item["service_id"])
     removeButton = HTML.button("Remove Service", onclick="removeServiceConfirmation('" + removeServiceURL + "', '" + item["service_id"] + "');", class_="btn btn-primary btn")
-    
+
+    export_url = h.url_for(controller='export', action='export_svm', sid=item['service_id'])
+    export_button = HTML.button("Export", onclick="export_svm('" + export_url + "');", class_="btn btn-primary")
+
     # Render the buttons.
-    return HTML.td(editButton + literal("&nbsp;") + removeButton  )       
+    return HTML.td(editButton + literal("&nbsp;") + removeButton + export_button )
