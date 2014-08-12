@@ -58,3 +58,25 @@ function removeService(removeUrl)
         }
     });
 }
+
+function export_svm(url)
+{
+    var dialog = WaitDialog("Exporting Service");
+    dialog.show();
+
+    $.ajax({
+       url: url,
+       dataType: 'json',
+        success: function(resp) {
+            dialog.hide();
+            if (!ajaxCallWasSuccessful(resp))
+            {
+                showAndLogErrorMessage('There wsa a problem exporting the service.');
+            }
+        },
+        error: function (req, status, err) {
+            dialog.hide();
+            showAndLogErrorMessage('There was a problem exporting the service.', status, err );
+        }
+    });
+}
