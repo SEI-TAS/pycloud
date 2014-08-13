@@ -49,13 +49,17 @@ class ImportController(BaseController):
 
         os.makedirs(svm_path)
 
-        tar.extract(disk_image, path=svm_path)
-        tar.extract(state_image, path=svm_path)
+        try:
+            tar.extract(disk_image, path=svm_path)
+            tar.extract(state_image, path=svm_path)
 
-        service.vm_image.disk_image = os.path.join(svm_path, disk_image)
-        service.vm_image.state_image = os.path.join(svm_path, state_image)
+            service.vm_image.disk_image = os.path.join(svm_path, disk_image)
+            service.vm_image.state_image = os.path.join(svm_path, state_image)
 
-        service.save()
+            service.save()
+        except Exception as e:
+            print "Exception while importing: ", str(e)
+            return {"error", str(e)}
 
         print "Done importing!"
 

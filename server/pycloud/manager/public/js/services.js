@@ -47,9 +47,9 @@ function removeService(removeUrl)
                 showAndLogErrorMessage('There was a problem removing the service.');
             }
             else
-            {             
+            {
                 // Reload page to show changes.
-                window.location.href = window.location.href;
+                window.location.reload();
             }
         },
         error: function( req, status, err ) {
@@ -90,23 +90,20 @@ function import_svm(url, file_path)
     var dialog = WaitDialog("Importing Service");
     dialog.show();
 
-    console.log("Importing with: " + url + "?filename=" + file_path);
-
     $.ajax({
         url: url + "?filename=" + file_path,
         dataType: 'json',
         success: function(resp) {
-            console.log("Import successful: ");
-            console.log(resp);
             dialog.hide();
-            if (!ajaxCallWasSuccessful(resp))
+            if (resp.hasOwnProperty('error'))
             {
-                showAndLogErrorMessage('There was a problem importing the service.');
+                alert("Error insert service: " + resp.error);
+                showAndLogErrorMessage('There was a problem importing the service: ' + resp.error);
             }
             else
             {
                 // Reload page to show changes.
-                window.location.href = window.location.href;
+                window.location.reload();
             }
         },
         error: function (req, status, err) {
