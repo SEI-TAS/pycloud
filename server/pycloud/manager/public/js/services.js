@@ -87,7 +87,7 @@ function export_svm(url)
 
 function import_svm(url, input_element)
 {
-    console.log("Value: " + $("#csvm_path").value)
+    console.log("Value: " + $("#csvm_path").val())
 //    var dialog = WaitDialog("Importing Service");
 //    dialog.show();
 //
