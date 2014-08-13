@@ -1,6 +1,6 @@
 __author__ = 'jdroot'
 
-from pycloud.pycloud.mongo import Model
+from pycloud.pycloud.mongo import Model, ObjectID
 from pycloud.pycloud.model.vmimage import VMImage
 from pycloud.pycloud.model.servicevm import ServiceVM
 import os
@@ -13,7 +13,7 @@ class Service(Model):
     # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
         collection = "services"
-        external = ['service_id', 'description', 'version', 'tags']
+        external = ['_id', 'service_id', 'description', 'version', 'tags']
         mapping = {
             'vm_image': VMImage
         }
@@ -22,7 +22,6 @@ class Service(Model):
     # Constructor.
     ################################################################################################################
     def __init__(self, *args, **kwargs):
-        self._id = None
         self.service_id = None
         self.vm_image = None
         self.description = None
@@ -33,6 +32,21 @@ class Service(Model):
         self.ideal_memory = None
         self.min_memory = None
         super(Service, self).__init__(*args, **kwargs)
+        
+    ################################################################################################################
+    # Locate a service by its ID
+    ################################################################################################################
+    # noinspection PyBroadException
+    @staticmethod
+    def by_internal_id(sid=None):
+        rid = sid
+        if not isinstance(rid, ObjectID):
+            # noinspection PyBroadException
+            try:
+                rid = ObjectID(rid)
+            except:
+                return None
+        return Service.find_one({'_id': rid})   
 
     ################################################################################################################
     # Locate a service by its ID
