@@ -26,15 +26,18 @@ class ImportController(BaseController):
 
     @asjson
     def GET_import(self):
+        print "Starting SVM import"
         filename = request.params.get("filename")
 
         if not filename.endswith(".csvm"):
             return {"error": "Invalid file"}
+        if not os.path.exists(filename):
+            return {"error": "File does not exist"}
+
+        print "Importing file: ", filename
 
         tar = tarfile.open(filename, "r")
         service = Service(get_service_json(tar))
-
-        service.service_id += "2"
 
         svm_cache = g.cloudlet.svmCache
         svm_path = os.path.join(svm_cache, service.service_id)
@@ -53,5 +56,7 @@ class ImportController(BaseController):
         service.vm_image.state_image = os.path.join(svm_path, state_image)
 
         service.save()
+
+        print "Done importing!"
 
         return service

@@ -90,14 +90,18 @@ function import_svm(url, file_path)
     var dialog = WaitDialog("Importing Service");
     dialog.show();
 
+    console.log("Importing with: " + url + "?filename=" + file_path);
+
     $.ajax({
         url: url + "?filename=" + file_path,
         dataType: 'json',
         success: function(resp) {
+            console.log("Import successful: ");
+            console.log(resp);
             dialog.hide();
             if (!ajaxCallWasSuccessful(resp))
             {
-                showAndLogErrorMessage('There wsa a problem importing the service.');
+                showAndLogErrorMessage('There was a problem importing the service.');
             }
             else
             {
