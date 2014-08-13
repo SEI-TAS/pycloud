@@ -85,30 +85,29 @@ function export_svm(url)
     });
 }
 
-function import_svm(url, input_element)
+function import_svm(url, file_path)
 {
-    console.log("Value: " + $("#csvm_path").val())
-//    var dialog = WaitDialog("Importing Service");
-//    dialog.show();
-//
-//    $.ajax({
-//        url: url + "?filename=" + file_path,
-//        dataType: 'json',
-//        success: function(resp) {
-//            dialog.hide();
-//            if (!ajaxCallWasSuccessful(resp))
-//            {
-//                showAndLogErrorMessage('There wsa a problem importing the service.');
-//            }
-//            else
-//            {
-//                // Reload page to show changes.
-//                window.location.href = window.location.href;
-//            }
-//        },
-//        error: function (req, status, err) {
-//            dialog.hide();
-//            showAndLogErrorMessage('There was a problem exporting the service.', status, err );
-//        }
-//    });
+    var dialog = WaitDialog("Importing Service");
+    dialog.show();
+
+    $.ajax({
+        url: url + "?filename=" + file_path,
+        dataType: 'json',
+        success: function(resp) {
+            dialog.hide();
+            if (!ajaxCallWasSuccessful(resp))
+            {
+                showAndLogErrorMessage('There wsa a problem importing the service.');
+            }
+            else
+            {
+                // Reload page to show changes.
+                window.location.href = window.location.href;
+            }
+        },
+        error: function (req, status, err) {
+            dialog.hide();
+            showAndLogErrorMessage('There was a problem exporting the service.', status, err );
+        }
+    });
 }
