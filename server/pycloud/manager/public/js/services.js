@@ -68,6 +68,8 @@ function export_svm(url)
        url: url,
        dataType: 'json',
         success: function(resp) {
+            console.log("Response:");
+            console.log(resp);
             dialog.hide();
             if (!ajaxCallWasSuccessful(resp))
             {
