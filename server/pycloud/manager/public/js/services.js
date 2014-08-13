@@ -68,8 +68,6 @@ function export_svm(url)
        url: url,
        dataType: 'json',
         success: function(resp) {
-            console.log("Response:");
-            console.log(resp);
             dialog.hide();
             if (!ajaxCallWasSuccessful(resp))
             {
@@ -99,6 +97,7 @@ function import_svm(url, file_path)
             dialog.hide();
             if (resp.hasOwnProperty('error'))
             {
+                alert("Error insert service: " + resp.error);
                 showAndLogErrorMessage('There was a problem importing the service: ' + resp.error);
             }
             else
