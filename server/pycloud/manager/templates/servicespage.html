@@ -28,17 +28,17 @@
             </div>
             <div class="modal-body">
                 <div class="well">
-                    <form id="new-svm-form" class="form-horizontal" action="" method="post">
-                        <label for="csvm" class="control-label">Exported Cloudlet Service VM (.csvm)</label>
+                    <form id="new-svm-form" class="form-horizontal" action="" method="">
+                        <label for="csvm_path" class="control-label">Exported Cloudlet Service VM (.csvm)</label>
                         <div class="">
-                            <input type="text" class="form-control" placeholder="Exported Cloudlet Service VM (.csvm)" name="csvm" id="csvm"/>
+                            <input type="text" class="form-control" placeholder="Exported Cloudlet Service VM (.csvm)" name="csvm_path" id="csvm_path"/>
                         </div>
                     </form>
                 </div>
             </div>
             <div class="modal-footer">
                 <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
-                <a href="#" class="btn btn-primary new-svm-action">Import</a>
+                <a href="#" class="btn btn-primary new-svm-action" onclick="import_svm();">Import</a>
             </div>
         </div>
     </div>

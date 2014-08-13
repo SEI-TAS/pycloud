@@ -61,7 +61,6 @@ function removeService(removeUrl)
 
 function export_svm(url)
 {
-    console.log("export called");
     var dialog = WaitDialog("Exporting Service");
     dialog.show();
 
@@ -74,10 +73,42 @@ function export_svm(url)
             {
                 showAndLogErrorMessage('There wsa a problem exporting the service.');
             }
+            else
+            {
+                Alert("success", "The service has been exported to: " + resp);
+            }
         },
         error: function (req, status, err) {
             dialog.hide();
             showAndLogErrorMessage('There was a problem exporting the service.', status, err );
         }
     });
+}
+
+function import_svm(url, input_element)
+{
+    console.log("Value: " + $("#csvm_path").value)
+//    var dialog = WaitDialog("Importing Service");
+//    dialog.show();
+//
+//    $.ajax({
+//        url: url + "?filename=" + file_path,
+//        dataType: 'json',
+//        success: function(resp) {
+//            dialog.hide();
+//            if (!ajaxCallWasSuccessful(resp))
+//            {
+//                showAndLogErrorMessage('There wsa a problem importing the service.');
+//            }
+//            else
+//            {
+//                // Reload page to show changes.
+//                window.location.href = window.location.href;
+//            }
+//        },
+//        error: function (req, status, err) {
+//            dialog.hide();
+//            showAndLogErrorMessage('There was a problem exporting the service.', status, err );
+//        }
+//    });
 }
