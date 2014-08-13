@@ -47,9 +47,9 @@ function removeService(removeUrl)
                 showAndLogErrorMessage('There was a problem removing the service.');
             }
             else
-            {             
+            {
                 // Reload page to show changes.
-                window.location.href = window.location.href;
+                window.location.reload();
             }
         },
         error: function( req, status, err ) {
