@@ -38,7 +38,7 @@
             </div>
             <div class="modal-footer">
                 <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
-                <a href="#" class="btn btn-primary new-svm-action" onclick="import_svm();">Import</a>
+                <a href="#" class="btn btn-primary new-svm-action" onclick="import_svm(${h.url_for('import_svm')}, $('#csvm_path').val());">Import</a>
             </div>
         </div>
     </div>
