@@ -9,14 +9,14 @@
 </%block>
 
 <div class="panel panel-default">
-  <div class="panel-body">
-    <a class="btn btn-large btn-primary" href="${h.url_for(controller='modify')}">Create New Service</a>
-    <button class="btn btn-large btn-primary" data-toggle="modal" data-target="#modal-import-servicevm">Import a Service</button>
-    <br><br>
-    <table class="table table-striped table-bordered table-condensed">
-        ${page.servicesGrid}
-    </table>
-  </div>
+    <div class="panel-body">
+        <a class="btn btn-large btn-primary" href="${h.url_for(controller='modify')}">Create New Service</a>
+        <button class="btn btn-large btn-primary" data-toggle="modal" data-target="#modal-import-servicevm">Import a Service</button>
+        <br><br>
+        <table class="table table-striped table-bordered table-condensed">
+            ${page.servicesGrid}
+        </table>
+    </div>
 </div>
 
 <div class="modal fade" id="modal-import-servicevm" role="dialog" data-backdrop="static">
@@ -28,14 +28,17 @@
             </div>
             <div class="modal-body">
                 <div class="well">
-                    <form id="new-svm-form" class="form-horizontal" action="${page.createSVMURL}" method="post">
-                        ${text(id='csvm', input_width=12, label=_('Exported Cloudlet Service VM (.csvm)'))}
+                    <form id="new-svm-form" class="form-horizontal" action="" method="">
+                        <label for="csvm_path" class="control-label">Exported Cloudlet Service VM (.csvm)</label>
+                        <div class="">
+                            <input type="text" class="form-control" placeholder="Exported Cloudlet Service VM (.csvm)" name="csvm_path" id="csvm_path"/>
+                        </div>
                     </form>
                 </div>
             </div>
             <div class="modal-footer">
                 <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
-                <a href="#" class="btn btn-primary new-svm-action">Import</a>
+                <a href="#" class="btn btn-primary new-svm-action" onclick="import_svm('${h.url_for('import_service')}', $('#csvm_path').val());">Import</a>
             </div>
         </div>
     </div>

@@ -16,7 +16,7 @@ from pycloud.pycloud.model import Service, ServiceVM, VMImage
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.pylons.lib.util import dumps
 
-from pycloud.manager.lib.pages import ModifyPage
+from pycloud.manager.lib.pages import ModifyPage, ImportPage
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class ModifyController(BaseController):
     JSON_NOT_OK = { "STATUS" : "NOT OK"}
 
     ################################################################################################################ 
-    # Called when laading the page to add or edit a service.
+    # Called when loading the page to add or edit a service.
     ################################################################################################################ 
     def GET_index(self, id=None):
         # Mark the active tab.
@@ -44,6 +44,22 @@ class ModifyController(BaseController):
 
         # Render the page with the data.
         return page.render()
+    
+    
+
+    def GET_import(self):
+        # Mark the active tab.
+        c.services_active = 'active'
+
+        page = ImportPage()
+        page.form_values = {}
+        page.form_errors = {}
+
+        return page.render()
+
+    def POST_import(self):
+        pass
+
     
     ################################################################################################################ 
     # Loads data about the stored service vm into a page, and returns the filled page.
@@ -67,21 +83,18 @@ class ModifyController(BaseController):
         if(creatingNew):
             # We are creating a new service.
             page.newService = True
-            page.serviceID = ''
-            page.serviceIDChangeDisabled = False
+            page.internalServiceId = ''
         else:
-            # We are editing an existing service.
-            page.newService = False
-            page.serviceID = serviceID.strip()
-            page.serviceIDChangeDisabled = True
-            
             # Look for the service with this id.
             service = Service.by_id(serviceID)
             
-            # Set the data fields.
-            page.form_values['serviceID'] = serviceID
+            # We are editing an existing service.
+            page.newService = False
+            page.internalServiceId = service._id
+            
             if service:
                 # Metadata values.
+                page.form_values['serviceID'] = service.service_id
                 page.form_values['servicePort'] = service.port
                 page.form_values['serviceDescription'] = service.description
                 page.form_values['serviceVersion'] = service.version
@@ -109,22 +122,33 @@ class ModifyController(BaseController):
     def POST_index(self):
         # Mark the active tab.
         c.services_active = 'active'
+
+        # Get the internal id.        
+        internalServiceId = request.params.get("internalServiceId")
+        print 'Internal service id ' + internalServiceId
         
-        # Look for the service with this id.
-        serviceId = request.params.get("serviceID")
-        if not serviceId:
-            serviceId = request.params.get("originalServiceID")
-        serviceId = serviceId.strip()
-        print 'Creating new service with id ' + serviceId
-        service = Service.by_id(serviceId)
-        if not service:
+        # Check if there is another service already with this service id.
+        service_id  = request.params.get("serviceID")
+        previous_service = Service.by_id(service_id)
+        if previous_service and previous_service._id != internalServiceId:
+            # TODO: somehow notify the error.
+            print "A service can't have the same service id as an existing service."
+            return redirect_to(controller='services')
+        
+        # Look for a service with this id.
+        service = Service.by_internal_id(internalServiceId)
+        if not internalServiceId or not service:
+            # If we didn't get an internal service id or we couldn't find such service, we are creating a new one.
+            print 'Creating new service'
             service = Service()
+        else:
+            print 'Service found, with internal id ' + str(service._id)
         
         # Service
-        service._id         = serviceId
+        service.service_id  = request.params.get("serviceID")
         service.version     = request.params.get("serviceVersion")
         service.description = request.params.get("serviceDescription")
-        service.tags        = request.params.get("serviceTags")
+        service.tags        = request.params.get("serviceTags").split(',')
         service.port        = request.params.get("servicePort")
         service.num_users   = request.params.get("numClientsSupported")
 

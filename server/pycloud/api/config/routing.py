@@ -18,7 +18,6 @@ def make_map():
     # ServiceVM Controller actions. 
     connect('list', '/servicevm/listServices', controller='services', action='list')    
     connect('find', '/servicevm/find', controller='services', action='find')
-    connect('test', '/servicevm/test', controller='services', action='test')
 
     connect('startvm', '/servicevm/start', controller='servicevm', action='start')
     connect('stopvm', '/servicevm/stop', controller='servicevm', action='stop')

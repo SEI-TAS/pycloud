@@ -6,3 +6,4 @@ mako>=0.5
 pymongo>=2.6.3
 paramiko
 psutil==2.0.0
+pylzma==0.4.4

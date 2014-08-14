@@ -62,6 +62,9 @@ class Cloudlet(object):
         # New config params
         self.service_cache = config['pycloud.servicevm.cache']
 
+        # Export
+        self.export_path = config['pycloud.export.default']
+
         print 'cloudlet created.'
 
     @staticmethod
@@ -73,6 +76,8 @@ class Cloudlet(object):
         self._clean_instances_folder()
         self._remove_service_vms()
         portmanager.PortManager.clearPorts()
+        if not os.path.exists(self.export_path):
+            os.makedirs(self.export_path)
 
     def _clean_instances_folder(self):
         print 'Cleaning up \'%s\'' % self.svmInstancesFolder
@@ -87,8 +92,6 @@ class Cloudlet(object):
     def _remove_service_vms(self):
         from pycloud.pycloud.model import ServiceVM
         ServiceVM._collection.drop()
-
-
 
 
 class Cpu_Info(model.AttrDict):

@@ -29,7 +29,7 @@ ${parent.header()}
             <div class="panel panel-info col-sm-12">
                 <div class="panel-heading"> General </div>
                 <div class="panel-body">
-                    <input type="hidden" name="originalServiceID" id="originalServiceID" value="${page.serviceID}" />
+                    <input type="hidden" name="internalServiceId" id="internalServiceId" value="${page.internalServiceId}" />
                     ${text('serviceID', input_width=12, label=_('Service ID'), disabled=page.serviceIDChangeDisabled, mandatory=True)}
                     ${text('servicePort', input_width=12, label=_('Port'), mandatory=True)}
                     ${text('serviceVersion', input_width=12, label=_('Service Version'))}
@@ -76,7 +76,7 @@ ${parent.header()}
 
 </form>
 
-<!-- Create New Stored Service VM modal. -->
+<!-- Create New VM Image modal. -->
 <div class="modal fade" id="modal-new-servicevm" role="dialog" data-backdrop="static">
 	<div class="modal-dialog">
 		<div class="modal-content">

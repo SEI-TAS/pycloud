@@ -69,7 +69,7 @@ function openCreateVNC()
         $('#modal-new-servicevm').modal('hide');  
 
         // Notify that the process was successful.
-        showAndLogSuccessMessage('Stored Service VM was created successfully.');
+        showAndLogSuccessMessage('VM Image was created successfully.');
     };
     
     // Do the post to get data and load the modal.

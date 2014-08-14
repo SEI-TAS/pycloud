@@ -1,0 +1,36 @@
+<%namespace file="form.html" import="text"/>
+<%namespace file="form.html" import="dropdown"/>
+<%namespace file="form.html" import="browse"/>
+<%namespace file="form.html" import="hidden"/>
+
+<%inherit file="base.html"/>
+
+<%block name="header">
+    ${parent.header()}
+</%block>
+
+<%block name="title">
+    Import Service
+</%block>
+
+<%block>
+    <form id="service-form" class="form-service" method="post" action="${h.url_for('import_service')}" role="form">
+        <div class="row">
+            <div class="panel panel-primary col-sm-12">
+                ${text(id='path', input_width=12, label=_('Service VM Path'))}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="panel panel-primary col-sm-12">
+                <div class="panel-body">
+                    <div class="form-group col-sm-12">
+                        <button type="button" class="btn btn-default col-sm-offset-1 col-sm-4" name="cancelButton" id="cancelButton" onclick="history.back()">Cancel</button>
+                        <button type="button" class="btn btn-primary col-sm-offset-2 col-sm-4" name="submitButton" id="submitButton">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</%block>

@@ -47,14 +47,68 @@ function removeService(removeUrl)
                 showAndLogErrorMessage('There was a problem removing the service.');
             }
             else
-            {             
+            {
                 // Reload page to show changes.
-                window.location.href = window.location.href;
+                window.location.reload();
             }
         },
         error: function( req, status, err ) {
             dialog.hide();
             showAndLogErrorMessage('There was a problem removing the service.', status, err );
+        }
+    });
+}
+
+function export_svm(url)
+{
+    var dialog = WaitDialog("Exporting Service");
+    dialog.show();
+
+    $.ajax({
+       url: url,
+       dataType: 'json',
+        success: function(resp) {
+            dialog.hide();
+            if (!ajaxCallWasSuccessful(resp))
+            {
+                showAndLogErrorMessage('There wsa a problem exporting the service.');
+            }
+            else
+            {
+                Alert("success", "The service has been exported to: " + resp);
+            }
+        },
+        error: function (req, status, err) {
+            dialog.hide();
+            showAndLogErrorMessage('There was a problem exporting the service.', status, err );
+        }
+    });
+}
+
+function import_svm(url, file_path)
+{
+    var dialog = WaitDialog("Importing Service");
+    dialog.show();
+
+    $.ajax({
+        url: url + "?filename=" + file_path,
+        dataType: 'json',
+        success: function(resp) {
+            dialog.hide();
+            if (resp.hasOwnProperty('error'))
+            {
+                alert("Error insert service: " + resp.error);
+                showAndLogErrorMessage('There was a problem importing the service: ' + resp.error);
+            }
+            else
+            {
+                // Reload page to show changes.
+                window.location.reload();
+            }
+        },
+        error: function (req, status, err) {
+            dialog.hide();
+            showAndLogErrorMessage('There was a problem exporting the service.', status, err );
         }
     });
 }

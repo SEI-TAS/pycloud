@@ -44,12 +44,12 @@ class ServicesController(BaseController):
         # Create an item list with the info to display.
         grid_items = []
         for service in services:
-            new_item = {'service_id': service['_id'],
-                       'name': service.description,
-                       'service_internal_port': service.port,
-                       'stored_service_vm_folder': os.path.dirname(service.vm_image.disk_image),
-                       'service_vm_instances': 'SVM',
-                       'actions': 'Action'}
+            new_item = {'service_id': service.service_id,
+                        'name': service.description,
+                        'service_internal_port': service.port,
+                        'stored_service_vm_folder': os.path.dirname(service.vm_image.disk_image),
+                        'service_vm_instances': 'SVM',
+                        'actions': 'Action'}
             grid_items.append(new_item)
 
         # Create and fomat the grid.
@@ -106,6 +106,9 @@ def generateActionButtons(col_num, i, item):
     # Ajax URL to remove the service.
     removeServiceURL = h.url_for(controller='services', action='removeService', id=item["service_id"])
     removeButton = HTML.button("Remove Service", onclick="removeServiceConfirmation('" + removeServiceURL + "', '" + item["service_id"] + "');", class_="btn btn-primary btn")
-    
+
+    export_url = h.url_for(controller='export', action='export_svm', sid=item['service_id'])
+    export_button = HTML.button("Export", onclick="export_svm('" + export_url + "');", class_="btn btn-primary")
+
     # Render the buttons.
-    return HTML.td(editButton + literal("&nbsp;") + removeButton  )       
+    return HTML.td(editButton + literal("&nbsp;") + removeButton + export_button )
