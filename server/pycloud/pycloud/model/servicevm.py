@@ -253,7 +253,7 @@ class ServiceVM(Model):
         vnc_port = xml_descriptor.getVNCPort()
         
         # Connect through the VNC client and wait if required.
-        print 'Starting VNC GUI to VM.'
+        print 'Starting VNC GUI to VM (on port {}).'.format(str(vnc_port))
         if wait:
             print 'Waiting for user to close VNC GUI.'
         vnc_client = VNCClient()

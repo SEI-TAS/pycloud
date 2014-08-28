@@ -55,7 +55,7 @@ class ServicesController(BaseController):
         # Create and fomat the grid.
         servicesGrid = Grid(grid_items, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances', 'actions'])
         servicesGrid.column_formats["service_vm_instances"] = generateSVMButtons
-        servicesGrid.column_formats["actions"] = generateActionButtons
+        servicesGrid.column_formats["service_actions"] = generateActionButtons
         
         # Pass the grid and render the page.
         servicesPage = ServicesPage()
@@ -79,7 +79,7 @@ class ServicesController(BaseController):
         return self.JSON_OK        
 
 ############################################################################################################
-# Helper function to generate buttons to see the list of SVMs and to start a new instace.
+# Helper function to generate buttons to see the list of SVMs and to start a new instance.
 ############################################################################################################        
 def generateSVMButtons(col_num, i, item):    
     # Link to the list of Service VM Instances.
@@ -89,8 +89,8 @@ def generateSVMButtons(col_num, i, item):
     startInstanceUrl = h.url_for(controller='instances', action='startInstance', sid=item["service_id"])
     
     # Create a button to the list of service VM Instances, and another to start a new instance.
-    linkToSVMButton = HTML.button("View Instances", onclick=h.literal("window.location.href = '" + svmListURL + "';"), class_="btn btn-primary btn")
-    newSVMButton = HTML.button("New Instance", onclick=h.literal("startSVM('"+ startInstanceUrl +"', '"+ svmListURL +"')"), class_="btn btn-primary btn")
+    linkToSVMButton = HTML.button("View All", onclick=h.literal("window.location.href = '" + svmListURL + "';"), class_="btn btn-primary btn")
+    newSVMButton = HTML.button("New SVM", onclick=h.literal("startSVM('"+ startInstanceUrl +"', '"+ svmListURL +"')"), class_="btn btn-primary btn")
 
     # Render the buttons.
     return HTML.td(linkToSVMButton + literal("&nbsp;") + newSVMButton)
@@ -101,14 +101,14 @@ def generateSVMButtons(col_num, i, item):
 def generateActionButtons(col_num, i, item):
     # Link and button to edit the service.
     editServiceURL = h.url_for(controller='modify', action='index', id=item["service_id"])
-    editButton = HTML.button("Edit Service", onclick=h.literal("window.location.href = '" + editServiceURL + "';"), class_="btn btn-primary btn")
+    editButton = HTML.button("Edit", onclick=h.literal("window.location.href = '" + editServiceURL + "';"), class_="btn btn-primary btn")
     
     # Ajax URL to remove the service.
     removeServiceURL = h.url_for(controller='services', action='removeService', id=item["service_id"])
-    removeButton = HTML.button("Remove Service", onclick="removeServiceConfirmation('" + removeServiceURL + "', '" + item["service_id"] + "');", class_="btn btn-primary btn")
+    removeButton = HTML.button("Remove", onclick="removeServiceConfirmation('" + removeServiceURL + "', '" + item["service_id"] + "');", class_="btn btn-primary btn")
 
     export_url = h.url_for(controller='export', action='export_svm', sid=item['service_id'])
     export_button = HTML.button("Export", onclick="export_svm('" + export_url + "');", class_="btn btn-primary")
 
     # Render the buttons.
-    return HTML.td(editButton + literal("&nbsp;") + removeButton + export_button )
+    return HTML.td(editButton + literal("&nbsp;") + removeButton + literal("&nbsp;") + export_button )
