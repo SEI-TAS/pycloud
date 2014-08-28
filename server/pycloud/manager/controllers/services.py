@@ -49,7 +49,7 @@ class ServicesController(BaseController):
                         'service_internal_port': service.port,
                         'stored_service_vm_folder': os.path.dirname(service.vm_image.disk_image),
                         'service_vm_instances': 'SVM',
-                        'actions': 'Action'}
+                        'service_actions': 'Action'}
             grid_items.append(new_item)
 
         # Create and fomat the grid.
