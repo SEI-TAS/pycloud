@@ -49,6 +49,7 @@ class ServiceVM(Model):
         self.service_port = None
         self.port = None  # Used to show the external port
         self.ssh_port = None
+        self.vnc_port = None
         self.service_id = None
         self.running = False
         super(ServiceVM, self).__init__(*args, **kwargs)
@@ -184,7 +185,8 @@ class ServiceVM(Model):
         try:
             ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
             print "VM successfully created and started."
-            print "VNC available on localhost:{}".format(str(self.__get_vnc_port()))
+            self.vnc_port = self.__get_vnc_port()
+            print "VNC available on localhost:{}".format(str(self.vnc_port))
         except:
             # Ensure we destroy the VM if there was some problem after creating it.
             self.destroy()
@@ -224,7 +226,8 @@ class ServiceVM(Model):
             print "Resuming from VM image..."
             ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
             print "Resumed from VM image."
-            print "VNC available on localhost:{}".format(str(self.__get_vnc_port()))
+            self.vnc_port = self.__get_vnc_port()
+            print "VNC available on localhost:{}".format(str(self.vnc_port))
             self.running = True
         except libvirt.libvirtError as e:
             # If we could not resume the VM, discard the memory state and try to boot the VM from scratch.

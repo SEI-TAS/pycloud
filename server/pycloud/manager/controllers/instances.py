@@ -46,13 +46,14 @@ class InstancesController(BaseController):
                     'service_id': svm.service_id,
                     'service_external_port': svm.port,
                     'ssh_port': svm.ssh_port,
-                    'folder': os.path.dirname(svm.vm_image.disk_image),
+                    'vnc_port': svm.vnc_port,
+                    #'folder': os.path.dirname(svm.vm_image.disk_image),
                     'action': 'Stop'
                 }
             )
 
         # Create and format the grid.
-        instancesGrid = Grid(grid_items, ['instance_id', 'service_id', 'service_external_port', 'ssh_port', 'folder', 'action'])
+        instancesGrid = Grid(grid_items, ['instance_id', 'service_id', 'service_external_port', 'ssh_port', 'vnc_port', 'action'])
         instancesGrid.column_formats["service_id"] = generate_service_id_link
         instancesGrid.column_formats["action"] = generate_action_buttons
 
