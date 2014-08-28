@@ -53,7 +53,7 @@ class ServicesController(BaseController):
             grid_items.append(new_item)
 
         # Create and fomat the grid.
-        servicesGrid = Grid(grid_items, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances', 'actions'])
+        servicesGrid = Grid(grid_items, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances', 'service_actions'])
         servicesGrid.column_formats["service_vm_instances"] = generateSVMButtons
         servicesGrid.column_formats["service_actions"] = generateActionButtons
         
