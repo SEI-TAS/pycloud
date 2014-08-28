@@ -70,10 +70,7 @@ class ModifyController(BaseController):
         page.form_errors = {}
         
         # URL to create a new Service VM.
-        page.createSVMURL =  h.url_for(controller="modify", action='createSVM')
-        
-        # URL to open an SVM.
-        page.openSVMURL = h.url_for(controller="instances", action='startInstance')
+        page.createSVMURL = h.url_for(controller="modify", action='createSVM')
 
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
@@ -81,6 +78,7 @@ class ModifyController(BaseController):
             # We are creating a new service.
             page.newService = True
             page.internalServiceId = ''
+            page.openSVMURL = '#'
         else:
             # Look for the service with this id.
             service = Service.by_id(serviceID)
@@ -88,7 +86,10 @@ class ModifyController(BaseController):
             # We are editing an existing service.
             page.newService = False
             page.internalServiceId = service._id
-            
+
+            # URL to open an SVM.
+            page.openSVMURL = h.url_for(controller='instances', action='startInstance', sid=serviceID)
+
             if service:
                 # Metadata values.
                 page.form_values['serviceID'] = service.service_id
