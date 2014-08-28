@@ -184,6 +184,7 @@ class ServiceVM(Model):
         try:
             ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
             print "VM successfully created and started."
+            print "VNC available on localhost:{}".format(str(self.__get_vnc_port()))
         except:
             # Ensure we destroy the VM if there was some problem after creating it.
             self.destroy()
@@ -223,6 +224,7 @@ class ServiceVM(Model):
             print "Resuming from VM image..."
             ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
             print "Resumed from VM image."
+            print "VNC available on localhost:{}".format(str(self.__get_vnc_port()))
             self.running = True
         except libvirt.libvirtError as e:
             # If we could not resume the VM, discard the memory state and try to boot the VM from scratch.
@@ -242,15 +244,20 @@ class ServiceVM(Model):
         return self
 
     ################################################################################################################
+    # Gets the host port the VNC server is listening on for this vm, which was automatically allocated by libvirt/qemu.
+    ################################################################################################################
+    def __get_vnc_port(self):
+        vm_xml_string = ServiceVM._get_virtual_machine(self._id).XMLDesc(libvirt.VIR_DOMAIN_XML_SECURE)
+        xml_descriptor = VirtualMachineDescriptor(vm_xml_string)
+        vnc_port = xml_descriptor.getVNCPort()
+        return vnc_port
+
+    ################################################################################################################
     # Starts a VNC connection with a GUI, and, if given in the argument, waits until it is closed.
     ################################################################################################################            
     def open_vnc(self, wait=True):
-        # We have to get the XML description of the running machine to find the port available for VNC.
-        vm_xml_string = ServiceVM._get_virtual_machine(self._id).XMLDesc(libvirt.VIR_DOMAIN_XML_SECURE)
-        xml_descriptor = VirtualMachineDescriptor(vm_xml_string)
-        
-        # We can now get the VNC port, which was automatically allocated by libvirt/qemu.
-        vnc_port = xml_descriptor.getVNCPort()
+        # Get the VNC port, which was automatically allocated by libvirt/qemu.
+        vnc_port = self.__get_vnc_port()
         
         # Connect through the VNC client and wait if required.
         print 'Starting VNC GUI to VM (on port {}).'.format(str(vnc_port))
