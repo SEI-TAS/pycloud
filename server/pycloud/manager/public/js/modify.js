@@ -78,6 +78,27 @@ function openCreateVNC()
     return false;
 }
 
+startInstance
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to start a VNC window to edit an SVM.
+/////////////////////////////////////////////////////////////////////////////////////
+function startInstance(vncUrl)
+{
+    // Add the service ID to the URL.
+    serviceId = $('#serviceID').val();
+    vncUrl = vncUrl + "/" + serviceId;
+
+    // Handler to load data when received.
+    var successHandler = function(response) {
+        showAndLogSuccessMessage('Instance was started successfully, VNC open on port ' + response.VNC_PORT);
+    };
+
+    // Do the post to get data and load the modal.
+    ajaxGet(vncUrl, "Starting Instance to Modify SVM", successHandler);
+
+    return false;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to start a VNC window to edit an SVM.
 /////////////////////////////////////////////////////////////////////////////////////

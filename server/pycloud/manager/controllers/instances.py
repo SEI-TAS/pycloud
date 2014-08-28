@@ -99,7 +99,7 @@ class InstancesController(BaseController):
                 # Start the instance, if it works, save it and return ok
                 svm.start()
                 svm.save()
-                return dumps(self.JSON_OK)
+                return dumps({"STATUS": "OK", "VNC_PORT": svm.vnc_port})
             except Exception as e:
                 # If there was a problem starting the instance, return that there was an error.
                 print 'Error starting Service VM Instance: ' + str(e)

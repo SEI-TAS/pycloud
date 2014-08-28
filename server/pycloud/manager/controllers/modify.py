@@ -78,7 +78,7 @@ class ModifyController(BaseController):
             # We are creating a new service.
             page.newService = True
             page.internalServiceId = ''
-            page.openSVMURL = '#'
+            page.startInstanceURL = '#'
         else:
             # Look for the service with this id.
             service = Service.by_id(serviceID)
@@ -88,7 +88,7 @@ class ModifyController(BaseController):
             page.internalServiceId = service._id
 
             # URL to open an SVM.
-            page.openSVMURL = h.url_for(controller='instances', action='startInstance', sid=serviceID)
+            page.startInstanceURL = h.url_for(controller='instances', action='startInstance', sid=serviceID)
 
             if service:
                 # Metadata values.
