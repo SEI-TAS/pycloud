@@ -42,7 +42,13 @@ class VirtualMachineDescriptor(object):
     ################################################################################################################
     def getVNCPort(self):
         vncPort = self.xmlRoot.find("devices/graphics").get("port")
-        return vncPort    
+        return vncPort
+
+    ################################################################################################################
+    # Changes the IP address the VNC server will be listening on, to enable remote access.
+    ################################################################################################################
+    def enableRemoteVNC(self):
+        self.xmlRoot.find("devices/graphics").set("listen", "0.0.0.0")
 
     ################################################################################################################
     # Sets the path to the main disk image.

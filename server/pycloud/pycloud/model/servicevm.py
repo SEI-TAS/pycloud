@@ -155,6 +155,9 @@ class ServiceVM(Model):
                 self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.SSH_INTERNAL_PORT)
             xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
 
+            # Enable remote VNC access.
+            xml_descriptor.enableRemoteVNC()
+
         # Get the resulting XML string and return it.
         updated_xml_descriptor = xml_descriptor.getAsString()
         return updated_xml_descriptor
