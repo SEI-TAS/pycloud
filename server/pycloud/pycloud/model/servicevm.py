@@ -194,7 +194,6 @@ class ServiceVM(Model):
 
     ################################################################################################################
     # Start this service VM. 
-    # TODO: 
     ################################################################################################################
     def start(self):
         # Check if we are already running.
@@ -259,13 +258,15 @@ class ServiceVM(Model):
             print 'Waiting for user to close VNC GUI.'
         vnc_client = VNCClient()
         success = vnc_client.connectAndWait(vnc_port, wait)
-        if wait:
-            print 'VNC GUI no longer running, stopped waiting.'
+
+        if success:
+            if wait:
+                print 'VNC GUI no longer running, stopped waiting.'
+            else:
+                print 'VNC GUI has been opened.'
         else:
-            print 'VNC GUI has been opened.'
-            
-        # If there was a problem, destroy the VM.
-        if not success:
+            # If there was a problem, destroy the VM.
+            print 'VNC GUI could not be opened.'
             self.destroy()
 
     ################################################################################################################

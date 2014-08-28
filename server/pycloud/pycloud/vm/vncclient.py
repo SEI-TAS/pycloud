@@ -3,20 +3,21 @@
 
 # Used to start external processes.
 import subprocess
+import distutils.spawn
 
 ################################################################################################################
 #
 ################################################################################################################
 class VNCClient(object):   
     # Command used to connect to VNC tool, as well as default port.
-    VNC_COMMAND = 'gvncviewer'
+    VNC_EXECUTABLE = 'gvncviewer'
     VNC_CONN_ARG = "localhost:%d"
     VNC_DEFAULT_PORT = 5900
 
     ################################################################################################################
     # Starts a VNC connection, and waits till the user closes the VNC window. 
-	# Returns true if everything went ok, or false if there was a problem creating the VNC connection or if it
-	# was interrupted.
+    # Returns true if everything went ok, or false if there was a problem creating the VNC connection or if it
+    # was interrupted.
     ################################################################################################################        
     def connectAndWait(self, vncPort, wait=True):
         # Starts VNC GUI in a separate process.
@@ -43,10 +44,15 @@ class VNCClient(object):
     # Returns the VNC command to use to connect to the GUI. Only supports gvncviewer for now.
     ################################################################################################################          
     def __getVncCommand(self, vncPort):
-        # First we get the display number for gvncviewer.
+        # First check if gvncviewer is available.
+        exe_path = distutils.spawn.find_executable(self.VNC_EXECUTABLE)
+        if not exe_path:
+            raise Exception('Required VNC viewer "{}" was not found on the system.'.format(self.VNC_EXECUTABLE))
+
+        # We get the display number for gvncviewer.
         displayNumber = 0
         try:
-			# GVNCviewer uses not port, but display number, starting at 0. We have to substract the port the VM is            
+            # GVNCviewer uses not port, but display number, starting at 0. We have to substract the port the VM is
             # using from the default port to get this relative display number.
             displayNumber = int(vncPort) - self.VNC_DEFAULT_PORT
         except AttributeError as e:
@@ -54,7 +60,7 @@ class VNCClient(object):
         
         # Now we create the command itself.
         hostArgument = self.VNC_CONN_ARG % displayNumber
-        vncFullCommand = self.VNC_COMMAND + ' ' +  hostArgument
-        #print self.VNC_COMMAND + ' ' + hostArgument              
+        vncFullCommand = self.VNC_EXECUTABLE + ' ' + hostArgument
+        #print self.VNC_EXECUTABLE + ' ' + hostArgument
             
         return vncFullCommand
