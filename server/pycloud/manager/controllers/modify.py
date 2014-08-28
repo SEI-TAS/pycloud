@@ -73,11 +73,8 @@ class ModifyController(BaseController):
         page.createSVMURL =  h.url_for(controller="modify", action='createSVM')
         
         # URL to open an SVM.
-        page.openSVMURL = h.url_for(controller="modify", action='openSVM')
-        
-        # URL to create an App.
-        page.createAppURL = h.url_for(controller="modify", action='openSVM')
-                
+        page.openSVMURL = h.url_for(controller="instances", action='startInstance')
+
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
         if(creatingNew):
@@ -234,10 +231,33 @@ class ModifyController(BaseController):
         return svm.vm_image
 
     ############################################################################################################
+    # Stops and saves a Service VM that was edited.
+    ############################################################################################################
+    def GET_stopAndSaveSVM(self, id):
+        try:
+            # Save the VM state.
+            print "Saving machine state..."
+            #svm.stop()
+            print "Service VM stopped, and machine state saved."
+
+            # Destroy the service VM.
+            #svm.destroy()
+
+            # Make the VM image read only again.
+            #svm.vm_image.protect()
+        except Exception as e:
+            # If there was a problem opening the SVM, return that there was an error.
+            print 'Error saving Service VM: ' + str(e);
+            return dumps(self.JSON_NOT_OK)
+
+        # Everything went well.
+        return dumps(self.JSON_OK)
+
+    ############################################################################################################
     # Opens the Service VM in a VNC window for editing.
     # NOTE: The VNC window will only open on the computer running the server.
     ############################################################################################################
-    def GET_openSVM(self, id):        
+    def GET_openSVMAndVNC(self, id):
         # Open a VNC window to modify the VM.
         try:
             # Get the service info.
