@@ -156,7 +156,6 @@ class ServiceVM(Model):
             xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
 
             # Enable remote VNC access.
-            print saved_xml_descriptor
             xml_descriptor.enableRemoteVNC()
 
         # Get the resulting XML string and return it.
