@@ -90,7 +90,8 @@ class ModifyController(BaseController):
 
             # URL to start and save an SVM.
             page.startInstanceURL = h.url_for(controller='instances', action='startInstance', sid=serviceID)
-            page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot')
+            page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot', id=None, action_name=None)
+            print page.saveInstanceURL
 
             if service:
                 # Metadata values.
@@ -239,7 +240,7 @@ class ModifyController(BaseController):
     def GET_saveInstanceToRoot(self, id):
         try:
             # Save the VM state.
-            print "Saving machine state..."
+            print "Saving machine state for SVM with id " + str(id)
             svm = ServiceVM.find_and_remove(id)
             svm.stop()
             print "Service VM stopped, and machine state saved."
