@@ -28,6 +28,7 @@ def make_map():
     connect('/service/createSVM', controller='modify', action='createSVM')
     connect('/service/openSVM/{id}', controller='modify', action='openSVM')
     connect('/service/edit/{id}', controller='modify', action='index')
+    connect('/service/saveSVM/{id}', controller='modify', action='saveInstanceToRoot')
     
     connect('/apps', controller='apps', action='index')
     connect('/apps/list', controller='apps', action='list')

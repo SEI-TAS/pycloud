@@ -54,9 +54,11 @@ ${parent.header()}
                     ${text('vmStateImageFile', input_width=12, label=_('State Image File'), disabled=True)}
                     ${hidden('vmDiskImageFileValue')}
                     ${hidden('vmStateImageFileValue')}
+                    ${hidden('svmInstanceId')}
                     
             	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm" ${'style="display:none;"' if not page.newService else ''}>Create VM Image</button>
               	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="startInstance('${page.startInstanceURL}')" ${'style="display:none;"' if page.newService else ''}>Resume From VM Image</button>
+              	    <button type="button" class="btn btn-primary" id="save-svm-button" onclick="persistInstance('${page.saveInstanceURL}')" style="display:none;">Stop and Store From SVM</button>
                 </div>
             </div>           
             

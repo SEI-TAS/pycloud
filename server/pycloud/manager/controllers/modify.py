@@ -79,6 +79,7 @@ class ModifyController(BaseController):
             page.newService = True
             page.internalServiceId = ''
             page.startInstanceURL = '#'
+            page.saveInstanceURL = '#'
         else:
             # Look for the service with this id.
             service = Service.by_id(serviceID)
@@ -87,8 +88,9 @@ class ModifyController(BaseController):
             page.newService = False
             page.internalServiceId = service._id
 
-            # URL to open an SVM.
+            # URL to start and save an SVM.
             page.startInstanceURL = h.url_for(controller='instances', action='startInstance', sid=serviceID)
+            page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot')
 
             if service:
                 # Metadata values.
@@ -234,18 +236,23 @@ class ModifyController(BaseController):
     ############################################################################################################
     # Stops and saves a Service VM that was edited.
     ############################################################################################################
-    def GET_stopAndSaveSVM(self, id):
+    def GET_saveInstanceToRoot(self, id):
         try:
             # Save the VM state.
             print "Saving machine state..."
-            #svm.stop()
+            svm = ServiceVM.find_and_remove(id)
+            svm.stop()
             print "Service VM stopped, and machine state saved."
 
+            # Permanently store the VM, overwritting the previous one.
+            print 'Moving Service VM Image to cache.'
+            svm.vm_image.move(os.path.join(g.cloudlet.svmCache, svm.service_id))
+
             # Destroy the service VM.
-            #svm.destroy()
+            svm.destroy()
 
             # Make the VM image read only again.
-            #svm.vm_image.protect()
+            svm.vm_image.protect()
         except Exception as e:
             # If there was a problem opening the SVM, return that there was an error.
             print 'Error saving Service VM: ' + str(e);

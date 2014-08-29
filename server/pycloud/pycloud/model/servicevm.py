@@ -229,9 +229,6 @@ class ServiceVM(Model):
             print "Resuming from VM image..."
             ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
             print "Resumed from VM image."
-            self.vnc_port = self.__get_vnc_port()
-            print "VNC available on localhost:{}".format(str(self.vnc_port))
-            self.running = True
         except libvirt.libvirtError as e:
             # If we could not resume the VM, discard the memory state and try to boot the VM from scratch.
             print "Error resuming VM: %s for VM; error is: %s" % (str(self._id), str(e))
@@ -240,12 +237,15 @@ class ServiceVM(Model):
             # Simply try creating a new VM with the same disk image and XML descriptor.
             try:
                 ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
-                self.running = True
                 print "VM reboot was successful."
             except:
                 # Ensure we destroy the VM if there was some problem after creating it.
                 self.destroy()
                 raise
+
+        self.vnc_port = self.__get_vnc_port()
+        print "VNC available on localhost:{}".format(str(self.vnc_port))
+        self.running = True
 
         return self
 

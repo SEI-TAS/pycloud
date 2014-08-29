@@ -99,7 +99,7 @@ class InstancesController(BaseController):
                 # Start the instance, if it works, save it and return ok
                 svm.start()
                 svm.save()
-                return dumps({"STATUS": "OK", "VNC_PORT": svm.vnc_port})
+                return dumps({"STATUS": "OK", "SVM_ID": svm._id, "VNC_PORT": svm.vnc_port})
             except Exception as e:
                 # If there was a problem starting the instance, return that there was an error.
                 print 'Error starting Service VM Instance: ' + str(e)
@@ -112,7 +112,7 @@ class InstancesController(BaseController):
     ############################################################################################################
     def GET_stopInstance(self, id):
         try:    
-            # Use the common Instance Manager to stop an existing instance with the given ID.
+            # Stop an existing instance with the given ID.
             svm = ServiceVM.find_and_remove(id)
             svm.destroy()
         except Exception as e:

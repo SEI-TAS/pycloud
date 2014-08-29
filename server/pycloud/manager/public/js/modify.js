@@ -78,23 +78,35 @@ function openCreateVNC()
     return false;
 }
 
-startInstance
 /////////////////////////////////////////////////////////////////////////////////////
-// Function to start a VNC window to edit an SVM.
+// Function to start an instance to edit an SVM.
 /////////////////////////////////////////////////////////////////////////////////////
-function startInstance(vncUrl)
+function startInstance(url)
 {
-    // Add the service ID to the URL.
-    serviceId = $('#serviceID').val();
-    vncUrl = vncUrl + "/" + serviceId;
+    // Do the post to get data and load the modal.
+    ajaxGet(url, "Starting Instance to Modify SVM", function(response) {
+        showAndLogSuccessMessage('Instance was started successfully with id ' + response.SVM_ID + ', VNC open on port ' + response.VNC_PORT);
+        $('#svmInstanceId').val(response.SVM_ID);
+        $('#modify-svm-button').hide();
+        $('#save-svm-button').show();
+    });
 
-    // Handler to load data when received.
-    var successHandler = function(response) {
-        showAndLogSuccessMessage('Instance was started successfully, VNC open on port ' + response.VNC_PORT);
-    };
+    return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to save an edited SVM.
+/////////////////////////////////////////////////////////////////////////////////////
+function persistInstance(url)
+{
+    // Add the instance ID to the URL.
+    svmId = $('#svmInstanceId').val();
+    url = url + "/" + svmId;
 
     // Do the post to get data and load the modal.
-    ajaxGet(vncUrl, "Starting Instance to Modify SVM", successHandler);
+    ajaxGet(url, "Saving SVM", function(response) {
+        showAndLogSuccessMessage('Instance was saved successfully');
+    });
 
     return false;
 }
