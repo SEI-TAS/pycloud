@@ -83,12 +83,16 @@ function openCreateVNC()
 /////////////////////////////////////////////////////////////////////////////////////
 function startInstance(url)
 {
+    // Send additional parameter to ensure we get a full image in the instance, not a linked qcow.
+    url = url + "&full_image=True" ;
+    
     // Do the post to get data and load the modal.
     ajaxGet(url, "Starting Instance to Modify SVM", function(response) {
         showAndLogSuccessMessage('Instance was started successfully with id ' + response.SVM_ID + ', VNC open on port ' + response.VNC_PORT);
         $('#svmInstanceId').val(response.SVM_ID);
         $('#modify-svm-button').hide();
         $('#save-svm-button').show();
+        $('#discard-svm-button').show();
         $('#vnc-button').show();
     });
 
@@ -109,6 +113,29 @@ function persistInstance(url)
         showAndLogSuccessMessage('Instance was saved successfully');
         $('#modify-svm-button').show();
         $('#save-svm-button').hide();
+        $('#discard-svm-button').hide();
+        $('#vnc-button').hide();        
+    });
+
+    return false;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to discard an edited SVM.
+/////////////////////////////////////////////////////////////////////////////////////
+function discardInstance(url)
+{
+    // Add the instance ID to the URL.
+    svmId = $('#svmInstanceId').val();
+    url = url + "/" + svmId;
+
+    // Do the post to get data and load the modal.
+    ajaxGet(url, "Discarding SVM", function(response) {
+        showAndLogSuccessMessage('Instance was discarded');
+        $('#modify-svm-button').show();
+        $('#save-svm-button').hide();
+        $('#discard-svm-button').hide();
         $('#vnc-button').hide();        
     });
 

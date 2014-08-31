@@ -71,7 +71,7 @@ class Service(Model):
     ################################################################################################################
     # Returns a new or existing Service VM instance associated to this service.
     ################################################################################################################
-    def get_vm_instance(self, join=False):
+    def get_vm_instance(self, join=False, link_to_source=True):
         if join:
             svms = ServiceVM.by_service(self._id)
             for svm in svms:
@@ -82,7 +82,7 @@ class Service(Model):
         svm.generate_random_id()
         svm.service_id = self.service_id
         svm.service_port = self.port
-        svm.vm_image = self.vm_image.clone(os.path.join(g.cloudlet.svmInstancesFolder, svm['_id']))
+        svm.vm_image = self.vm_image.clone(os.path.join(g.cloudlet.svmInstancesFolder, svm['_id']), link_to_source=link_to_source)
         return svm
 
     ################################################################################################################

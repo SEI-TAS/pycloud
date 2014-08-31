@@ -75,6 +75,7 @@ class ModifyController(BaseController):
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
         page.openVNCUrl = h.url_for(controller='instances', action='openVNC', id=None, action_name=None)
+        page.stopInstanceURL = h.url_for(controller='instances', action='stopInstance', id=None, action_name=None)
         if(creatingNew):
             # We are creating a new service.
             page.newService = True
