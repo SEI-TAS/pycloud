@@ -89,6 +89,7 @@ function startInstance(url)
         $('#svmInstanceId').val(response.SVM_ID);
         $('#modify-svm-button').hide();
         $('#save-svm-button').show();
+        $('#vnc-button').show();
     });
 
     return false;
@@ -106,6 +107,9 @@ function persistInstance(url)
     // Do the post to get data and load the modal.
     ajaxGet(url, "Saving SVM", function(response) {
         showAndLogSuccessMessage('Instance was saved successfully');
+        $('#modify-svm-button').show();
+        $('#save-svm-button').hide();
+        $('#vnc-button').hide();        
     });
 
     return false;
@@ -116,13 +120,13 @@ function persistInstance(url)
 /////////////////////////////////////////////////////////////////////////////////////
 function openEditVNC(vncUrl)
 {
-    // Add the service ID to the URL.
-    serviceId = $('#serviceID').val();
-    vncUrl = vncUrl + "/" + serviceId;
+    // Add the instance ID to the URL.
+    svmId = $('#svmInstanceId').val();
+    vncUrl = vncUrl + "/" + svmId;
     
     // Handler to load data when received.
     var successHandler = function(response) {
-        showAndLogSuccessMessage('VM Image was modified successfully.');
+        showAndLogSuccessMessage('VNC window was opened locally on server.');
     };
     
     // Do the post to get data and load the modal.

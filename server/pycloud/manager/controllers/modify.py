@@ -74,6 +74,7 @@ class ModifyController(BaseController):
 
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
+        page.openVNCUrl = h.url_for(controller='instances', action='openVNC', id=None, action_name=None)
         if(creatingNew):
             # We are creating a new service.
             page.newService = True
@@ -249,11 +250,9 @@ class ModifyController(BaseController):
             print 'Moving Service VM Image to cache.'
             svm.vm_image.move(os.path.join(g.cloudlet.svmCache, svm.service_id))
 
-            # Destroy the service VM.
-            svm.destroy()
-
-            # Make the VM image read only again.
+            # Make the VM image read only.
             svm.vm_image.protect()
+            print 'VM Image updated.'
         except Exception as e:
             # If there was a problem opening the SVM, return that there was an error.
             print 'Error saving Service VM: ' + str(e);
