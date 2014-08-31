@@ -237,14 +237,14 @@ class ModifyController(BaseController):
         return svm.vm_image
 
     ############################################################################################################
-    # Stops and saves a Service VM that was edited.
+    # Stops and saves a Service VM that was edited to its permanent root VM image.
     ############################################################################################################
     def GET_saveInstanceToRoot(self, id):
         try:
             # Save the VM state.
             print "Saving machine state for SVM with id " + str(id)
             svm = ServiceVM.find_and_remove(id)
-            svm.stop()
+            svm.stop(foce_save_state=True)
             print "Service VM stopped, and machine state saved."
 
             # Permanently store the VM, overwritting the previous one.
@@ -261,45 +261,3 @@ class ModifyController(BaseController):
 
         # Everything went well.
         return dumps(self.JSON_OK)
-
-    ############################################################################################################
-    # Opens the Service VM in a VNC window for editing.
-    # NOTE: The VNC window will only open on the computer running the server.
-    ############################################################################################################
-    def GET_openSVMAndVNC(self, id):
-        # Open a VNC window to modify the VM.
-        try:
-            # Get the service info.
-            service = Service.by_id(id)
-            
-            # Get the service vm, and enable modification to its files.
-            svm = service.get_root_vm()
-            svm.vm_image.unprotect()
-
-            # Start the VM for interactive modification.
-            print "Starting VM for user access..."
-            # svm.addForwardedSshPort()
-            svm.start()
-
-            # Open a synchronous VNC window to it.
-            print "Loading VM for user access..."
-            svm.open_vnc(wait=True)
-            
-            # Save the VM state.
-            print "VNC GUI closed, saving machine state..."
-            svm.stop()
-            print "Service VM stopped, and machine state saved."
-            
-            # Destroy the service VM.
-            svm.destroy()     
-            
-            # Make the VM image read only again.
-            svm.vm_image.protect()
-        except Exception as e:
-            # If there was a problem opening the SVM, return that there was an error.
-            print 'Error opening Service VM: ' + str(e);
-            return dumps(self.JSON_NOT_OK)                  
-        
-        # Everything went well.
-        return dumps(self.JSON_OK)    
- 

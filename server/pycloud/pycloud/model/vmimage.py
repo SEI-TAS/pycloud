@@ -58,7 +58,7 @@ class VMImage(DictObject):
     ################################################################################################################
     # Will clone the disk and state image files to the specified folder
     ################################################################################################################
-    def clone(self, destination_folder, link_to_source=True):
+    def clone(self, destination_folder, clone_full_image=False):
         # Check if the destination folder already exists
         if os.path.exists(destination_folder):
             # This is an error, as we don't want to overwrite an existing disk image with a source.
@@ -72,7 +72,7 @@ class VMImage(DictObject):
             ret.cloned = True
             ret.state_image = VMImage._clone_file_to_folder(destination_folder, self.state_image)
             
-            if(link_to_source):
+            if not clone_full_image:
                 # Create a shallow qcow2 file pointing at the original image, instead of copying it, for faster startup.
                 # ret.disk_image = VMImage._clone_file_to_folder(destination_folder, self.disk_image)
                 ret.disk_image = os.path.abspath(os.path.join(destination_folder, os.path.basename(self.disk_image)))

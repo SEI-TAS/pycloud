@@ -285,7 +285,7 @@ class ServiceVM(Model):
     ################################################################################################################
     # Stop this service VM
     ################################################################################################################
-    def stop(self):
+    def stop(self, foce_save_state=False):
         # Check if this instance is actually running
         if not self.running:
             return
@@ -299,7 +299,7 @@ class ServiceVM(Model):
             return
         
         # Save the state, if our image is not cloned.
-        if not self.vm_image.cloned:
+        if not self.vm_image.cloned or foce_save_state:
             self._save_state()
             
         # Destroy it.

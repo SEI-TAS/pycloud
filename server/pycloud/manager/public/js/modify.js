@@ -84,7 +84,7 @@ function openCreateVNC()
 function startInstance(url)
 {
     // Send additional parameter to ensure we get a full image in the instance, not a linked qcow.
-    url = url + "&full_image=True" ;
+    url = url + "&  clone_full_image=True" ;
     
     // Do the post to get data and load the modal.
     ajaxGet(url, "Starting Instance to Modify SVM", function(response) {
@@ -110,7 +110,7 @@ function persistInstance(url)
 
     // Do the post to get data and load the modal.
     ajaxGet(url, "Saving SVM", function(response) {
-        showAndLogSuccessMessage('Instance was saved successfully');
+        showAndLogSuccessMessage('Changes from instance were saved successfully to the permanent VM image.');
         $('#modify-svm-button').show();
         $('#save-svm-button').hide();
         $('#discard-svm-button').hide();
@@ -119,7 +119,6 @@ function persistInstance(url)
 
     return false;
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to discard an edited SVM.
@@ -132,7 +131,7 @@ function discardInstance(url)
 
     // Do the post to get data and load the modal.
     ajaxGet(url, "Discarding SVM", function(response) {
-        showAndLogSuccessMessage('Instance was discarded');
+        showAndLogSuccessMessage('Instance was discarded.');
         $('#modify-svm-button').show();
         $('#save-svm-button').hide();
         $('#discard-svm-button').hide();

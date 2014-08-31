@@ -93,12 +93,12 @@ class InstancesController(BaseController):
         # Look for the service with this id
         service = Service.by_id(sid)
         if service:
-            link_to_source = True
-            print request.params.get('full_image')
-            if request.params.get('full_image'):
-                link_to_source = False
+            clone_full_image = True
+            print request.params.get('clone_full_image')
+            if request.params.get('clone_full_image'):
+                clone_full_image = False
             # Get a ServiceVM instance
-            svm = service.get_vm_instance(link_to_source=link_to_source)
+            svm = service.get_vm_instance(clone_full_image=clone_full_image)
             try:
                 # Start the instance, if it works, save it and return ok
                 svm.start()
