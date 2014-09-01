@@ -22,58 +22,47 @@ function validateSubmission()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
-// Function to start a VNC window to create an SVM.
+// Function to create a new SVM.
 /////////////////////////////////////////////////////////////////////////////////////
-function openCreateVNC()
+function createSVM()
 {
-    // Get the modal div, which will be used later for alerts.
-    var modalDiv = $('#modal-new-servicevm');
-    
     // Get basic information about the form with the new svm.
     var formSVM = $('#new-svm-form');
     var serviceForm = $('#service-form');
     var actionURL = formSVM.attr('action');
-    var source = formSVM.find('#sourceDiskImage');
-    
+
     // Get all the edited fields of the svm.
     var svm_info = {};
     svm_info.source = formSVM.find('#sourceDiskImage').val();
     svm_info.type = formSVM.find('#osType').val();
     svm_info.port = serviceForm.find('#servicePort').val();
     svm_info.serviceId = serviceForm.find('#serviceID').val();
-    jsonData = JSON.stringify(svm_info);
+    var jsonData = JSON.stringify(svm_info);
     
     // Validate that we have all the necessary info.
+    var modalDiv = $('#modal-new-servicevm');
     if(!validateMandatoryField(svm_info.serviceId, "Service Id", modalDiv)) return false;
     if(!validateMandatoryField(svm_info.port, "Service Port", modalDiv)) return false;
     if(!validateMandatoryField(svm_info.source, "VM Image", modalDiv)) return false;
     
     // Handler to load data when received.
-    var successHandler = function(vm_image) {
-        // Update Stored SVM fields with new SVM info.
-        ssvmFolder = $('#vmStoredFolder');
-        ssvmFolder.val(getFileDirectory(vm_image.disk_image));  
-        ssvmDiskImagePath = $('#vmDiskImageFile');
-        ssvmDiskImagePath.val(vm_image.disk_image);
-        ssvmDiskImagePathVal = $('#vmDiskImageFileValue');
-        ssvmDiskImagePathVal.val(vm_image.disk_image);                
-        ssvmStateImagePath = $('#vmStateImageFile');
-        ssvmStateImagePath.val(vm_image.state_image);
-        ssvmStateImagePathVal = $('#vmStateImageFileValue');
-        ssvmStateImagePathVal.val(vm_image.state_image);                
-        
-        // Upate the buttons to reflect that we can now modify the SVM.
-        $('#new-svm-button').prop('style', 'display:none;');
-        $('#modify-svm-button').prop('style', 'display:inline;');    
+    var successHandler = function(svm) {
+        // Update the buttons to reflect that we can now save the SVM.
+        $('#svmInstanceId').val(svm._id);
+        $('#new-svm-button').hide();
+
+        $('#save-svm-button').show();
+        $('#discard-svm-button').show();
+        $('#vnc-button').show();
         
         $('#modal-new-servicevm').modal('hide');  
 
         // Notify that the process was successful.
-        showAndLogSuccessMessage('VM Image was created successfully.');
+        showAndLogSuccessMessage('New VM running with id ' + svm.SVM_ID + ', VNC open on port ' + svm.VNC_PORT);
     };
     
     // Do the post to get data and load the modal.
-    ajaxSimplePost(actionURL, jsonData, "Starting and Connecting to Service VM", successHandler, $('#modal-new-servicevm'));       
+    ajaxSimplePost(actionURL, jsonData, "Starting and Connecting to Service VM", successHandler, modalDiv);
     
     return false;
 }
@@ -84,12 +73,12 @@ function openCreateVNC()
 function startInstance(url)
 {
     // Send additional parameter to ensure we get a full image in the instance, not a linked qcow.
-    url = url + "&clone_full_image=True";
+    url = url + "/" + $('#serviceID').val() + "?clone_full_image=True";
     
     // Do the post to get data and load the modal.
-    ajaxGet(url, "Starting Instance to Modify SVM", function(response) {
-        showAndLogSuccessMessage('Instance was started successfully with id ' + response.SVM_ID + ', VNC open on port ' + response.VNC_PORT);
-        $('#svmInstanceId').val(response.SVM_ID);
+    ajaxGet(url, "Starting Instance to Modify SVM", function(svm) {
+        showAndLogSuccessMessage('Instance was started successfully with id ' + svm.SVM_ID + ', VNC open on port ' + svm.VNC_PORT);
+        $('#svmInstanceId').val(svm.SVM_ID);
         $('#modify-svm-button').hide();
         $('#save-svm-button').show();
         $('#discard-svm-button').show();
@@ -105,16 +94,29 @@ function startInstance(url)
 function persistInstance(url)
 {
     // Add the instance ID to the URL.
-    svmId = $('#svmInstanceId').val();
-    url = url + "/" + svmId;
+    var svm_id = $('#svmInstanceId').val();
+    url = url + "/" + svm_id;
+
+    // Add para to indicate if we are creating or editing a VM here.
+    var editing_SVM = $('#internalServiceId').val() != '';
+    url = url + "?editing=" + editing_SVM
 
     // Do the post to get data and load the modal.
-    ajaxGet(url, "Saving SVM", function(response) {
-        showAndLogSuccessMessage('Changes from instance were saved successfully to the permanent VM image.');
+    ajaxGet(url, "Saving SVM", function(vm_image) {
+        // Update Stored SVM fields with new SVM info.
+        $('#vmStoredFolder').val(getFileDirectory(vm_image.disk_image));
+        $('#vmDiskImageFile').val(vm_image.disk_image);
+        $('#vmDiskImageFileValue').val(vm_image.disk_image);
+        $('#vmStateImageFile').val(vm_image.state_image);
+        $('#vmStateImageFileValue').val(vm_image.state_image);
+
+        showAndLogSuccessMessage('Changes saved successfully to permanent VM image.');
+
+        // Update the buttons to reflect that we can now modify the SVM.
         $('#modify-svm-button').show();
         $('#save-svm-button').hide();
         $('#discard-svm-button').hide();
-        $('#vnc-button').hide();        
+        $('#vnc-button').hide();
     });
 
     return false;
@@ -126,16 +128,22 @@ function persistInstance(url)
 function discardInstance(url)
 {
     // Add the instance ID to the URL.
-    svmId = $('#svmInstanceId').val();
+    var svmId = $('#svmInstanceId').val();
     url = url + "/" + svmId;
 
     // Do the post to get data and load the modal.
     ajaxGet(url, "Discarding SVM", function(response) {
         showAndLogSuccessMessage('Changes were discarded.');
-        $('#modify-svm-button').show();
         $('#save-svm-button').hide();
         $('#discard-svm-button').hide();
-        $('#vnc-button').hide();        
+        $('#vnc-button').hide();
+
+        if($('#internalServiceId').val() != '') {
+            $('#modify-svm-button').show();
+        }
+        else {
+            $('#new-svm-button').show();
+        }
     });
 
     return false;
@@ -147,7 +155,7 @@ function discardInstance(url)
 function openEditVNC(vncUrl)
 {
     // Add the instance ID to the URL.
-    svmId = $('#svmInstanceId').val();
+    var svmId = $('#svmInstanceId').val();
     vncUrl = vncUrl + "/" + svmId;
     
     // Handler to load data when received.

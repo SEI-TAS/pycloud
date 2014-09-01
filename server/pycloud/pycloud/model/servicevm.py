@@ -20,7 +20,7 @@ from pylons import g
 import os
 
 ################################################################################################################
-# Represents a runtime ServiceVM, idependent on whether it has a cloned or original disk image.
+# Represents a runtime ServiceVM, independent on whether it has a cloned or original disk image.
 ################################################################################################################
 class ServiceVM(Model):
     # Meta class is needed so that minimongo can map this class onto the database.

@@ -58,7 +58,8 @@ ${parent.header()}
                     
             	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm" ${'style="display:none;"' if not page.newService else ''}>Create VM Image</button>
               	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="startInstance('${page.startInstanceURL}')" ${'style="display:none;"' if page.newService else ''}>Edit VM Image</button>
-              	    <button type="button" class="btn btn-primary" id="save-svm-button" onclick="persistInstance('${page.saveInstanceURL}')" style="display:none;">Save Changes from SVM</button>
+
+              	    <button type="button" class="btn btn-primary" id="save-svm-button" onclick="persistInstance('${page.saveInstanceURL}')" style="display:none;">Save from SVM</button>
               	    <button type="button" class="btn btn-primary" id="discard-svm-button" onclick="discardInstance('${page.stopInstanceURL}')" style="display:none;">Discard SVM</button>
               	    <button type="button" class="btn btn-primary" id="vnc-button" onclick="openEditVNC('${page.openVNCUrl}')" style="display:none;">Open VNC (on server)</button>
                 </div>
@@ -91,14 +92,14 @@ ${parent.header()}
 		    <div class="modal-body">
 		        <div class="well">
 		            <form id="new-svm-form" class="form-horizontal" action="${page.createSVMURL}" method="post">
-		            	${text(id='sourceDiskImage', input_width=12, label=_('Source Disk Image Path'))}
+		            	${text(id='sourceDiskImage', input_width=12, label=_('Source Disk Image Path'), mandatory=True)}
 		                ${dropdown(id='osType', options={'Linux':'Linux','Windows':'Windows'}, input_width=12, label=_('OS Type'))}
 		            </form>
 		        </div>
 		    </div>
 		    <div class="modal-footer">
 		        <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
-		        <a href="#" class="btn btn-primary new-svm-action" onclick="openCreateVNC()">Create</a>
+		        <a href="#" class="btn btn-primary new-svm-action" onclick="createSVM()">Create</a>
 		    </div>
 	    </div>
     </div>

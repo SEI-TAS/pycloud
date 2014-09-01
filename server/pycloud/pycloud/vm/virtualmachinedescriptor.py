@@ -48,8 +48,12 @@ class VirtualMachineDescriptor(object):
     # Changes the IP address the VNC server will be listening on, to enable remote access.
     ################################################################################################################
     def enableRemoteVNC(self):
-        self.xmlRoot.find("devices/graphics[@type='vnc']").set("listen", "0.0.0.0")
-        self.xmlRoot.find("devices/graphics/listen[@type='address']").set("address", "0.0.0.0")
+        vnc_graphics = self.xmlRoot.find("devices/graphics[@type='vnc']")
+        if vnc_graphics is not None:
+            vnc_graphics.set("listen", "0.0.0.0")
+        vnc_address = self.xmlRoot.find("devices/graphics/listen[@type='address']")
+        if vnc_address is not None:
+            vnc_address.set("address", "0.0.0.0")
 
     ################################################################################################################
     # Sets the path to the main disk image.

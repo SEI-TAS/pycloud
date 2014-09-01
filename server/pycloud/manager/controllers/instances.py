@@ -88,10 +88,11 @@ class InstancesController(BaseController):
 
     ############################################################################################################
     # Starts a new SVM instance of the Service.
-    ############################################################################################################  
-    def GET_startInstance(self, sid):
+    ############################################################################################################
+    @asjson
+    def GET_startInstance(self, id):
         # Look for the service with this id
-        service = Service.by_id(sid)
+        service = Service.by_id(id)
         if service:
             clone_full_image = False
             if request.params.get('clone_full_image'):
@@ -103,13 +104,15 @@ class InstancesController(BaseController):
                 # Start the instance, if it works, save it and return ok
                 svm.start()
                 svm.save()
-                return dumps({"STATUS": "OK", "SVM_ID": svm._id, "VNC_PORT": svm.vnc_port})
+                return {"STATUS": "OK", "SVM_ID": svm._id, "VNC_PORT": svm.vnc_port}
             except Exception as e:
                 # If there was a problem starting the instance, return that there was an error.
                 print 'Error starting Service VM Instance: ' + str(e)
-                return dumps(self.JSON_NOT_OK)
-
-        return dumps(self.JSON_NOT_OK)
+                return self.JSON_NOT_OK
+        else:
+            error = self.JSON_NOT_OK
+            error['message'] = 'Service {} not found.'.format(id)
+            return error
 
     ############################################################################################################
     # Stops an existing instance.
