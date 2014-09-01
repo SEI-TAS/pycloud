@@ -210,7 +210,6 @@ class ModifyController(BaseController):
             print "Creating and starting VM for user access..."
             svm.vm_image = new_vm_image
             svm.service_port = fields['port']
-            #svm.addForwardedSshPort()            
             svm.create(template_xml_file)
             
             # Open a synchronous VNC window to it.
@@ -218,7 +217,7 @@ class ModifyController(BaseController):
             svm.open_vnc(wait=True)
             
             # Save the VM state.
-            print "VNC GUI closed, saving machine state..."
+            print "Saving machine state..."
             svm.stop()
             print "Service VM stopped, and machine state saved."
             

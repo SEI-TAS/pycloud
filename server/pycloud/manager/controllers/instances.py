@@ -93,10 +93,10 @@ class InstancesController(BaseController):
         # Look for the service with this id
         service = Service.by_id(sid)
         if service:
-            clone_full_image = True
-            print request.params.get('clone_full_image')
+            clone_full_image = False
             if request.params.get('clone_full_image'):
-                clone_full_image = False
+                clone_full_image = True
+
             # Get a ServiceVM instance
             svm = service.get_vm_instance(clone_full_image=clone_full_image)
             try:
@@ -171,7 +171,7 @@ def generate_action_buttons(col_num, i, item):
 
     # Button to open VNC window.
     vncUrl = h.url_for(controller='instances', action='openVNC', id=item["instance_id"])
-    vncButtonHtml = HTML.button("Open VNC", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
+    vncButtonHtml = HTML.button("Open VNC (on server)", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
 
     # Render the buttons with the Ajax code to stop the SVM.    
     return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml)
