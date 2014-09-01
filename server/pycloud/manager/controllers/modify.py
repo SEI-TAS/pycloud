@@ -2,6 +2,7 @@ import logging
 import os
 import json
 import urllib
+import os.path
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons import g
@@ -246,9 +247,13 @@ class ModifyController(BaseController):
             svm.stop(foce_save_state=True)
             print "Service VM stopped, and machine state saved."
 
+            # Get the folder of the permanent VM image.
+            service = Service.by_id(svm.service_id)
+            vm_image_folder = os.path.dirname(service.vm_image.disk_image)
+
             # Permanently store the VM, overwritting the previous one.
-            print 'Moving Service VM Image to cache.'
-            svm.vm_image.move(os.path.join(g.cloudlet.svmCache, svm.service_id))
+            print 'Moving Service VM Image to cache, from folder {} to folder {}.'.format(os.path.dirname(svm.vm_image.disk_image), vm_image_folder)
+            svm.vm_image.move(vm_image_folder)
 
             # Make the VM image read only.
             svm.vm_image.protect()
