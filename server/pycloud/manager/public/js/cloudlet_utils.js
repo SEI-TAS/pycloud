@@ -154,8 +154,13 @@ function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, 
     if(typeof(modal)==='undefined') modal = null;
     
     // Show progress bar.
-    var dialog = WaitDialog(waitDialogText);
-    dialog.show();
+    var dialog = null;
+    var description = '';
+    if(waitDialogText && typeof(waitDialogText) != 'undefined') {
+        dialog = WaitDialog(waitDialogText);
+        dialog.show();
+        description = waitDialogText.toLowerCase();
+    }
     
     // Define our success handler.
     var successHandler = function (response) {
@@ -166,13 +171,13 @@ function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, 
             if(!ajaxCallWasSuccessful(jsonObject))
             {
                 // Dismiss the waiting dialog and notify the error.
-                dialog.hide();
-                showAndLogErrorMessage('There was a problem ' + waitDialogText.toLowerCase() + '.', '', '', modal);
+                if(dialog) dialog.hide();
+                showAndLogErrorMessage('There was a problem ' + description + '.', '', '', modal);
             }
             else
             {             
                 // Dismiss dialog and do what we defined for success.
-                dialog.hide();
+                if(dialog) dialog.hide();
                 onSuccess(jsonObject);
             }        
     };
@@ -189,8 +194,8 @@ function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, 
                 successHandler(resp);
             },
             error: function( req, status, err ) {
-                dialog.hide();
-                showAndLogErrorMessage('There was a problem ' + waitDialogText.toLowerCase() + '.', status, err, modal);
+                if(dialog) dialog.hide();
+                showAndLogErrorMessage('There was a problem ' + description + '.', status, err, modal);
             }
         });
     }

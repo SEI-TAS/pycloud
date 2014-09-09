@@ -51,7 +51,18 @@
 
         <div id="footer">
             <div class="container-fluid">
-                Software Engineering Institute of Carnegie Mellon University
+                <div class="row">
+                    <div class="span3">
+                        Software Engineering Institute of Carnegie Mellon University
+                    </div>
+                    <div class="span9">
+                        <input type="hidden" id="state_url" value="${h.url_for(controller='home', action='state')}"/>
+                        <ul>
+                            <li>CPU Load: <span id="cpu_load"></span>% (cores: <span id="cpu_cores"></span>)</li>
+                            <li>Free Memory: <span id="mem_load"></span>% (<span id="mem_free"></span> GB / <span id="mem_max"></span> GB)</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -62,6 +73,7 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="/manager/js/bootstrap.min.js"></script>
     <script src="/manager/js/bootstrap-dialog.min.js"></script>
-    <script src="/manager/js/cloudlet_utils.js"></script>    
+    <script src="/manager/js/cloudlet_utils.js"></script>
+    <script src="/manager/js/cloudlet_state.js"></script>
 
 </html>

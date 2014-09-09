@@ -14,6 +14,7 @@ def make_map():
     # Note that all of these paths are relative to the base path, /manager. 
     connect('/', controller='services', action='index')
     connect('/home', controller='home', action='index')
+    connect('/home/state', controller='home', action='state')
     
     connect('/services', controller='services', action='listServices')
     connect('/services/removeService/{id}', controller='services', action='removeService')

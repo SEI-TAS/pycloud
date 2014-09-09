@@ -90,7 +90,7 @@ def generateSVMButtons(col_num, i, item):
     
     # Create a button to the list of service VM Instances, and another to start a new instance.
     linkToSVMButton = HTML.button("View All", onclick=h.literal("window.location.href = '" + svmListURL + "';"), class_="btn btn-primary btn")
-    newSVMButton = HTML.button("New SVM", onclick=h.literal("startSVM('"+ startInstanceUrl +"', '"+ svmListURL +"')"), class_="btn btn-primary btn")
+    newSVMButton = HTML.button("New SVM", onclick=h.literal("startSVM('"+ startInstanceUrl +"', '"+ svmListURL +"')"), class_="btn btn-primary btn-sucess")
 
     # Render the buttons.
     return HTML.td(linkToSVMButton + literal("&nbsp;") + newSVMButton)
@@ -105,7 +105,7 @@ def generateActionButtons(col_num, i, item):
     
     # Ajax URL to remove the service.
     removeServiceURL = h.url_for(controller='services', action='removeService', id=item["service_id"])
-    removeButton = HTML.button("Remove", onclick="removeServiceConfirmation('" + removeServiceURL + "', '" + item["service_id"] + "');", class_="btn btn-primary btn")
+    removeButton = HTML.button("Remove", onclick="removeServiceConfirmation('" + removeServiceURL + "', '" + item["service_id"] + "');", class_="btn btn-primary btn-danger")
 
     export_url = h.url_for(controller='export', action='export_svm', sid=item['service_id'])
     export_button = HTML.button("Export", onclick="export_svm('" + export_url + "');", class_="btn btn-primary")
