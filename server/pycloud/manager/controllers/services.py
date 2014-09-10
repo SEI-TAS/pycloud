@@ -90,7 +90,7 @@ def generateSVMButtons(col_num, i, item):
     
     # Create a button to the list of service VM Instances, and another to start a new instance.
     linkToSVMButton = HTML.button("View All", onclick=h.literal("window.location.href = '" + svmListURL + "';"), class_="btn btn-primary btn")
-    newSVMButton = HTML.button("New SVM", onclick=h.literal("startSVM('"+ startInstanceUrl +"', '"+ svmListURL +"')"), class_="btn btn-primary btn-sucess")
+    newSVMButton = HTML.button("New SVM", onclick=h.literal("startSVM('"+ startInstanceUrl +"', '"+ svmListURL +"')"), class_="btn btn-primary")
 
     # Render the buttons.
     return HTML.td(linkToSVMButton + literal("&nbsp;") + newSVMButton)

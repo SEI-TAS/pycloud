@@ -90,7 +90,7 @@ function showAndLogErrorMessage(message, status, errorThrown, parent)
 function getAsJson(response)
 {
     // Parse the response into a JSON structure if needed.
-    console.log(response);
+    //console.log(response);
     var parsedJsonData = response;
     if(typeof(parsedJsonData)==='string')
         parsedJsonData = $.parseJSON(response);    
@@ -171,8 +171,13 @@ function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, 
             if(!ajaxCallWasSuccessful(jsonObject))
             {
                 // Dismiss the waiting dialog and notify the error.
-                if(dialog) dialog.hide();
-                showAndLogErrorMessage('There was a problem ' + description + '.', '', '', modal);
+                if(dialog) {
+                    dialog.hide();
+                    showAndLogErrorMessage('There was a problem ' + description + '.', '', '', modal);
+                }
+                else {
+                    console.log('There was an error getting the result.');
+                }
             }
             else
             {             
@@ -194,8 +199,13 @@ function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, 
                 successHandler(resp);
             },
             error: function( req, status, err ) {
-                if(dialog) dialog.hide();
-                showAndLogErrorMessage('There was a problem ' + description + '.', status, err, modal);
+                if(dialog) {
+                    dialog.hide();
+                    showAndLogErrorMessage('There was a problem ' + description + '.', status, err, modal);
+                }
+                else {
+                    console.log('There was an error getting the result.');
+                }
             }
         });
     }

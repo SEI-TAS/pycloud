@@ -17,9 +17,10 @@ function reloadState()
 
             var free_memory = parseFloat(response.memory_info.free_memory) / (1024.0 * 1024.0 * 1024.0);
             var max_memory = parseFloat(response.memory_info.max_memory) / (1024.0 * 1024.0 * 1024.0);
-            var mem_load = parseFloat(free_memory)/parseFloat(max_memory) * 100.0;
+            var used_memory = max_memory - free_memory;
+            var mem_load = parseFloat(used_memory)/parseFloat(max_memory) * 100.0;
             $('#mem_load').text(mem_load.toFixed(2));
-            $('#mem_free').text(free_memory.toFixed(2));
+            $('#mem_used').text(used_memory.toFixed(2));
             $('#mem_max').text(max_memory.toFixed(2));
         }
         else
@@ -29,7 +30,7 @@ function reloadState()
 
         // To be called again after the next interval.
         var reloadInterval = 2000; // In milliseconds.
-        setTimeout(function() {reloadState(statusUrl);}, reloadInterval);
+        setTimeout(function() {reloadState();}, reloadInterval);
     });
 }
 

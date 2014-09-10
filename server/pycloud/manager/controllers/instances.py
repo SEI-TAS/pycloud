@@ -42,7 +42,7 @@ class InstancesController(BaseController):
         for svm in svms:
             grid_items.append(
                 {
-                    'instance_id': svm['_id'],
+                    'svm_id': svm['_id'],
                     'service_id': svm.service_id,
                     'service_external_port': svm.port,
                     'ssh_port': svm.ssh_port,
@@ -53,7 +53,7 @@ class InstancesController(BaseController):
             )
 
         # Create and format the grid.
-        instancesGrid = Grid(grid_items, ['instance_id', 'service_id', 'service_external_port', 'ssh_port', 'vnc_port', 'action'])
+        instancesGrid = Grid(grid_items, ['svm_id', 'service_id', 'service_external_port', 'ssh_port', 'vnc_port', 'action'])
         instancesGrid.column_formats["service_id"] = generate_service_id_link
         instancesGrid.column_formats["action"] = generate_action_buttons
 
@@ -63,8 +63,7 @@ class InstancesController(BaseController):
         return instancesPage.render()
         
     ############################################################################################################
-    # Opens a VNC window to a running Service VM Instance.
-    # TODO: Update to use new model
+    # Opens a local VNC window to a running Service VM Instance.
     ############################################################################################################
     def GET_openVNC(self, id):
         try:            
@@ -131,31 +130,19 @@ class InstancesController(BaseController):
         return dumps(self.JSON_OK)
     
     ############################################################################################################
-    # Checks if there are changes in the instance list, and returns a changestamp of the change.
+    # Returns a list of running svms.
     ############################################################################################################    
     @asjson    
-    def GET_getLastChangestamp(self):
+    def GET_svmList(self):
         try:    
             # Get the list of running instances.
             svm_list = ServiceVM.find()
-            return 
-            
-            # Turn into a string for an easy comparison, and compare it to the last stored one.
-            separator = ','
-            #currentInstancesIdList = separator.join(str(id) for id in svm_list)
-            #if(instanceManager.instancesIdList != currentInstancesIdList):
-                # Update the list string, and update the timestamp.
-                #instanceManager.instancesIdList = currentInstancesIdList
-                #instanceManager.lastChangestamp = time.time()
+            return svm_list
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
             print 'Error getting list of instance changes: ' + str(e);
             return self.JSON_NOT_OK               
-        
-        # Return the timestamp.
-        #jsonTimestamp = json.dumps({"LAST_CHANGE_STAMP" : str(instanceManager.lastChangestamp) })
-        #return jsonTimestamp
-        
+
 ############################################################################################################
 # Helper function to generate a link for the service id to the service details.
 ############################################################################################################        
@@ -169,11 +156,11 @@ def generate_service_id_link(col_num, i, item):
 ############################################################################################################        
 def generate_action_buttons(col_num, i, item):
     # Button to stop an instance.
-    stopUrl = h.url_for(controller='instances', action='stopInstance', id=item["instance_id"])
+    stopUrl = h.url_for(controller='instances', action='stopInstance', id=item["svm_id"])
     stopButtonHtml = HTML.button("Stop", onclick=h.literal("stopSVM('"+ stopUrl +"')"), class_="btn btn-primary btn")
 
     # Button to open VNC window.
-    vncUrl = h.url_for(controller='instances', action='openVNC', id=item["instance_id"])
+    vncUrl = h.url_for(controller='instances', action='openVNC', id=item["svm_id"])
     vncButtonHtml = HTML.button("Open VNC (on server)", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
 
     # Render the buttons with the Ajax code to stop the SVM.    
