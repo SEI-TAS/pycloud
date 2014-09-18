@@ -123,6 +123,10 @@ class AppsController(BaseController):
             app.app_version = request.params.get('version')
             app.package_name = request.params.get('package')
             app.tags = request.params.get('tags')
+            if app.tags:
+                app.tags = app.tags.split(',')
+            else:
+                app.tags = []
             app.min_android_version = request.params.get('minOsVersion')
             
             # Check if we are uploading a new apk.
