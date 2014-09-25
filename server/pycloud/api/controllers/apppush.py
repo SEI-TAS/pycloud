@@ -32,8 +32,21 @@ class AppPushController(BaseController):
         print '\n*************************************************************************************************'
         timelog.TimeLog.reset()
         timelog.TimeLog.stamp("Request for stored apps received.")
-            
-        apps = App.find()
+
+        os_name = request.params.get('os_name', None)
+        os_version = request.params.get('os_version', None)
+        tags = request.params.get('tags', None)
+
+        print "OS Name: ", os_name
+        print "OS Version: ", os_version
+        print "Tags: ", tags
+
+        query = {}
+
+        if tags:
+            query['tags'] = {"$in": tags.split(',')}
+
+        apps = App.find(query)
         
         # Send the response.
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
