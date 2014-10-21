@@ -111,9 +111,10 @@ class ModifyController(BaseController):
         print 'Internal service id ' + internalServiceId
         
         # Check if there is another service already with this service id.
-        service_id  = request.params.get("serviceID")
+        service_id = request.params.get("serviceID")
         previous_service = Service.by_id(service_id)
-        if previous_service and previous_service._id != internalServiceId:
+
+        if previous_service and str(previous_service['_id']) != internalServiceId:
             # TODO: somehow notify the error.
             print "A service can't have the same service id as an existing service."
             return redirect_to(controller='services')
