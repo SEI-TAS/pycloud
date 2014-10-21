@@ -135,6 +135,9 @@ class ModifyController(BaseController):
         service.port        = request.params.get("servicePort")
         service.num_users   = request.params.get("numClientsSupported")
 
+        print "Num users: ", service.num_users
+        print "Default None: ", request.params.get("numClientsSupported", 0)
+
         # Requirements
         service.min_memory   = request.params.get("reqMinMem")
         service.ideal_memory = request.params.get("reqIdealMem")
