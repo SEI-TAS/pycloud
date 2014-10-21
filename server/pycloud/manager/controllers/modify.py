@@ -81,7 +81,7 @@ class ModifyController(BaseController):
                 page.form_values['servicePort'] = service.port
                 page.form_values['serviceDescription'] = service.description
                 page.form_values['serviceVersion'] = service.version
-                page.form_values['serviceTags'] = service.tags
+                page.form_values['serviceTags'] = ",".join(service.tags)
                 page.form_values['numClientsSupported'] = service.num_users
                 page.form_values['reqMinMem'] = service.min_memory
                 page.form_values['reqIdealMem'] = service.ideal_memory
@@ -132,7 +132,11 @@ class ModifyController(BaseController):
         service.service_id  = request.params.get("serviceID")
         service.version     = request.params.get("serviceVersion")
         service.description = request.params.get("serviceDescription")
-        service.tags        = request.params.get("serviceTags").split(',')
+        service.tags        = request.params.get("serviceTags")
+        if service.tags:
+            service.tags = service.tags.split(',')
+        else:
+            service.tags = []
         service.port        = request.params.get("servicePort")
         service.num_users   = request.params.get("numClientsSupported", "")
 
