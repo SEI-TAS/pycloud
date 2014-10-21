@@ -76,9 +76,6 @@ class Service(Model):
         print "Num Users: ", self.num_users
         print "Num Users Type: ", type(self.num_users)
 
-        if self.num_users & self.num_users > 0:
-            join = False
-
         if join:
             svms = ServiceVM.by_service(self._id)
             for svm in svms:
