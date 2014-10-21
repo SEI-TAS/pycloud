@@ -72,6 +72,13 @@ class Service(Model):
     # Returns a new or existing Service VM instance associated to this service.
     ################################################################################################################
     def get_vm_instance(self, join=False, clone_full_image=False):
+
+        print "Num Users: ", self.num_users
+        print "Num Users Type: ", type(self.num_users)
+
+        if self.num_users & self.num_users > 0:
+            join = False
+
         if join:
             svms = ServiceVM.by_service(self._id)
             for svm in svms:
