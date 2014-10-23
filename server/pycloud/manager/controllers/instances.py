@@ -30,7 +30,6 @@ class InstancesController(BaseController):
     
     ############################################################################################################
     # Shows the list of running Service VM instances.
-    # TODO: Update to use new model
     ############################################################################################################
     def GET_index(self):
         # Mark the active tab.
@@ -128,6 +127,49 @@ class InstancesController(BaseController):
         
         # Everything went well.
         return dumps(self.JSON_OK)
+
+    ############################################################################################################
+    # Command to migrate a machine.
+    ############################################################################################################
+    def GET_migrateInstance(self, id):
+        import libvirt
+        local_uri ='qemu:///session'
+        remote_uri = 'qemu://twister/session'
+        stratus = libvirt.open(local_uri)
+        twister = libvirt.open(remote_uri)
+        print 'Stratus: ' + str(stratus)
+        print 'Twister: ' + str(twister)
+
+        print id
+        vm = stratus.lookupByUUIDString(id)
+        # svm = ServiceVM.Service.by_id(id)
+        print 'VM found: ' + str(vm)
+
+        # We first pause the VM.
+        # svm.pause()
+        result = vm.suspend()
+        if result == -1:
+            raise Exception("Cannot pause VM: %s", str(id))
+
+        # Transfer the disk image file.
+
+        # Prepare basic flags.
+        # svm.migrate()
+        flags = libvirt.VIR_MIGRATE_NON_SHARED_DISK | libvirt.VIR_MIGRATE_PAUSED
+        bandwidth = 0
+
+        # Set flags that depend on migration type.
+        p2p = False
+        if p2p:
+            flags = flags | libvirt.VIR_MIGRATE_PEER2PEER
+            uri = 'tcp://twister'
+        else:
+            uri = remote_uri
+
+        # Migrate the state and memory.
+        vm.migrate(twister, flags, id, uri, bandwidth)
+
+        return 'OK!'
     
     ############################################################################################################
     # Returns a list of running svms.
@@ -141,7 +183,7 @@ class InstancesController(BaseController):
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
             print 'Error getting list of instance changes: ' + str(e);
-            return self.JSON_NOT_OK               
+            return self.JSON_NOT_OK
 
 ############################################################################################################
 # Helper function to generate a link for the service id to the service details.
@@ -163,5 +205,9 @@ def generate_action_buttons(col_num, i, item):
     vncUrl = h.url_for(controller='instances', action='openVNC', id=item["svm_id"])
     vncButtonHtml = HTML.button("Open VNC (on server)", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
 
+    # Button to migrate.
+    migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"])
+    migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("window.location.href='" + migrateUrl + "'"), class_="btn btn-primary btn")
+
     # Render the buttons with the Ajax code to stop the SVM.    
-    return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml)
+    return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml)
