@@ -80,7 +80,8 @@ class Service(Model):
         print "self.num_users == 0: ", (self.num_users == 0)
         print "join == True: ", (join == True)
         if self.num_users == 0 and join:
-            svms = ServiceVM.by_service(self._id)
+            print, "Both are true! finding SVMs"
+            svms = ServiceVM.by_service(self.service_id)
             for svm in svms:
                 return svm  # Return the first ServiceVM we found
 
