@@ -75,6 +75,10 @@ class Service(Model):
         print "get_vm_instance of ", self.service_id
         print "  self.num_users = ", self.num_users
         print "  join = ", join
+        print "Type num users: ", type(self.num_users)
+        print "type join: ", type(join)
+        print "self.num_users == 0: ", (self.num_users == 0)
+        print "join == True: ", (join == True)
         if self.num_users == 0 and join:
             svms = ServiceVM.by_service(self._id)
             for svm in svms:
