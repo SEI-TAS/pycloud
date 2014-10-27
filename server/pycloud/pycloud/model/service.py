@@ -74,8 +74,10 @@ class Service(Model):
     def get_vm_instance(self, join=False, clone_full_image=False):
         if self.num_users == 0 and join:
             svms = ServiceVM.by_service(self.service_id)
+            # Return the first ServiceVM we found
+            # If no ServiceVM is found, this will fall through to launching a new one
             for svm in svms:
-                return svm  # Return the first ServiceVM we found
+                return svm
 
         # If no ServiceVMs for that ID were found, or join=False, create a new one.
         svm = ServiceVM()
