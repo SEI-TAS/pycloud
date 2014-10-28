@@ -82,6 +82,8 @@ class Cloudlet(object):
         portmanager.PortManager.clearPorts()
         if not os.path.exists(self.export_path):
             os.makedirs(self.export_path)
+        if not os.path.exists(self.appFolder):
+            os.makedirs(self.appFolder)
 
     def _clean_instances_folder(self):
         print 'Cleaning up \'%s\'' % self.svmInstancesFolder
