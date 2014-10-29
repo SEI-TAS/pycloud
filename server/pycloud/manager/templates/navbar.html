@@ -14,10 +14,10 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <li class="${c.home_active}">${h.link_to('Home', h.url_for(controller='home'))}</li>
-                <li class="${c.services_active}">${h.link_to('Services', h.url_for(controller='services'))}</li>
-                <li class="${c.servicevms_active}">${h.link_to('Service VM Instances', h.url_for(controller='instances'))}</li>
-                <li class="${c.apps_active}">${h.link_to('Cloudlet-Ready Apps', h.url_for(controller='apps', action='list'))}</li>
+                <li class="${c.home_active}">${h.link_to('Home', h.url_for(controller='home', action_name=None))}</li>
+                <li class="${c.services_active}">${h.link_to('Services', h.url_for(controller='services', action_name=None))}</li>
+                <li class="${c.servicevms_active}">${h.link_to('Service VM Instances', h.url_for(controller='instances', action_name=None))}</li>
+                <li class="${c.apps_active}">${h.link_to('Cloudlet-Ready Apps', h.url_for(controller='apps', action='list', action_name=None))}</li>
             </ul>
         </div><!--/.nav-collapse -->
     </div>
