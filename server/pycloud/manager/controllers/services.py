@@ -47,13 +47,13 @@ class ServicesController(BaseController):
             new_item = {'service_id': service.service_id,
                         'name': service.description,
                         'service_internal_port': service.port,
-                        'stored_service_vm_folder': os.path.dirname(service.vm_image.disk_image),
+                        'vm_image_folder': os.path.dirname(service.vm_image.disk_image),
                         'service_vm_instances': 'SVM',
                         'service_actions': 'Action'}
             grid_items.append(new_item)
 
         # Create and fomat the grid.
-        servicesGrid = Grid(grid_items, ['service_id', 'name', 'service_internal_port', 'stored_service_vm_folder', 'service_vm_instances', 'service_actions'])
+        servicesGrid = Grid(grid_items, ['service_id', 'name', 'service_internal_port', 'vm_image_folder', 'service_vm_instances', 'service_actions'])
         servicesGrid.column_formats["service_vm_instances"] = generateSVMButtons
         servicesGrid.column_formats["service_actions"] = generateActionButtons
         

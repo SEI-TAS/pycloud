@@ -1,6 +1,4 @@
 import logging
-import json
-import time
 import os.path
 
 from pylons import request, response, session, tmpl_context as c, url
@@ -140,11 +138,9 @@ class InstancesController(BaseController):
         print 'Stratus: ' + str(stratus)
         print 'Twister: ' + str(twister)
 
-        print stratus.getCapabilities()
-
         print id
         vm = stratus.lookupByUUIDString(id)
-        # svm = ServiceVM.Service.by_id(id)
+        svm = ServiceVM.by_id(id)
         print 'VM found: ' + str(vm)
 
         # We first pause the VM.
@@ -155,6 +151,20 @@ class InstancesController(BaseController):
 
         # Transfer the disk image file.
         # TODO
+        username = 'cloudlet'
+        password = 'idontcare'
+        fullpath = os.path.abspath(svm.vm_image.disk_image)
+        folder_path = os.path.dirname(fullpath)
+        remote_host = "twister"
+        create_dir_command = ("sshpass -p %s ssh -o User=%s -o StrictHostKeyChecking=no %s 'mkdir -p %s'"
+                              % (password, username, remote_host, folder_path))
+        copy_command = ('sshpass -p %s scp -o User=%s -o StrictHostKeyChecking=no %s %s:%s'
+                        % (password, username, fullpath, remote_host, fullpath))
+        print create_dir_command
+        os.system(create_dir_command)
+        print copy_command
+        os.system(copy_command)
+        print 'File transfered'
 
         # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
         # (and some hypervisors do not support it anyway).
