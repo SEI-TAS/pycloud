@@ -81,7 +81,7 @@ class ModifyController(BaseController):
                 page.form_values['servicePort'] = service.port
                 page.form_values['serviceDescription'] = service.description
                 page.form_values['serviceVersion'] = service.version
-                page.form_values['serviceTags'] = service.tags
+                page.form_values['serviceTags'] = ",".join(service.tags)
                 page.form_values['numClientsSupported'] = service.num_users
                 page.form_values['reqMinMem'] = service.min_memory
                 page.form_values['reqIdealMem'] = service.ideal_memory
@@ -111,9 +111,10 @@ class ModifyController(BaseController):
         print 'Internal service id ' + internalServiceId
         
         # Check if there is another service already with this service id.
-        service_id  = request.params.get("serviceID")
+        service_id = request.params.get("serviceID")
         previous_service = Service.by_id(service_id)
-        if previous_service and previous_service._id != internalServiceId:
+
+        if previous_service and str(previous_service['_id']) != internalServiceId:
             # TODO: somehow notify the error.
             print "A service can't have the same service id as an existing service."
             return redirect_to(controller='services')
@@ -131,9 +132,19 @@ class ModifyController(BaseController):
         service.service_id  = request.params.get("serviceID")
         service.version     = request.params.get("serviceVersion")
         service.description = request.params.get("serviceDescription")
-        service.tags        = request.params.get("serviceTags").split(',')
+        service.tags        = request.params.get("serviceTags")
+        if service.tags:
+            service.tags = service.tags.split(',')
+        else:
+            service.tags = []
         service.port        = request.params.get("servicePort")
-        service.num_users   = request.params.get("numClientsSupported")
+        service.num_users   = request.params.get("numClientsSupported", "")
+
+        try:
+            service.num_users = int(service.num_users)
+        except Exception as e:
+            service.num_users = 0
+
 
         # Requirements
         service.min_memory   = request.params.get("reqMinMem")

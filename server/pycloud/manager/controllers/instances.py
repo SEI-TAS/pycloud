@@ -133,14 +133,41 @@ class InstancesController(BaseController):
     ############################################################################################################
     def GET_migrateInstance(self, id):
         import libvirt
-        stratus = libvirt.open('qemu:///session')
-        twister = libvirt.open('qemu://twister/session')
+        local_uri ='qemu:///session'
+        remote_uri = 'qemu://twister/session'
+        stratus = libvirt.open(local_uri)
+        twister = libvirt.open(remote_uri)
         print 'Stratus: ' + str(stratus)
         print 'Twister: ' + str(twister)
+
         print id
         vm = stratus.lookupByUUIDString(id)
+        # svm = ServiceVM.Service.by_id(id)
         print 'VM found: ' + str(vm)
-        vm.migrate(twister, libvirt.VIR_MIGRATE_NON_SHARED_DISK, id, 'tcp://twister', 100)
+
+        # We first pause the VM.
+        # svm.pause()
+        result = vm.suspend()
+        if result == -1:
+            raise Exception("Cannot pause VM: %s", str(id))
+
+        # Transfer the disk image file.
+
+        # Prepare basic flags.
+        # svm.migrate()
+        flags = libvirt.VIR_MIGRATE_NON_SHARED_DISK | libvirt.VIR_MIGRATE_PAUSED
+        bandwidth = 0
+
+        # Set flags that depend on migration type.
+        p2p = False
+        if p2p:
+            flags = flags | libvirt.VIR_MIGRATE_PEER2PEER
+            uri = 'tcp://twister'
+        else:
+            uri = remote_uri
+
+        # Migrate the state and memory.
+        vm.migrate(twister, flags, id, uri, bandwidth)
 
         return 'OK!'
     

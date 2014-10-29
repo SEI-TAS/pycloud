@@ -8,6 +8,7 @@ import shutil
 from pycloud.pycloud.utils import portmanager
 from pycloud.pycloud.vm.vmutils import destroy_all_vms
 import pycloud.pycloud.mongo.model as model
+import sys
 
 
 # Singleton object to maintain intra- and inter-app variables.
@@ -34,6 +35,9 @@ class Cloudlet(object):
     # Constructor, should be called only once, independent on how many apps there are.
     ################################################################################################################    
     def __init__(self, config, *args, **kwargs):
+
+        sys.stdout = Tee('pycloud.log', 'w')
+
         print 'Loading cloudlet configuration...'
 
         # DB information.
@@ -78,6 +82,8 @@ class Cloudlet(object):
         portmanager.PortManager.clearPorts()
         if not os.path.exists(self.export_path):
             os.makedirs(self.export_path)
+        if not os.path.exists(self.appFolder):
+            os.makedirs(self.appFolder)
 
     def _clean_instances_folder(self):
         print 'Cleaning up \'%s\'' % self.svmInstancesFolder
@@ -114,3 +120,17 @@ class Cloudlet_Metadata(model.AttrDict):
     def __init__(self):
         self.memory_info = Memory_Info()
         self.cpu_info = Cpu_Info()
+
+
+class Tee(object):
+
+    def __init__(self, name, mode):
+        self.file = open(name, mode)
+        self.stdout = sys.stdout
+
+    def __del__(self):
+        self.file.close()
+
+    def write(self, data):
+        self.file.write(data)
+        self.stdout.write(data)
