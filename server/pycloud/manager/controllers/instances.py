@@ -34,7 +34,7 @@ class InstancesController(BaseController):
     def GET_index(self):
         # Mark the active tab.
         c.servicevms_active = 'active'
-
+        print request.environ['SCRIPT_NAME']
         svms = ServiceVM.find()
 
         grid_items = []
@@ -140,6 +140,8 @@ class InstancesController(BaseController):
         print 'Stratus: ' + str(stratus)
         print 'Twister: ' + str(twister)
 
+        print stratus.getCapabilities()
+
         print id
         vm = stratus.lookupByUUIDString(id)
         # svm = ServiceVM.Service.by_id(id)
@@ -152,10 +154,13 @@ class InstancesController(BaseController):
             raise Exception("Cannot pause VM: %s", str(id))
 
         # Transfer the disk image file.
+        # TODO
 
-        # Prepare basic flags.
+        # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
+        # (and some hypervisors do not support it anyway).
         # svm.migrate()
         flags = libvirt.VIR_MIGRATE_NON_SHARED_DISK | libvirt.VIR_MIGRATE_PAUSED
+        new_id = None
         bandwidth = 0
 
         # Set flags that depend on migration type.
@@ -165,9 +170,10 @@ class InstancesController(BaseController):
             uri = 'tcp://twister'
         else:
             uri = remote_uri
+        uri = None
 
         # Migrate the state and memory.
-        vm.migrate(twister, flags, id, uri, bandwidth)
+        vm.migrate(twister, flags, new_id, uri, bandwidth)
 
         return 'OK!'
     

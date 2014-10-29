@@ -12,12 +12,12 @@
         <title>Cloudlet Manager</title>
 
         <!-- Bootstrap core CSS -->
-        <link href="/manager/css/bootstrap.min.css" rel="stylesheet">
+        <link href="${request.environ['SCRIPT_NAME']}/css/bootstrap.min.css" rel="stylesheet">
         <!-- Bootstrap theme -->
-        <link href="/manager/css/bootstrap-theme.min.css" rel="stylesheet">
+        <link href="${request.environ['SCRIPT_NAME']}/css/bootstrap-theme.min.css" rel="stylesheet">
 
         <!-- Custom styles for this template -->
-        <link href="/manager/css/theme.css" rel="stylesheet">
+        <link href="${request.environ['SCRIPT_NAME']}/css/theme.css" rel="stylesheet">
 
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
@@ -25,7 +25,7 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
         <![endif]-->
         
-        <script src="/manager/js/jquery-1.11.0.min.js"></script>            
+        <script src="${request.environ['SCRIPT_NAME']}/js/jquery-1.11.0.min.js"></script>            
     </head>
     <body>
         
@@ -71,9 +71,9 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="/manager/js/bootstrap.min.js"></script>
-    <script src="/manager/js/bootstrap-dialog.min.js"></script>
-    <script src="/manager/js/cloudlet_utils.js"></script>
-    <script src="/manager/js/cloudlet_state.js"></script>
+    <script src="${request.environ['SCRIPT_NAME']}/js/bootstrap.min.js"></script>
+    <script src="${request.environ['SCRIPT_NAME']}/js/bootstrap-dialog.min.js"></script>
+    <script src="${request.environ['SCRIPT_NAME']}/js/cloudlet_utils.js"></script>
+    <script src="${request.environ['SCRIPT_NAME']}/js/cloudlet_state.js"></script>
 
 </html>
