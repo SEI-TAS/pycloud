@@ -30,7 +30,6 @@ class InstancesController(BaseController):
     
     ############################################################################################################
     # Shows the list of running Service VM instances.
-    # TODO: Update to use new model
     ############################################################################################################
     def GET_index(self):
         # Mark the active tab.
@@ -128,6 +127,22 @@ class InstancesController(BaseController):
         
         # Everything went well.
         return dumps(self.JSON_OK)
+
+    ############################################################################################################
+    # Command to migrate a machine.
+    ############################################################################################################
+    def GET_migrateInstance(self, id):
+        import libvirt
+        stratus = libvirt.open('qemu:///session')
+        twister = libvirt.open('qemu://twister/session')
+        print 'Stratus: ' + str(stratus)
+        print 'Twister: ' + str(twister)
+        print id
+        vm = stratus.lookupByUUIDString(id)
+        print 'VM found: ' + str(vm)
+        vm.migrate(twister, libvirt.VIR_MIGRATE_NON_SHARED_DISK, id, 'tcp://twister', 100)
+
+        return 'OK!'
     
     ############################################################################################################
     # Returns a list of running svms.
@@ -141,7 +156,7 @@ class InstancesController(BaseController):
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
             print 'Error getting list of instance changes: ' + str(e);
-            return self.JSON_NOT_OK               
+            return self.JSON_NOT_OK
 
 ############################################################################################################
 # Helper function to generate a link for the service id to the service details.
@@ -163,5 +178,9 @@ def generate_action_buttons(col_num, i, item):
     vncUrl = h.url_for(controller='instances', action='openVNC', id=item["svm_id"])
     vncButtonHtml = HTML.button("Open VNC (on server)", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
 
+    # Button to migrate.
+    migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"])
+    migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("window.location.href='" + migrateUrl + "'"), class_="btn btn-primary btn")
+
     # Render the buttons with the Ajax code to stop the SVM.    
-    return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml)
+    return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml)
