@@ -320,6 +320,7 @@ class ServiceVM(Model):
     def pause(self):
         vm = ServiceVM._get_virtual_machine(self._id)
         result = vm.suspend()
+        self.running = False
         return result
 
     ################################################################################################################
