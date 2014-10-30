@@ -199,7 +199,7 @@ def generate_action_buttons(col_num, i, item):
 
     # Button to migrate.
     migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"])
-    migrateButtonHtml = HTML.button("Migrate", class_="btn btn-primary btn", data_toggle="modal", data_target="#modal-migrate-svm")
+    migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("migrateSVM('" + migrateUrl + "')"), class_="btn btn-primary btn")
 
     # Render the buttons with the Ajax code to stop the SVM.    
     return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml)
