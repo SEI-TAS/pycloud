@@ -157,9 +157,6 @@ class InstancesController(BaseController):
 
             # Do the migration.
             svm.migrate(remote_host, p2p=True)
-
-            # Remove the local VM.
-            svm.stop()
         except:
             import traceback
             traceback.print_exc()

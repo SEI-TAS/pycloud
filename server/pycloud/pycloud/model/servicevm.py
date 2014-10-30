@@ -345,7 +345,7 @@ class ServiceVM(Model):
 
             # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
             # (and some hypervisors do not support it anyway).
-            # TODO: figure out why most flags are ignored (shared disk and undefine source).
+            # TODO: figure out why shared disk is ignored.
             flags = libvirt.VIR_MIGRATE_NON_SHARED_DISK | libvirt.VIR_MIGRATE_PAUSED | libvirt.VIR_MIGRATE_UNDEFINE_SOURCE
             new_id = None
             bandwidth = 0
@@ -367,6 +367,9 @@ class ServiceVM(Model):
 
             elapsed_time = time.time() - start_time
             print 'Migration finished successfully. It took ' + str(elapsed_time) + ' seconds.'
+
+            # Since we are using the undefine flag, the local SVM is no longer valid... remove its file and from the list.
+            self.destroy()
 
     ################################################################################################################
     # Pauses a VM and stores its memory state to a disk file.
