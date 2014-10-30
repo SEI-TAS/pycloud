@@ -1,6 +1,19 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions used when managing the instance list.
 /////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to stop a Service VM through Ajax.
+/////////////////////////////////////////////////////////////////////////////////////
+function migrateSVM(migrateUrl)
+{
+    var successHandler = function(response) {
+        reloadPage();
+    };
+
+    // Do the post to get data and load the modal.
+    ajaxGet(migrateUrl, "Migrating Service VM Instance", successHandler);
+}
  
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to stop a Service VM through Ajax.
@@ -39,60 +52,11 @@ function openVNC(vncUrl)
             showAndLogErrorMessage('Error opening VNC window', status, err );
       }
     });
-}     
-
-/////////////////////////////////////////////////////////////////////////////////////
-// Function to check if we have to reload the page.
-/////////////////////////////////////////////////////////////////////////////////////
-function reloadChecker(changesUrl) 
-{
-    var reloadInterval = 3000; // In milliseconds.
-    
-    // Send the query to check if there are changes in the list.
-    $.ajax({
-        url: changesUrl,
-        dataType: 'json',            
-        success: function (resp) {
-            // Parse the response into a JSON structure.
-            var parsedJsonData = $.parseJSON(resp);
-
-            // Check if we got a correctly formed JSON.
-            if(parsedJsonData.hasOwnProperty('LAST_CHANGE_STAMP'))
-            {
-                // Check to see if the internal change stamp has been initialized.
-                if(typeof(reloadChecker.last_changestamp) === 'undefined') 
-                {
-                    // It has not... perform the initialization
-                    reloadChecker.last_changestamp = parsedJsonData.LAST_CHANGE_STAMP;
-                }
-                
-                // Check if the new timestamp is higher than the last one, which means we have new changes.
-                if(parsedJsonData.LAST_CHANGE_STAMP > reloadChecker.last_changestamp)
-                {
-                    // If there are new changes, reload the window.
-                    window.top.location = window.top.location;
-                }
-            }
-            else
-            {
-                console.log('Error getting last change timestamp.');
-            }
-
-            // So that the request ends setTimeout calls a new request.
-            setTimeout(function() {reloadChecker(window.changeUrl);}, reloadInterval);
-        },
-        error: function () {
-            // If there is an error in the request the "autoupdate" can continue.
-            setTimeout(function() {reloadChecker(window.changeUrl);}, reloadInterval);
-        }
-    });
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Called when the document is loaded.
 /////////////////////////////////////////////////////////////////////////////////////////////////
 $(document).ready( function () {
-    // Start the load checker, which will check for changes continously.
-    //console.log('Setting up reload checker:' + window.changeUrl);
-    //reloadChecker(window.changeUrl);    
-});    
+
+});

@@ -130,62 +130,69 @@ class InstancesController(BaseController):
     # Command to migrate a machine.
     ############################################################################################################
     def GET_migrateInstance(self, id):
-        import libvirt
-        local_uri ='qemu:///session'
-        remote_uri = 'qemu://twister/session'
-        stratus = libvirt.open(local_uri)
-        twister = libvirt.open(remote_uri)
-        print 'Stratus: ' + str(stratus)
-        print 'Twister: ' + str(twister)
+        try:
+            import libvirt
+            local_uri ='qemu:///session'
+            remote_uri = 'qemu://twister/session'
+            stratus = libvirt.open(local_uri)
+            twister = libvirt.open(remote_uri)
+            print 'Stratus: ' + str(stratus)
+            print 'Twister: ' + str(twister)
 
-        print id
-        vm = stratus.lookupByUUIDString(id)
-        svm = ServiceVM.by_id(id)
-        print 'VM found: ' + str(vm)
+            print id
+            vm = stratus.lookupByUUIDString(id)
+            svm = ServiceVM.by_id(id)
+            print 'VM found: ' + str(vm)
 
-        # We first pause the VM.
-        # svm.pause()
-        result = vm.suspend()
-        if result == -1:
-            raise Exception("Cannot pause VM: %s", str(id))
+            # We first pause the VM.
+            # svm.pause()
+            result = vm.suspend()
+            if result == -1:
+                raise Exception("Cannot pause VM: %s", str(id))
 
-        # Transfer the disk image file.
-        # TODO
-        username = 'cloudlet'
-        password = 'idontcare'
-        fullpath = os.path.abspath(svm.vm_image.disk_image)
-        folder_path = os.path.dirname(fullpath)
-        remote_host = "twister"
-        create_dir_command = ("sshpass -p %s ssh -o User=%s -o StrictHostKeyChecking=no %s 'mkdir -p %s'"
-                              % (password, username, remote_host, folder_path))
-        copy_command = ('sshpass -p %s scp -o User=%s -o StrictHostKeyChecking=no %s %s:%s'
-                        % (password, username, fullpath, remote_host, fullpath))
-        print create_dir_command
-        os.system(create_dir_command)
-        print copy_command
-        os.system(copy_command)
-        print 'File transfered'
+            # Transfer the disk image file.
+            # TODO
+            username = 'cloudlet'
+            password = 'idontcare'
+            fullpath = os.path.abspath(svm.vm_image.disk_image)
+            folder_path = os.path.dirname(fullpath)
+            remote_host = "twister"
+            create_dir_command = ("sshpass -p %s ssh -o User=%s -o StrictHostKeyChecking=no %s 'mkdir -p %s'"
+                                  % (password, username, remote_host, folder_path))
+            copy_command = ('sshpass -p %s scp -o User=%s -o StrictHostKeyChecking=no %s %s:%s'
+                            % (password, username, fullpath, remote_host, fullpath))
+            print create_dir_command
+            os.system(create_dir_command)
+            print copy_command
+            os.system(copy_command)
+            print 'File transfered'
 
-        # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
-        # (and some hypervisors do not support it anyway).
-        # svm.migrate()
-        flags = libvirt.VIR_MIGRATE_NON_SHARED_DISK | libvirt.VIR_MIGRATE_PAUSED
-        new_id = None
-        bandwidth = 0
+            # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
+            # (and some hypervisors do not support it anyway).
+            # svm.migrate()
+            flags = libvirt.VIR_MIGRATE_NON_SHARED_DISK | libvirt.VIR_MIGRATE_PAUSED
+            new_id = None
+            bandwidth = 0
 
-        # Set flags that depend on migration type.
-        p2p = False
-        if p2p:
-            flags = flags | libvirt.VIR_MIGRATE_PEER2PEER
-            uri = 'tcp://twister'
-        else:
-            uri = remote_uri
-        uri = None
+            # Set flags that depend on migration type.
+            p2p = False
+            if p2p:
+                flags = flags | libvirt.VIR_MIGRATE_PEER2PEER
+                uri = 'tcp://twister'
+            else:
+                uri = remote_uri
+            uri = None
 
-        # Migrate the state and memory.
-        vm.migrate(twister, flags, new_id, uri, bandwidth)
+            # Migrate the state and memory.
+            vm.migrate(twister, flags, new_id, uri, bandwidth)
 
-        return 'OK!'
+            print 'Migration finished successfully.'
+        except:
+            import traceback
+            traceback.print_exc()
+            return dumps(self.JSON_NOT_OK)
+
+        return dumps(self.JSON_OK)
     
     ############################################################################################################
     # Returns a list of running svms.
@@ -223,7 +230,7 @@ def generate_action_buttons(col_num, i, item):
 
     # Button to migrate.
     migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"])
-    migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("window.location.href='" + migrateUrl + "'"), class_="btn btn-primary btn")
+    migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("migrateSVM('" + migrateUrl + "')"), class_="btn btn-primary btn")
 
     # Render the buttons with the Ajax code to stop the SVM.    
     return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml)
