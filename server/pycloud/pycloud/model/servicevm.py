@@ -6,6 +6,8 @@ import libvirt
 # For regexp matching.
 import re
 
+import time
+
 # Used to generate unique IDs for the VMs.
 from uuid import uuid4
 
@@ -311,6 +313,60 @@ class ServiceVM(Model):
             print 'VM not found while destroying it.'
         finally:
             self.running = False
+
+    ################################################################################################################
+    # Pauses a VM.
+    ################################################################################################################
+    def pause(self):
+        vm = ServiceVM._get_virtual_machine(self._id)
+        result = vm.suspend()
+        return result
+
+    ################################################################################################################
+    # Migrates a vm.
+    ################################################################################################################
+    def migrate(self, remote_host, p2p=False):
+            vm = ServiceVM._get_virtual_machine(self._id)
+
+            # Transfer the disk image file.
+            # TODO: more secure file transfer
+            print 'Starting disk image file transfer...'
+            username = 'cloudlet'
+            password = 'idontcare'
+            fullpath = os.path.abspath(self.vm_image.disk_image)
+            folder_path = os.path.dirname(fullpath)
+            create_dir_command = ("sshpass -p %s ssh -o User=%s -o StrictHostKeyChecking=no %s 'mkdir -p %s'"
+                                  % (password, username, remote_host, folder_path))
+            copy_command = ('sshpass -p %s scp -o User=%s -o StrictHostKeyChecking=no %s %s:%s'
+                            % (password, username, fullpath, remote_host, fullpath))
+            os.system(create_dir_command)
+            os.system(copy_command)
+            print 'Disk image transferred successfully'
+
+            # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
+            # (and some hypervisors do not support it anyway).
+            # TODO: figure out why most flags are ignored (shared disk and undefine source).
+            flags = libvirt.VIR_MIGRATE_NON_SHARED_DISK | libvirt.VIR_MIGRATE_PAUSED | libvirt.VIR_MIGRATE_UNDEFINE_SOURCE
+            new_id = None
+            bandwidth = 0
+
+            # Set flags that depend on migration type.
+            print 'Starting memory and state migration...'
+            start_time = time.time()
+            if p2p:
+                flags = flags | libvirt.VIR_MIGRATE_PEER2PEER
+                #uri = 'tcp://%s' % remote_host
+                uri = None
+            else:
+                uri = None
+
+            # Migrate the state and memory.
+            remote_uri = 'qemu://%s/session' % remote_host
+            remote_hypervisor = libvirt.open(remote_uri)
+            vm.migrate(remote_hypervisor, flags, new_id, uri, bandwidth)
+
+            elapsed_time = time.time() - start_time
+            print 'Migration finished successfully. It took ' + str(elapsed_time) + ' seconds.'
 
     ################################################################################################################
     # Pauses a VM and stores its memory state to a disk file.

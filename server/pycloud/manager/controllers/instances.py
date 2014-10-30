@@ -1,5 +1,6 @@
 import logging
-import os.path
+import json
+import urllib
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
@@ -131,62 +132,30 @@ class InstancesController(BaseController):
     ############################################################################################################
     def GET_migrateInstance(self, id):
         try:
-            import libvirt
-            local_uri ='qemu:///session'
-            remote_uri = 'qemu://twister/session'
-            stratus = libvirt.open(local_uri)
-            twister = libvirt.open(remote_uri)
-            print 'Stratus: ' + str(stratus)
-            print 'Twister: ' + str(twister)
+            # Parse the body of the request as JSON into a python object.
+            # First remove URL quotes added to string, and then remove trailing "=" (no idea why it is there).
+            #parsedJsonString = urllib.unquote(request.body)[:-1]
+            #fields = json.loads(parsedJsonString)
 
-            print id
-            vm = stratus.lookupByUUIDString(id)
+            # The host we are migrating to.
+            #remote_host = fields['remoteHost']
+            #id = fields['id']
+            remote_host = 'twister'
+
+            # Find the SVM.
             svm = ServiceVM.by_id(id)
-            print 'VM found: ' + str(vm)
+            print 'VM found: ' + str(svm)
 
             # We first pause the VM.
-            # svm.pause()
-            result = vm.suspend()
+            result = svm.pause()
             if result == -1:
                 raise Exception("Cannot pause VM: %s", str(id))
 
-            # Transfer the disk image file.
-            # TODO
-            username = 'cloudlet'
-            password = 'idontcare'
-            fullpath = os.path.abspath(svm.vm_image.disk_image)
-            folder_path = os.path.dirname(fullpath)
-            remote_host = "twister"
-            create_dir_command = ("sshpass -p %s ssh -o User=%s -o StrictHostKeyChecking=no %s 'mkdir -p %s'"
-                                  % (password, username, remote_host, folder_path))
-            copy_command = ('sshpass -p %s scp -o User=%s -o StrictHostKeyChecking=no %s %s:%s'
-                            % (password, username, fullpath, remote_host, fullpath))
-            print create_dir_command
-            os.system(create_dir_command)
-            print copy_command
-            os.system(copy_command)
-            print 'File transfered'
+            # Do the migration.
+            svm.migrate(remote_host, p2p=True)
 
-            # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
-            # (and some hypervisors do not support it anyway).
-            # svm.migrate()
-            flags = libvirt.VIR_MIGRATE_NON_SHARED_DISK | libvirt.VIR_MIGRATE_PAUSED
-            new_id = None
-            bandwidth = 0
-
-            # Set flags that depend on migration type.
-            p2p = False
-            if p2p:
-                flags = flags | libvirt.VIR_MIGRATE_PEER2PEER
-                uri = 'tcp://twister'
-            else:
-                uri = remote_uri
-            uri = None
-
-            # Migrate the state and memory.
-            vm.migrate(twister, flags, new_id, uri, bandwidth)
-
-            print 'Migration finished successfully.'
+            # Remove the local VM.
+            svm.stop()
         except:
             import traceback
             traceback.print_exc()
@@ -218,7 +187,7 @@ def generate_service_id_link(col_num, i, item):
 
 ############################################################################################################
 # Helper function to generate actions for the service vms (stop and vnc buttons).
-############################################################################################################        
+############################################################################################################
 def generate_action_buttons(col_num, i, item):
     # Button to stop an instance.
     stopUrl = h.url_for(controller='instances', action='stopInstance', id=item["svm_id"])
@@ -230,7 +199,7 @@ def generate_action_buttons(col_num, i, item):
 
     # Button to migrate.
     migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"])
-    migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("migrateSVM('" + migrateUrl + "')"), class_="btn btn-primary btn")
+    migrateButtonHtml = HTML.button("Migrate", class_="btn btn-primary btn", data_toggle="modal", data_target="#modal-migrate-svm")
 
     # Render the buttons with the Ajax code to stop the SVM.    
     return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml)
