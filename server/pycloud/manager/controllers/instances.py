@@ -55,8 +55,12 @@ class InstancesController(BaseController):
         instancesGrid.column_formats["service_id"] = generate_service_id_link
         instancesGrid.column_formats["action"] = generate_action_buttons
 
-        # Pass the grid and render the page.
+        # Setup the page to render.
         instancesPage = InstancesPage()
+        instancesPage.form_values = {}
+        instancesPage.form_errors = {}
+
+        # Pass the grid and render the page.
         instancesPage.instancesGrid = instancesGrid
         return instancesPage.render()
         
