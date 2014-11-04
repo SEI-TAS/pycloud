@@ -1,7 +1,7 @@
 import logging
 import json
+import urllib2
 import urllib
-import urllib.parse
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
@@ -156,7 +156,7 @@ class InstancesController(BaseController):
             if result == -1:
                 raise Exception("Cannot pause VM: %s", str(id))
 
-            params = urllib.parse.urlencode(str(svm))
+            params = urllib.urlencode(str(svm))
             print params
 
             # Do the migration.
@@ -165,9 +165,9 @@ class InstancesController(BaseController):
             # Notify remote cloudlet of migration.
             # TODO: hardcoded port
             print 'Sending metadata to remote cloudlet'
-            params = urllib.parse.urlencode(str(svm))
+            params = urllib.urlencode(str(svm))
             remote_url = 'http://%s:9999/instances/receiveMigration' % remote_host
-            result = urllib.request.urlopen(remote_url, data=params)
+            result = urllib2.urlopen(remote_url, data=params)
             print result
 
         except:
