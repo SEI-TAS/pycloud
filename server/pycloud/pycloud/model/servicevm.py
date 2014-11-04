@@ -34,7 +34,7 @@ class ServiceVM(Model):
         }
 
     # URI used to connect to the local hypervisor.
-    _HYPERVISOR_URI = "qemu:///session"
+    _HYPERVISOR_URI = "qemu:///system"
     _hypervisor = None
     
     # Constants.
@@ -372,7 +372,7 @@ class ServiceVM(Model):
                 uri = None
 
             # Migrate the state and memory.
-            remote_uri = 'qemu://%s/session' % remote_host
+            remote_uri = 'qemu://%s/system' % remote_host
             remote_hypervisor = libvirt.open(remote_uri)
             vm.migrate(remote_hypervisor, flags, new_id, uri, bandwidth)
 
