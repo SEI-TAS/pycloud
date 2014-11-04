@@ -137,7 +137,8 @@ class InstancesController(BaseController):
     ############################################################################################################
     def GET_getMigrationInfo(self, id):
         svm = ServiceVM.by_id(id)
-        print svm.getJobStats()
+        vm = ServiceVM._get_virtual_machine(svm._id)
+        print vm.getJobStats()
         return 'Ok!'
 
     ############################################################################################################
