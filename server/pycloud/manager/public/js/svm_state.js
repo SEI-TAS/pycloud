@@ -29,12 +29,21 @@ function updateList()
         }
 
         // Go over the old list and reload is SVMs were removed.
-        for (var curr_svm_id in curr_svm_list) {
-            if (curr_svm_list.hasOwnProperty(curr_svm_id)) {
-                if (!new_svm_list.hasOwnProperty(curr_svm_id)) {
-                    // Reload the page so that old SVMs will go away.
-                    reloadPage();
+        var curr_items = Object.keys(curr_svm_list);
+        for (var j = 0; j < curr_items.length; j++) {
+            var curr_svm_id = curr_items[j];
+            var found = false;
+            for (var i = 0; i < new_svm_list.length; i++) {
+                var new_svm = new_svm_list[i];
+                if (new_svm["_id"] == curr_svm_id) {
+                    found = true;
+                    break;
                 }
+            }
+
+            if(!found) {
+                // Reload the page so that old SVMs will go away.
+                reloadPage();
             }
         }
 
