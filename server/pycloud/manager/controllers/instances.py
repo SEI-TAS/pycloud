@@ -156,7 +156,7 @@ class InstancesController(BaseController):
             if result == -1:
                 raise Exception("Cannot pause VM: %s", str(id))
 
-            params = urllib.urlencode(svm)
+            params = urllib.urlencode(json.dumps(svm))
             print params
 
             # Do the migration.
@@ -181,16 +181,20 @@ class InstancesController(BaseController):
     # Receives information about a migrated VM.
     ############################################################################################################
     def POST_receiveMigratedInstance(self):
+        print request.params
+        print request.params.get('vm_image').replace("'", '"')
         # Get information about the SVM.
         migrated_svm = ServiceVM()
-        migrated_svm.id = request.params.get('id')
-        migrated_svm.vm_image = None
-        migrated_svm.port_mappings = {}
-        migrated_svm.service_port = request.params.get('servicePort')
-        migrated_svm.port = request.params.get('hostPort')
-        migrated_svm.ssh_port = request.params.get('sshPort')
-        migrated_svm.vnc_port = request.params.get('vncPort')
-        migrated_svm.service_id = request.params.get('serviceId')
+        migrated_svm._id = request.params.get('_id')
+        migrated_svm.vm_image = json.loads(request.params.get('vm_image').replace("'", '"'))
+        migrated_svm.port_mappings = json.loads(request.params.get('port_mappings').replace("'", '"'))
+        migrated_svm.service_port = request.params.get('service_port')
+        migrated_svm.port = request.params.get('port')
+        migrated_svm.ssh_port = request.params.get('ssh_port')
+        migrated_svm.vnc_port = request.params.get('vnc_port')
+        migrated_svm.service_id = request.params.get('service_id')
+
+        print str(migrated_svm)
 
         print 'Unpausing VM...'
         #result = migrated_svm.unpause()
@@ -199,6 +203,8 @@ class InstancesController(BaseController):
 
         # Save to internal DB.
         migrated_svm.save()
+
+        return 'Ok!'
 
     ############################################################################################################
     # Returns a list of running svms.
