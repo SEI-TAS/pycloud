@@ -133,15 +133,6 @@ class InstancesController(BaseController):
         return dumps(self.JSON_OK)
 
     ############################################################################################################
-    # Command to monitor migration.
-    ############################################################################################################
-    def GET_getMigrationInfo(self, id):
-        svm = ServiceVM.by_id(id)
-        vm = ServiceVM._get_virtual_machine(svm._id)
-        print vm.getJobStats()
-        return 'Ok!'
-
-    ############################################################################################################
     # Command to migrate a machine.
     ############################################################################################################
     def GET_migrateInstance(self, id):
@@ -166,7 +157,7 @@ class InstancesController(BaseController):
                 raise Exception("Cannot pause VM: %s", str(id))
 
             # Do the migration.
-            svm.migrate(remote_host, p2p=True)
+            svm.migrate(remote_host, p2p=False)
 
             # Notify remote cloudlet of migration.
             # TODO: hardcoded port
@@ -177,6 +168,9 @@ class InstancesController(BaseController):
             result = urllib2.urlopen(request, data=json.dumps(svm))
             print result
 
+            # Remove the local VM.
+            svm = ServiceVM.find_and_remove(id)
+            svm.destroy()
         except:
             import traceback
             traceback.print_exc()
@@ -250,9 +244,5 @@ def generate_action_buttons(col_num, i, item):
     migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"])
     migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("migrateSVM('" + migrateUrl + "')"), class_="btn btn-primary btn")
 
-    # Button to get job info.
-    statusUrl = h.url_for(controller='instances', action='getMigrationInfo', id=item["svm_id"])
-    getJobInfoButtomHtml = HTML.button("Status", onclick=h.literal("location.href='" + statusUrl + "'"), class_="btn btn-primary btn")
-
     # Render the buttons with the Ajax code to stop the SVM.    
-    return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml + literal("&nbsp;") + getJobInfoButtomHtml)
+    return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml)
