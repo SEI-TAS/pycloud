@@ -160,7 +160,7 @@ class InstancesController(BaseController):
             print params
 
             # Do the migration.
-            svm.migrate(remote_host, p2p=True)
+            #svm.migrate(remote_host, p2p=True)
 
             # Notify remote cloudlet of migration.
             # TODO: hardcoded port
@@ -180,7 +180,7 @@ class InstancesController(BaseController):
     ############################################################################################################
     # Receives information about a migrated VM.
     ############################################################################################################
-    def GET_receiveMigratedInstance(self):
+    def POST_receiveMigratedInstance(self):
         # Get information about the SVM.
         migrated_svm = ServiceVM()
         migrated_svm.id = request.params.get('id')
