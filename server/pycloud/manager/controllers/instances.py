@@ -133,6 +133,14 @@ class InstancesController(BaseController):
         return dumps(self.JSON_OK)
 
     ############################################################################################################
+    # Command to monitor migration.
+    ############################################################################################################
+    def GET_getMigrationInfo(self, id):
+        svm = ServiceVM.by_id(id)
+        print svm.getJobStats()
+        return 'Ok!'
+
+    ############################################################################################################
     # Command to migrate a machine.
     ############################################################################################################
     def GET_migrateInstance(self, id):
@@ -241,5 +249,9 @@ def generate_action_buttons(col_num, i, item):
     migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"])
     migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("migrateSVM('" + migrateUrl + "')"), class_="btn btn-primary btn")
 
+    # Button to get job info.
+    statusUrl = h.url_for(controller='instances', action='getMigrationInfo', id=item["svm_id"])
+    migrateButtonHtml = HTML.button("Status", onclick=h.literal("location.href='" + statusUrl + "'"), class_="btn btn-primary btn")
+
     # Render the buttons with the Ajax code to stop the SVM.    
-    return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml)
+    return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml + literal("&nbsp;") + getJobInfoButtomHtml)

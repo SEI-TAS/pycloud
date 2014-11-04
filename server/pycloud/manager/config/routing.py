@@ -25,6 +25,7 @@ def make_map():
     connect('/instances/openvnc/{id}', controller='instances', action='openVNC')
     connect('/instances/migrate/{id}', controller='instances', action='migrateInstance')
     connect('/instances/receiveMigration', controller='instances', action='receiveMigratedInstance')
+    connect('/instances/getMigrationInfo/{id}', controller='instances', action='getMigrationInfo')
     connect('/instances/svmList', controller='instances', action='svmList')
 
     connect('add_service', '/service/add', controller='modify', action='index')
