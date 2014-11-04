@@ -1,6 +1,7 @@
 import logging
 import json
 import urllib
+import urllib.parse
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
