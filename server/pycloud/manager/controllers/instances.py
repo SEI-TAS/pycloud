@@ -156,18 +156,17 @@ class InstancesController(BaseController):
             if result == -1:
                 raise Exception("Cannot pause VM: %s", str(id))
 
-            params = urllib.urlencode(json.dumps(svm))
-            print params
-
             # Do the migration.
             #svm.migrate(remote_host, p2p=True)
 
             # Notify remote cloudlet of migration.
             # TODO: hardcoded port
             print 'Sending metadata to remote cloudlet'
-            params = urllib.urlencode(svm)
             remote_url = 'http://%s:9999/instances/receiveMigration' % remote_host
-            result = urllib2.urlopen(remote_url, data=params)
+            request = urllib2.Request(remote_url)
+            request.add_header('Content-Type', 'application/json')
+            print json.dumps(svm)
+            result = urllib2.urlopen(request, data=json.dumps(svm))
             print result
 
         except:
@@ -181,18 +180,22 @@ class InstancesController(BaseController):
     # Receives information about a migrated VM.
     ############################################################################################################
     def POST_receiveMigratedInstance(self):
-        print request.params
-        print request.params.get('vm_image').replace("'", '"')
+        # Parse the body of the request as JSON into a python object.
+        # First remove URL quotes added to string, and then remove trailing "=" (no idea why it is there).
+        print request.body
+        parsedJsonString = urllib.unquote(request.body)[:-1]
+        json_svm = json.loads(parsedJsonString)
+
         # Get information about the SVM.
         migrated_svm = ServiceVM()
-        migrated_svm._id = request.params.get('_id')
-        migrated_svm.vm_image = json.loads(request.params.get('vm_image').replace("'", '"'))
-        migrated_svm.port_mappings = json.loads(request.params.get('port_mappings').replace("'", '"'))
-        migrated_svm.service_port = request.params.get('service_port')
-        migrated_svm.port = request.params.get('port')
-        migrated_svm.ssh_port = request.params.get('ssh_port')
-        migrated_svm.vnc_port = request.params.get('vnc_port')
-        migrated_svm.service_id = request.params.get('service_id')
+        migrated_svm._id = json_svm['_id']
+        migrated_svm.vm_image = json_svm['vm_image']
+        migrated_svm.port_mappings = json_svm['port_mappings']
+        migrated_svm.service_port = json_svm['service_port']
+        migrated_svm.port = json_svm['port']
+        migrated_svm.ssh_port = json_svm['ssh_port']
+        migrated_svm.vnc_port = json_svm['vnc_port']
+        migrated_svm.service_id = json_svm['service_id']
 
         print str(migrated_svm)
 

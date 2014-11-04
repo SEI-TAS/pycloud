@@ -27,6 +27,15 @@ function updateList()
             }
         }
 
+        // Go over the old list and reload is SVMs were removed.
+        for (var i = 0; i < curr_svm_list.length; i++) {
+            var curr_svm = curr_svm_list[i];
+            if(!new_svm_list.hasOwnProperty(curr_svm['_id'])) {
+                // Reload the page so that old SVMs will go away.
+                reloadPage();
+            }
+        }
+
         // To be called again after the next interval.
         var reloadInterval = 2000; // In milliseconds.
         setTimeout(updateList, reloadInterval);
