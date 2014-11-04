@@ -181,10 +181,10 @@ class InstancesController(BaseController):
     ############################################################################################################
     def POST_receiveMigratedInstance(self):
         # Parse the body of the request as JSON into a python object.
-        # First remove URL quotes added to string, and then remove trailing "=" (no idea why it is there).
+        # First remove URL quotes added to string.
         print request.body
-        parsedJsonString = urllib.unquote(request.body)[:-1]
-        json_svm = json.loads(parsedJsonString)
+        #parsedJsonString = urllib.unquote(request.body)
+        json_svm = json.loads(request.body)
 
         # Get information about the SVM.
         migrated_svm = ServiceVM()
