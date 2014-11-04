@@ -157,7 +157,7 @@ class InstancesController(BaseController):
                 raise Exception("Cannot pause VM: %s", str(id))
 
             # Do the migration.
-            #svm.migrate(remote_host, p2p=True)
+            svm.migrate(remote_host, p2p=True)
 
             # Notify remote cloudlet of migration.
             # TODO: hardcoded port
@@ -165,7 +165,6 @@ class InstancesController(BaseController):
             remote_url = 'http://%s:9999/instances/receiveMigration' % remote_host
             request = urllib2.Request(remote_url)
             request.add_header('Content-Type', 'application/json')
-            print json.dumps(svm)
             result = urllib2.urlopen(request, data=json.dumps(svm))
             print result
 
@@ -181,9 +180,6 @@ class InstancesController(BaseController):
     ############################################################################################################
     def POST_receiveMigratedInstance(self):
         # Parse the body of the request as JSON into a python object.
-        # First remove URL quotes added to string.
-        print request.body
-        #parsedJsonString = urllib.unquote(request.body)
         json_svm = json.loads(request.body)
 
         # Get information about the SVM.
@@ -197,11 +193,9 @@ class InstancesController(BaseController):
         migrated_svm.vnc_port = json_svm['vnc_port']
         migrated_svm.service_id = json_svm['service_id']
 
-        print str(migrated_svm)
-
         print 'Unpausing VM...'
-        #result = migrated_svm.unpause()
-        #print result
+        result = migrated_svm.unpause()
+        print result
         print 'VM running'
 
         # Save to internal DB.
