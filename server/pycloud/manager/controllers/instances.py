@@ -155,15 +155,49 @@ class InstancesController(BaseController):
             if result == -1:
                 raise Exception("Cannot pause VM: %s", str(id))
 
+            print svm.to_json()
+
             # Do the migration.
             svm.migrate(remote_host, p2p=True)
+
+            # Notify remote cloudlet of migration.
+            # TODO: hardcoded port
+            print 'Sending metadata to remote cloudlet'
+            params = urllib.parse.urlencode(svm.to_json())
+            remote_url = 'http://%s:9999/instances/receiveMigration' % remote_host
+            result = urllib.request.urlopen(remote_url, data=params)
+            print result
+
         except:
             import traceback
             traceback.print_exc()
             return dumps(self.JSON_NOT_OK)
 
         return dumps(self.JSON_OK)
-    
+
+    ############################################################################################################
+    # Receives information about a migrated VM.
+    ############################################################################################################
+    def GET_receiveMigratedInstance(self):
+        # Get information about the SVM.
+        migrated_svm = ServiceVM()
+        migrated_svm.id = request.params.get('id')
+        migrated_svm.vm_image = None
+        migrated_svm.port_mappings = {}
+        migrated_svm.service_port = request.params.get('servicePort')
+        migrated_svm.port = request.params.get('hostPort')
+        migrated_svm.ssh_port = request.params.get('sshPort')
+        migrated_svm.vnc_port = request.params.get('vncPort')
+        migrated_svm.service_id = request.params.get('serviceId')
+
+        print 'Unpausing VM...'
+        result = migrated_svm.unpause()
+        print result
+        print 'VM running'
+
+        # Save to internal DB.
+        migrated_svm.save()
+
     ############################################################################################################
     # Returns a list of running svms.
     ############################################################################################################    
