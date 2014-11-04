@@ -12,7 +12,8 @@ function updateList()
         // Get the list of the current svms we know about.
         var curr_svm_list = {}
         $(".c1").each(function(){
-            curr_svm_list[$(this).text()] = true;
+            if($(this).text() != "Svm Id")
+                curr_svm_list[$(this).text()] = true;
         });
 
         // The list we got from the server with all svms.
@@ -28,11 +29,12 @@ function updateList()
         }
 
         // Go over the old list and reload is SVMs were removed.
-        for (var i = 0; i < curr_svm_list.length; i++) {
-            var curr_svm = curr_svm_list[i];
-            if(!new_svm_list.hasOwnProperty(curr_svm['_id'])) {
-                // Reload the page so that old SVMs will go away.
-                reloadPage();
+        for (var curr_svm_id in curr_svm_list) {
+            if (curr_svm_list.hasOwnProperty(curr_svm_id)) {
+                if (!new_svm_list.hasOwnProperty(curr_svm_id)) {
+                    // Reload the page so that old SVMs will go away.
+                    reloadPage();
+                }
             }
         }
 
