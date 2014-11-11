@@ -141,6 +141,9 @@ class ServiceVM(Model):
         # Get the descriptor and inflate it to something we can work with.
         xml_descriptor = VirtualMachineDescriptor(saved_xml_descriptor)
 
+        #Set Bridged Mode
+        xml_descriptor.enableBridged()
+
         # Change the ID and Name.
         xml_descriptor.setUuid(self._id)
         xml_descriptor.setName(self.prefix + '-' + self._id)  
@@ -162,6 +165,9 @@ class ServiceVM(Model):
 
         # Get the resulting XML string and return it.
         updated_xml_descriptor = xml_descriptor.getAsString()
+        print '===================================='
+        print updated_xml_descriptor
+        print '===================================='
         return updated_xml_descriptor
     
     ################################################################################################################

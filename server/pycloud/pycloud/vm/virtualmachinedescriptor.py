@@ -44,6 +44,14 @@ class VirtualMachineDescriptor(object):
         vncPort = self.xmlRoot.find("devices/graphics[@type='vnc']").get("port")
         return vncPort
 
+    def enableBridged(self):
+        root = self.xmlRoot.find('devices')
+        bridge = Element('interface', type='bridge')
+        source = Element('source', bridge='br0')
+        bridge.append(source)
+        root.append(bridge)
+
+
     ################################################################################################################
     # Changes the IP address the VNC server will be listening on, to enable remote access.
     ################################################################################################################
