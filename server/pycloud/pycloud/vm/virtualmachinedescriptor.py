@@ -44,16 +44,28 @@ class VirtualMachineDescriptor(object):
         vncPort = self.xmlRoot.find("devices/graphics[@type='vnc']").get("port")
         return vncPort
 
+    ################################################################################################################
+    # Will enable bridged mode in the XML
+    ################################################################################################################
     def enableBridged(self):
-        root = self.xmlRoot.find('devices')
-        user = root.find("interface[@type='user']")
-        if user:
-            root.remove(user)
+        # Get the devices node
+        devices = self.xmlRoot.find('devices')
 
+        # If there is a "normal" network adapter, remove it
+        # TODO: We need to evaluate if this is the correct approach
+        # TODO: We need to determine if there are other interface types besides 'user'
+        user = devices.find("interface[@type='user']")
+        if user:
+            devices.remove(user)
+
+        # Create the bridge interface element <interface type='bridge'/>
         bridge = Element('interface', type='bridge')
+        # Create the source element to point it at the right *host* adapter
         source = Element('source', bridge='br0')
         bridge.append(source)
-        root.append(bridge)
+
+        # Add the new bridge elemnt to our XML
+        devices.append(bridge)
 
 
     ################################################################################################################
