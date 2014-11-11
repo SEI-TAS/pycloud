@@ -46,6 +46,10 @@ class VirtualMachineDescriptor(object):
 
     def enableBridged(self):
         root = self.xmlRoot.find('devices')
+        user = self.xmlRoot.find("devices/interface[@type='user'")
+        if user:
+            root.remove(user)
+
         bridge = Element('interface', type='bridge')
         source = Element('source', bridge='br0')
         bridge.append(source)
