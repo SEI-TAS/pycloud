@@ -3,7 +3,7 @@ __author__ = 'jdroot'
 # Used to parse the XML for the VirtualMachineDescriptor.
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
-import os
+import os, random
 
 ################################################################################################################
 # Exception type used in our system.
@@ -44,6 +44,15 @@ class VirtualMachineDescriptor(object):
         vncPort = self.xmlRoot.find("devices/graphics[@type='vnc']").get("port")
         return vncPort
 
+    def randomMAC(self):
+        mac = [
+            0x00, 0x16, 0x3e,
+            random.randint(0x00, 0x7f),
+            random.randint(0x00, 0xff),
+            random.randint(0x00, 0xff)
+        ]
+        return ':'.join(map(lambda x: "%02x" % x, mac))
+
     ################################################################################################################
     # Will enable bridged mode in the XML
     ################################################################################################################
@@ -58,14 +67,27 @@ class VirtualMachineDescriptor(object):
         if user:
             devices.remove(user)
 
-        # Create the bridge interface element <interface type='bridge'/>
-        bridge = Element('interface', type='bridge')
-        # Create the source element to point it at the right *host* adapter
-        source = Element('source', bridge='br0')
-        bridge.append(source)
+        mac = self.randomMAC()
+
+        bridge = ElementTree.fromstring("""
+            <interface type="bridge">
+                <source bridge="br0"/>
+                <mac address="%s"/>
+            </interface>
+        """ % mac)
+
+
+
+        # # Create the bridge interface element <interface type='bridge'/>
+        # bridge = Element('interface', type='bridge')
+        # # Create the source element to point it at the right *host* adapter
+        # source = Element('source', bridge='br0')
+        # bridge.append(source)
 
         # Add the new bridge elemnt to our XML
         devices.append(bridge)
+
+        return mac
 
 
     ################################################################################################################

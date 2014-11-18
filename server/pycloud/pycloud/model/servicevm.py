@@ -142,7 +142,9 @@ class ServiceVM(Model):
         xml_descriptor = VirtualMachineDescriptor(saved_xml_descriptor)
 
         #Set Bridged Mode
-        xml_descriptor.enableBridged()
+        mac = xml_descriptor.enableBridged()
+
+        print 'Created with mac address \'%s\'' % mac
 
         # Change the ID and Name.
         xml_descriptor.setUuid(self._id)
