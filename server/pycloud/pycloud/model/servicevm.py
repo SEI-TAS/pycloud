@@ -210,7 +210,12 @@ class ServiceVM(Model):
             print "Error executing nmap:\n%s" % err
             return None
         xml = ElementTree.fromstring(out)
+        print 'Looking for IP in:'
+        print out
         ip = xml.find('./host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac).get('addr')
+
+        print 'Found IP: ', ip
+
         return ip
 
     ################################################################################################################
