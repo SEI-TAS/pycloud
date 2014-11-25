@@ -153,8 +153,11 @@ class ServiceVM(Model):
         # Configure bridged mode if enabled
         c = get_cloudlet_instance()
         mac = None
+        print 'Migration enabled: ', c.migration_enabled
         if c.migration_enabled:
+            print 'Bridge Adapter: ', c.bridge_adapter
             if c.bridge_adapter:
+                print 'Enabling bridged mode'
                 mac = xml_descriptor.enableBridged('br0')
                 print 'Created with mac address \'%s\'' % mac
 
@@ -272,7 +275,7 @@ class ServiceVM(Model):
 
         # Get the descriptor and update it to include the current disk image path, port mappings, etc.
         saved_xml_descriptor = saved_state.getStoredVmDescription(ServiceVM.get_hypervisor())
-        updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
+        updated_xml_descriptor, mac_address = self._update_descriptor(saved_xml_descriptor)
         
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
         # The XML descriptor is given since some things need to be changed for the instance, mainly the disk image file and the mapped ports.
@@ -280,6 +283,18 @@ class ServiceVM(Model):
             print "Resuming from VM image..."
             ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
             print "Resumed from VM image."
+
+            # mac_address will have a value if bridged mode is enabled
+            if mac_address:
+                print "Retrieving IP for MAC: %s" % mac_address
+                ip = ServiceVM._find_ip_for_mac(mac_address)
+                if not ip:
+                    print "Failed to locate the IP for the server!!!!"
+                    # TODO: Possibly throw an exception and shutdown the VM
+                else:
+                    self.ip_address = ip
+                    self.mac_address = mac_address
+
         except libvirt.libvirtError as e:
             # If we could not resume the VM, discard the memory state and try to boot the VM from scratch.
             print "Error resuming VM: %s for VM; error is: %s" % (str(self._id), str(e))
