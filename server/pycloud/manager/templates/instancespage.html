@@ -7,9 +7,6 @@
 
 <%block name="title">
     SVMS:
-        % for svm in page.svms:
-            FOUND A SVM
-        % endfor
 </%block>
 
 <div class="container">
@@ -29,14 +26,23 @@
                         <th>Service ID</th>
                         <th>External Port</th>
                         <th>External IP</th>
-                        <th>SSH Port</th>
-                        <th>VNC Port</th>
+                        <th>SSH</th>
+                        <th>VNC</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-
                 <tbody>
-
+                    % for svm in page.svms:
+                        <tr>
+                            <td>${svm['_id]}</td>
+                            <td>${svm.service_id}</td>
+                            <td>${svm.port}</td>
+                            <td>${svm.ip_address}</td>
+                            <td>${svm.ssh_port}</td>
+                            <td>${svm.vnc_port}</td>
+                            <td>Blank</td>
+                        </tr>
+                    % endfor
                 </tbody>
             </table>
         </div>
