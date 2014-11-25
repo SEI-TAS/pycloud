@@ -285,7 +285,8 @@ class ServiceVM(Model):
             print "Resumed from VM image."
 
             # mac_address will have a value if bridged mode is enabled
-            if mac_address:
+            print 'Mac Address: ', mac_address
+            if mac_address is not None:
                 print "Retrieving IP for MAC: %s" % mac_address
                 ip = ServiceVM._find_ip_for_mac(mac_address)
                 if not ip:
