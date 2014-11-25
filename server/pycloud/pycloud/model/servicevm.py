@@ -305,6 +305,18 @@ class ServiceVM(Model):
             try:
                 ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
                 print "VM reboot was successful."
+
+                # mac_address will have a value if bridged mode is enabled
+                print 'Mac Address: ', mac_address
+                if mac_address is not None:
+                    print "Retrieving IP for MAC: %s" % mac_address
+                    ip = ServiceVM._find_ip_for_mac(mac_address)
+                    if not ip:
+                        print "Failed to locate the IP for the server!!!!"
+                        # TODO: Possibly throw an exception and shutdown the VM
+                    else:
+                        self.ip_address = ip
+                        self.mac_address = mac_address
             except:
                 # Ensure we destroy the VM if there was some problem after creating it.
                 self.destroy()
