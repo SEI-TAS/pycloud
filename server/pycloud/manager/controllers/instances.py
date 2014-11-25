@@ -61,6 +61,8 @@ class InstancesController(BaseController):
         instancesPage.form_values = {}
         instancesPage.form_errors = {}
 
+        instancesPage.svms = svms
+
         # Pass the grid and render the page.
         instancesPage.instancesGrid = instancesGrid
         return instancesPage.render()

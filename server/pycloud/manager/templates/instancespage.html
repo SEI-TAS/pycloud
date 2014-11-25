@@ -18,9 +18,25 @@
             <form>
                 <!--text(id='remoteHost', input_width=12, label=_('Remote Host for Migration'), mandatory=True)} -->
             </form>
-            <table class="table table-striped table-bordered table-condensed">
+            <table class="table table-striped">
                 <input type="hidden" id="svm_url" value="${h.url_for(controller='instances', action='svmList')}"/>
-                ${page.instancesGrid}
+                <thead>
+                    <tr>
+                        <th>SVM Id</th>
+                        <th>Service ID</th>
+                        <th>External Port</th>
+                        <th>External IP</th>
+                        <th>SSH Port</th>
+                        <th>VNC Port</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <!--${page.instancesGrid}-->
+                <tbody>
+                    % for svm in page.svms:
+                        <tr>${svm.service_id}</tr>
+                    % endfor
+                </tbody>
             </table>
         </div>
     </div>
