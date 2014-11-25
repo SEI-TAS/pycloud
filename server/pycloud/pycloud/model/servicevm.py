@@ -200,7 +200,11 @@ class ServiceVM(Model):
     # Will locate the IP address for a given mac address
     ################################################################################################################
     @staticmethod
-    def _find_ip_for_mac(mac):
+    def _find_ip_for_mac(mac, retry=3):
+        print 'Searching for IP with MAC: ', mac
+        if retry == 0:
+            print ''
+            return None
         c = get_cloudlet_instance()
 
         p = Popen(['sudo', c.nmap, '-sP', c.nmap_ip, '-oX', '-'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -210,12 +214,13 @@ class ServiceVM(Model):
             print "Error executing nmap:\n%s" % err
             return None
         xml = ElementTree.fromstring(out)
-        print 'Looking for IP in:'
-        print out
-        print 'Looking for: ', './host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac.upper()
-        ip = xml.find('./host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac.upper()).get('addr')
-
-        print 'Found IP: ', ip
+        ip = None
+        try:
+            ip = xml.find('./host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac.upper()).get('addr')
+            print 'Found IP: ', ip
+        except:
+            print 'Failed to find IP, retrying...'
+            ip = ServiceVM._find_ip_for_mac(mac, retry=(retry - 1))
 
         return ip
 
