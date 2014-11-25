@@ -212,6 +212,7 @@ class ServiceVM(Model):
         xml = ElementTree.fromstring(out)
         print 'Looking for IP in:'
         print out
+        print 'Looking for: ', './host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac
         ip = xml.find('./host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac).get('addr')
 
         print 'Found IP: ', ip
