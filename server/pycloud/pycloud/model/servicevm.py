@@ -203,7 +203,7 @@ class ServiceVM(Model):
     def _find_ip_for_mac(mac):
         c = get_cloudlet_instance()
 
-        p = Popen(['sudo', c.nmap, '-sP', c.ip_range, '-oX', '-'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        p = Popen(['sudo', c.nmap, '-sP', c.nmap_ip, '-oX', '-'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         out,err = p.communicate()
         rc = p.returncode
         if rc != 0:
