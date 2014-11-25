@@ -59,5 +59,5 @@ function updateList()
 $(document).ready( function () {
     // Start the load checker, which will check for changes continuously.
     console.log('Setting up SVM monitoring.');
-    updateList();
+    //updateList();
 });    
