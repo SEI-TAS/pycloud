@@ -4,6 +4,7 @@ __author__ = 'jdroot'
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 import os, random
+from pycloud.pycloud.cloudlet import get_cloudlet_instance
 
 ################################################################################################################
 # Exception type used in our system.
@@ -56,7 +57,9 @@ class VirtualMachineDescriptor(object):
     ################################################################################################################
     # Will enable bridged mode in the XML
     ################################################################################################################
-    def enableBridged(self):
+    def enableBridged(self, adapter):
+        # Get the bridge adapter, and stop if the adapter is None
+
         # Get the devices node
         devices = self.xmlRoot.find('devices')
 
@@ -71,18 +74,10 @@ class VirtualMachineDescriptor(object):
 
         bridge = ElementTree.fromstring("""
             <interface type="bridge">
-                <source bridge="br0"/>
+                <source bridge="%s"/>
                 <mac address="%s"/>
             </interface>
-        """ % mac)
-
-
-
-        # # Create the bridge interface element <interface type='bridge'/>
-        # bridge = Element('interface', type='bridge')
-        # # Create the source element to point it at the right *host* adapter
-        # source = Element('source', bridge='br0')
-        # bridge.append(source)
+        """ % (adapter, mac))
 
         # Add the new bridge elemnt to our XML
         devices.append(bridge)

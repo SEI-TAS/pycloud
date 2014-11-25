@@ -69,6 +69,13 @@ class Cloudlet(object):
         # Export
         self.export_path = config['pycloud.export.default']
 
+        self.migration_enabled = config['pycloud.migration.enabled']
+        self.migration_enabled = self.migration_enabled in ['T', 'TRUE', 'Y', 'YES']
+
+        self.bridge_adapter = config['pycloud.migration.adapter']
+        self.nmap = config['pycloud.migration.nmap']
+        self.nmap_ip = config['pycloud.migration.ip_range']
+
         print 'cloudlet created.'
 
     @staticmethod

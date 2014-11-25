@@ -18,8 +18,12 @@ from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineDescriptor
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineException
 from pycloud.pycloud.vm.vncclient import VNCClient
 from pycloud.pycloud.utils import portmanager
-from pylons import g
 import os
+
+# Needed to locate IP addresses
+from pycloud.pycloud.cloudlet import get_cloudlet_instance
+from subprocess import Popen, PIPE
+from xml.etree import ElementTree
 
 ################################################################################################################
 # Represents a runtime ServiceVM, independent on whether it has a cloned or original disk image.
@@ -28,7 +32,7 @@ class ServiceVM(Model):
     # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
         collection = "service_vms"
-        external = ['_id', 'service_id', 'running', 'port']
+        external = ['_id', 'service_id', 'running', 'port', 'ip_address']
         mapping = {
             'vm_image': VMImage
         }
@@ -53,6 +57,8 @@ class ServiceVM(Model):
         self.ssh_port = None
         self.vnc_port = None
         self.service_id = None
+        self.ip_address = None
+        self.mac_address = None
         self.running = False
         super(ServiceVM, self).__init__(*args, **kwargs)
         
@@ -139,12 +145,18 @@ class ServiceVM(Model):
     ################################################################################################################    
     def _update_descriptor(self, saved_xml_descriptor, id_only=False):
         # Get the descriptor and inflate it to something we can work with.
+        """
+        :rtype : (string, string)
+        """
         xml_descriptor = VirtualMachineDescriptor(saved_xml_descriptor)
 
-        #Set Bridged Mode
-        mac = xml_descriptor.enableBridged()
-
-        print 'Created with mac address \'%s\'' % mac
+        # Configure bridged mode if enabled
+        c = get_cloudlet_instance()
+        mac = None
+        if c.migration_enabled:
+            if c.bridge_adapter:
+                mac = xml_descriptor.enableBridged('br0')
+                print 'Created with mac address \'%s\'' % mac
 
         # Change the ID and Name.
         xml_descriptor.setUuid(self._id)
@@ -170,7 +182,7 @@ class ServiceVM(Model):
         print '===================================='
         print updated_xml_descriptor
         print '===================================='
-        return updated_xml_descriptor
+        return updated_xml_descriptor, mac
     
     ################################################################################################################
     # Updates the name and id of an xml by simply replacing the text, without parsing, to ensure the result will
@@ -182,6 +194,23 @@ class ServiceVM(Model):
         return updated_xml
 
     ################################################################################################################
+    # Will locate the IP address for a given mac address
+    ################################################################################################################
+    @staticmethod
+    def _find_ip_for_mac(mac):
+        c = get_cloudlet_instance()
+
+        p = Popen(['sudo', c.nmap, '-sP', c.ip_range, '-oX', '-'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        out,err = p.communicate()
+        rc = p.returncode
+        if rc != 0:
+            print "Error executing nmap:\n%s" % err
+            return None
+        xml = ElementTree.fromstring(out)
+        ip = xml.find('./host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac).get('addr')
+        return ip
+
+    ################################################################################################################
     # Create a new service VM from a given template, and start it.
     ################################################################################################################
     def create(self, vmXmlTemplateFile):
@@ -191,13 +220,25 @@ class ServiceVM(Model):
          
         # Load the XML template and update it with this VM's information.
         template_xml_descriptor = open(vmXmlTemplateFile, "r").read()
-        updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)
+        updated_xml_descriptor, mac_address = self._update_descriptor(template_xml_descriptor)
 
         # Create a VM ("domain") through the hypervisor.
         print "Starting a new VM..."  
         try:
             ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
             print "VM successfully created and started."
+
+            # mac_address will have a value if bridged mode is enabled
+            if mac_address:
+                print "Retrieving IP for MAC: %s" % mac_address
+                ip = ServiceVM._find_ip_for_mac(mac_address)
+                if not ip:
+                    print "Failed to locate the IP for the server!!!!"
+                    # TODO: Possibly throw an exception and shutdown the VM
+                else:
+                    self.ip_address = ip
+                    self.mac_address = mac_address
+
             self.vnc_port = self.__get_vnc_port()
             print "VNC available on localhost:{}".format(str(self.vnc_port))
         except:
