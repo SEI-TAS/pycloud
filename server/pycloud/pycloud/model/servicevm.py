@@ -256,7 +256,7 @@ class ServiceVM(Model):
             ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
             print "VM successfully created and started."
 
-            self._find_ip_for_mac(mac_address)
+            self._set_ip_if_mac(mac_address)
 
             self.vnc_port = self.__get_vnc_port()
             print "VNC available on localhost:{}".format(str(self.vnc_port))
@@ -300,7 +300,7 @@ class ServiceVM(Model):
             ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
             print "Resumed from VM image."
 
-            self._find_ip_for_mac(mac_address)
+            self._set_ip_if_mac(mac_address)
 
         except libvirt.libvirtError as e:
             # If we could not resume the VM, discard the memory state and try to boot the VM from scratch.
@@ -312,7 +312,7 @@ class ServiceVM(Model):
                 ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
                 print "VM reboot was successful."
 
-                self._find_ip_for_mac(mac_address)
+                self._set_ip_if_mac(mac_address)
             except:
                 # Ensure we destroy the VM if there was some problem after creating it.
                 self.destroy()
