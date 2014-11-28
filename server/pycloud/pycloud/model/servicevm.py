@@ -412,21 +412,6 @@ class ServiceVM(Model):
     def migrate(self, remote_host, p2p=False):
             vm = ServiceVM._get_virtual_machine(self._id)
 
-            # Transfer the disk image file.
-            # TODO: more secure file transfer
-            print 'Starting disk image file transfer...'
-            username = 'cloudlet'
-            password = 'idontcare'
-            fullpath = os.path.abspath(self.vm_image.disk_image)
-            folder_path = os.path.dirname(fullpath)
-            create_dir_command = ("sshpass -p %s ssh -o User=%s -o StrictHostKeyChecking=no %s 'mkdir -p %s'"
-                                  % (password, username, remote_host, folder_path))
-            copy_command = ('sshpass -p %s scp -o User=%s -o StrictHostKeyChecking=no %s %s:%s'
-                            % (password, username, fullpath, remote_host, fullpath))
-            os.system(create_dir_command)
-            os.system(copy_command)
-            print 'Disk image transferred successfully'
-
             # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
             # (and some hypervisors do not support it anyway).
             # TODO: figure out why shared disk is ignored.

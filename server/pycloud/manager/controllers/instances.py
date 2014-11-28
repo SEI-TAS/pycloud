@@ -1,7 +1,7 @@
 import logging
 import json
 import urllib2
-import urllib
+import os
 
 from pylons import request
 from pylons import response, session, tmpl_context as c, url
@@ -148,7 +148,6 @@ class InstancesController(BaseController):
 
             # The host we are migrating to.
             remote_host = request.params.get('target', None)
-            #remote_host = 'twister'
 
             # Find the SVM.
             svm = ServiceVM.by_id(id)
@@ -159,14 +158,38 @@ class InstancesController(BaseController):
             if result == -1:
                 raise Exception("Cannot pause VM: %s", str(id))
 
-            # Do the migration.
+            # TODO: hardcoded port
             print 'Migrating to remote cloudlet: ' + remote_host
+            remote_http_host = 'http://%s:9999' % remote_host
+
+            # Transfer the disk image file.
+            print 'Starting metadata and disk image file transfer...'
+            remote_url = '%s/instances/receiveMigratedSVMMetadata' % remote_http_host
+            new_request = urllib2.Request(remote_url)
+            new_request.add_header('Content-Type', 'application/json')
+            result = urllib2.urlopen(new_request, data=json.dumps(svm))
+
+            # TODO: more secure file transfer
+            username = 'cloudlet'
+            password = 'idontcare'
+            fullpath = os.path.abspath(self.vm_image.disk_image)
+            folder_path = os.path.dirname(fullpath)
+            create_dir_command = ("sshpass -p %s ssh -o User=%s -o StrictHostKeyChecking=no %s 'mkdir -p %s'"
+                                  % (password, username, remote_host, folder_path))
+            copy_command = ('sshpass -p %s scp -o User=%s -o StrictHostKeyChecking=no %s %s:%s'
+                            % (password, username, fullpath, remote_host, fullpath))
+            os.system(create_dir_command)
+            os.system(copy_command)
+            print 'Disk image transferred successfully'
+
+            # Do the migration.
             svm.migrate(remote_host, p2p=False)
 
-            # Notify remote cloudlet of migration.
-            # TODO: hardcoded port
+            # TODO: if migration fails, ask remote to remove svm.
+
+            # Notify remote cloudlet that migration finished.
             print 'Sending metadata to remote cloudlet'
-            remote_url = 'http://%s:9999/instances/receiveMigration' % remote_host
+            remote_url = '%s/instances/resumeMigratedSVM' % remote_http_host
             new_request = urllib2.Request(remote_url)
             new_request.add_header('Content-Type', 'application/json')
             result = urllib2.urlopen(new_request, data=json.dumps(svm))
@@ -185,7 +208,7 @@ class InstancesController(BaseController):
     ############################################################################################################
     # Receives information about a migrated VM.
     ############################################################################################################
-    def POST_receiveMigratedInstance(self):
+    def POST_receiveMigratedInstanceMetadata(self):
         # Parse the body of the request as JSON into a python object.
         json_svm = json.loads(request.body)
 
@@ -200,12 +223,30 @@ class InstancesController(BaseController):
         migrated_svm.vnc_port = json_svm['vnc_port']
         migrated_svm.service_id = json_svm['service_id']
 
+        # TODO: receive the transferred file and update its path.
+        # Create folder for SVM in local temp folder.
+        # Save the received file inside that folder.
+        # Save in migrated_svm.vm_image.disk_image the updated path
+
         # Check that we have the backing file, and rebase the new file so it will point to the correct backing file.
-        # TODO: update path to svm's disk image file
         service = Service.by_id(migrated_svm.service_id)
         print service
         backing_disk_file = service.vm_image.disk_image
         migrated_svm.vm_image.rebase_disk_image(backing_disk_file)
+
+        # Save to internal DB.
+        migrated_svm.save()
+
+    ############################################################################################################
+    # Receives information about a migrated VM.
+    ############################################################################################################
+    def POST_resumeMigratedInstance(self):
+        # Parse the body of the request as JSON into a python object.
+        data = json.loads(request.body)
+
+        # Find the SVM.
+        svm_id = data['_id']
+        migrated_svm = ServiceVM.by_id(svm_id)
 
         # Restart the VM.
         print 'Unpausing VM...'
