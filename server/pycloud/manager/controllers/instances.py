@@ -200,6 +200,14 @@ class InstancesController(BaseController):
         migrated_svm.vnc_port = json_svm['vnc_port']
         migrated_svm.service_id = json_svm['service_id']
 
+        # Check that we have the backing file, and rebase the new file so it will point to the correct backing file.
+        # TODO: update path to svm's disk image file
+        service = Service.by_id(migrated_svm.service_id)
+        print service
+        backing_disk_file = service.vm_image.disk_image
+        migrated_svm.vm_image.rebase_disk_image(backing_disk_file)
+
+        # Restart the VM.
         print 'Unpausing VM...'
         result = migrated_svm.unpause()
         print result
