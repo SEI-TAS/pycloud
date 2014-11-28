@@ -138,7 +138,7 @@ class InstancesController(BaseController):
     ############################################################################################################
     # Command to migrate a machine.
     ############################################################################################################
-    def GET_migrateInstance(self, id, target):
+    def GET_migrateInstance(self, id):
         try:
             # Parse the body of the request as JSON into a python object.
             # First remove URL quotes added to string, and then remove trailing "=" (no idea why it is there).
