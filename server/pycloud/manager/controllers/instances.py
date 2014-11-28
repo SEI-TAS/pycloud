@@ -160,11 +160,12 @@ class InstancesController(BaseController):
                 raise Exception("Cannot pause VM: %s", str(id))
 
             # Do the migration.
+            print 'Migrating to remote cloudlet: ' + remote_host
             svm.migrate(remote_host, p2p=False)
 
             # Notify remote cloudlet of migration.
             # TODO: hardcoded port
-            print 'Sending metadata to remote cloudlet (' + remote_host + ')'
+            print 'Sending metadata to remote cloudlet'
             remote_url = 'http://%s:9999/instances/receiveMigration' % remote_host
             new_request = urllib2.Request(remote_url)
             new_request.add_header('Content-Type', 'application/json')
