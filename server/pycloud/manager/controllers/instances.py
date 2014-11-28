@@ -235,16 +235,16 @@ def generate_service_id_link(col_num, i, item):
 ############################################################################################################
 def generate_action_buttons(col_num, i, item):
     # Button to stop an instance.
-    stopUrl = h.url_for(controller='instances', action='stopInstance', id=item["svm_id"])
+    stopUrl = h.url_for(controller='instances', action='stopInstance', id=item["svm_id"], action_name=None)
     stopButtonHtml = HTML.button("Stop", onclick=h.literal("stopSVM('"+ stopUrl +"')"), class_="btn btn-primary btn")
 
     # Button to open VNC window.
-    vncUrl = h.url_for(controller='instances', action='openVNC', id=item["svm_id"])
+    vncUrl = h.url_for(controller='instances', action='openVNC', id=item["svm_id"], action_name=None)
     vncButtonHtml = HTML.button("VNC", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
 
     # Button to migrate.
-    migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"])
-    migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("showMigrateModal('" + migrateUrl + "')"), class_="btn btn-primary btn")
+    migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"], action_name=None)
+    migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("migrateSVM('" + migrateUrl + "')"), class_="btn btn-primary btn")
 
     # Render the buttons with the Ajax code to stop the SVM.    
     return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml)
