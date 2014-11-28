@@ -138,7 +138,7 @@ class InstancesController(BaseController):
     ############################################################################################################
     # Command to migrate a machine.
     ############################################################################################################
-    def GET_migrateInstance(self, id):
+    def GET_migrateInstance(self, id, target):
         try:
             # Parse the body of the request as JSON into a python object.
             # First remove URL quotes added to string, and then remove trailing "=" (no idea why it is there).
@@ -146,9 +146,8 @@ class InstancesController(BaseController):
             #fields = json.loads(parsedJsonString)
 
             # The host we are migrating to.
-            #remote_host = fields['remoteHost']
-            #id = fields['id']
-            remote_host = 'twister'
+            remote_host = request.params.get('target', None)
+            #remote_host = 'twister'
 
             # Find the SVM.
             svm = ServiceVM.by_id(id)
@@ -220,7 +219,7 @@ class InstancesController(BaseController):
             return svm_list
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
-            print 'Error getting list of instance changes: ' + str(e);
+            print 'Error getting list of instance changes: ' + str(e)
             return self.JSON_NOT_OK
 
 ############################################################################################################
@@ -241,11 +240,11 @@ def generate_action_buttons(col_num, i, item):
 
     # Button to open VNC window.
     vncUrl = h.url_for(controller='instances', action='openVNC', id=item["svm_id"])
-    vncButtonHtml = HTML.button("Open VNC (on server)", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
+    vncButtonHtml = HTML.button("VNC", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
 
     # Button to migrate.
     migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"])
-    migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("migrateSVM('" + migrateUrl + "')"), class_="btn btn-primary btn")
+    migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("showMigrateModal('" + migrateUrl + "')"), class_="btn btn-primary btn")
 
     # Render the buttons with the Ajax code to stop the SVM.    
     return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml)

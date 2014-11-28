@@ -11,6 +11,10 @@ function migrateSVM(migrateUrl)
         reloadPage();
     };
 
+    // Add the target cloudlet.
+    var targetCloudlet = 'twister';
+    migrateUrl = migrateUrl + '?target=' + targetCloudlet;
+
     // Do the post to get data and load the modal.
     ajaxGet(migrateUrl, "Migrating Service VM Instance", successHandler);
 }
