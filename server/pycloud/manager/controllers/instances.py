@@ -3,7 +3,8 @@ import json
 import urllib2
 import urllib
 
-from pylons import request, response, session, tmpl_context as c, url
+from pylons import request
+from pylons import response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 from pylons import g
 
@@ -165,9 +166,9 @@ class InstancesController(BaseController):
             # TODO: hardcoded port
             print 'Sending metadata to remote cloudlet'
             remote_url = 'http://%s:9999/instances/receiveMigration' % remote_host
-            request = urllib2.Request(remote_url)
-            request.add_header('Content-Type', 'application/json')
-            result = urllib2.urlopen(request, data=json.dumps(svm))
+            new_request = urllib2.Request(remote_url)
+            new_request.add_header('Content-Type', 'application/json')
+            result = urllib2.urlopen(new_request, data=json.dumps(svm))
             print result
 
             # Remove the local VM.
