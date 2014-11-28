@@ -2,17 +2,27 @@
 // Functions used when managing the instance list.
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+function showMigrationModal(migrateUrl)
+{
+    // Store the migration URL in the modal.
+    $('#migrateUrl').value(migrateUrl);
+
+    // Show the modal.
+    $('#modal-migrate').modal('show');
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to stop a Service VM through Ajax.
 /////////////////////////////////////////////////////////////////////////////////////
-function migrateSVM(migrateUrl)
+function migrateSVM()
 {
     var successHandler = function(response) {
         reloadPage();
     };
 
     // Add the target cloudlet.
-    var targetCloudlet = 'twister';
+    var migrateUrl = $('#migrateUrl').value();
+    var targetCloudlet = $('#targetCloudet').value();
     migrateUrl = migrateUrl + '?target=' + targetCloudlet;
 
     // Do the post to get data and load the modal.
