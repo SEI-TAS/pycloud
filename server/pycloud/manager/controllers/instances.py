@@ -37,24 +37,25 @@ class InstancesController(BaseController):
         print request.environ['SCRIPT_NAME']
         svms = ServiceVM.find()
 
-        # grid_items = []
-        # for svm in svms:
-        #     grid_items.append(
-        #         {
-        #             'svm_id': svm['_id'],
-        #             'service_id': svm.service_id,
-        #             'service_external_port': svm.port,
-        #             'ssh_port': svm.ssh_port,
-        #             'vnc_port': svm.vnc_port,
-        #             #'folder': os.path.dirname(svm.vm_image.disk_image),
-        #             'action': 'Stop'
-        #         }
-        #     )
-        #
-        # # Create and format the grid.
-        # instancesGrid = Grid(grid_items, ['svm_id', 'service_id', 'service_external_port', 'ssh_port', 'vnc_port', 'action'])
-        # instancesGrid.column_formats["service_id"] = generate_service_id_link
-        # instancesGrid.column_formats["action"] = generate_action_buttons
+        grid_items = []
+        for svm in svms:
+            grid_items.append(
+                {
+                    'svm_id': svm['_id'],
+                    'service_id': svm.service_id,
+                    'external_port': svm.port,
+                    'external_ip': svm.ip_address,
+                    'ssh': svm.ssh_port,
+                    'vnc': svm.vnc_port,
+                    #'folder': os.path.dirname(svm.vm_image.disk_image),
+                    'action': 'Stop'
+                }
+            )
+
+        # Create and format the grid.
+        instancesGrid = Grid(grid_items, ['svm_id', 'service_id', 'external_port', 'external_ip', 'ssh', 'vnc', 'action'])
+        instancesGrid.column_formats["service_id"] = generate_service_id_link
+        instancesGrid.column_formats["action"] = generate_action_buttons
 
         # Setup the page to render.
         instancesPage = InstancesPage()
@@ -64,7 +65,7 @@ class InstancesController(BaseController):
         instancesPage.svms = svms
 
         # Pass the grid and render the page.
-        # instancesPage.instancesGrid = instancesGrid
+        instancesPage.instancesGrid = instancesGrid
         return instancesPage.render()
         
     ############################################################################################################
