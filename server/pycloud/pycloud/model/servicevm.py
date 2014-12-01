@@ -182,9 +182,9 @@ class ServiceVM(Model):
 
         # Get the resulting XML string and return it.
         updated_xml_descriptor = xml_descriptor.getAsString()
-        print '===================================='
-        print updated_xml_descriptor
-        print '===================================='
+        # print '===================================='
+        # print updated_xml_descriptor
+        # print '===================================='
         return updated_xml_descriptor, mac
     
     ################################################################################################################
@@ -200,7 +200,10 @@ class ServiceVM(Model):
     # Will locate the IP address for a given mac address
     ################################################################################################################
     @staticmethod
-    def _find_ip_for_mac(mac):
+    def _find_ip_for_mac(mac, retry=3):
+        if retry == 0:
+            print ''
+            return None
         c = get_cloudlet_instance()
 
         p = Popen(['sudo', c.nmap, '-sP', c.nmap_ip, '-oX', '-'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -210,14 +213,30 @@ class ServiceVM(Model):
             print "Error executing nmap:\n%s" % err
             return None
         xml = ElementTree.fromstring(out)
-        print 'Looking for IP in:'
-        print out
-        print 'Looking for: ', './host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac.upper()
-        ip = xml.find('./host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac.upper()).get('addr')
-
-        print 'Found IP: ', ip
+        ip = None
+        try:
+            ip = xml.find('./host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac.upper()).get('addr')
+            print 'Found IP: ', ip
+        except:
+            print 'Failed to find IP, retrying...'
+            ip = ServiceVM._find_ip_for_mac(mac, retry=(retry - 1))
 
         return ip
+
+    ################################################################################################################
+    # Will locate the IP address if we have a MAC address
+    ################################################################################################################
+    def _set_ip_if_mac(self, mac):
+        # mac_address will have a value if bridged mode is enabled
+        if mac is not None:
+            print "Retrieving IP for MAC: %s" % mac
+            ip = ServiceVM._find_ip_for_mac(mac)
+            if not ip:
+                print "Failed to locate the IP for the server!!!!"
+                # TODO: Possibly throw an exception and shutdown the VM
+            else:
+                self.ip_address = ip
+                self.mac_address = mac
 
     ################################################################################################################
     # Create a new service VM from a given template, and start it.
@@ -237,16 +256,7 @@ class ServiceVM(Model):
             ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
             print "VM successfully created and started."
 
-            # mac_address will have a value if bridged mode is enabled
-            if mac_address:
-                print "Retrieving IP for MAC: %s" % mac_address
-                ip = ServiceVM._find_ip_for_mac(mac_address)
-                if not ip:
-                    print "Failed to locate the IP for the server!!!!"
-                    # TODO: Possibly throw an exception and shutdown the VM
-                else:
-                    self.ip_address = ip
-                    self.mac_address = mac_address
+            self._set_ip_if_mac(mac_address)
 
             self.vnc_port = self.__get_vnc_port()
             print "VNC available on localhost:{}".format(str(self.vnc_port))
@@ -290,17 +300,7 @@ class ServiceVM(Model):
             ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
             print "Resumed from VM image."
 
-            # mac_address will have a value if bridged mode is enabled
-            print 'Mac Address: ', mac_address
-            if mac_address is not None:
-                print "Retrieving IP for MAC: %s" % mac_address
-                ip = ServiceVM._find_ip_for_mac(mac_address)
-                if not ip:
-                    print "Failed to locate the IP for the server!!!!"
-                    # TODO: Possibly throw an exception and shutdown the VM
-                else:
-                    self.ip_address = ip
-                    self.mac_address = mac_address
+            self._set_ip_if_mac(mac_address)
 
         except libvirt.libvirtError as e:
             # If we could not resume the VM, discard the memory state and try to boot the VM from scratch.
@@ -312,17 +312,7 @@ class ServiceVM(Model):
                 ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
                 print "VM reboot was successful."
 
-                # mac_address will have a value if bridged mode is enabled
-                print 'Mac Address: ', mac_address
-                if mac_address is not None:
-                    print "Retrieving IP for MAC: %s" % mac_address
-                    ip = ServiceVM._find_ip_for_mac(mac_address)
-                    if not ip:
-                        print "Failed to locate the IP for the server!!!!"
-                        # TODO: Possibly throw an exception and shutdown the VM
-                    else:
-                        self.ip_address = ip
-                        self.mac_address = mac_address
+                self._set_ip_if_mac(mac_address)
             except:
                 # Ensure we destroy the VM if there was some problem after creating it.
                 self.destroy()
@@ -421,21 +411,6 @@ class ServiceVM(Model):
     ################################################################################################################
     def migrate(self, remote_host, p2p=False):
             vm = ServiceVM._get_virtual_machine(self._id)
-
-            # Transfer the disk image file.
-            # TODO: more secure file transfer
-            print 'Starting disk image file transfer...'
-            username = 'cloudlet'
-            password = 'idontcare'
-            fullpath = os.path.abspath(self.vm_image.disk_image)
-            folder_path = os.path.dirname(fullpath)
-            create_dir_command = ("sshpass -p %s ssh -o User=%s -o StrictHostKeyChecking=no %s 'mkdir -p %s'"
-                                  % (password, username, remote_host, folder_path))
-            copy_command = ('sshpass -p %s scp -o User=%s -o StrictHostKeyChecking=no %s %s:%s'
-                            % (password, username, fullpath, remote_host, fullpath))
-            os.system(create_dir_command)
-            os.system(copy_command)
-            print 'Disk image transferred successfully'
 
             # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
             # (and some hypervisors do not support it anyway).

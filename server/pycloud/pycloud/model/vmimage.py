@@ -143,6 +143,18 @@ class VMImage(DictObject):
             raise
 
     ################################################################################################################
+    # If appropriate, rebases this file to the given backing file.
+    ################################################################################################################
+    def rebase_disk_image(self, backing_disk_file):
+            # Only valid for qco2 files.
+            if(diskimage.DiskImage.getDiskImageType(self.disk_image) == diskimage.DiskImage.TYPE_QCOW2):
+                qcow_image = qcowdiskimage.Qcow2DiskImage(self.disk_image)
+                qcow_image.linkToBackingFile(backing_disk_file)
+            else:
+                # Nothing to do here.
+                return
+
+    ################################################################################################################
     # Protects a VM Image by making it read-only.
     ################################################################################################################
     def protect(self):                       

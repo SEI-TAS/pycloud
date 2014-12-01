@@ -1,9 +1,10 @@
 import logging
 import json
 import urllib2
-import urllib
+import os
 
-from pylons import request, response, session, tmpl_context as c, url
+from pylons import request
+from pylons import response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 from pylons import g
 
@@ -43,16 +44,17 @@ class InstancesController(BaseController):
                 {
                     'svm_id': svm['_id'],
                     'service_id': svm.service_id,
-                    'service_external_port': svm.port,
-                    'ssh_port': svm.ssh_port,
-                    'vnc_port': svm.vnc_port,
+                    'external_port': svm.port,
+                    'external_ip': svm.ip_address,
+                    'ssh': svm.ssh_port,
+                    'vnc': svm.vnc_port,
                     #'folder': os.path.dirname(svm.vm_image.disk_image),
                     'action': 'Stop'
                 }
             )
 
         # Create and format the grid.
-        instancesGrid = Grid(grid_items, ['svm_id', 'service_id', 'service_external_port', 'ssh_port', 'vnc_port', 'action'])
+        instancesGrid = Grid(grid_items, ['svm_id', 'service_id', 'external_port', 'external_ip', 'ssh', 'vnc', 'action'])
         instancesGrid.column_formats["service_id"] = generate_service_id_link
         instancesGrid.column_formats["action"] = generate_action_buttons
 
@@ -60,6 +62,8 @@ class InstancesController(BaseController):
         instancesPage = InstancesPage()
         instancesPage.form_values = {}
         instancesPage.form_errors = {}
+
+        instancesPage.svms = svms
 
         # Pass the grid and render the page.
         instancesPage.instancesGrid = instancesGrid
@@ -143,9 +147,7 @@ class InstancesController(BaseController):
             #fields = json.loads(parsedJsonString)
 
             # The host we are migrating to.
-            #remote_host = fields['remoteHost']
-            #id = fields['id']
-            remote_host = 'twister'
+            remote_host = request.params.get('target', None)
 
             # Find the SVM.
             svm = ServiceVM.by_id(id)
@@ -156,16 +158,41 @@ class InstancesController(BaseController):
             if result == -1:
                 raise Exception("Cannot pause VM: %s", str(id))
 
+            # TODO: hardcoded port
+            print 'Migrating to remote cloudlet: ' + remote_host
+            remote_http_host = 'http://%s:9999' % remote_host
+
+            # Transfer the disk image file.
+            print 'Starting metadata and disk image file transfer...'
+            remote_url = '%s/instances/receiveMigratedSVMMetadata' % remote_http_host
+            new_request = urllib2.Request(remote_url)
+            new_request.add_header('Content-Type', 'application/json')
+            result = urllib2.urlopen(new_request, data=json.dumps(svm))
+
+            # TODO: more secure file transfer
+            username = 'cloudlet'
+            password = 'idontcare'
+            fullpath = os.path.abspath(self.vm_image.disk_image)
+            folder_path = os.path.dirname(fullpath)
+            create_dir_command = ("sshpass -p %s ssh -o User=%s -o StrictHostKeyChecking=no %s 'mkdir -p %s'"
+                                  % (password, username, remote_host, folder_path))
+            copy_command = ('sshpass -p %s scp -o User=%s -o StrictHostKeyChecking=no %s %s:%s'
+                            % (password, username, fullpath, remote_host, fullpath))
+            os.system(create_dir_command)
+            os.system(copy_command)
+            print 'Disk image transferred successfully'
+
             # Do the migration.
             svm.migrate(remote_host, p2p=False)
 
-            # Notify remote cloudlet of migration.
-            # TODO: hardcoded port
+            # TODO: if migration fails, ask remote to remove svm.
+
+            # Notify remote cloudlet that migration finished.
             print 'Sending metadata to remote cloudlet'
-            remote_url = 'http://%s:9999/instances/receiveMigration' % remote_host
-            request = urllib2.Request(remote_url)
-            request.add_header('Content-Type', 'application/json')
-            result = urllib2.urlopen(request, data=json.dumps(svm))
+            remote_url = '%s/instances/resumeMigratedSVM' % remote_http_host
+            new_request = urllib2.Request(remote_url)
+            new_request.add_header('Content-Type', 'application/json')
+            result = urllib2.urlopen(new_request, data=json.dumps(svm))
             print result
 
             # Remove the local VM.
@@ -181,7 +208,7 @@ class InstancesController(BaseController):
     ############################################################################################################
     # Receives information about a migrated VM.
     ############################################################################################################
-    def POST_receiveMigratedInstance(self):
+    def POST_receiveMigratedInstanceMetadata(self):
         # Parse the body of the request as JSON into a python object.
         json_svm = json.loads(request.body)
 
@@ -196,6 +223,32 @@ class InstancesController(BaseController):
         migrated_svm.vnc_port = json_svm['vnc_port']
         migrated_svm.service_id = json_svm['service_id']
 
+        # TODO: receive the transferred file and update its path.
+        # Create folder for SVM in local temp folder.
+        # Save the received file inside that folder.
+        # Save in migrated_svm.vm_image.disk_image the updated path
+
+        # Check that we have the backing file, and rebase the new file so it will point to the correct backing file.
+        service = Service.by_id(migrated_svm.service_id)
+        print service
+        backing_disk_file = service.vm_image.disk_image
+        migrated_svm.vm_image.rebase_disk_image(backing_disk_file)
+
+        # Save to internal DB.
+        migrated_svm.save()
+
+    ############################################################################################################
+    # Receives information about a migrated VM.
+    ############################################################################################################
+    def POST_resumeMigratedInstance(self):
+        # Parse the body of the request as JSON into a python object.
+        data = json.loads(request.body)
+
+        # Find the SVM.
+        svm_id = data['_id']
+        migrated_svm = ServiceVM.by_id(svm_id)
+
+        # Restart the VM.
         print 'Unpausing VM...'
         result = migrated_svm.unpause()
         print result
@@ -217,7 +270,7 @@ class InstancesController(BaseController):
             return svm_list
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
-            print 'Error getting list of instance changes: ' + str(e);
+            print 'Error getting list of instance changes: ' + str(e)
             return self.JSON_NOT_OK
 
 ############################################################################################################
@@ -233,16 +286,16 @@ def generate_service_id_link(col_num, i, item):
 ############################################################################################################
 def generate_action_buttons(col_num, i, item):
     # Button to stop an instance.
-    stopUrl = h.url_for(controller='instances', action='stopInstance', id=item["svm_id"])
+    stopUrl = h.url_for(controller='instances', action='stopInstance', id=item["svm_id"], action_name=None)
     stopButtonHtml = HTML.button("Stop", onclick=h.literal("stopSVM('"+ stopUrl +"')"), class_="btn btn-primary btn")
 
     # Button to open VNC window.
-    vncUrl = h.url_for(controller='instances', action='openVNC', id=item["svm_id"])
-    vncButtonHtml = HTML.button("Open VNC (on server)", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
+    vncUrl = h.url_for(controller='instances', action='openVNC', id=item["svm_id"], action_name=None)
+    vncButtonHtml = HTML.button("VNC", onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
 
     # Button to migrate.
-    migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"])
-    migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("migrateSVM('" + migrateUrl + "')"), class_="btn btn-primary btn")
+    migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"], action_name=None)
+    migrateButtonHtml = HTML.button("Migrate", onclick=h.literal("showMigrationModal('" + migrateUrl + "')"), class_="btn btn-primary btn")
 
     # Render the buttons with the Ajax code to stop the SVM.    
     return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml)
