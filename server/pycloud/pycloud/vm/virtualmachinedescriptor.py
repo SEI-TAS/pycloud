@@ -67,7 +67,9 @@ class VirtualMachineDescriptor(object):
         # TODO: We need to evaluate if this is the correct approach
         # TODO: We need to determine if there are other interface types besides 'user'
         user = devices.find("interface[@type='user']")
+
         if user is not None:
+            print "Found the old network adapter:\n", ElementTree.tostring(user)
             devices.remove(user)
 
         mac = self.randomMAC()
