@@ -10,16 +10,18 @@
     Running Service VM Instances
 </%block>
 
-<div class="container">
-    <div class="panel panel-default col-sm-12">
-        <div class="panel-body">
-            <form>
-                <!--text(id='remoteHost', input_width=12, label=_('Remote Host for Migration'), mandatory=True)} -->
-            </form>
-            <table class="table table-striped">
-                <input type="hidden" id="svm_url" value="${h.url_for(controller='instances', action='svmList')}"/>
-                ${page.instancesGrid}
-            </table>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="container">
+            <div class="col-sm-12">
+                <form>
+                    <!--text(id='remoteHost', input_width=12, label=_('Remote Host for Migration'), mandatory=True)} -->
+                </form>
+                <table class="table table-striped">
+                    <input type="hidden" id="svm_url" value="${h.url_for(controller='instances', action='svmList')}"/>
+                    ${page.instancesGrid}
+                </table>
+            </div>
         </div>
     </div>
 </div>

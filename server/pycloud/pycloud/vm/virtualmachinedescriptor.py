@@ -63,14 +63,20 @@ class VirtualMachineDescriptor(object):
         # Get the devices node
         devices = self.xmlRoot.find('devices')
 
-        # If there is a "normal" network adapter, remove it
-        # TODO: We need to evaluate if this is the correct approach
-        # TODO: We need to determine if there are other interface types besides 'user'
+        mac = None
+
         user = devices.find("interface[@type='user']")
         if user is not None:
+            mac_element = user.find("mac")
+            if mac_element is not None:
+                mac = mac_element.get('address')
             devices.remove(user)
 
-        mac = self.randomMAC()
+        if mac is None:
+            mac = self.randomMAC()
+            print "Generating new mac address: %s" % mac
+        else:
+            print "Using existing mac address: %s" % mac
 
         bridge = ElementTree.fromstring("""
             <interface type="bridge">
