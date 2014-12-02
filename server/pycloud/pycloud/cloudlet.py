@@ -84,7 +84,8 @@ class Cloudlet(object):
 
     def cleanup_system(self):
         destroy_all_vms()
-        self._clean_instances_folder()
+        self._clean_temp_folder(self.svmInstancesFolder)
+        self._clean_temp_folder(self.newVmFolder)
         self._remove_service_vms()
         portmanager.PortManager.clearPorts()
         if not os.path.exists(self.export_path):
@@ -92,15 +93,15 @@ class Cloudlet(object):
         if not os.path.exists(self.appFolder):
             os.makedirs(self.appFolder)
 
-    def _clean_instances_folder(self):
-        print 'Cleaning up \'%s\'' % self.svmInstancesFolder
-        if os.path.exists(self.svmInstancesFolder):
-            print '\tDeleting all files in \'%s\'' % self.svmInstancesFolder
-            shutil.rmtree(self.svmInstancesFolder)
-        if not os.path.exists(self.svmInstancesFolder):
-            print '\tMaking folder \'%s\'' % self.svmInstancesFolder
-            os.makedirs(self.svmInstancesFolder)
-        print 'Done cleaning up \'%s\'' % self.svmInstancesFolder
+    def _clean_temp_folder(self, folder):
+        print 'Cleaning up \'%s\'' % folder
+        if os.path.exists(folder):
+            print '\tDeleting all files in \'%s\'' % folder
+            shutil.rmtree(folder)
+        if not os.path.exists(folder):
+            print '\tMaking folder \'%s\'' % folder
+            os.makedirs(folder)
+        print 'Done cleaning up \'%s\'' % folder
 
     def _remove_service_vms(self):
         from pycloud.pycloud.model import ServiceVM
