@@ -6,6 +6,7 @@ import libvirt
 # For regexp matching.
 import re
 
+import random
 import time
 
 # Used to generate unique IDs for the VMs.
@@ -112,6 +113,18 @@ class ServiceVM(Model):
         self._id = str(uuid4())
 
     ################################################################################################################
+    # Generates a random MAC address.
+    ################################################################################################################
+    def generate_random_mac(self):
+        mac = [
+            0x00, 0x16, 0x3e,
+            random.randint(0x00, 0x7f),
+            random.randint(0x00, 0xff),
+            random.randint(0x00, 0xff)
+        ]
+        return ':'.join(map(lambda x: "%02x" % x, mac))
+
+    ################################################################################################################
     # Add a port mapping
     ################################################################################################################
     def add_port_mapping(self, host_port, guest_port):
@@ -152,15 +165,18 @@ class ServiceVM(Model):
 
         # Configure bridged mode if enabled
         c = get_cloudlet_instance()
-        mac = None
         print 'Migration enabled: ', c.migration_enabled
         if c.migration_enabled:
             print 'Bridge Adapter: ', c.bridge_adapter
             if c.bridge_adapter:
                 print 'Enabling bridged mode'
-                mac = xml_descriptor.enableBridged('br0')
-                print 'Created with mac address \'%s\'' % mac
-                self.mac_address = mac
+                xml_descriptor.enableBridgedMode('br0')
+
+                # In bridge mode we need a new MAC in case we are a clone.
+                print "Generating new mac address"
+                self.mac_address = self.generate_random_mac()
+                xml_descriptor.setMACAddress(self.mac_address)
+                print 'Set mac address \'%s\'' % self.mac_address
 
         # Change the ID and Name.
         xml_descriptor.setUuid(self._id)
@@ -186,7 +202,7 @@ class ServiceVM(Model):
         # print '===================================='
         # print updated_xml_descriptor
         # print '===================================='
-        return updated_xml_descriptor, mac
+        return updated_xml_descriptor
     
     ################################################################################################################
     # Updates the name and id of an xml by simply replacing the text, without parsing, to ensure the result will
@@ -257,7 +273,7 @@ class ServiceVM(Model):
          
         # Load the XML template and update it with this VM's information.
         template_xml_descriptor = open(vmXmlTemplateFile, "r").read()
-        updated_xml_descriptor, mac_address = self._update_descriptor(template_xml_descriptor)
+        updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)
 
         # Create a VM ("domain") through the hypervisor.
         print "Starting a new VM..."  
@@ -265,7 +281,7 @@ class ServiceVM(Model):
             ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
             print "VM successfully created and started."
 
-            self._set_ip_if_mac(mac_address)
+            self._set_ip_if_mac(self.mac_address)
 
             self.vnc_port = self.__get_vnc_port()
             print "VNC available on localhost:{}".format(str(self.vnc_port))
@@ -311,6 +327,7 @@ class ServiceVM(Model):
 
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
         # The XML descriptor is given since some things need to be changed for the instance, mainly the disk image file and the mapped ports.
+        print updated_xml_descriptor
         try:
             print "Resuming from VM image..."
             ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)

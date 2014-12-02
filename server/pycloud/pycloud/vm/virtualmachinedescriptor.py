@@ -1,10 +1,7 @@
-__author__ = 'jdroot'
-
 # Used to parse the XML for the VirtualMachineDescriptor.
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
-import os, random
-from pycloud.pycloud.cloudlet import get_cloudlet_instance
+import os
 
 ################################################################################################################
 # Exception type used in our system.
@@ -45,58 +42,39 @@ class VirtualMachineDescriptor(object):
         vncPort = self.xmlRoot.find("devices/graphics[@type='vnc']").get("port")
         return vncPort
 
-    def randomMAC(self):
-        mac = [
-            0x00, 0x16, 0x3e,
-            random.randint(0x00, 0x7f),
-            random.randint(0x00, 0xff),
-            random.randint(0x00, 0xff)
-        ]
-        return ':'.join(map(lambda x: "%02x" % x, mac))
-
     ################################################################################################################
-    # Will enable bridged mode in the XML
+    # Will enable bridged mode in the XML.
     ################################################################################################################
-    def enableBridged(self, adapter):
-        # Get the bridge adapter, and stop if the adapter is None
-
+    def enableBridgedMode(self, adapter):
         # Get the devices node
         devices = self.xmlRoot.find('devices')
 
-        mac = None
+        # Find the network card, change its type to bridge.
+        # We assume the VM has exactly 1 network interface.
+        network_card = devices.find("interface")
+        network_card.set("type", "bridge")
 
-        user = devices.find("interface[@type='user']")
-        model_element = None
-        int_address_element = None
-        if user is not None:
-            model_element = user.find("model")
-            int_address_element = user.find("address")
-            devices.remove(user)
-
-        if mac is None:
-            mac = self.randomMAC()
-            print "Generating new mac address: %s" % mac
+        # Update or add the source element, needed for bridged mode.
+        network_card_source = network_card.find("source")
+        if network_card_source is not None:
+            network_card_source.set("bridge", adapter)
         else:
-            print "Using existing mac address: %s" % mac
+            network_card.append(ElementTree.fromstring('<source bridge="%s"/>' % adapter))
 
-        bridge = ElementTree.fromstring("""
-            <interface type="bridge">
-                <source bridge="%s"/>
-                <mac address="%s"/>
-            </interface>
-        """ % (adapter, mac))
+    ################################################################################################################
+    # Sets the mac address to the given value.
+    # We assume the VM has exactly 1 network interface.
+    ################################################################################################################
+    def setMACAddress(self, mac_address):
+        # Get the network card.
+        network_card = self.xmlRoot.find('devices/interface')
 
-        # Re-add the other internal tag from the original card.
-        if model_element is not None:
-            bridge.append(model_element)
-        if int_address_element is not None:
-            bridge.append(int_address_element)
-
-        # Add the new bridge elemnt to our XML
-        devices.append(bridge)
-
-        return mac
-
+        # Update or add the mac element.
+        mac_element = network_card.find("mac")
+        if mac_element is not None:
+            mac_element.set("address", mac_address)
+        else:
+            network_card.append(ElementTree.fromstring('<mac address="%s"/>' % mac_address))
 
     ################################################################################################################
     # Changes the IP address the VNC server will be listening on, to enable remote access.
