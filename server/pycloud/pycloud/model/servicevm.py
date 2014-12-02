@@ -160,6 +160,7 @@ class ServiceVM(Model):
                 print 'Enabling bridged mode'
                 mac = xml_descriptor.enableBridged('br0')
                 print 'Created with mac address \'%s\'' % mac
+                self.mac_address = mac
 
         # Change the ID and Name.
         xml_descriptor.setUuid(self._id)
@@ -189,11 +190,19 @@ class ServiceVM(Model):
     
     ################################################################################################################
     # Updates the name and id of an xml by simply replacing the text, without parsing, to ensure the result will
-    # be exactly the same as before.
+    # have exactly the same length as before.
     ################################################################################################################    
     def _update_raw_name_and_id(self, saved_xml_string):
         updated_xml = re.sub(r"<uuid>[\w\-]+</uuid>", "<uuid>%s</uuid>" % self._id, saved_xml_string)
         updated_xml = re.sub(r"<name>[\w\-]+</name>", "<name>%s</name>" % (self.prefix + '-' + self._id), updated_xml)
+        return updated_xml
+
+    ################################################################################################################
+    # Updates the MAC of an xml by simply replacing the text, without parsing, to ensure the result will
+    # have the exact same length as before.
+    ################################################################################################################
+    def _update_raw_mac(self, saved_xml_string):
+        updated_xml = re.sub(r"<mac address='[\w\-]+'/>", "<mac address='%s'/>" % self.mac_address, saved_xml_string)
         return updated_xml
 
     ################################################################################################################
@@ -292,7 +301,13 @@ class ServiceVM(Model):
         # Get the descriptor and update it to include the current disk image path, port mappings, etc.
         saved_xml_descriptor = saved_state.getStoredVmDescription(ServiceVM.get_hypervisor())
         updated_xml_descriptor, mac_address = self._update_descriptor(saved_xml_descriptor)
-        
+
+        # TEST: Update the MAC address directly in the saved state file.
+        if mac_address:
+            raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription(ServiceVM.get_hypervisor())
+            updated_xml_descriptor_mac_only = self._update_raw_mac(raw_saved_xml_descriptor)
+            saved_state.updateStoredVmDescription(updated_xml_descriptor_mac_only)
+
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
         # The XML descriptor is given since some things need to be changed for the instance, mainly the disk image file and the mapped ports.
         try:
