@@ -156,46 +156,44 @@ class ServiceVM(Model):
     ################################################################################################################
     # Updates an XML containing the description of the VM with the current info of this VM.
     ################################################################################################################    
-    def _update_descriptor(self, saved_xml_descriptor, id_only=False):
+    def _update_descriptor(self, saved_xml_descriptor):
         # Get the descriptor and inflate it to something we can work with.
         """
         :rtype : (string, string)
         """
         xml_descriptor = VirtualMachineDescriptor(saved_xml_descriptor)
 
+        # Change the ID and Name (note: not currently that useful since they are changed in the saved state file).
+        xml_descriptor.setUuid(self._id)
+        xml_descriptor.setName(self.prefix + '-' + self._id)
+
+        # Set the disk image in the description of the VM.
+        xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')
+
+        # Enable remote VNC access.
+        xml_descriptor.enableRemoteVNC()
+
         # Configure bridged mode if enabled
         c = get_cloudlet_instance()
         print 'Migration enabled: ', c.migration_enabled
-        if c.migration_enabled:
-            print 'Bridge Adapter: ', c.bridge_adapter
-            if c.bridge_adapter:
-                print 'Enabling bridged mode'
-                xml_descriptor.enableBridgedMode('br0')
+        print 'Bridge Adapter: ', c.bridge_adapter
+        if c.migration_enabled and c.bridge_adapter:
+            print 'Enabling bridged mode'
+            xml_descriptor.enableBridgedMode('br0')
 
-                # In bridge mode we need a new MAC in case we are a clone.
-                print "Generating new mac address"
-                self.mac_address = self.generate_random_mac()
-                xml_descriptor.setMACAddress(self.mac_address)
-                print 'Set mac address \'%s\'' % self.mac_address
-
-        # Change the ID and Name.
-        xml_descriptor.setUuid(self._id)
-        xml_descriptor.setName(self.prefix + '-' + self._id)  
-
-        # If we only wanted to modify the id-related features, we wont go in here.
-        if not id_only:
-            # Set the disk image in the description of the VM.
-            xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')
-
+            # In bridge mode we need a new MAC in case we are a clone.
+            print 'Generating new mac address'
+            self.mac_address = self.generate_random_mac()
+            xml_descriptor.setMACAddress(self.mac_address)
+            print 'Set mac address \'%s\'' % self.mac_address
+        else:
+            # No bridge mode, means we have to setup port forwarding.
             # Create a new port if we do not have an external port already.
             if not self.port:
                 self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.service_port)
             if not self.ssh_port:
                 self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.SSH_INTERNAL_PORT)
             xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
-
-            # Enable remote VNC access.
-            xml_descriptor.enableRemoteVNC()
 
         # Get the resulting XML string and return it.
         updated_xml_descriptor = xml_descriptor.getAsString()
@@ -316,11 +314,11 @@ class ServiceVM(Model):
 
         # Get the descriptor and update it to include the current disk image path, port mappings, etc.
         saved_xml_descriptor = saved_state.getStoredVmDescription(ServiceVM.get_hypervisor())
-        updated_xml_descriptor, mac_address = self._update_descriptor(saved_xml_descriptor)
+        updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
 
         # TEST: Update the MAC address directly in the saved state file.
-        if mac_address:
-            print 'Updating internal MAC address to ' + mac_address
+        if self.mac_address:
+            print 'Updating saved state file MAC address to ' + self.mac_address
             raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription(ServiceVM.get_hypervisor())
             updated_xml_descriptor_mac_only = self._update_raw_mac(raw_saved_xml_descriptor)
             saved_state.updateStoredVmDescription(updated_xml_descriptor_mac_only)
