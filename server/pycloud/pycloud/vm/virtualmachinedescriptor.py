@@ -67,9 +67,8 @@ class VirtualMachineDescriptor(object):
 
         user = devices.find("interface[@type='user']")
         if user is not None:
-            mac_element = user.find("mac")
-            if mac_element is not None:
-                mac = mac_element.get('address')
+            model_element = user.find("model")
+            int_address_element = user.find("address")
             devices.remove(user)
 
         if mac is None:
@@ -84,6 +83,12 @@ class VirtualMachineDescriptor(object):
                 <mac address="%s"/>
             </interface>
         """ % (adapter, mac))
+
+        # Re-add the other internal tag from the original card.
+        if model_element is not None:
+            bridge.append(model_element)
+        if int_address_element is not None:
+            bridge.append(int_address_element)
 
         # Add the new bridge elemnt to our XML
         devices.append(bridge)
