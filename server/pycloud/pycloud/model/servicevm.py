@@ -3,11 +3,10 @@ __author__ = 'jdroot'
 # Import libvirt to access the virtualization API.
 import libvirt
 
-# For regexp matching.
 import re
-
 import random
 import time
+import os
 
 # Used to generate unique IDs for the VMs.
 from uuid import uuid4
@@ -18,11 +17,10 @@ from pycloud.pycloud.vm.vmsavedstate import VMSavedState
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineDescriptor
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineException
 from pycloud.pycloud.vm.vncclient import VNCClient
+from pycloud.pycloud.vm.vmutils import HYPERVISOR_URI
 from pycloud.pycloud.utils import portmanager
-import os
-
-# Needed to locate IP addresses
 from pycloud.pycloud.cloudlet import get_cloudlet_instance
+
 from subprocess import Popen, PIPE
 from xml.etree import ElementTree
 
@@ -39,7 +37,7 @@ class ServiceVM(Model):
         }
 
     # URI used to connect to the local hypervisor.
-    _HYPERVISOR_URI = "qemu:///system"
+    _HYPERVISOR_URI = HYPERVISOR_URI
     _hypervisor = None
     
     # Constants.

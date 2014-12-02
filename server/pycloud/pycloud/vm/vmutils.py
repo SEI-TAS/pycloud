@@ -1,7 +1,8 @@
 __author__ = 'jdroot'
 
 import libvirt
-from pycloud.pycloud.model.servicevm import ServiceVM
+
+HYPERVISOR_URI = "qemu:///system"
 
 ################################################################################################################
 # Helper to convert normal uuid to string
@@ -22,7 +23,7 @@ def uuidstr(rawuuid):
 ################################################################################################################
 def destroy_all_vms():
     print 'Shutting down all running virtual machines:'
-    hypervisor = libvirt.open(ServiceVM._HYPERVISOR_URI)
+    hypervisor = libvirt.open(HYPERVISOR_URI)
     vm_ids = hypervisor.listDomainsID()
     for vm_id in vm_ids:
         vm = hypervisor.lookupByID(vm_id)
