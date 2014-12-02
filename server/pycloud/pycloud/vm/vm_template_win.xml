@@ -28,7 +28,5 @@
 	</features>
 	<qemu:commandline>
  	   <qemu:arg value='-usb'/>
-<!--	   <qemu:arg value='-redir'/>
-	   <qemu:arg value='tcp:8022::22'/> -->	   
 	</qemu:commandline>
 </domain>
