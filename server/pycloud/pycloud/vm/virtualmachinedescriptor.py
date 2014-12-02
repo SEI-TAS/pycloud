@@ -82,7 +82,6 @@ class VirtualMachineDescriptor(object):
             <interface type="bridge">
                 <source bridge="%s"/>
                 <mac address="%s"/>
-                <model type='virtio' />
             </interface>
         """ % (adapter, mac))
 
