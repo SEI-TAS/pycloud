@@ -184,6 +184,9 @@ class ServiceVM(Model):
             self.mac_address = self.generate_random_mac()
             xml_descriptor.setMACAddress(self.mac_address)
             print 'Set mac address \'%s\'' % self.mac_address
+
+            self.port = self.service_port
+            self.ssh_port = self.SSH_INTERNAL_PORT
         else:
             # No bridge mode, means we have to setup port forwarding.
             # Create a new port if we do not have an external port already.
