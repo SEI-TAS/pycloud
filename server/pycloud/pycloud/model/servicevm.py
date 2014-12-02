@@ -317,15 +317,14 @@ class ServiceVM(Model):
         updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
 
         # TEST: Update the MAC address directly in the saved state file.
-        if self.mac_address:
-            print 'Updating saved state file MAC address to ' + self.mac_address
-            raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription(ServiceVM.get_hypervisor())
-            updated_xml_descriptor_mac_only = self._update_raw_mac(raw_saved_xml_descriptor)
-            saved_state.updateStoredVmDescription(updated_xml_descriptor_mac_only)
+        #if self.mac_address:
+            #print 'Updating saved state file MAC address to ' + self.mac_address
+            #raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription(ServiceVM.get_hypervisor())
+            #updated_xml_descriptor_mac_only = self._update_raw_mac(raw_saved_xml_descriptor)
+            #saved_state.updateStoredVmDescription(updated_xml_descriptor_mac_only)
 
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
         # The XML descriptor is given since some things need to be changed for the instance, mainly the disk image file and the mapped ports.
-        print updated_xml_descriptor
         try:
             print "Resuming from VM image..."
             ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)

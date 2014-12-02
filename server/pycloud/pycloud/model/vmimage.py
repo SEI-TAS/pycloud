@@ -92,7 +92,7 @@ class VMImage(DictObject):
     ################################################################################################################ 
     def move(self, destination_folder):
         try:
-            # We will overrite any existing vm image already stored with the same name.
+            # We will overwrite any existing vm image already stored with the same name.
             fileutils.FileUtils.recreateFolder(destination_folder)
             
             # Move the files.
