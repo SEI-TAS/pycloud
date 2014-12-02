@@ -66,6 +66,8 @@ class VirtualMachineDescriptor(object):
         mac = None
 
         user = devices.find("interface[@type='user']")
+        model_element = None
+        int_address_element = None
         if user is not None:
             model_element = user.find("model")
             int_address_element = user.find("address")
