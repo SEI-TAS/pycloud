@@ -48,13 +48,13 @@ class ServicesController(BaseController):
                         'name': service.description,
                         'service_internal_port': service.port,
                         'vm_image_folder': os.path.dirname(service.vm_image.disk_image),
-                        'service_vm_instances': 'SVM',
+                        'service_vms': 'SVM',
                         'service_actions': 'Action'}
             grid_items.append(new_item)
 
         # Create and fomat the grid.
-        servicesGrid = Grid(grid_items, ['service_id', 'name', 'service_internal_port', 'vm_image_folder', 'service_vm_instances', 'service_actions'])
-        servicesGrid.column_formats["service_vm_instances"] = generateSVMButtons
+        servicesGrid = Grid(grid_items, ['service_id', 'name', 'service_internal_port', 'vm_image_folder', 'service_vms', 'service_actions'])
+        servicesGrid.column_formats["service_vms"] = generateSVMButtons
         servicesGrid.column_formats["service_actions"] = generateActionButtons
         
         # Pass the grid and render the page.
@@ -89,8 +89,10 @@ def generateSVMButtons(col_num, i, item):
     startInstanceUrl = h.url_for(controller='instances', action='startInstance', id=item["service_id"])
     
     # Create a button to the list of service VM Instances, and another to start a new instance.
-    linkToSVMButton = HTML.button("View All", onclick=h.literal("window.location.href = '" + svmListURL + "';"), class_="btn btn-primary btn")
-    newSVMButton = HTML.button("New SVM", onclick=h.literal("startSVM('"+ startInstanceUrl +"', '"+ svmListURL +"')"), class_="btn btn-primary")
+    icon = HTML.span(class_="glyphicon glyphicon-list", style="color: white")
+    linkToSVMButton = HTML.button(icon, onclick=h.literal("window.location.href = '" + svmListURL + "';"), class_="btn btn-primary btn")
+    icon = HTML.span(class_="glyphicon glyphicon-plus", style="color: white")
+    newSVMButton = HTML.button(icon, onclick=h.literal("startSVM('"+ startInstanceUrl +"', '"+ svmListURL +"')"), class_="btn btn-success")
 
     # Render the buttons.
     return HTML.td(linkToSVMButton + literal("&nbsp;") + newSVMButton)
@@ -101,14 +103,17 @@ def generateSVMButtons(col_num, i, item):
 def generateActionButtons(col_num, i, item):
     # Link and button to edit the service.
     editServiceURL = h.url_for(controller='modify', action='index', id=item["service_id"])
-    editButton = HTML.button("Edit", onclick=h.literal("window.location.href = '" + editServiceURL + "';"), class_="btn btn-primary btn")
+    icon = HTML.span(class_="glyphicon glyphicon-edit", style="color: white")
+    editButton = HTML.button(icon, onclick=h.literal("window.location.href = '" + editServiceURL + "';"), class_="btn btn-primary btn")
     
     # Ajax URL to remove the service.
     removeServiceURL = h.url_for(controller='services', action='removeService', id=item["service_id"])
-    removeButton = HTML.button("Remove", onclick="removeServiceConfirmation('" + removeServiceURL + "', '" + item["service_id"] + "');", class_="btn btn-primary btn-danger")
+    icon = HTML.span(class_="glyphicon glyphicon-remove", style="color: white")
+    removeButton = HTML.button(icon, onclick="removeServiceConfirmation('" + removeServiceURL + "', '" + item["service_id"] + "');", class_="btn btn-primary btn-danger")
 
     export_url = h.url_for(controller='export', action='export_svm', sid=item['service_id'])
-    export_button = HTML.button("Export", onclick="export_svm('" + export_url + "');", class_="btn btn-primary")
+    icon = HTML.span(class_="glyphicon glyphicon-save", style="color: white")
+    export_button = HTML.button(icon, onclick="export_svm('" + export_url + "');", class_="btn btn-primary")
 
     # Render the buttons.
     return HTML.td(editButton + literal("&nbsp;") + removeButton + literal("&nbsp;") + export_button )
