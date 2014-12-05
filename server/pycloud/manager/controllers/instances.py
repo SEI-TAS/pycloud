@@ -177,7 +177,7 @@ class InstancesController(BaseController):
 
             # Transfer the disk image file.
             print 'Starting disk image file transfer...'
-            disk_image_full_path = os.path.abspath(self.vm_image.disk_image)
+            disk_image_full_path = os.path.abspath(svm.vm_image.disk_image)
             remote_url = '%s/instances/receiveMigratedSVMMetadata' % remote_http_host
             payload = {'id': id}
             files = {'disk_image_file': open(disk_image_full_path, 'rb')}
