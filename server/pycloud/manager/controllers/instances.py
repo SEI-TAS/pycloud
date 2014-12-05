@@ -241,7 +241,7 @@ class InstancesController(BaseController):
         # Receive the transferred file and update its path.
         destination_folder = os.path.join(g.cloudlet.svmInstancesFolder, svm_id)
         disk_image_object = request.params.get('disk_image_file').file
-        migrated_svm.store(destination_folder, disk_image_object)
+        migrated_svm.vm_image.store(destination_folder, disk_image_object)
 
         # Check that we have the backing file, and rebase the new file so it will point to the correct backing file.
         service = Service.by_id(svm_id)
