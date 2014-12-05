@@ -275,6 +275,8 @@ class InstancesController(BaseController):
         # Find the SVM.
         svm_id = request.params.get('_id')
         migrated_svm = ServiceVM.by_id(svm_id)
+        if not migrated_svm:
+            abort(400, '404 Not Found - SVM with id %s not found' % svm_id)
 
         # Restart the VM.
         print 'Unpausing VM...'
