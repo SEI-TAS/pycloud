@@ -195,6 +195,7 @@ class InstancesController(BaseController):
             # Notify remote cloudlet that migration finished.
             print 'Telling target cloudlet that migration has finished.'
             remote_url = '%s/instances/resumeMigratedSVM' % remote_http_host
+            payload = {'id': id}
             result = requests.post(remote_url, data=payload)
             if result.status_code != requests.codes.ok:
                 raise Exception('Error notifying migration end.')
@@ -243,7 +244,7 @@ class InstancesController(BaseController):
         svm_id = request.params.get('id')
         migrated_svm = ServiceVM.by_id(svm_id)
         if not migrated_svm:
-            abort(400, '404 Not Found - SVM with id %s not found' % svm_id)
+            abort(404, '404 Not Found - SVM with id %s not found' % svm_id)
 
         # Receive the transferred file and update its path.
         print 'Storing disk image file of SVM in migration.'
@@ -273,10 +274,11 @@ class InstancesController(BaseController):
     ############################################################################################################
     def POST_resumeMigratedSVM(self):
         # Find the SVM.
-        svm_id = request.params.get('_id')
+        svm_id = request.params.get('id')
         migrated_svm = ServiceVM.by_id(svm_id)
         if not migrated_svm:
-            abort(400, '404 Not Found - SVM with id %s not found' % svm_id)
+            print 'SVM with id %s not found.' % svm_id
+            abort(404, '404 Not Found - SVM with id %s not found' % svm_id)
 
         # Restart the VM.
         print 'Unpausing VM...'
