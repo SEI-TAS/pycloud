@@ -255,7 +255,7 @@ class InstancesController(BaseController):
         # Check that we have the backing file, and rebase the new file so it will point to the correct backing file.
         service = Service.by_id(migrated_svm.service_id)
         if service:
-            print 'Rebasing backing file for service %.' % migrated_svm.service_id
+            print 'Rebasing backing file for service %s.' % migrated_svm.service_id
             backing_disk_file = service.vm_image.disk_image
             migrated_svm.vm_image.rebase_disk_image(backing_disk_file)
         else:
