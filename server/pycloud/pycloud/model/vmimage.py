@@ -109,7 +109,38 @@ class VMImage(DictObject):
         except:
             # Clean up the directory we just created
             os.rmdir(destination_folder)
-            raise            
+            raise
+
+    ################################################################################################################
+    # Store the disk image file in the given location, and update it internally.
+    ################################################################################################################
+    def store(self, destination_folder, disk_image_file_object, state_image_file_object=None):
+        try:
+            # Create the folder to store the files.
+            fileutils.FileUtils.recreateFolder(destination_folder)
+            new_disk_image_path = os.path.abspath(os.path.join(destination_folder, os.path.basename(self.disk_image)))
+            new_state_image_path = os.path.abspath(os.path.join(destination_folder, os.path.basename(self.state_image)))
+
+            # Transfer the disk file's data to their new location.
+            new_disk_image_file = open(new_disk_image_path, 'wb')
+            shutil.copyfileobj(disk_image_file_object.file, new_disk_image_file)
+            disk_image_file_object.file.close()
+            new_disk_image_file.close()
+
+            # Transfer the state file's data to their new location.
+            if state_image_file_object:
+                new_state_image_file = open(new_state_image_path, 'wb')
+                shutil.copyfileobj(state_image_file_object.file, new_state_image_file)
+                state_image_file_object.file.close()
+                new_state_image_file.close()
+
+            # Update our paths to reflect the new location.
+            self.disk_image = new_disk_image_path
+            self.state_image = new_state_image_path
+        except:
+            # Clean up the directory we just created
+            os.rmdir(destination_folder)
+            raise
 
     ################################################################################################################
     # Creates a VM Image from a source file. This converts the source image from whatever format into qcow2.

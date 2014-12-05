@@ -24,8 +24,9 @@ def make_map():
     connect('/instances/stopInstance/{id}', controller='instances', action='stopInstance')
     connect('/instances/openvnc/{id}', controller='instances', action='openVNC')
     connect('/instances/migrate/{id}', controller='instances', action='migrateInstance')
-    connect('/instances/receiveMigratedSVMMetadata', controller='instances', action='receiveMigratedInstanceMetadata')
-    connect('/instances/resumeMigratedSVM', controller='instances', action='resumeMigratedInstance')
+    connect('/instances/receiveMigratedSVMMetadata', controller='instances', action='receiveMigratedSVMMetadata')
+    connect('/instances/receiveMigratedSVMDiskFile', controller='instances', action='receiveMigratedSVMDiskFile')
+    connect('/instances/resumeMigratedSVM', controller='instances', action='resumeMigratedSVM')
     connect('/instances/getMigrationInfo/{id}', controller='instances', action='getMigrationInfo')
     connect('/instances/svmList', controller='instances', action='svmList')
 

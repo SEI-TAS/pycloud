@@ -7,3 +7,4 @@ pymongo>=2.6.3
 paramiko
 psutil==2.0.0
 pylzma==0.4.4
+requests>=2.5.0
