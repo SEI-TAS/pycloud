@@ -166,6 +166,8 @@ class InstancesController(BaseController):
             payload = json.dumps(svm)
             headers = {'content-type': 'application/json'}
             result = requests.post(remote_url, data=payload, headers=headers)
+            if result.status_int != 200:
+                raise Exception('Error transferring metadata.')
             print 'Metadata was transferred: ' + str(result)
 
             # We pause the VM before transferring its disk and memory state.
@@ -182,6 +184,8 @@ class InstancesController(BaseController):
             payload = {'id': id}
             files = {'disk_image_file': open(disk_image_full_path, 'rb')}
             result = requests.post(remote_url, data=payload, files=files)
+            if result.status_int != 200:
+                raise Exception('Error transferring disk image file.')
             print 'Disk image file was transferred: ' + str(result)
 
             # Do the memory state migration.
@@ -192,6 +196,8 @@ class InstancesController(BaseController):
             print 'Telling target cloudlet that migration has finished.'
             remote_url = '%s/instances/resumeMigratedSVM' % remote_http_host
             result = requests.post(remote_url, data=payload)
+            if result.status_int != 200:
+                raise Exception('Error notifying migration end.')
             print 'Cloudlet notified: ' + str(result)
 
             # Remove the local VM.
@@ -225,7 +231,6 @@ class InstancesController(BaseController):
         # Save to internal DB.
         migrated_svm.save()
 
-        # TODO: return success.
         return 'Ok!'
 
     ############################################################################################################
@@ -236,7 +241,7 @@ class InstancesController(BaseController):
         svm_id = request.params.get('id')
         migrated_svm = ServiceVM.by_id(svm_id)
         if not migrated_svm:
-            return "Error!"
+            abort(400, '404 Not Found - SVM with id %s not found' % svm_id)
 
         # Receive the transferred file and update its path.
         destination_folder = os.path.join(g.cloudlet.svmInstancesFolder, svm_id)
@@ -251,14 +256,11 @@ class InstancesController(BaseController):
             migrated_svm.vm_image.rebase_disk_image(backing_disk_file)
         else:
             # Migration will be unsuccessful since we won't have the backing file.
-            # TODO: return error.
-            return 'Error!'
-            pass
+            abort(500, '500 Server Error - Service is not installed on target cloudlet.')
 
         # Save to internal DB.
         migrated_svm.save()
 
-        # TODO: return success.
         return 'Ok!'
 
     ############################################################################################################

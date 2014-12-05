@@ -139,7 +139,7 @@ class VMImage(DictObject):
             self.state_image = new_state_image_path
         except:
             # Clean up the directory we just created
-            os.rmdir(destination_folder)
+            shutil.rmtree(destination_folder, ignore_errors=True)
             raise
 
     ################################################################################################################
