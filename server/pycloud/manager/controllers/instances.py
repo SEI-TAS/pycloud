@@ -226,6 +226,8 @@ class InstancesController(BaseController):
         migrated_svm.port_mappings = json_svm['port_mappings']
         migrated_svm.service_port = json_svm['service_port']
         migrated_svm.port = json_svm['port']
+        migrated_svm.ip_address = json_svm['ip_address']
+        migrated_svm.mac_address = json_svm['mac_address']
         migrated_svm.ssh_port = json_svm['ssh_port']
         migrated_svm.vnc_port = json_svm['vnc_port']
         migrated_svm.service_id = json_svm['service_id']
@@ -283,7 +285,6 @@ class InstancesController(BaseController):
         # Restart the VM.
         print 'Unpausing VM...'
         result = migrated_svm.unpause()
-        print result
         print 'VM running'
 
         # Save to internal DB.
