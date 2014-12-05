@@ -218,6 +218,7 @@ class InstancesController(BaseController):
         json_svm = json.loads(request.body)
 
         # Get information about the SVM.
+        print 'Obtaining metadata of SVM to be received.'
         migrated_svm = ServiceVM()
         migrated_svm._id = json_svm['_id']
         migrated_svm.vm_image = json_svm['vm_image']
@@ -230,6 +231,7 @@ class InstancesController(BaseController):
 
         # Save to internal DB.
         migrated_svm.save()
+        print 'SVM metadata stored.'
 
         return 'Ok!'
 
@@ -244,18 +246,21 @@ class InstancesController(BaseController):
             abort(400, '404 Not Found - SVM with id %s not found' % svm_id)
 
         # Receive the transferred file and update its path.
+        print 'Storing disk image file of SVM in migration.'
         destination_folder = os.path.join(g.cloudlet.svmInstancesFolder, svm_id)
         disk_image_object = request.params.get('disk_image_file').file
         migrated_svm.vm_image.store(destination_folder, disk_image_object)
+        print 'Migrated SVM disk image file stored.'
 
         # Check that we have the backing file, and rebase the new file so it will point to the correct backing file.
-        service = Service.by_id(svm_id)
-        print service
+        service = Service.by_id(migrated_svm.service_id)
         if service:
+            print 'Rebasing backing file for service %.' % migrated_svm.service_id
             backing_disk_file = service.vm_image.disk_image
             migrated_svm.vm_image.rebase_disk_image(backing_disk_file)
         else:
             # Migration will be unsuccessful since we won't have the backing file.
+            print 'Service %s not found in local cloudlet.' % migrated_svm.service_id
             abort(500, '500 Server Error - Service is not installed on target cloudlet.')
 
         # Save to internal DB.
