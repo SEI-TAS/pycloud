@@ -123,15 +123,15 @@ class VMImage(DictObject):
 
             # Transfer the disk file's data to their new location.
             new_disk_image_file = open(new_disk_image_path, 'wb')
-            shutil.copyfileobj(disk_image_file_object.file, new_disk_image_file)
-            disk_image_file_object.file.close()
+            shutil.copyfileobj(disk_image_file_object, new_disk_image_file)
+            disk_image_file_object.close()
             new_disk_image_file.close()
 
             # Transfer the state file's data to their new location.
             if state_image_file_object:
                 new_state_image_file = open(new_state_image_path, 'wb')
-                shutil.copyfileobj(state_image_file_object.file, new_state_image_file)
-                state_image_file_object.file.close()
+                shutil.copyfileobj(state_image_file_object, new_state_image_file)
+                state_image_file_object.close()
                 new_state_image_file.close()
 
             # Update our paths to reflect the new location.
