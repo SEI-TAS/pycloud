@@ -166,7 +166,7 @@ class InstancesController(BaseController):
             payload = json.dumps(svm)
             headers = {'content-type': 'application/json'}
             result = requests.post(remote_url, data=payload, headers=headers)
-            print 'Metadata was transferred: ' + result
+            print 'Metadata was transferred: ' + str(result)
 
             # We pause the VM before transferring its disk and memory state.
             print 'Pausing VM...'
@@ -182,7 +182,7 @@ class InstancesController(BaseController):
             payload = {'id': id}
             files = {'disk_image_file': open(disk_image_full_path, 'rb')}
             result = requests.post(remote_url, data=payload, files=files)
-            print 'Disk image file was transferred: ' + result
+            print 'Disk image file was transferred: ' + str(result)
 
             # Do the memory state migration.
             svm.migrate(remote_host, p2p=False)
@@ -192,7 +192,7 @@ class InstancesController(BaseController):
             print 'Telling target cloudlet that migration has finished.'
             remote_url = '%s/instances/resumeMigratedSVM' % remote_http_host
             result = requests.post(remote_url, data=payload)
-            print 'Cloudlet notified: ' + result
+            print 'Cloudlet notified: ' + str(result)
 
             # Remove the local VM.
             svm = ServiceVM.find_and_remove(id)
