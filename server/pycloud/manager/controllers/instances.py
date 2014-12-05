@@ -166,7 +166,7 @@ class InstancesController(BaseController):
             payload = json.dumps(svm)
             headers = {'content-type': 'application/json'}
             result = requests.post(remote_url, data=payload, headers=headers)
-            if result.status_int != 200:
+            if result.status_code != requests.codes.ok:
                 raise Exception('Error transferring metadata.')
             print 'Metadata was transferred: ' + str(result)
 
@@ -184,7 +184,7 @@ class InstancesController(BaseController):
             payload = {'id': id}
             files = {'disk_image_file': open(disk_image_full_path, 'rb')}
             result = requests.post(remote_url, data=payload, files=files)
-            if result.status_int != 200:
+            if result.status_code != requests.codes.ok:
                 raise Exception('Error transferring disk image file.')
             print 'Disk image file was transferred: ' + str(result)
 
@@ -196,7 +196,7 @@ class InstancesController(BaseController):
             print 'Telling target cloudlet that migration has finished.'
             remote_url = '%s/instances/resumeMigratedSVM' % remote_http_host
             result = requests.post(remote_url, data=payload)
-            if result.status_int != 200:
+            if result.status_code != requests.codes.ok:
                 raise Exception('Error notifying migration end.')
             print 'Cloudlet notified: ' + str(result)
 
