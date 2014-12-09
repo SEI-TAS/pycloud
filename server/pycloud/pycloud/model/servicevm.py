@@ -250,47 +250,70 @@ class ServiceVM(Model):
     ################################################################################################################
     # Will locate the IP address if we have a MAC address
     ################################################################################################################
-    def _set_ip_if_mac(self, mac):
+    def _set_ip_if_mac(self):
         # mac_address will have a value if bridged mode is enabled
-        if mac is not None:
-            print "Retrieving IP for MAC: %s" % mac
-            ip = ServiceVM._find_ip_for_mac(mac)
+        if self.mac_address is not None:
+            print "Retrieving IP for MAC: %s" % self.mac_address
+            ip = ServiceVM._find_ip_for_mac(self.mac_address)
             if not ip:
                 print "Failed to locate the IP for the server!!!!"
                 # TODO: Possibly throw an exception and shutdown the VM
             else:
                 self.ip_address = ip
-                self.mac_address = mac
 
     ################################################################################################################
-    # Create a new service VM from a given template, and start it.
+    # Boots a VM using a defined disk image and a state XML.
     ################################################################################################################
-    def create(self, vmXmlTemplateFile):
-        # Check that the XML description file exists.
-        if(not os.path.exists(vmXmlTemplateFile)):
-            raise VirtualMachineException("VM description file %s for VM creation does not exist." % vmXmlTemplateFile)
-         
-        # Load the XML template and update it with this VM's information.
-        template_xml_descriptor = open(vmXmlTemplateFile, "r").read()
-        updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)
-
+    def _cold_boot(self, xml_descriptor):
         # Create a VM ("domain") through the hypervisor.
-        print "Starting a new VM..."  
+        print "Booting up a VM..."
         try:
-            ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
-            print "VM successfully created and started."
-
-            self._set_ip_if_mac(self.mac_address)
-
-            self.vnc_port = self.__get_vnc_port()
-            print "VNC available on localhost:{}".format(str(self.vnc_port))
+            ServiceVM.get_hypervisor().createXML(xml_descriptor, 0)
+            print "VM object successfully created, VM started."
+            self.running = True
         except:
             # Ensure we destroy the VM if there was some problem after creating it.
             self.destroy()
             raise
-        
-        # When creating we start running.
-        self.running = True
+
+    ################################################################################################################
+    # Perform several network checks: get the IP of the VM, ensure that the service is available, and get the VNC
+    # port.
+    ################################################################################################################
+    def _network_checks(self):
+        try:
+            # Get the IP of the VM, if needed.
+            self._set_ip_if_mac()
+
+            # Wait until the service is running inside the VM.
+            # TODO: Have some method try in a loop to open a connection to the IP of the VM, to the port of the service.
+            # TODO: Make sure this can work for both bridged and non-bridged mode.
+        except:
+            print "Error getting IP of new SVM."
+
+        # TODO: this is not working correctly when in bridged mode.
+        self.vnc_port = self.__get_vnc_port()
+        print "VNC available on localhost:{}".format(str(self.vnc_port))
+
+    ################################################################################################################
+    # Create a new service VM from a given template, and start it.
+    ################################################################################################################
+    def create(self, vm_xml_template_file):
+        # Check that the XML description file exists.
+        if not os.path.exists(vm_xml_template_file):
+            raise VirtualMachineException("VM description file %s for VM creation does not exist." % vmXmlTemplateFile)
+
+        # Load the XML template and update it with this VM's information.
+        template_xml_descriptor = open(vm_xml_template_file, "r").read()
+        updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)
+
+        # Create a VM ("domain") through the hypervisor.
+        self._cold_boot(updated_xml_descriptor)
+
+        # Ensure network is working and load network data.
+        self._network_checks()
+
+        return self
 
     ################################################################################################################
     # Start this service VM. 
@@ -317,41 +340,23 @@ class ServiceVM(Model):
         saved_xml_descriptor = saved_state.getStoredVmDescription(ServiceVM.get_hypervisor())
         updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
 
-        # TEST: Update the MAC address directly in the saved state file.
-        #if self.mac_address:
-            #print 'Updating saved state file MAC address to ' + self.mac_address
-            #raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription(ServiceVM.get_hypervisor())
-            #updated_xml_descriptor_mac_only = self._update_raw_mac(raw_saved_xml_descriptor)
-            #saved_state.updateStoredVmDescription(updated_xml_descriptor_mac_only)
-
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
         # The XML descriptor is given since some things need to be changed for the instance, mainly the disk image file and the mapped ports.
         try:
             print "Resuming from VM image..."
             ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
             print "Resumed from VM image."
-
-            self._set_ip_if_mac(self.mac_address)
-
+            self.running = True
         except libvirt.libvirtError as e:
             # If we could not resume the VM, discard the memory state and try to boot the VM from scratch.
             print "Error resuming VM: %s for VM; error is: %s" % (str(self._id), str(e))
             print "Discarding saved state and attempting to cold boot VM."
             
-            # Simply try creating a new VM with the same disk image and XML descriptor.
-            try:
-                ServiceVM.get_hypervisor().createXML(updated_xml_descriptor, 0)
-                print "VM reboot was successful."
+            # Simply try creating a new VM with the same disk and the updated XML descriptor from the saved state file.
+            self._cold_boot(updated_xml_descriptor)
 
-                self._set_ip_if_mac(self.mac_address)
-            except:
-                # Ensure we destroy the VM if there was some problem after creating it.
-                self.destroy()
-                raise
-
-        self.vnc_port = self.__get_vnc_port()
-        print "VNC available on localhost:{}".format(str(self.vnc_port))
-        self.running = True
+        # Ensure network is working and load network data.
+        self._network_checks()
 
         return self
 
