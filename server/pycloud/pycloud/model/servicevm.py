@@ -60,7 +60,20 @@ class ServiceVM(Model):
         self.mac_address = None
         self.running = False
         super(ServiceVM, self).__init__(*args, **kwargs)
-        
+
+        # Configure bridged mode if enabled
+        c = get_cloudlet_instance()
+        print 'Migration enabled: ', c.migration_enabled
+        print 'Bridge Adapter: ', c.bridge_adapter
+        if c.migration_enabled and c.bridge_adapter:
+            self.network_mode = "bridged"
+
+            # In bridge mode we need a new MAC in case we are a clone.
+            self.mac_address = self.generate_random_mac()
+            print 'Generated new mac address: ' + self.mac_address
+        else:
+            self.network_mode = "user"
+
     ################################################################################################################
     # Locate a servicevm by its ID
     ################################################################################################################
@@ -172,24 +185,21 @@ class ServiceVM(Model):
         xml_descriptor.enableRemoteVNC()
 
         # Configure bridged mode if enabled
-        c = get_cloudlet_instance()
-        print 'Migration enabled: ', c.migration_enabled
-        print 'Bridge Adapter: ', c.bridge_adapter
-        if c.migration_enabled and c.bridge_adapter:
-            print 'Enabling bridged mode'
+        if self.network_mode == "bridged":
+            print 'Setting bridged mode'
             xml_descriptor.enableBridgedMode('br0')
 
             # In bridge mode we need a new MAC in case we are a clone.
-            print 'Generating new mac address'
-            self.mac_address = self.generate_random_mac()
+            print 'Setting mac address \'%s\'' % self.mac_address
             xml_descriptor.setMACAddress(self.mac_address)
-            print 'Set mac address \'%s\'' % self.mac_address
 
+            # Set external ports same as internal ones.
             self.port = self.service_port
             self.ssh_port = self.SSH_INTERNAL_PORT
         else:
             # No bridge mode, means we have to setup port forwarding.
             # Create a new port if we do not have an external port already.
+            print 'Setting up port forwarding'
             if not self.port:
                 self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.service_port)
             if not self.ssh_port:
@@ -198,9 +208,6 @@ class ServiceVM(Model):
 
         # Get the resulting XML string and return it.
         updated_xml_descriptor = xml_descriptor.getAsString()
-        # print '===================================='
-        # print updated_xml_descriptor
-        # print '===================================='
         return updated_xml_descriptor
     
     ################################################################################################################
@@ -248,7 +255,7 @@ class ServiceVM(Model):
         return ip
 
     ################################################################################################################
-    # Will locate the IP address if we have a MAC address
+    # Will locate the IP address from our MAC.
     ################################################################################################################
     def _set_ip_if_mac(self):
         # mac_address will have a value if bridged mode is enabled
@@ -282,8 +289,11 @@ class ServiceVM(Model):
     ################################################################################################################
     def _network_checks(self):
         try:
-            # Get the IP of the VM, if needed.
-            self._set_ip_if_mac()
+            # Get the IP of the VM.
+            if self.network_mode == 'bridged':
+                self._set_ip_if_mac()
+            else:
+                self.ip_address = '127.0.0.1'
 
             # Wait until the service is running inside the VM.
             # TODO: Have some method try in a loop to open a connection to the IP of the VM, to the port of the service.
