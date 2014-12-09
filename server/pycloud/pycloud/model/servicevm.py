@@ -61,6 +61,11 @@ class ServiceVM(Model):
         self.running = False
         super(ServiceVM, self).__init__(*args, **kwargs)
 
+
+    ################################################################################################################
+    # Sets up the internal network parameters, based onthe config.
+    ################################################################################################################
+    def _setup_network(self):
         # Configure bridged mode if enabled
         c = get_cloudlet_instance()
         print 'Migration enabled: ', c.migration_enabled
@@ -311,7 +316,10 @@ class ServiceVM(Model):
     def create(self, vm_xml_template_file):
         # Check that the XML description file exists.
         if not os.path.exists(vm_xml_template_file):
-            raise VirtualMachineException("VM description file %s for VM creation does not exist." % vmXmlTemplateFile)
+            raise VirtualMachineException("VM description file %s for VM creation does not exist." % vm_xml_template_file)
+
+        # Setup network params.
+        self._setup_network()
 
         # Load the XML template and update it with this VM's information.
         template_xml_descriptor = open(vm_xml_template_file, "r").read()
@@ -332,7 +340,10 @@ class ServiceVM(Model):
         # Check if we are already running.
         if self.running:
             return self
-        
+
+        # Setup network params.
+        self._setup_network()
+
         # Make sure libvirt can write to our files (since the disk image will be modified by the VM).
         self.vm_image.unprotect()
 
