@@ -13,6 +13,7 @@
 
         <!-- Bootstrap core CSS -->
         <link href="${request.environ['SCRIPT_NAME']}/css/bootstrap.min.css" rel="stylesheet">
+        <link href="${request.environ['SCRIPT_NAME']}/css/cloudlet.css" rel="stylesheet">
         <!-- Bootstrap theme -->
         <!-- <link href="${request.environ['SCRIPT_NAME']}/css/bootstrap-theme.min.css" rel="stylesheet"> -->
 
@@ -28,10 +29,10 @@
         <script src="${request.environ['SCRIPT_NAME']}/js/jquery-1.11.0.min.js"></script>            
     </head>
     <body>
-        
+
+        ${navbar()}
+
         <div id="wrap">
-    
-            ${navbar()}
     
             <div class="container-fluid">
     
@@ -76,6 +77,7 @@
     <script src="${request.environ['SCRIPT_NAME']}/js/cloudlet_utils.js"></script>
     <script src="${request.environ['SCRIPT_NAME']}/js/cloudlet_state.js"></script>
 
+    <!-- Enables tooltips -->
     <script type="text/javascript">
         $(function () {
             $('[data-toggle="tooltip"]').tooltip()
