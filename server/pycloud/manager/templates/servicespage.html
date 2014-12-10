@@ -20,7 +20,6 @@
                 <th>Service ID</th>
                 <th>Name</th>
                 <th>Port</th>
-                <th>VM Image Folder</th>
                 <th>Service VMs</th>
                 <th>Service Actions</th>
             </tr>
@@ -29,7 +28,6 @@
                     <td>${service.service_id}</td>
                     <td>${service.description}</td>
                     <td>${service.port}</td>
-                    <td>${service.vm_image.disk_image}</td>
                     <td>
                         <%
                             svmListURL       = h.url_for(controller='instances')
