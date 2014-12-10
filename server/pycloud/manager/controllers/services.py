@@ -42,24 +42,25 @@ class ServicesController(BaseController):
         services = Service.find()
 
         # Create an item list with the info to display.
-        grid_items = []
-        for service in services:
-            new_item = {'service_id': service.service_id,
-                        'name': service.description,
-                        'service_internal_port': service.port,
-                        'vm_image_folder': os.path.dirname(service.vm_image.disk_image),
-                        'service_vms': 'SVM',
-                        'service_actions': 'Action'}
-            grid_items.append(new_item)
+        # grid_items = []
+        # for service in services:
+        #     new_item = {'service_id': service.service_id,
+        #                 'name': service.description,
+        #                 'service_internal_port': service.port,
+        #                 'vm_image_folder': os.path.dirname(service.vm_image.disk_image),
+        #                 'service_vms': 'SVM',
+        #                 'service_actions': 'Action'}
+        #     grid_items.append(new_item)
 
         # Create and fomat the grid.
-        servicesGrid = Grid(grid_items, ['service_id', 'name', 'service_internal_port', 'vm_image_folder', 'service_vms', 'service_actions'])
-        servicesGrid.column_formats["service_vms"] = generateSVMButtons
-        servicesGrid.column_formats["service_actions"] = generateActionButtons
+        # servicesGrid = Grid(grid_items, ['service_id', 'name', 'service_internal_port', 'vm_image_folder', 'service_vms', 'service_actions'])
+        # servicesGrid.column_formats["service_vms"] = generateSVMButtons
+        # servicesGrid.column_formats["service_actions"] = generateActionButtons
         
         # Pass the grid and render the page.
         servicesPage = ServicesPage()
-        servicesPage.servicesGrid = servicesGrid
+        # servicesPage.servicesGrid = servicesGrid
+        servicesPage.services = services
         return servicesPage.render()
         
     ############################################################################################################

@@ -8,12 +8,45 @@
     Services
 </%block>
 
+
+
 <div class="panel panel-default">
     <div class="panel-body">
         <a class="btn btn-large btn-success" href="${h.url_for(controller='modify')}">Create New Service</a>
         <button class="btn btn-large btn-success" data-toggle="modal" data-target="#modal-import-servicevm">Import a Service</button>
         <br><br>
-        <table class="table table-striped table-bordered table-condensed">
+        <table class="table table-striped table-bordered">
+            <tr>
+                <th>Service ID</th>
+                <th>Name</th>
+                <th>Port</th>
+                <th>VM Image Folder</th>
+                <th>Service VMs</th>
+                <th>Service Actions</th>
+            </tr>
+            % for service in page.services:
+                <tr>
+                    <td>${service.service_id}</td>
+                    <td>${service.description}</td>
+                    <td>${service.port}</td>
+                    <td>${service.vm_image.disk_image}</td>
+                    <td>
+                        <%
+                            svmListURL       = h.url_for(controller='instances')
+                            startInstanceURL = h.url_for(controller='instances', action='startInstance', id=service.service_id)
+                            listOnClick      = "window.location.href='" + svmListURL + "';"
+                            startOnClick     = "startSVM('" + startInstanceURL + "', '" + svmListURL + "');"
+                        %>
+                        <button class="btn btn-primary" onclick="${listOnClick}">
+                            <span class="glyphicon glyphicon-list" style="color: white"></span>
+                        </button>
+                        <button class="btn btn-success" onclick="${startOnClick}">
+                            <span class="glyphicon glyphicon-plus" style="color: white"></span>
+                        </button>
+                    </td>
+                    <td>blank</td>
+                </tr>
+            % endfor
             ${page.servicesGrid}
         </table>
     </div>
