@@ -2,12 +2,12 @@
 html {
     position: relative;
     min-height: 100%;
-    background-color: #dcdcdc;
 }
 
 body {
     padding-top: 70px;
     margin-bottom: 60px;
+    background-color: #dcdcdc;
 }
 
 .footer {
