@@ -40,27 +40,12 @@ class ServicesController(BaseController):
     
         # Get a list of existing stored VMs in the cache.
         services = Service.find()
-
-        # Create an item list with the info to display.
-        # grid_items = []
-        # for service in services:
-        #     new_item = {'service_id': service.service_id,
-        #                 'name': service.description,
-        #                 'service_internal_port': service.port,
-        #                 'vm_image_folder': os.path.dirname(service.vm_image.disk_image),
-        #                 'service_vms': 'SVM',
-        #                 'service_actions': 'Action'}
-        #     grid_items.append(new_item)
-
-        # Create and fomat the grid.
-        # servicesGrid = Grid(grid_items, ['service_id', 'name', 'service_internal_port', 'vm_image_folder', 'service_vms', 'service_actions'])
-        # servicesGrid.column_formats["service_vms"] = generateSVMButtons
-        # servicesGrid.column_formats["service_actions"] = generateActionButtons
         
         # Pass the grid and render the page.
         servicesPage = ServicesPage()
         # servicesPage.servicesGrid = servicesGrid
         servicesPage.services = services
+
         return servicesPage.render()
         
     ############################################################################################################
@@ -77,44 +62,4 @@ class ServicesController(BaseController):
             return self.JSON_NOT_OK
         
         # Everything went well.
-        return self.JSON_OK        
-
-############################################################################################################
-# Helper function to generate buttons to see the list of SVMs and to start a new instance.
-############################################################################################################        
-def generateSVMButtons(col_num, i, item):    
-    # Link to the list of Service VM Instances.
-    svmListURL = h.url_for(controller='instances')
-
-    # URL to start a new SVM instance.
-    startInstanceUrl = h.url_for(controller='instances', action='startInstance', id=item["service_id"])
-    
-    # Create a button to the list of service VM Instances, and another to start a new instance.
-    icon = HTML.span(class_="glyphicon glyphicon-list", style="color: white")
-    linkToSVMButton = HTML.button(icon, onclick=h.literal("window.location.href = '" + svmListURL + "';"), class_="btn btn-primary btn")
-    icon = HTML.span(class_="glyphicon glyphicon-plus", style="color: white")
-    newSVMButton = HTML.button(icon, onclick=h.literal("startSVM('"+ startInstanceUrl +"', '"+ svmListURL +"')"), class_="btn btn-success")
-
-    # Render the buttons.
-    return HTML.td(linkToSVMButton + literal("&nbsp;") + newSVMButton)
-    
-############################################################################################################
-# Helper function to generate buttons to edit or delete services.
-############################################################################################################        
-def generateActionButtons(col_num, i, item):
-    # Link and button to edit the service.
-    editServiceURL = h.url_for(controller='modify', action='index', id=item["service_id"])
-    icon = HTML.span(class_="glyphicon glyphicon-edit", style="color: white")
-    editButton = HTML.button(icon, onclick=h.literal("window.location.href = '" + editServiceURL + "';"), class_="btn btn-primary btn")
-    
-    # Ajax URL to remove the service.
-    removeServiceURL = h.url_for(controller='services', action='removeService', id=item["service_id"])
-    icon = HTML.span(class_="glyphicon glyphicon-remove", style="color: white")
-    removeButton = HTML.button(icon, onclick="removeServiceConfirmation('" + removeServiceURL + "', '" + item["service_id"] + "');", class_="btn btn-primary btn-danger")
-
-    export_url = h.url_for(controller='export', action='export_svm', sid=item['service_id'])
-    icon = HTML.span(class_="glyphicon glyphicon-save", style="color: white")
-    export_button = HTML.button(icon, onclick="export_svm('" + export_url + "');", class_="btn btn-primary")
-
-    # Render the buttons.
-    return HTML.td(editButton + literal("&nbsp;") + removeButton + literal("&nbsp;") + export_button )
+        return self.JSON_OK
