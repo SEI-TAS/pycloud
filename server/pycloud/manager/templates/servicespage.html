@@ -38,10 +38,14 @@
                         <td>${service.service_id}</td>
                         <td>${service.port}</td>
                         <td>
-                            <button class="btn btn-primary" onclick="${listOnClick}">
+                            <button class="btn btn-primary" onclick="${listOnClick}"
+                                    data-toggle="tooltip" data-placement="bottom"
+                                    title="Service VMs List">
                                 <span class="glyphicon glyphicon-list" style="color: white"></span>
                             </button>
-                            <button class="btn btn-success" onclick="${startOnClick}">
+                            <button class="btn btn-success" onclick="${startOnClick}"
+                                    data-toggle="tooltip" data-placement="bottom"
+                                    title="New Service VM">
                                 <span class="glyphicon glyphicon-plus" style="color: white"></span>
                             </button>
                         </td>
