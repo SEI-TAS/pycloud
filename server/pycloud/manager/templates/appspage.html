@@ -29,10 +29,10 @@ ${parent.header()}
                     % for app in page.apps:
                         <%
                             app_data_url   = h.url_for(controller='apps', action='get_data')
-                            app_data_click = "showEditAppModal('" + app_data_url + "', '" + str(app.id) + "');"
+                            app_data_click = "showEditAppModal('" + app_data_url + "', '" + str(app._id) + "');"
 
                             remove_app_url = h.url_for(controller='apps', action='remove')
-                            remove_app_click = "removeAppConfirmation('" + remove_app_url + "', '" + str(app.id)  + "', '" + str(app.name) + "');"
+                            remove_app_click = "removeAppConfirmation('" + remove_app_url + "', '" + str(app._id)  + "', '" + str(app.name) + "');"
                         %>
 
                         <tr>
