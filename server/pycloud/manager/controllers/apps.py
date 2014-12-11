@@ -47,28 +47,28 @@ class AppsController(BaseController):
         page = AppsPage()
         
         # Setup the page to render.
-        page.form_values = {}
-        page.form_errors = {}
+        # page.form_values = {}
+        # page.form_errors = {}
     
         # Get a list of existing stored apps.
-        apps = App.find()
+        page.apps = App.find()
 
         # Create an item list with the info to display.
-        grid_items = []
-        for app in apps:
-            new_item = {'name': app.name,
-                       'service_id': app.service_id,
-                       'description': app.description,
-                       'version': app.app_version,
-                       'min_android_version': app.min_android_version,
-                       'apk_file': app.apk_file,
-                       'actions': 'Edit',
-                       'id': app._id}
-            grid_items.append(new_item)
-
-        # Create and fomat the grid.
-        appsGrid = Grid(grid_items, ['name', 'service_id', 'description', 'version', 'min_android_version', 'apk_file', 'actions'])
-        appsGrid.column_formats["actions"] = generateActionButtons
+        # grid_items = []
+        # for app in apps:
+        #     new_item = {'name': app.name,
+        #                'service_id': app.service_id,
+        #                'description': app.description,
+        #                'version': app.app_version,
+        #                'min_android_version': app.min_android_version,
+        #                'apk_file': app.apk_file,
+        #                'actions': 'Edit',
+        #                'id': app._id}
+        #     grid_items.append(new_item)
+        #
+        # # Create and fomat the grid.
+        # appsGrid = Grid(grid_items, ['name', 'service_id', 'description', 'version', 'min_android_version', 'apk_file', 'actions'])
+        # appsGrid.column_formats["actions"] = generateActionButtons
         
         # Prepare service list.
         page.stored_services = {}
@@ -77,7 +77,7 @@ class AppsController(BaseController):
             page.stored_services[service.service_id] = service.service_id
         
         # Pass the grid and render the page.
-        page.appsGrid = appsGrid
+        # page.appsGrid = appsGrid
         return page.render()
 
     ############################################################################################################

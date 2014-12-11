@@ -1,24 +1,68 @@
 <%inherit file="base.html"/>
 
 <%block name="header">
-    ${parent.header()}
+${parent.header()}
 </%block>
 
 <%block name="title">
-    Cloudlet-Ready Apps
+
 </%block>
 
-<div class="panel panel-default">
-  <div class="panel-body">
-    <button type="button" class="btn btn-primary" onclick="showNewAppModal();">Create New App</button>
-    <br><br>
-    <table class="table table-striped table-bordered table-condensed">
-        ${page.appsGrid}
-    </table>
-  </div>
-  <div>
-      <%include file="app_new_modal.html" />
-  </div>
+<div class="container">
+    <div class="col-sm-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2>Cloudlet-Ready Apps</h2>
+            </div>
+            <div class="panel-body">
+                <button type="button" class="btn btn-primary" onclick="showNewAppModal();">Create New App</button>
+                <br><br>
+                <table class="table table-striped">
+                    <tr>
+                        <th>Name</th>
+                        <th>Service ID</th>
+                        <th>Description</th>
+                        <th>Version</th>
+                        <th>Min Android Version</th>
+                        <th>Actions</th>
+                    </tr>
+                    % for app in page.apps:
+                        <%
+                            app_data_url   = h.url_for(controller='apps', action='get_data')
+                            app_data_click = "showEditAppModal('" + app_data_url + "', '" + str(app.id) + "');"
+
+                            remove_app_url = h.url_for(controller='apps', action='remove')
+                            remove_app_click = "removeAppConfirmation('" + remove_app_url + "', '" + str(app.id)  +
+                                                                      "', '" + str(app.name) + "');"
+                        %>
+
+                        <tr>
+                            <td>${app.name}</td>
+                            <td>${app.service_id}</td>
+                            <td>${app.description}</td>
+                            <td>${app.app_version}</td>
+                            <td>${app.min_android_version}</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="${app_data_click}"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="Edit App">
+                                    <span class="glyphicon glyphicon-edit" style="color: white"></span>
+                                </button>
+                                <button class="btn btn-primary" onclick="${app_data_click}"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="Edit App">
+                                    <span class="glyphicon glyphicon-edit" style="color: white"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    % endfor
+                </table>
+            </div>
+            <div>
+                <%include file="app_new_modal.html" />
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="${request.environ['SCRIPT_NAME']}/js/apps.js"></script>
