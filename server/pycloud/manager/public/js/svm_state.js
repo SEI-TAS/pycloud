@@ -11,9 +11,8 @@ function updateList()
     ajaxGet(listUrl, waitDialogText=null, function(response) {
         // Get the list of the current svms we know about.
         var curr_svm_list = {}
-        $(".c1").each(function(){
-            if($(this).text() != "Svm Id")
-                curr_svm_list[$(this).text()] = true;
+        $(".svm_id").each(function(){
+            curr_svm_list[$(this).text()] = true;
         });
 
         // The list we got from the server with all svms.
