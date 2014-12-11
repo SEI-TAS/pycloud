@@ -28,55 +28,55 @@
                         <th>Service Actions</th>
                     </tr>
                     % for service in page.services:
-                    <%
-                        # Service VM actions
-                        list_url         = h.url_for(controller='instances')
-                        instance_url     = h.url_for(controller='instances', action='startInstance', id=service.service_id)
-                        list_click       = "window.location.href='" + list_url + "';"
-                        start_click      = "startSVM('" + instance_url + "', '" + list_url + "');"
+                        <%
+                            # Service VM actions
+                            list_url         = h.url_for(controller='instances')
+                            instance_url     = h.url_for(controller='instances', action='startInstance', id=service.service_id)
+                            list_click       = "window.location.href='" + list_url + "';"
+                            start_click      = "startSVM('" + instance_url + "', '" + list_url + "');"
 
-                        # Service actions
-                        edit_url         = h.url_for(controller='modify', action='index', id=service.service_id)
-                        remove_url       = h.url_for(controller='services', action='removeService', id=service.service_id)
-                        export_url       = h.url_for(controller='export', action='export_svm', sid=service.service_id)
-                        edit_click       = "window.location.href = '" + edit_url + "';"
-                        remove_click     = "removeServiceConfirmation('" + remove_url + "', '" + service.service_id + "');"
-                        export_click     = "export_svm('" + export_url + "');"
-                    %>
-                    <tr>
-                        <td>${service.description}</td>
-                        <td>${service.service_id}</td>
-                        <td>${service.port}</td>
-                        <td>
-                            <button class="btn btn-primary" onclick="${list_click}"
-                                    data-toggle="tooltip" data-placement="bottom"
-                                    title="Service VMs List">
-                                <span class="glyphicon glyphicon-list" style="color: white"></span>
-                            </button>
-                            <button class="btn btn-success" onclick="${start_click}"
-                                    data-toggle="tooltip" data-placement="bottom"
-                                    title="New Service VM">
-                                <span class="glyphicon glyphicon-plus" style="color: white"></span>
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-primary" onclick="${edit_click}"
-                                    data-toggle="tooltip" data-placement="bottom"
-                                    title="Edit Service">
-                                <span class="glyphicon glyphicon-edit" style="color: white"></span>
-                            </button>
-                            <button class="btn btn-danger" onclick="${remove_click}"
-                                    data-toggle="tooltip" data-placement="bottom"
-                                    title="Remove Service">
-                                <span class="glyphicon glyphicon-remove" style="color: white"></span>
-                            </button>
-                            <button class="btn btn-primary" onclick="${export_click}"
-                                    data-toggle="tooltip" data-placement="bottom"
-                                    title="Export Service">
-                                <span class="glyphicon glyphicon-save" style="color: white"></span>
-                            </button>
-                        </td>
-                    </tr>
+                            # Service actions
+                            edit_url         = h.url_for(controller='modify', action='index', id=service.service_id)
+                            remove_url       = h.url_for(controller='services', action='removeService', id=service.service_id)
+                            export_url       = h.url_for(controller='export', action='export_svm', sid=service.service_id)
+                            edit_click       = "window.location.href = '" + edit_url + "';"
+                            remove_click     = "removeServiceConfirmation('" + remove_url + "', '" + service.service_id + "');"
+                            export_click     = "export_svm('" + export_url + "');"
+                        %>
+                        <tr>
+                            <td>${service.description}</td>
+                            <td>${service.service_id}</td>
+                            <td>${service.port}</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="${list_click}"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="Service VMs List">
+                                    <span class="glyphicon glyphicon-list" style="color: white"></span>
+                                </button>
+                                <button class="btn btn-success" onclick="${start_click}"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="New Service VM">
+                                    <span class="glyphicon glyphicon-plus" style="color: white"></span>
+                                </button>
+                            </td>
+                            <td>
+                                <button class="btn btn-primary" onclick="${edit_click}"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="Edit Service">
+                                    <span class="glyphicon glyphicon-edit" style="color: white"></span>
+                                </button>
+                                <button class="btn btn-danger" onclick="${remove_click}"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="Remove Service">
+                                    <span class="glyphicon glyphicon-remove" style="color: white"></span>
+                                </button>
+                                <button class="btn btn-primary" onclick="${export_click}"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="Export Service">
+                                    <span class="glyphicon glyphicon-save" style="color: white"></span>
+                                </button>
+                            </td>
+                        </tr>
                     % endfor
                 </table>
             </div>

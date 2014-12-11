@@ -7,16 +7,63 @@
 </%block>
 
 <%block name="title">
-    Running Service VM Instances
 </%block>
 
-<div class="panel panel-default">
-    <div class="panel-body">
-        <div class="container">
-            <div class="col-sm-12">
+<div class="container">
+    <div class="col-sm-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2>Running Service VM Instances</h2>
+            </div>
+            <div class="panel-body">
                 <table class="table table-striped">
                     <input type="hidden" id="svm_url" value="${h.url_for(controller='instances', action='svmList')}"/>
-                    ${page.instancesGrid}
+                    <tr>
+                        <th>Svm ID</th>
+                        <th>Service ID</th>
+                        <th>External Port</th>
+                        <th>External IP</th>
+                        <th>SSH</th>
+                        <th>VNC</th>
+                        <th>Actions</th>
+                    </tr>
+                    % for svm in page.svms:
+                        <%
+                            stop_url      = h.url_for(controller='instances', action='stopInstance', id=svm.svm_id, action_name=None)
+                            stop_click    = "stopSVM('"+ stop_url +"');"
+
+                            vnc_url       = h.url_for(controller='instances', action='openVNC', id=svm.svm_id, action_name=None)
+                            vnc_click     = "openVNC('"+ vnc_url +"');"
+
+                            migrate_url   = h.url_for(controller='instances', action='migrateInstance', id=svm.svm_id, action_name=None)
+                            migrate_click = "showMigrationModal('" + migrate_url + "');"
+                        %>
+                        <tr>
+                            <td>${svm.svm_id}</td>
+                            <td>${svm.service_id}</td>
+                            <td>${svm.port}</td>
+                            <td>${svm.ip_address}</td>
+                            <td>${svm.ssh_port}</td>
+                            <td>${svm.vnc_port}</td>
+                            <td>
+                                <button class="btn btn-danger" onclick="${stop_click}"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="Stop Service VM">
+                                    <span class="glyphicon glyphicon-remove" style="color: white"></span>
+                                </button>
+                                <button class="btn btn-danger" onclick="${vnc_click}"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="Open VNC (localhost only)">
+                                    <span class="glyphicon glyphicon-picture" style="color: white"></span>
+                                </button>
+                                <button class="btn btn-danger" onclick="${migrate_click}"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="Migrate Service VM">
+                                    <span class="glyphicon glyphicon-transfer" style="color: white"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    % endfor
                 </table>
             </div>
         </div>
