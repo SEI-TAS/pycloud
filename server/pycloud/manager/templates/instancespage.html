@@ -46,20 +46,20 @@
                             <td>${svm.ssh_port}</td>
                             <td>${svm.vnc_port}</td>
                             <td>
-                                <button class="btn btn-danger" onclick="${stop_click}"
-                                        data-toggle="tooltip" data-placement="bottom"
-                                        title="Stop Service VM">
-                                    <span class="glyphicon glyphicon-remove" style="color: white"></span>
-                                </button>
-                                <button class="btn btn-danger" onclick="${vnc_click}"
+                                <button class="btn btn-primary" onclick="${vnc_click}"
                                         data-toggle="tooltip" data-placement="bottom"
                                         title="Open VNC (localhost only)">
                                     <span class="glyphicon glyphicon-picture" style="color: white"></span>
                                 </button>
-                                <button class="btn btn-danger" onclick="${migrate_click}"
+                                <button class="btn btn-warning" onclick="${migrate_click}"
                                         data-toggle="tooltip" data-placement="bottom"
                                         title="Migrate Service VM">
                                     <span class="glyphicon glyphicon-transfer" style="color: white"></span>
+                                </button>
+                                <button class="btn btn-danger" onclick="${stop_click}"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="Stop Service VM">
+                                    <span class="glyphicon glyphicon-remove" style="color: white"></span>
                                 </button>
                             </td>
                         </tr>
