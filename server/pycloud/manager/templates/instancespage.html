@@ -29,17 +29,17 @@
                     </tr>
                     % for svm in page.svms:
                         <%
-                            stop_url      = h.url_for(controller='instances', action='stopInstance', id=svm.svm_id, action_name=None)
+                            stop_url      = h.url_for(controller='instances', action='stopInstance', id=svm._id, action_name=None)
                             stop_click    = "stopSVM('"+ stop_url +"');"
 
-                            vnc_url       = h.url_for(controller='instances', action='openVNC', id=svm.svm_id, action_name=None)
+                            vnc_url       = h.url_for(controller='instances', action='openVNC', id=svm._id, action_name=None)
                             vnc_click     = "openVNC('"+ vnc_url +"');"
 
-                            migrate_url   = h.url_for(controller='instances', action='migrateInstance', id=svm.svm_id, action_name=None)
+                            migrate_url   = h.url_for(controller='instances', action='migrateInstance', id=svm._id, action_name=None)
                             migrate_click = "showMigrationModal('" + migrate_url + "');"
                         %>
                         <tr>
-                            <td>${svm.svm_id}</td>
+                            <td>${svm._id}</td>
                             <td>${svm.service_id}</td>
                             <td>${svm.port}</td>
                             <td>${svm.ip_address}</td>
