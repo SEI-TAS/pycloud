@@ -18,3 +18,5 @@ class BasePage(Templated):
 
     def __init__(self, title="Cloudlet"):
         self.title = title
+        self.form_values = {}
+        self.form_errors = {}
