@@ -41,35 +41,12 @@ class InstancesController(BaseController):
         print request.environ['SCRIPT_NAME']
         svms = ServiceVM.find()
 
-        # grid_items = []
-        # for svm in svms:
-        #     grid_items.append(
-        #         {
-        #             'svm_id': svm['_id'],
-        #             'service_id': svm.service_id,
-        #             'external_port': svm.port,
-        #             'external_ip': svm.ip_address,
-        #             'ssh': svm.ssh_port,
-        #             'vnc': svm.vnc_port,
-        #             #'folder': os.path.dirname(svm.vm_image.disk_image),
-        #             'action': 'Stop'
-        #         }
-        #     )
-        #
-        # # Create and format the grid.
-        # instancesGrid = Grid(grid_items, ['svm_id', 'service_id', 'external_port', 'external_ip', 'ssh', 'vnc', 'action'])
-        # instancesGrid.column_formats["service_id"] = generate_service_id_link
-        # instancesGrid.column_formats["action"] = generate_action_buttons
-
         # Setup the page to render.
         instancesPage = InstancesPage()
-        # instancesPage.form_values = {}
-        # instancesPage.form_errors = {}
 
         instancesPage.svms = svms
 
         # Pass the grid and render the page.
-        # instancesPage.instancesGrid = instancesGrid
         return instancesPage.render()
         
     ############################################################################################################
@@ -312,26 +289,4 @@ class InstancesController(BaseController):
 def generate_service_id_link(col_num, i, item):
     editServiceURL = h.url_for(controller='modify', action='index', id=item["service_id"])
     
-    return HTML.td(HTML.a(item["service_id"], href=editServiceURL))   
-
-############################################################################################################
-# Helper function to generate actions for the service vms (stop and vnc buttons).
-############################################################################################################
-def generate_action_buttons(col_num, i, item):
-    # Button to stop an instance.
-    stopUrl = h.url_for(controller='instances', action='stopInstance', id=item["svm_id"], action_name=None)
-    icon = HTML.span(class_="glyphicon glyphicon-remove", style="color: white")
-    stopButtonHtml = HTML.button(icon, onclick=h.literal("stopSVM('"+ stopUrl +"')"), class_="btn btn-danger btn")
-
-    # Button to open VNC window.
-    vncUrl = h.url_for(controller='instances', action='openVNC', id=item["svm_id"], action_name=None)
-    icon = HTML.span(class_="glyphicon glyphicon-picture", style="color: white")
-    vncButtonHtml = HTML.button(icon, onclick=h.literal("openVNC('"+ vncUrl +"')"), class_="btn btn-primary btn")
-
-    # Button to migrate.
-    migrateUrl = h.url_for(controller='instances', action='migrateInstance', id=item["svm_id"], action_name=None)
-    icon = HTML.span(class_="glyphicon glyphicon-transfer", style="color: white")
-    migrateButtonHtml = HTML.button(icon, onclick=h.literal("showMigrationModal('" + migrateUrl + "')"), class_="btn btn-primary btn")
-
-    # Render the buttons with the Ajax code to stop the SVM.    
-    return HTML.td(stopButtonHtml + literal("&nbsp;") + vncButtonHtml + literal("&nbsp;") + migrateButtonHtml)
+    return HTML.td(HTML.a(item["service_id"], href=editServiceURL))
