@@ -40,5 +40,5 @@ function reloadState()
 $(document).ready( function () {
     // Start the load checker, which will check for changes continuously.
     console.log('Setting up reload state.');
-    reloadState();
+    //reloadState();
 });    
