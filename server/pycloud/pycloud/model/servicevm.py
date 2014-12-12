@@ -8,7 +8,6 @@ import random
 import time
 import os
 import socket
-import time
 
 # Used to generate unique IDs for the VMs.
 from uuid import uuid4
@@ -274,7 +273,7 @@ class ServiceVM(Model):
     ################################################################################################################
     # Waits for the service to boot up.
     ################################################################################################################
-    def _wait_for_service(self, retries=3):
+    def _wait_for_service(self, retries=30):
         if retries == 0:
             print 'Service is not available, stopping retries.'
             return False
