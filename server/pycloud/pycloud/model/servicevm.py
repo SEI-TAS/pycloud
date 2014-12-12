@@ -7,6 +7,7 @@ import re
 import random
 import time
 import os
+import socket
 
 # Used to generate unique IDs for the VMs.
 from uuid import uuid4
@@ -243,13 +244,12 @@ class ServiceVM(Model):
         c = get_cloudlet_instance()
 
         p = Popen(['sudo', c.nmap, '-sP', c.nmap_ip, '-oX', '-'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        out,err = p.communicate()
+        out, err = p.communicate()
         rc = p.returncode
         if rc != 0:
             print "Error executing nmap:\n%s" % err
             return None
         xml = ElementTree.fromstring(out)
-        ip = None
         try:
             ip = xml.find('./host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac.upper()).get('addr')
             print 'Found IP: ', ip
@@ -258,6 +258,34 @@ class ServiceVM(Model):
             ip = ServiceVM._find_ip_for_mac(mac, retry=(retry - 1))
 
         return ip
+
+    ################################################################################################################
+    # Checks if a given port is open on a given IP address.
+    ################################################################################################################
+    @staticmethod
+    def _is_port_open(ip_address, port):
+        timeout = 1
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(timeout)
+        result = sock.connect_ex((ip_address, port))
+        return result == 0
+
+    ################################################################################################################
+    # Waits for the service to boot up.
+    ################################################################################################################
+    def _wait_for_service(self, retries=3):
+        if retries == 0:
+            print 'Service is not available, stopping retries.'
+            return False
+
+        print 'Checking if service is available inside VM.'
+        result = ServiceVM._is_port_open(self.ip_address, self.port)
+        if not result:
+            print 'Service is not yet available, waiting...'
+            return self._wait_for_service(retries=(retries-1))
+        else:
+            print 'Successful connection, service is available.'
+            return True
 
     ################################################################################################################
     # Will locate the IP address from our MAC.
@@ -292,19 +320,22 @@ class ServiceVM(Model):
     # Perform several network checks: get the IP of the VM, ensure that the service is available, and get the VNC
     # port.
     ################################################################################################################
-    def _network_checks(self):
+    def _network_checks(self, check_service=True):
         try:
             # Get the IP of the VM.
             if self.network_mode == 'bridged':
                 self._set_ip_if_mac()
             else:
                 self.ip_address = '127.0.0.1'
-
-            # Wait until the service is running inside the VM.
-            # TODO: Have some method try in a loop to open a connection to the IP of the VM, to the port of the service.
-            # TODO: Make sure this can work for both bridged and non-bridged mode.
         except:
             print "Error getting IP of new SVM."
+
+        if check_service:
+            # Wait until the service is running inside the VM.
+            service_available = self._wait_for_service()
+            if not service_available:
+                # TODO: throw exception.
+                print 'Service was not found running inside the SVM. Check if it is configured to start at boot time.'
 
         # TODO: this is not working correctly when in bridged mode.
         self.vnc_port = self.__get_vnc_port()
@@ -329,7 +360,7 @@ class ServiceVM(Model):
         self._cold_boot(updated_xml_descriptor)
 
         # Ensure network is working and load network data.
-        self._network_checks()
+        self._network_checks(check_service=False)
 
         return self
 

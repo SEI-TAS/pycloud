@@ -243,8 +243,11 @@ class ModifyController(BaseController):
 
             # Make the VM image read only.
             print 'Making VM Image read-only.'
-            svm.vm_image.protect()
-            print 'VM Image updated.'
+            try:
+                svm.vm_image.protect()
+                print 'VM Image updated.'
+            except:
+                print 'Error making VM read-only. Check permissions on file.'
 
             # Everything went well, return image info.
             return svm.vm_image
