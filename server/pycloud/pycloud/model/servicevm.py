@@ -8,6 +8,7 @@ import random
 import time
 import os
 import socket
+import time
 
 # Used to generate unique IDs for the VMs.
 from uuid import uuid4
@@ -264,7 +265,7 @@ class ServiceVM(Model):
     ################################################################################################################
     @staticmethod
     def _is_port_open(ip_address, port):
-        timeout = 1
+        timeout = 0.2
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(timeout)
         result = sock.connect_ex((ip_address, port))
@@ -282,6 +283,7 @@ class ServiceVM(Model):
         result = ServiceVM._is_port_open(self.ip_address, int(self.port))
         if not result:
             print 'Service is not yet available, waiting...'
+            time.sleep(2)
             return self._wait_for_service(retries=(retries-1))
         else:
             print 'Successful connection, service is available.'
