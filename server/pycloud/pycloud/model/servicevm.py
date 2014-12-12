@@ -279,7 +279,7 @@ class ServiceVM(Model):
             return False
 
         print 'Checking if service is available inside VM.'
-        result = ServiceVM._is_port_open(self.ip_address, self.port)
+        result = ServiceVM._is_port_open(self.ip_address, int(self.port))
         if not result:
             print 'Service is not yet available, waiting...'
             return self._wait_for_service(retries=(retries-1))
