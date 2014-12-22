@@ -1,3 +1,3 @@
 #!/bin/sh
-cd /home/cloudlet/ObjectRecognitionServer
+cd /home/cloudlet/ObjectServer
 ./objrec_server
