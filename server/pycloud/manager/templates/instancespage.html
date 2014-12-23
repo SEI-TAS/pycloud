@@ -24,7 +24,11 @@
                         <th>External Port</th>
                         <th>External IP</th>
                         <th>SSH</th>
-                        <th>VNC</th>
+                        <th>
+                            VNC<span class="glyphicon glyphicon-info-sign"
+                                                     data-toggle="tooltip" data-placement="bottom"
+                                                     title="Cloudlet IP must be used for VNC connections, and Qemu must be configured for remote VNC access."></span>
+                        </th>
                         <th>Actions</th>
                     </tr>
                     % for svm in page.svms:
@@ -44,15 +48,11 @@
                             <td>${svm.port}</td>
                             <td>${svm.ip_address}</td>
                             <td>${svm.ssh_port}</td>
-                            <td>
-                                ${svm.vnc_port}<span class="glyphicon glyphicon-info-sign"
-                                                     data-toggle="tooltip" data-placement="bottom"
-                                                     title="Cloudlet IP must be used for VNC connections, and Qemu must be configured for remote VNC access."></span>
-                            </td>
+                            <td>${svm.vnc_port}</td>
                             <td>
                                 <button class="btn btn-primary" onclick="${vnc_click}"
                                         data-toggle="tooltip" data-placement="bottom"
-                                        title="Open VNC (localhost only)">
+                                        title="Open Local VNC Window (only when browsing on Cloudlet Host)">
                                     <span class="glyphicon glyphicon-picture" style="color: white"></span>
                                 </button>
                                 <button class="btn btn-warning" onclick="${migrate_click}"
