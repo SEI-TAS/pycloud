@@ -167,6 +167,7 @@ class InstancesController(BaseController):
 
             # Do the memory state migration.
             remote_hostname = remote_host.split('.')[0]
+            print 'Migrating through libvirt to ' + remote_hostname
             svm.migrate(remote_hostname, p2p=False)
             # TODO: if migration fails, ask remote to remove svm.
 
