@@ -55,7 +55,7 @@ class ServicesController(BaseController):
         try:
             service = Service.find_and_remove(id)
             if service:
-                service.destroy()
+                service.destroy(force=True)
         except Exception as e:
             # If there was a problem removing the service, return that there was an error.
             print 'Error removing Service: ' + str(e)
