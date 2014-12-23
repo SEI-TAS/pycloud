@@ -166,7 +166,8 @@ class InstancesController(BaseController):
             print 'Disk image file was transferred: ' + str(result)
 
             # Do the memory state migration.
-            svm.migrate(remote_host, p2p=False)
+            remote_hostname = remote_host.split('.')[0]
+            svm.migrate(remote_hostname, p2p=False)
             # TODO: if migration fails, ask remote to remove svm.
 
             # Notify remote cloudlet that migration finished.
