@@ -44,7 +44,11 @@
                             <td>${svm.port}</td>
                             <td>${svm.ip_address}</td>
                             <td>${svm.ssh_port}</td>
-                            <td>${svm.vnc_port}</td>
+                            <td>
+                                ${svm.vnc_port}<span class="glyphicon glyphicon-info-sign"
+                                                     data-toggle="tooltip" data-placement="bottom"
+                                                     title="Cloudlet IP must be used for VNC connections, and Qemu must be configured for remote VNC access."></span>
+                            </td>
                             <td>
                                 <button class="btn btn-primary" onclick="${vnc_click}"
                                         data-toggle="tooltip" data-placement="bottom"
