@@ -214,7 +214,7 @@ class VMImage(DictObject):
                      stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH)
 
     ################################################################################################################
-    # Cleans up the files, if this is a clone it will delete the files. Force will delete if cloned.
+    # Cleans up the files, if this is a clone it will delete the files. Force will delete even if not cloned.
     ################################################################################################################
     def cleanup(self, force=False):
         if self.cloned or force:

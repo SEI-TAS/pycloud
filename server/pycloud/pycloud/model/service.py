@@ -101,12 +101,12 @@ class Service(Model):
     ################################################################################################################
     # Removes this Service and all of its files
     ################################################################################################################
-    def destroy(self):
+    def destroy(self, force=False):
         # Make sure we are no longer in the database
         Service.find_and_remove(self.service_id)
 
         # Delete our backing files
-        self.vm_image.cleanup()
+        self.vm_image.cleanup(force)
 
     ################################################################################################################
     # Removes this Service and all of its files

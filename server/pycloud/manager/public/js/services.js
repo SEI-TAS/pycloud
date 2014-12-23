@@ -71,7 +71,7 @@ function export_svm(url)
             dialog.hide();
             if (!ajaxCallWasSuccessful(resp))
             {
-                showAndLogErrorMessage('There wsa a problem exporting the service.');
+                showAndLogErrorMessage('There was a problem exporting the service.');
             }
             else
             {
@@ -108,7 +108,7 @@ function import_svm(url, file_path)
         },
         error: function (req, status, err) {
             dialog.hide();
-            showAndLogErrorMessage('There was a problem exporting the service.', status, err );
+            showAndLogErrorMessage('There was a problem importing the service.', status, err );
         }
     });
 }
