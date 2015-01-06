@@ -242,8 +242,9 @@ class ServiceVM(Model):
     def _set_ip_if_mac(self):
         # mac_address will have a value if bridged mode is enabled
         if self.mac_address is not None:
+            c = get_cloudlet_instance()
             print "Retrieving IP for MAC: %s" % self.mac_address
-            ip = find_ip_for_mac(self.mac_address)
+            ip = find_ip_for_mac(self.mac_address, c.nmap, c.nmap_ip)
             if not ip:
                 print "Failed to locate the IP for the server!!!!"
                 # TODO: Possibly throw an exception and shutdown the VM
