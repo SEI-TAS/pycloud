@@ -4,13 +4,13 @@ __author__ = 'jdroot'
 import libvirt
 
 import re
-import random
 import time
 import os
-import socket
 
 # Used to generate unique IDs for the VMs.
 from uuid import uuid4
+
+from pycloud.pycloud.utils.netutils import generate_random_mac, find_ip_for_mac, is_port_open
 
 from pycloud.pycloud.mongo import Model
 from pycloud.pycloud.model.vmimage import VMImage
@@ -18,12 +18,9 @@ from pycloud.pycloud.vm.vmsavedstate import VMSavedState
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineDescriptor
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineException
 from pycloud.pycloud.vm.vncclient import VNCClient
-from pycloud.pycloud.vm.vmutils import HYPERVISOR_URI
+from pycloud.pycloud.vm.vmutils import HYPERVISOR_SYSTEM_URI, HYPERVISOR_SESSION_URI
 from pycloud.pycloud.utils import portmanager
 from pycloud.pycloud.cloudlet import get_cloudlet_instance
-
-from subprocess import Popen, PIPE
-from xml.etree import ElementTree
 
 ################################################################################################################
 # Represents a runtime ServiceVM, independent on whether it has a cloned or original disk image.
@@ -38,7 +35,7 @@ class ServiceVM(Model):
         }
 
     # URI used to connect to the local hypervisor.
-    _HYPERVISOR_URI = HYPERVISOR_URI
+    _HYPERVISOR_URI = HYPERVISOR_SYSTEM_URI
     _hypervisor = None
     
     # Constants.
@@ -75,7 +72,7 @@ class ServiceVM(Model):
             self.network_mode = "bridged"
 
             # In bridge mode we need a new MAC in case we are a clone.
-            self.mac_address = self.generate_random_mac()
+            self.mac_address = generate_random_mac()
             print 'Generated new mac address: ' + self.mac_address
         else:
             self.network_mode = "user"
@@ -128,18 +125,6 @@ class ServiceVM(Model):
     ################################################################################################################
     def generate_random_id(self):
         self._id = str(uuid4())
-
-    ################################################################################################################
-    # Generates a random MAC address.
-    ################################################################################################################
-    def generate_random_mac(self):
-        mac = [
-            0x00, 0x16, 0x3e,
-            random.randint(0x00, 0x7f),
-            random.randint(0x00, 0xff),
-            random.randint(0x00, 0xff)
-        ]
-        return ':'.join(map(lambda x: "%02x" % x, mac))
 
     ################################################################################################################
     # Add a port mapping
@@ -234,43 +219,6 @@ class ServiceVM(Model):
         return updated_xml
 
     ################################################################################################################
-    # Will locate the IP address for a given mac address
-    ################################################################################################################
-    @staticmethod
-    def _find_ip_for_mac(mac, retry=3):
-        if retry == 0:
-            print ''
-            return None
-        c = get_cloudlet_instance()
-
-        p = Popen(['sudo', c.nmap, '-sP', c.nmap_ip, '-oX', '-'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        out, err = p.communicate()
-        rc = p.returncode
-        if rc != 0:
-            print "Error executing nmap:\n%s" % err
-            return None
-        xml = ElementTree.fromstring(out)
-        try:
-            ip = xml.find('./host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac.upper()).get('addr')
-            print 'Found IP: ', ip
-        except:
-            print 'Failed to find IP, retrying...'
-            ip = ServiceVM._find_ip_for_mac(mac, retry=(retry - 1))
-
-        return ip
-
-    ################################################################################################################
-    # Checks if a given port is open on a given IP address.
-    ################################################################################################################
-    @staticmethod
-    def _is_port_open(ip_address, port):
-        timeout = 0.2
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(timeout)
-        result = sock.connect_ex((ip_address, port))
-        return result == 0
-
-    ################################################################################################################
     # Waits for the service to boot up.
     ################################################################################################################
     def _wait_for_service(self, retries=3):
@@ -279,7 +227,7 @@ class ServiceVM(Model):
             return False
 
         print 'Checking if service is available inside VM.'
-        result = ServiceVM._is_port_open(self.ip_address, int(self.port))
+        result = is_port_open(self.ip_address, int(self.port))
         if not result:
             print 'Service is not yet available, waiting...'
             time.sleep(2)
@@ -295,7 +243,7 @@ class ServiceVM(Model):
         # mac_address will have a value if bridged mode is enabled
         if self.mac_address is not None:
             print "Retrieving IP for MAC: %s" % self.mac_address
-            ip = ServiceVM._find_ip_for_mac(self.mac_address)
+            ip = find_ip_for_mac(self.mac_address)
             if not ip:
                 print "Failed to locate the IP for the server!!!!"
                 # TODO: Possibly throw an exception and shutdown the VM
@@ -542,7 +490,7 @@ class ServiceVM(Model):
         if(result == -1):
             raise VirtualMachineException("Cannot pause VM: %s", str(self._id))
         
-        # Store the VM's memory state to a disk image file.
+        # Store the VM's memory state to a file.
         print "Storing VM memory state to file %s" % self.vm_image.state_image
         result = 0
         try:

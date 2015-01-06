@@ -58,7 +58,7 @@ function createSVM()
         $('#modal-new-servicevm').modal('hide');  
 
         // Notify that the process was successful.
-        showAndLogSuccessMessage('New VM running with id ' + svm.SVM_ID + ', VNC open on port ' + svm.VNC_PORT);
+        showAndLogSuccessMessage('New VM running with id ' + svm._id + ', VNC open on port ' + svm.vnc_port);
     };
     
     // Do the post to get data and load the modal.
@@ -77,8 +77,8 @@ function startInstance(url)
     
     // Do the post to get data and load the modal.
     ajaxGet(url, "Starting Instance to Modify SVM", function(svm) {
-        showAndLogSuccessMessage('Instance was started successfully with id ' + svm.SVM_ID + ', VNC open on port ' + svm.VNC_PORT);
-        $('#svmInstanceId').val(svm.SVM_ID);
+        showAndLogSuccessMessage('Instance was started successfully with id ' + svm._id + ', VNC open on port ' + svm.vnc_port);
+        $('#svmInstanceId').val(svm._id);
         $('#modify-svm-button').hide();
         $('#save-svm-button').show();
         $('#discard-svm-button').show();
