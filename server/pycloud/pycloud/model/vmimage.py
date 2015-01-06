@@ -105,7 +105,7 @@ class VMImage(DictObject):
             self.state_image = os.path.abspath(os.path.join(destination_folder, os.path.basename(self.state_image)))
             
             # Remove our original folder.
-            os.rmdir(source_dir)
+            #os.rmdir(source_dir)
         except:
             # Clean up the directory we just created
             os.rmdir(destination_folder)
