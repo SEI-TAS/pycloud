@@ -96,8 +96,8 @@ class VMImage(DictObject):
             fileutils.FileUtils.recreateFolder(destination_folder)
             
             # Move the files.
-            shutil.move(self.disk_image, destination_folder)
-            shutil.move(self.state_image, destination_folder)
+            shutil.copyfile(self.disk_image, destination_folder)
+            shutil.copyfile(self.state_image, destination_folder)
             
             # Update our paths to reflect the move.
             source_dir = os.path.dirname(self.disk_image)
