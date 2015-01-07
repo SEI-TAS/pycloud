@@ -148,6 +148,7 @@ function startInstance(url)
     // Do the post to get data and load the modal.
     ajaxGet(url, "Starting Instance to Modify SVM", function(svm) {
         // Update the buttons to reflect that we can now save the SVM.
+        console.log(svm);
         showServiceVMButtons(svm);
 
         showAndLogSuccessMessage('Instance was started successfully with id ' + svm._id + ', VNC open on port ' + svm.vnc_port);

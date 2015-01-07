@@ -174,9 +174,7 @@ class ModifyController(BaseController):
         svm.generate_random_id()
         
         # Parse the body of the request as JSON into a python object.
-        # First remove URL quotes added to string, and then remove trailing "=" (no idea why it is there).
-        parsedJsonString = urllib.unquote(request.body)[:-1]
-        fields = json.loads(parsedJsonString)        
+        fields = encoded_json_to_dict(request.body)
         
         # Create an SVM and open a VNC window to modify the VM.
         svm.service_id = fields['serviceId']
