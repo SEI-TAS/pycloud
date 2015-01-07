@@ -28,7 +28,7 @@ def generate_random_mac():
 ################################################################################################################
 def find_ip_for_mac(mac, nmap, ip_range, retry=3):
     if retry == 0:
-        print ''
+        print 'No more retries, IP not found.'
         return None
 
     p = Popen(['sudo', nmap, '-sP', ip_range, '-oX', '-'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -36,7 +36,7 @@ def find_ip_for_mac(mac, nmap, ip_range, retry=3):
     rc = p.returncode
     if rc != 0:
         print "Error executing nmap:\n%s" % err
-        return None
+        raise Exception("Error executing nmap:\n%s" % err)
     xml = ElementTree.fromstring(out)
     try:
         ip = xml.find('./host/address[@addr="%s"]/../address[@addrtype="ipv4"]' % mac.upper()).get('addr')

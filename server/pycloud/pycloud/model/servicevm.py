@@ -246,8 +246,8 @@ class ServiceVM(Model):
             print "Retrieving IP for MAC: %s" % self.mac_address
             ip = find_ip_for_mac(self.mac_address, c.nmap, c.nmap_ip)
             if not ip:
-                print "Failed to locate the IP for the server!!!!"
-                # TODO: Possibly throw an exception and shutdown the VM
+                print "Failed to locate the IP of the VM."
+                raise Exception('Failed to locate the IP of the VM.')
             else:
                 self.ip_address = ip
 
@@ -277,8 +277,10 @@ class ServiceVM(Model):
                 self._set_ip_if_mac()
             else:
                 self.ip_address = '127.0.0.1'
-        except:
-            print "Error getting IP of new SVM."
+        except Exception as e:
+            # TODO: throw exception.
+            print "Error getting IP of new SVM: " + str(e)
+            check_service = False
 
         if check_service:
             # Wait until the service is running inside the VM.
@@ -287,7 +289,6 @@ class ServiceVM(Model):
                 # TODO: throw exception.
                 print 'Service was not found running inside the SVM. Check if it is configured to start at boot time.'
 
-        # TODO: this is not working correctly when in bridged mode.
         self.vnc_port = self.__get_vnc_port()
         print "VNC available on localhost:{}".format(str(self.vnc_port))
 
