@@ -20,9 +20,9 @@ from pycloud.pycloud.mongo import DictObject
 ################################################################################################################
 # Exception type used in this module.
 ################################################################################################################
-class DiskImageException(Exception):
+class VMImageException(Exception):
     def __init__(self, message):
-        super(DiskImageException, self).__init__(message)
+        super(VMImageException, self).__init__(message)
         self.message = message
 
 ################################################################################################################
@@ -44,7 +44,7 @@ class VMImage(DictObject):
     def _clone_file_to_folder(destination_folder, original):
         # Check if the source disk image file exists.
         if not os.path.exists(original):
-            raise DiskImageException("Source image file does not exist (%s)." % original)
+            raise VMImageException("Source image file does not exist (%s)." % original)
 
         new_file = os.path.abspath(os.path.join(destination_folder, os.path.basename(original)))
 
@@ -56,14 +56,55 @@ class VMImage(DictObject):
         return new_file
 
     ################################################################################################################
+    # Checks if a disk image file has a valid extension.
+    ################################################################################################################
+    @staticmethod
+    def _is_valid_disk_image(filename):
+        disk_image_extension = ".qcow2"
+        return filename.endswith(disk_image_extension)
+
+    ################################################################################################################
+    # Checks if a state image file has a valid extension.
+    ################################################################################################################
+    @staticmethod
+    def _is_valid_state_image(filename):
+        state_image_extension = ".lqs"
+        return filename.endswith(state_image_extension)
+
+    ################################################################################################################
+    # Loads information about a VM Image from a folder.
+    ################################################################################################################
+    def load_from_folder(self, folder_path):
+        # Get the folder and check if it exists.
+        if not os.path.exists(folder_path):
+            raise VMImageException("Folder %s does not exist." % folder_path)
+
+        # Loop over the files in the folder, finding valid image files.
+        self.disk_image = None
+        self.state_image = None
+        file_list = os.listdir(folder_path)
+        for current_filename in file_list:
+            # Check if there is an image file, if so, store its path.
+            if VMImage._is_valid_disk_image(current_filename):
+                self.disk_image = os.path.join(folder_path, current_filename)
+            elif VMImage._is_valid_state_image(current_filename):
+                self.state_image = os.path.join(folder_path, current_filename)
+
+        # If we didn't find a disk or saved state image, there is something seriously wrong.
+        if self.disk_image is None:
+            raise VMImageException("Folder %s did not contain a valid disk image file." % folder_path)
+        if self.state_image is None:
+            raise VMImageException("Folder %s did not contain a valid disk image file." % folder_path)
+
+    ################################################################################################################
     # Will clone the disk and state image files to the specified folder
     ################################################################################################################
     def clone(self, destination_folder, clone_full_image=False):
         # Check if the destination folder already exists
         if os.path.exists(destination_folder):
             # This is an error, as we don't want to overwrite an existing disk image with a source.
-            raise DiskImageException("Destination image file already exists (%s)."
-                                     "Will not overwrite existing image." % destination_folder)
+            raise VMImageException("Destination image file already exists (%s)."
+                                   "Will not overwrite existing image." % destination_folder)
 
         # Make the folder.
         os.makedirs(destination_folder)
@@ -224,6 +265,9 @@ class VMImage(DictObject):
                     print 'Removing VM image folder: ' + image_folder
                     shutil.rmtree(image_folder)
 
+    ################################################################################################################
+    # Returns a description of the names of the vm image files.
+    ################################################################################################################
     def export(self):
         return {
             "disk_image": os.path.basename(self.disk_image),

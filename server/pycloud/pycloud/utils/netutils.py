@@ -51,6 +51,7 @@ def find_ip_for_mac(mac, nmap, ip_range, retry=3):
 # Checks if a given port is open on a given IP address.
 ################################################################################################################
 def is_port_open(ip_address, port):
+    print 'Checking if port ' + port + ' is open on IP ' + ip_address
     timeout = 0.2
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(timeout)

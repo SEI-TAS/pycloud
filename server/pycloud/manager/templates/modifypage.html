@@ -55,10 +55,16 @@ ${parent.header()}
                     ${hidden('vmDiskImageFileValue')}
                     ${hidden('vmStateImageFileValue')}
                     ${hidden('svmInstanceId')}
-                    
+
+                    {{ # Button available only when creating a new service. )}}
             	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm" ${'style="display:none;"' if not page.newService else ''}>Create VM Image</button>
+
+                    {{ # Button available only when editing an existing service, or a service in proces of creation which already created its VM image. )}}
               	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="startInstance('${page.startInstanceURL}')" ${'style="display:none;"' if page.newService else ''}>Edit VM Image</button>
 
+            	    <button type="button" class="btn btn-primary" id="choose-image-button" data-toggle="modal" data-target="#modal-choose-image">Select Existing VM Image</button>
+
+                    {{ # Buttons available only when the VM image is loaded into an SVM (creating or editing the image)}}
               	    <button type="button" class="btn btn-primary" id="save-svm-button" onclick="persistInstance('${page.saveInstanceURL}')" style="display:none;">Save from SVM</button>
               	    <button type="button" class="btn btn-primary" id="discard-svm-button" onclick="discardInstance('${page.stopInstanceURL}')" style="display:none;">Discard SVM</button>
               	    <button type="button" class="btn btn-primary" id="vnc-button" onclick="openEditVNC('${page.openVNCUrl}')" style="display:none;">Open VNC (on server)</button>
@@ -104,6 +110,30 @@ ${parent.header()}
 	    </div>
     </div>
 </div>
+
+<!-- Choose Existing VM Image modal -->
+<div class="modal fade" id="modal-choose-image" role="dialog" data-backdrop="static">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		    <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal">x</button>
+		        <h3>Select Existing VM Image</h3>
+		    </div>
+		    <div class="modal-body">
+		        <div class="well">
+		            <form id="choose-image-form" class="form-horizontal" action="${page.chooseImageURL}" method="post">
+		            	${text(id='vmImageFolder', input_width=12, label=_('Existing VM Image Folder Path'), mandatory=True)}
+		            </form>
+		        </div>
+		    </div>
+		    <div class="modal-footer">
+		        <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+		        <a href="#" class="btn btn-primary new-svm-action" onclick="chooseImage()">Create</a>
+		    </div>
+	    </div>
+    </div>
+</div>
+
 
 <script src="${request.environ['SCRIPT_NAME']}/js/modify.js"></script>
 

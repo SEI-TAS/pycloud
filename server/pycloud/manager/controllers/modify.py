@@ -63,6 +63,7 @@ class ModifyController(BaseController):
         page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot', id=None, action_name=None)
         page.stopInstanceURL = h.url_for(controller='instances', action='stopInstance', id=None, action_name=None)
         page.startInstanceURL = h.url_for(controller='instances', action='startInstance', id=None, action_name=None)
+        page.chooseImageURL = h.url_for(controller='instances', action='selectImage', id=None, action_name=None)
         if(creatingNew):
             # We are creating a new service.
             page.newService = True
@@ -255,3 +256,27 @@ class ModifyController(BaseController):
             # If there was a problem opening the SVM, return that there was an error.
             print 'Error saving Service VM: ' + str(e)
             return self.JSON_NOT_OK
+
+    ############################################################################################################
+    # Loads information about the VM image in the given folder.
+    ############################################################################################################
+    @asjson
+    def POST_selectImage(self):
+        # Parse the body of the request as JSON into a python object.
+        # First remove URL quotes added to string, and then remove trailing "=" (no idea why it is there).
+        print request.body
+        parsed_json_string = urllib.unquote(request.body)
+        if parsed_json_string.endswith("="):
+            parsed_json_string = parsed_json_string[:-1]
+        fields = json.loads(parsed_json_string)
+
+        # Load VM Image information from the folder.
+        image_folder = fields['imageFolder']
+        vm_image = VMImage()
+        try:
+            vm_image.load_from_folder(image_folder)
+        except Exception as e:
+            print 'Error selecting existing VM image: ' + str(e)
+            return self.JSON_NOT_OK
+
+        return vm_image

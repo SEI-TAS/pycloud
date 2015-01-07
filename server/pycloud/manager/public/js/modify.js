@@ -22,6 +22,82 @@ function validateSubmission()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
+// Function to update buttons and fields after a VM image is selected.
+/////////////////////////////////////////////////////////////////////////////////////
+function showImageInfoAndButtons(vm_image)
+{
+    // Update Stored SVM fields with new SVM info.
+    $('#vmStoredFolder').val(getFileDirectory(vm_image.disk_image));
+    $('#vmDiskImageFile').val(vm_image.disk_image);
+    $('#vmDiskImageFileValue').val(vm_image.disk_image);
+    $('#vmStateImageFile').val(vm_image.state_image);
+    $('#vmStateImageFileValue').val(vm_image.state_image);
+
+    // Update the buttons to reflect that we can now modify the SVM.
+    $('#modify-svm-button').show();
+    $('#choose-image-button').show();
+
+    $('#new-svm-button').hide();
+    $('#save-svm-button').hide();
+    $('#discard-svm-button').hide();
+    $('#vnc-button').hide();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to update buttons and fields when an SVM is created to create/modify an image.
+/////////////////////////////////////////////////////////////////////////////////////
+function showServiceVMButtons(svm)
+{
+    // Update the buttons to reflect that we can now save or discard the SVM.
+    $('#svmInstanceId').val(svm._id);
+    $('#new-svm-button').hide();
+    $('#modify-svm-button').hide();
+    $('#choose-image-button').hide();
+
+    $('#save-svm-button').show();
+    $('#discard-svm-button').show();
+    $('#vnc-button').show();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to set an existing VM Image to a service.
+/////////////////////////////////////////////////////////////////////////////////////
+function chooseImage()
+{
+    // Get basic information about the form with the new svm.
+    var imageForm = $('#choose-image-form');
+    var serviceForm = $('#service-form');
+    var actionURL = imageForm.attr('action');
+
+    // Get all the edited fields of the image.
+    var image_info = {};
+    image_info.folder = imageForm.find('#vmImageFolder').val();
+    image_info.port = serviceForm.find('#servicePort').val();
+    image_info.serviceId = serviceForm.find('#serviceID').val();
+    var jsonData = JSON.stringify(image_info);
+
+    // Validate that we have all the necessary info.
+    var modalDiv = $('#modal-choose-image');
+    if(!validateMandatoryField(image_info.serviceId, "Service Id", modalDiv)) return false;
+    if(!validateMandatoryField(image_info.port, "Service Port", modalDiv)) return false;
+    if(!validateMandatoryField(image_info.folder, "VM Image", modalDiv)) return false;
+
+    // Handler to load data when received.
+    var successHandler = function(vm_image) {
+        $('#modal-choose-image').modal('hide');
+        showImageInfoAndButtons(vm_image);
+
+        // Notify that the process was successful.
+        showAndLogSuccessMessage('Existing VM selected.');
+    };
+
+    // Do the post to get data and load the modal.
+    ajaxSimplePost(actionURL, jsonData, "Selecting existing VM image", successHandler, modalDiv);
+
+    return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
 // Function to create a new SVM.
 /////////////////////////////////////////////////////////////////////////////////////
 function createSVM()
@@ -48,12 +124,7 @@ function createSVM()
     // Handler to load data when received.
     var successHandler = function(svm) {
         // Update the buttons to reflect that we can now save the SVM.
-        $('#svmInstanceId').val(svm._id);
-        $('#new-svm-button').hide();
-
-        $('#save-svm-button').show();
-        $('#discard-svm-button').show();
-        $('#vnc-button').show();
+        showImageInfoAndButtons(svm);
         
         $('#modal-new-servicevm').modal('hide');  
 
@@ -77,12 +148,10 @@ function startInstance(url)
     
     // Do the post to get data and load the modal.
     ajaxGet(url, "Starting Instance to Modify SVM", function(svm) {
+        // Update the buttons to reflect that we can now save the SVM.
+        showServiceVMButtons(svm);
+
         showAndLogSuccessMessage('Instance was started successfully with id ' + svm._id + ', VNC open on port ' + svm.vnc_port);
-        $('#svmInstanceId').val(svm._id);
-        $('#modify-svm-button').hide();
-        $('#save-svm-button').show();
-        $('#discard-svm-button').show();
-        $('#vnc-button').show();
     });
 
     return false;
@@ -103,20 +172,9 @@ function persistInstance(url)
 
     // Do the post to get data and load the modal.
     ajaxGet(url, "Saving SVM", function(vm_image) {
-        // Update Stored SVM fields with new SVM info.
-        $('#vmStoredFolder').val(getFileDirectory(vm_image.disk_image));
-        $('#vmDiskImageFile').val(vm_image.disk_image);
-        $('#vmDiskImageFileValue').val(vm_image.disk_image);
-        $('#vmStateImageFile').val(vm_image.state_image);
-        $('#vmStateImageFileValue').val(vm_image.state_image);
+        showImageInfoAndButtons(vm_image);
 
         showAndLogSuccessMessage('Changes saved successfully to permanent VM image.');
-
-        // Update the buttons to reflect that we can now modify the SVM.
-        $('#modify-svm-button').show();
-        $('#save-svm-button').hide();
-        $('#discard-svm-button').hide();
-        $('#vnc-button').hide();
     });
 
     return false;
@@ -137,6 +195,7 @@ function discardInstance(url)
         $('#save-svm-button').hide();
         $('#discard-svm-button').hide();
         $('#vnc-button').hide();
+        $('#choose-image-button').show();
 
         if($('#internalServiceId').val() != '') {
             $('#modify-svm-button').show();
