@@ -1,23 +1,19 @@
 import logging
 import os
-import json
-import urllib
 import os.path
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons import g
-from pylons.templating import render_mako as render
 from pylons.controllers.util import redirect_to
-
-from webhelpers.html import HTML
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.model import Service, ServiceVM, VMImage
 from pycloud.pycloud.pylons.lib.util import asjson, encoded_json_to_dict
-from pycloud.pycloud.pylons.lib.util import dumps
 
-from pycloud.manager.lib.pages import ModifyPage, ImportPage
+from pycloud.manager.lib.pages import ModifyPage
+
+from pycloud.pycloud.utils import ajaxutils
 
 log = logging.getLogger(__name__)
 
@@ -25,9 +21,6 @@ log = logging.getLogger(__name__)
 # Controller for the Modify page.
 ################################################################################################################
 class ModifyController(BaseController):
-
-    JSON_OK = {"STATUS" : "OK" }
-    JSON_NOT_OK = { "STATUS" : "NOT OK", "error": ""}
 
     ################################################################################################################ 
     # Called when loading the page to add or edit a service.
@@ -206,18 +199,15 @@ class ModifyController(BaseController):
         except Exception as e:
             # If there was a problem creating the SVM, return that there was an error.
             msg = 'Error creating Service VM: ' + str(e)
-            print msg
             import traceback, sys
             traceback.print_exc(file=sys.stdout)
             if svm.vm_image:
                 svm.vm_image.cleanup(force=True)
 
-            error = self.JSON_NOT_OK
-            error['error'] = msg
-            return error
+            return ajaxutils.show_and_return_error_dict(msg)
 
         # Everything went well.
-        return self.JSON_OK
+        return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Stops and saves a Service VM that was edited to its permanent root VM image.
@@ -257,10 +247,7 @@ class ModifyController(BaseController):
         except Exception as e:
             # If there was a problem opening the SVM, return that there was an error.
             msg = 'Error saving Service VM: ' + str(e)
-            print msg
-            error = self.JSON_NOT_OK
-            error['error'] = msg
-            return error
+            return ajaxutils.show_and_return_error_dict(msg)
 
     ############################################################################################################
     # Loads information about the VM image in the given folder.
@@ -277,9 +264,6 @@ class ModifyController(BaseController):
             vm_image.load_from_folder(image_folder)
         except Exception as e:
             msg = 'Error selecting existing VM image: ' + str(e)
-            print msg
-            error = self.JSON_NOT_OK
-            error['error'] = msg
-            return error
+            return ajaxutils.show_and_return_error_dict(msg)
 
         return vm_image

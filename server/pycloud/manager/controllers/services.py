@@ -1,19 +1,12 @@
 import logging
-import json
-import os.path
 
 from pylons import request, response, session, tmpl_context as c, url
-from pylons.controllers.util import abort, redirect
-from pylons import g
-
-from webhelpers.html.grid import Grid
-from webhelpers.html import HTML
-from webhelpers.html import literal
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import ServicesPage
-from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.model import Service
+
+from pycloud.pycloud.utils import ajaxutils
 
 log = logging.getLogger(__name__)
 
@@ -21,9 +14,6 @@ log = logging.getLogger(__name__)
 # Controller for the Services page.
 ################################################################################################################
 class ServicesController(BaseController):
-
-    JSON_OK = json.dumps({"STATUS" : "OK" })
-    JSON_NOT_OK = json.dumps({ "STATUS" : "NOT OK"})   
 
     ############################################################################################################
     # Entry point.
@@ -58,8 +48,8 @@ class ServicesController(BaseController):
                 service.destroy(force=True)
         except Exception as e:
             # If there was a problem removing the service, return that there was an error.
-            print 'Error removing Service: ' + str(e)
-            return self.JSON_NOT_OK
+            msg = 'Error removing Service: ' + str(e)
+            return ajaxutils.show_and_return_error_dict(msg)
         
         # Everything went well.
-        return self.JSON_OK
+        return ajaxutils.JSON_OK

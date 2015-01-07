@@ -7,10 +7,8 @@ import shutil
 from bson import ObjectId
 
 from pylons import request, response, session, tmpl_context as c, url
-from pylons.controllers.util import abort, redirect
 from pylons import g
 
-from webhelpers.html.grid import Grid
 from webhelpers.html import HTML
 from webhelpers.html import literal
 
@@ -20,15 +18,14 @@ from pycloud.manager.lib.pages import AppsPage
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.model import App, Service
 
+from pycloud.pycloud.utils import ajaxutils
+
 log = logging.getLogger(__name__)
 
 ################################################################################################################
 # Controller for the Services page.
 ################################################################################################################
 class AppsController(BaseController):
-
-    JSON_OK = {"STATUS" : "OK" }
-    JSON_NOT_OK = { "STATUS" : "NOT OK"}
 
     ############################################################################################################
     # Entry point.
@@ -45,31 +42,10 @@ class AppsController(BaseController):
         
         # Create the actual page.
         page = AppsPage()
-        
-        # Setup the page to render.
-        # page.form_values = {}
-        # page.form_errors = {}
-    
+
         # Get a list of existing stored apps.
         page.apps = App.find()
 
-        # Create an item list with the info to display.
-        # grid_items = []
-        # for app in apps:
-        #     new_item = {'name': app.name,
-        #                'service_id': app.service_id,
-        #                'description': app.description,
-        #                'version': app.app_version,
-        #                'min_android_version': app.min_android_version,
-        #                'apk_file': app.apk_file,
-        #                'actions': 'Edit',
-        #                'id': app._id}
-        #     grid_items.append(new_item)
-        #
-        # # Create and fomat the grid.
-        # appsGrid = Grid(grid_items, ['name', 'service_id', 'description', 'version', 'min_android_version', 'apk_file', 'actions'])
-        # appsGrid.column_formats["actions"] = generateActionButtons
-        
         # Prepare service list.
         page.stored_services = {}
         services = Service.find()
@@ -77,7 +53,6 @@ class AppsController(BaseController):
             page.stored_services[service.service_id] = service.service_id
         
         # Pass the grid and render the page.
-        # page.appsGrid = appsGrid
         return page.render()
 
     ############################################################################################################
@@ -92,8 +67,8 @@ class AppsController(BaseController):
         
         if not app:
             # If there was a problem getting the app to update, return a json-formated error.
-            print 'Error getting app data: app was not found'
-            return self.JSON_NOT_OK        
+            msg = 'Error getting app data: app was not found'
+            return ajaxutils.show_and_return_error_dict(msg)
 
         return app
 
@@ -113,8 +88,8 @@ class AppsController(BaseController):
                 app = App.by_id(ObjectId(request.params.get('appId')))                
                 if not app:
                     # If there was a problem getting the app to update, return a json-formated error.
-                    print 'Error getting app to modify: app was not found'
-                    return self.JSON_NOT_OK
+                    msg = 'Error getting app to modify: app was not found'
+                    return ajaxutils.show_and_return_error_dict(msg)
             
             # Set the values for all the apps' fields.
             app.name = request.params.get('name')
@@ -153,13 +128,13 @@ class AppsController(BaseController):
             
             print 'App data stored.'
         except Exception as e:
-            # If there was a problem creating the app, return a json-formated error.
-            print 'Error creating App: ' + str(e)
-            return self.JSON_NOT_OK
+            # If there was a problem creating the app, return a json-formatted error.
+            msg = 'Error creating App: ' + str(e)
+            return ajaxutils.show_and_return_error_dict(msg)
         
         # Everything went well.
         print 'Returning success'
-        return self.JSON_OK   
+        return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Removes a stored app.
@@ -185,26 +160,11 @@ class AppsController(BaseController):
             if app:
                 print 'App removed.'
             else:
-                print 'Error removing app: app was not found.'
-                return self.JSON_NOT_OK                
+                msg = 'Error removing app: app was not found.'
+                return ajaxutils.show_and_return_error_dict(msg)
         except Exception as e:
-            print 'Error removing App: ' + str(e)
-            return self.JSON_NOT_OK
+            msg = 'Error removing App: ' + str(e)
+            return ajaxutils.show_and_return_error_dict(msg)
         
         # Everything went well.
-        return self.JSON_OK        
-
-############################################################################################################
-# Helper function to generate buttons to edit or delete apps.
-############################################################################################################        
-def generateActionButtons(col_num, i, item):
-    # Link and button to edit the app.
-    getAppDataURL = h.url_for(controller='apps', action='get_data')
-    editButton = HTML.button("Edit App", onclick=literal("showEditAppModal('" + getAppDataURL + "', '" + str(item["id"]) + "')"), class_="btn btn-primary")
-
-    # Ajax URL to remove the app.
-    removeAppURL = h.url_for(controller='apps', action='remove')
-    removeButton = HTML.button("Remove App", onclick="removeAppConfirmation('" + removeAppURL + "', '" + str(item["id"])  + "', '" + str(item["name"]) + "');", class_="btn btn-primary btn")
-    
-    # Render the buttons.
-    return HTML.td(editButton + literal("&nbsp;") + removeButton  )       
+        return ajaxutils.JSON_OK

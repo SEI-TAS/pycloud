@@ -11,16 +11,15 @@ from pylons import response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 from pylons import g
 
-from webhelpers.html.grid import Grid
 from webhelpers.html import HTML
-from webhelpers.html import literal
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import InstancesPage
 from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.model import Service, ServiceVM
 from pycloud.pycloud.pylons.lib.util import asjson
-from pycloud.pycloud.pylons.lib.util import dumps
+
+from pycloud.pycloud.utils import ajaxutils
 
 log = logging.getLogger(__name__)
 
@@ -29,9 +28,6 @@ log = logging.getLogger(__name__)
 ################################################################################################################
 class InstancesController(BaseController):
 
-    JSON_OK = {"STATUS" : "OK" }
-    JSON_NOT_OK = { "STATUS" : "NOT OK"}
-    
     ############################################################################################################
     # Shows the list of running Service VM instances.
     ############################################################################################################
@@ -48,7 +44,7 @@ class InstancesController(BaseController):
 
         # Pass the grid and render the page.
         return instancesPage.render()
-        
+
     ############################################################################################################
     # Opens a local VNC window to a running Service VM Instance.
     ############################################################################################################
@@ -60,22 +56,18 @@ class InstancesController(BaseController):
             
             if not svm:
                 # If we didn't get a valid id, just return an error message.
-                print "Service VM id " + id + " was not found on the list of running instances."
-                return self.JSON_NOT_OK
+                msg = "Service VM id " + id + " was not found on the list of running instances."
+                return ajaxutils.show_and_return_error_dict(msg)
             
             # Try to start the VNC window (this will only work if done on the Cloudlet).
             svm.open_vnc(wait=False)
         except Exception as e:        
             # If there was a problem connecting through VNC, return that there was an error.
             msg = 'Error opening VNC window: ' + str(e)
-            print msg
-            error = self.JSON_NOT_OK
-            error['error'] = msg
-            return error
+            return ajaxutils.show_and_return_error_dict(msg)
 
-        
         # Everything went well.
-        return self.JSON_OK
+        return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Starts a new SVM instance of the Service.
@@ -95,18 +87,14 @@ class InstancesController(BaseController):
                 # Start the instance, if it works, save it and return ok
                 svm.start()
                 svm.save()
-                return {"STATUS": "OK", "_id": svm._id, "vnc_port": svm.vnc_port}
+                return svm
             except Exception as e:
                 # If there was a problem starting the instance, return that there was an error.
                 msg = 'Error starting Service VM Instance: ' + str(e)
-                print msg
-                error = self.JSON_NOT_OK
-                error['error'] = msg
-                return error
+                return ajaxutils.show_and_return_error_dict(msg)
         else:
-            error = self.JSON_NOT_OK
-            error['message'] = 'Service {} not found.'.format(id)
-            return error
+            msg = 'Service {} not found.'.format(id)
+            return ajaxutils.show_and_return_error_dict(msg)
 
     ############################################################################################################
     # Stops an existing instance.
@@ -120,13 +108,10 @@ class InstancesController(BaseController):
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
             msg = 'Error stopping Service VM Instance: ' + str(e)
-            print msg
-            error = self.JSON_NOT_OK
-            error['error'] = msg
-            return error
-        
+            return ajaxutils.show_and_return_error_dict(msg)
+
         # Everything went well.
-        return self.JSON_OK
+        return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Command to migrate a machine.
@@ -198,20 +183,17 @@ class InstancesController(BaseController):
             svm.destroy()
         except:
             msg = 'Error migrating: ' + str(e)
-            print msg
             import traceback
             traceback.print_exc()
 
-            error = self.JSON_NOT_OK
-            error['error'] = msg
-            return error
+            return ajaxutils.show_and_return_error_dict(msg)
 
-
-        return self.JSON_OK
+        return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Receives information about a migrated VM.
     ############################################################################################################
+    @asjson
     def POST_receiveMigratedSVMMetadata(self):
         # Parse the body of the request as JSON into a python object.
         json_svm = json.loads(request.body)
@@ -234,11 +216,12 @@ class InstancesController(BaseController):
         migrated_svm.save()
         print 'SVM metadata stored.'
 
-        return 'Ok!'
+        return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Receives the disk image file of a migrated SVM.
     ############################################################################################################
+    @asjson
     def POST_receiveMigratedSVMDiskFile(self):
         # Get the id and load the metadata for this SVM.
         svm_id = request.params.get('id')
@@ -267,11 +250,12 @@ class InstancesController(BaseController):
         # Save to internal DB.
         migrated_svm.save()
 
-        return 'Ok!'
+        return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Receives information about a migrated VM.
     ############################################################################################################
+    @asjson
     def POST_resumeMigratedSVM(self):
         # Find the SVM.
         svm_id = request.params.get('id')
@@ -288,7 +272,7 @@ class InstancesController(BaseController):
         # Save to internal DB.
         migrated_svm.save()
 
-        return 'Ok!'
+        return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Returns a list of running svms.
@@ -302,15 +286,4 @@ class InstancesController(BaseController):
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
             msg = 'Error getting list of instance changes: ' + str(e)
-            print msg
-            error = self.JSON_NOT_OK
-            error['error'] = msg
-            return error
-
-############################################################################################################
-# Helper function to generate a link for the service id to the service details.
-############################################################################################################        
-def generate_service_id_link(col_num, i, item):
-    editServiceURL = h.url_for(controller='modify', action='index', id=item["service_id"])
-    
-    return HTML.td(HTML.a(item["service_id"], href=editServiceURL))
+            return ajaxutils.show_and_return_error_dict(msg)
