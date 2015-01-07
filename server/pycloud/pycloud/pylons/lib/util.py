@@ -24,6 +24,17 @@ import datetime
 import re
 from pymongo.cursor import Cursor
 
+import urllib
+
+#############################################################################################################
+# Decodes a URL encoded body with json data, parsing it and putting it into a dict.
+#############################################################################################################
+def encoded_json_to_dict(url_encoded_data):
+    parsed_json_string = urllib.unquote(url_encoded_data)
+    if parsed_json_string.endswith("="):
+        parsed_json_string = parsed_json_string[:-1]
+    fields = json.loads(parsed_json_string)
+    return fields
 
 def asjson2(func):
     def _func(*args, **kwargs):
