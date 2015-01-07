@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 class ModifyController(BaseController):
 
     JSON_OK = {"STATUS" : "OK" }
-    JSON_NOT_OK = { "STATUS" : "NOT OK"}
+    JSON_NOT_OK = { "STATUS" : "NOT OK", "error": ""}
 
     ################################################################################################################ 
     # Called when loading the page to add or edit a service.
@@ -205,12 +205,16 @@ class ModifyController(BaseController):
             return svm
         except Exception as e:
             # If there was a problem creating the SVM, return that there was an error.
-            print 'Error creating Service VM: ' + str(e)
+            msg = 'Error creating Service VM: ' + str(e)
+            print msg
             import traceback, sys
             traceback.print_exc(file=sys.stdout)
             if svm.vm_image:
                 svm.vm_image.cleanup(force=True)
-            return self.JSON_NOT_OK
+
+            error = self.JSON_NOT_OK
+            error['error'] = msg
+            return error
 
         # Everything went well.
         return self.JSON_OK
@@ -252,8 +256,11 @@ class ModifyController(BaseController):
             return svm.vm_image
         except Exception as e:
             # If there was a problem opening the SVM, return that there was an error.
-            print 'Error saving Service VM: ' + str(e)
-            return self.JSON_NOT_OK
+            msg = 'Error saving Service VM: ' + str(e)
+            print msg
+            error = self.JSON_NOT_OK
+            error['error'] = msg
+            return error
 
     ############################################################################################################
     # Loads information about the VM image in the given folder.
@@ -269,7 +276,10 @@ class ModifyController(BaseController):
         try:
             vm_image.load_from_folder(image_folder)
         except Exception as e:
-            print 'Error selecting existing VM image: ' + str(e)
-            return self.JSON_NOT_OK
+            msg = 'Error selecting existing VM image: ' + str(e)
+            print msg
+            error = self.JSON_NOT_OK
+            error['error'] = msg
+            return error
 
         return vm_image

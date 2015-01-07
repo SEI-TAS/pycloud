@@ -80,7 +80,7 @@ function showAndLogErrorMessage(message, status, errorThrown, parent)
         
     // Log and show alert.        
     window.console && console.log(message, status, errorThrown);
-    var alertBox = Alert('danger', message, parent);
+    var alertBox = Alert('danger', message + ": " + errorThrown, parent);
     alertBox.show();
 }
 
@@ -173,7 +173,7 @@ function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, 
                 // Dismiss the waiting dialog and notify the error.
                 if(dialog) {
                     dialog.hide();
-                    showAndLogErrorMessage('There was a problem ' + description + '.', '', '', modal);
+                    showAndLogErrorMessage('There was a problem ' + description + ': ' + jsonObject.error, '', '', modal);
                 }
                 else {
                     console.log('There was an error getting the result.');
