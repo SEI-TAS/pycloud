@@ -79,7 +79,6 @@ function chooseImage()
     // Validate that we have all the necessary info.
     var modalDiv = $('#modal-choose-image');
     if(!validateMandatoryField(image_info.serviceId, "Service Id", modalDiv)) return false;
-    if(!validateMandatoryField(image_info.port, "Service Port", modalDiv)) return false;
     if(!validateMandatoryField(image_info.folder, "VM Image", modalDiv)) return false;
 
     // Handler to load data when received.

@@ -56,15 +56,15 @@ ${parent.header()}
                     ${hidden('vmStateImageFileValue')}
                     ${hidden('svmInstanceId')}
 
-                    {{ # Button available only when creating a new service. )}}
+                    <% Button available only when creating a new service. %>
             	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm" ${'style="display:none;"' if not page.newService else ''}>Create VM Image</button>
 
-                    {{ # Button available only when editing an existing service, or a service in proces of creation which already created its VM image. )}}
+                    <% Button available only when editing an existing service, or a service in proces of creation which already created its VM image. %>
               	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="startInstance('${page.startInstanceURL}')" ${'style="display:none;"' if page.newService else ''}>Edit VM Image</button>
 
             	    <button type="button" class="btn btn-primary" id="choose-image-button" data-toggle="modal" data-target="#modal-choose-image">Select Existing VM Image</button>
 
-                    {{ # Buttons available only when the VM image is loaded into an SVM (creating or editing the image)}}
+                    <% Buttons available only when the VM image is loaded into an SVM (creating or editing the image) %>
               	    <button type="button" class="btn btn-primary" id="save-svm-button" onclick="persistInstance('${page.saveInstanceURL}')" style="display:none;">Save from SVM</button>
               	    <button type="button" class="btn btn-primary" id="discard-svm-button" onclick="discardInstance('${page.stopInstanceURL}')" style="display:none;">Discard SVM</button>
               	    <button type="button" class="btn btn-primary" id="vnc-button" onclick="openEditVNC('${page.openVNCUrl}')" style="display:none;">Open VNC (on server)</button>
@@ -128,7 +128,7 @@ ${parent.header()}
 		    </div>
 		    <div class="modal-footer">
 		        <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
-		        <a href="#" class="btn btn-primary new-svm-action" onclick="chooseImage()">Create</a>
+		        <a href="#" class="btn btn-primary new-svm-action" onclick="chooseImage()">Select</a>
 		    </div>
 	    </div>
     </div>

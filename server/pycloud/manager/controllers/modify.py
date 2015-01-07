@@ -266,12 +266,14 @@ class ModifyController(BaseController):
         # First remove URL quotes added to string, and then remove trailing "=" (no idea why it is there).
         print request.body
         parsed_json_string = urllib.unquote(request.body)
+        print parsed_json_string
         if parsed_json_string.endswith("="):
             parsed_json_string = parsed_json_string[:-1]
         fields = json.loads(parsed_json_string)
+        print fields
 
         # Load VM Image information from the folder.
-        image_folder = fields['imageFolder']
+        image_folder = fields['folder']
         vm_image = VMImage()
         try:
             vm_image.load_from_folder(image_folder)
