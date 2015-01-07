@@ -36,7 +36,8 @@ def make_map():
     connect('/service/openSVM/{id}', controller='modify', action='openSVM')
     connect('/service/edit/{id}', controller='modify', action='index')
     connect('/service/saveSVM/{id}', controller='modify', action='saveInstanceToRoot')
-    
+    connect('/service/selectImage', controller='modify', action='selectImage')
+
     connect('/apps', controller='apps', action='index')
     connect('/apps/list', controller='apps', action='list')
     connect('/apps/get', controller='apps', action='get_data')
