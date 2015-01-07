@@ -63,7 +63,7 @@ class ModifyController(BaseController):
         page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot', id=None, action_name=None)
         page.stopInstanceURL = h.url_for(controller='instances', action='stopInstance', id=None, action_name=None)
         page.startInstanceURL = h.url_for(controller='instances', action='startInstance', id=None, action_name=None)
-        page.chooseImageURL = h.url_for(controller='instances', action='selectImage', id=None, action_name=None)
+        page.chooseImageURL = h.url_for(controller='modify', action='selectImage', id=None, action_name=None)
         if(creatingNew):
             # We are creating a new service.
             page.newService = True
