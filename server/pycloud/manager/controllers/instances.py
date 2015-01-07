@@ -111,6 +111,7 @@ class InstancesController(BaseController):
     ############################################################################################################
     # Stops an existing instance.
     ############################################################################################################
+    @asjson
     def GET_stopInstance(self, id):
         try:    
             # Stop an existing instance with the given ID.
@@ -118,15 +119,19 @@ class InstancesController(BaseController):
             svm.destroy()
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
-            print 'Error stopping Service VM Instance: ' + str(e)
-            return dumps(self.JSON_NOT_OK)               
+            msg = 'Error stopping Service VM Instance: ' + str(e)
+            print msg
+            error = self.JSON_NOT_OK
+            error['error'] = msg
+            return error
         
         # Everything went well.
-        return dumps(self.JSON_OK)
+        return self.JSON_OK
 
     ############################################################################################################
     # Command to migrate a machine.
     ############################################################################################################
+    @asjson
     def GET_migrateInstance(self, id):
         try:
             # Parse the body of the request as JSON into a python object.
@@ -192,11 +197,17 @@ class InstancesController(BaseController):
             svm = ServiceVM.find_and_remove(id)
             svm.destroy()
         except:
+            msg = 'Error migrating: ' + str(e)
+            print msg
             import traceback
             traceback.print_exc()
-            return dumps(self.JSON_NOT_OK)
 
-        return dumps(self.JSON_OK)
+            error = self.JSON_NOT_OK
+            error['error'] = msg
+            return error
+
+
+        return self.JSON_OK
 
     ############################################################################################################
     # Receives information about a migrated VM.
@@ -290,8 +301,11 @@ class InstancesController(BaseController):
             return svm_list
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
-            print 'Error getting list of instance changes: ' + str(e)
-            return self.JSON_NOT_OK
+            msg = 'Error getting list of instance changes: ' + str(e)
+            print msg
+            error = self.JSON_NOT_OK
+            error['error'] = msg
+            return error
 
 ############################################################################################################
 # Helper function to generate a link for the service id to the service details.
