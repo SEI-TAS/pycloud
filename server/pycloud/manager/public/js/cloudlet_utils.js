@@ -28,7 +28,7 @@ function WaitDialog (headerText) {
 /////////////////////////////////////////////////////////////////////////////////////
 function Alert(level, message, alertContainer) {
     // Template for the alert message.
-    var alertDiv = $('<div id="alert-div" style="position: fixed; top: 55px; display: block; width=50%; margin-left: auto; margin-right: auto;"><div class="alert alert-dismissable fade in alert-'+level+'" id="alert-element"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><div id="alert-text">'+message+'</div></div></div>');
+    var alertDiv = $('<div id="alert-div" style="position: fixed; top: 55px; display: block; left: 30%; width: 35%;"><div class="alert alert-dismissable fade in alert-'+level+'" id="alert-element"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><div id="alert-text">'+message+'</div></div></div>');
 
     // Functions.
     return {
@@ -78,9 +78,12 @@ function showAndLogErrorMessage(message, status, errorThrown, parent)
     if(typeof(errorThrown)==='undefined') errorThrown = '';
     if(typeof(parent)==='undefined') parent = null;
         
-    // Log and show alert.        
+    // Log and show alert.
+    var fullMsg = message;
+    if(errorThrown != '')
+        fullMsg = message + ": " + errorThrown;
     window.console && console.log(message, status, errorThrown);
-    var alertBox = Alert('danger', message + ": " + errorThrown, parent);
+    var alertBox = Alert('danger', fullMsg, parent);
     alertBox.show();
 }
 

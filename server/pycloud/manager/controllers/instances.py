@@ -52,6 +52,7 @@ class InstancesController(BaseController):
     ############################################################################################################
     # Opens a local VNC window to a running Service VM Instance.
     ############################################################################################################
+    @asjson
     def GET_openVNC(self, id):
         try:            
             # Get the instance associated with this id.
@@ -60,17 +61,21 @@ class InstancesController(BaseController):
             if not svm:
                 # If we didn't get a valid id, just return an error message.
                 print "Service VM id " + id + " was not found on the list of running instances."
-                return dumps(self.JSON_NOT_OK)       
+                return self.JSON_NOT_OK
             
             # Try to start the VNC window (this will only work if done on the Cloudlet).
             svm.open_vnc(wait=False)
         except Exception as e:        
             # If there was a problem connecting through VNC, return that there was an error.
-            print 'Error opening VNC window: ' + str(e);
-            return dumps(self.JSON_NOT_OK)  
+            msg = 'Error opening VNC window: ' + str(e)
+            print msg
+            error = self.JSON_NOT_OK
+            error['error'] = msg
+            return error
+
         
         # Everything went well.
-        return dumps(self.JSON_OK)
+        return self.JSON_OK
 
     ############################################################################################################
     # Starts a new SVM instance of the Service.
@@ -93,8 +98,11 @@ class InstancesController(BaseController):
                 return {"STATUS": "OK", "_id": svm._id, "vnc_port": svm.vnc_port}
             except Exception as e:
                 # If there was a problem starting the instance, return that there was an error.
-                print 'Error starting Service VM Instance: ' + str(e)
-                return self.JSON_NOT_OK
+                msg = 'Error starting Service VM Instance: ' + str(e)
+                print msg
+                error = self.JSON_NOT_OK
+                error['error'] = msg
+                return error
         else:
             error = self.JSON_NOT_OK
             error['message'] = 'Service {} not found.'.format(id)
