@@ -26,18 +26,23 @@ function validateSubmission()
 /////////////////////////////////////////////////////////////////////////////////////
 function showImageInfoAndButtons(vm_image)
 {
-    // Update Stored SVM fields with new SVM info.
-    $('#vmStoredFolder').val(getFileDirectory(vm_image.disk_image));
-    $('#vmDiskImageFile').val(vm_image.disk_image);
-    $('#vmDiskImageFileValue').val(vm_image.disk_image);
-    $('#vmStateImageFile').val(vm_image.state_image);
-    $('#vmStateImageFileValue').val(vm_image.state_image);
+    if(vm_image != null) {
+        // Update Stored SVM fields with new SVM info.
+        $('#vmStoredFolder').val(getFileDirectory(vm_image.disk_image));
+        $('#vmDiskImageFile').val(vm_image.disk_image);
+        $('#vmDiskImageFileValue').val(vm_image.disk_image);
+        $('#vmStateImageFile').val(vm_image.state_image);
+        $('#vmStateImageFileValue').val(vm_image.state_image);
+    }
 
     // Update the buttons to reflect that we can now modify the SVM.
-    $('#modify-svm-button').show();
+    $('#new-svm-button').show();
     $('#choose-image-button').show();
+    if($('#internalServiceId').val() != '') {
+        // Modify button only availble if we are editing a service.
+        $('#modify-svm-button').show();
+    }
 
-    $('#new-svm-button').hide();
     $('#save-svm-button').hide();
     $('#discard-svm-button').hide();
     $('#vnc-button').hide();
@@ -148,7 +153,6 @@ function startInstance(url)
     // Do the post to get data and load the modal.
     ajaxGet(url, "Starting Instance to Modify SVM", function(svm) {
         // Update the buttons to reflect that we can now save the SVM.
-        console.log(svm);
         showServiceVMButtons(svm);
 
         showAndLogSuccessMessage('Instance was started successfully with id ' + svm._id + ', VNC open on port ' + svm.vnc_port);
@@ -192,17 +196,7 @@ function discardInstance(url)
     // Do the post to get data and load the modal.
     ajaxGet(url, "Discarding SVM", function(response) {
         showAndLogSuccessMessage('Changes were discarded.');
-        $('#save-svm-button').hide();
-        $('#discard-svm-button').hide();
-        $('#vnc-button').hide();
-        $('#choose-image-button').show();
-
-        if($('#internalServiceId').val() != '') {
-            $('#modify-svm-button').show();
-        }
-        else {
-            $('#new-svm-button').show();
-        }
+        showImageInfoAndButtons(null);
     });
 
     return false;

@@ -56,12 +56,13 @@ ${parent.header()}
                     ${hidden('vmStateImageFileValue')}
                     ${hidden('svmInstanceId')}
 
-                    <!-- Button available only when creating a new service. -->
-            	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm" ${'style="display:none;"' if not page.newService else ''}>Create VM Image</button>
+                    <!-- Button available while not on SVM edition. -->
+            	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm">Create VM Image</button>
 
-                    <!-- Button available only when editing an existing service, or a service in proces of creation which already created its VM image. -->
+                    <!-- Button available only when editing an existing service. -->
               	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="startInstance('${page.startInstanceURL}')" ${'style="display:none;"' if page.newService else ''}>Edit VM Image</button>
 
+                    <!-- Button available while not on SVM edition. -->
             	    <button type="button" class="btn btn-primary" id="choose-image-button" data-toggle="modal" data-target="#modal-choose-image">Select Existing VM Image</button>
 
                     <!-- Buttons available only when the VM image is loaded into an SVM (creating or editing the image) -->
