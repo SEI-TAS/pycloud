@@ -151,11 +151,11 @@ function startInstance(url)
     url = url + "/" + $('#serviceID').val() + "?clone_full_image=True";
     
     // Do the post to get data and load the modal.
-    ajaxGet(url, "Starting Instance to Modify SVM", function(svm) {
+    ajaxGet(url, "Starting SVM to Modify VM Image", function(svm) {
         // Update the buttons to reflect that we can now save the SVM.
         showServiceVMButtons(svm);
 
-        showAndLogSuccessMessage('Instance was started successfully with id ' + svm._id + ', VNC open on port ' + svm.vnc_port);
+        showAndLogSuccessMessage('SVM was started successfully with id ' + svm._id + ', VNC open on port ' + svm.vnc_port);
     });
 
     return false;
