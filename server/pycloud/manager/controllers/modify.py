@@ -215,6 +215,10 @@ class ModifyController(BaseController):
     @asjson
     def GET_saveInstanceToRoot(self, id):
         try:
+            if id is None:
+                msg = "No VM id was provided, VM can't be saved."
+                return ajaxutils.show_and_return_error_dict()
+
             # Save the VM state.
             print "Saving machine state for SVM with id " + str(id)
             svm = ServiceVM.find_and_remove(id)
