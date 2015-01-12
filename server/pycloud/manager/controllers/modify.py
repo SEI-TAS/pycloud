@@ -217,7 +217,7 @@ class ModifyController(BaseController):
         try:
             if id is None:
                 msg = "No VM id was provided, VM can't be saved."
-                return ajaxutils.show_and_return_error_dict()
+                return ajaxutils.show_and_return_error_dict(msg)
 
             # Save the VM state.
             print "Saving machine state for SVM with id " + str(id)
