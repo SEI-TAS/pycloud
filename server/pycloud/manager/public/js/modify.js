@@ -39,13 +39,16 @@ function showImageInfoAndButtons(vm_image)
     $('#new-svm-button').show();
     $('#choose-image-button').show();
     if($('#internalServiceId').val() != '') {
-        // Modify button only availble if we are editing a service.
+        // Modify button only available if we are editing a service.
         $('#modify-svm-button').show();
     }
 
     $('#save-svm-button').hide();
     $('#discard-svm-button').hide();
     $('#vnc-button').hide();
+
+    // Re-enable the Save button for the service, since we are done modifiying the image.
+    $('#submitButton').disable(false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -62,6 +65,9 @@ function showServiceVMButtons(svm)
     $('#save-svm-button').show();
     $('#discard-svm-button').show();
     $('#vnc-button').show();
+
+    // Disable the Save button, we don't want to save the service until we've dealt with the vm image.
+    $('#submitButton').disable(true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////

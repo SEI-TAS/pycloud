@@ -248,3 +248,26 @@ function validateMandatoryField(fieldValue, fieldName, modal)
     
     return true;
 }
+
+    //////////////////////////////////////////////////////////////////////////////
+    // Code to be executed every time a document is loaded.
+    //////////////////////////////////////////////////////////////////////////////
+    $(document).ready(function () {
+        // Extended disable function.
+        $.fn.extend({
+            disable: function(state) {
+                return this.each(function() {
+                    var $this = $(this);
+                    if($this.is('input, button'))
+                      this.disabled = state;
+                    else
+                      $this.toggleClass('disabled', state);
+                });
+            }
+        });
+
+        // Ensure that disabled link buttons are not clickable.
+        $('body').on('click', 'a.disabled', function(event) {
+            event.preventDefault();
+        });
+    });
