@@ -181,7 +181,7 @@ class InstancesController(BaseController):
             # Remove the local VM.
             svm = ServiceVM.find_and_remove(id)
             svm.destroy()
-        except:
+        except Exception as e:
             msg = 'Error migrating: ' + str(e)
             import traceback
             traceback.print_exc()
