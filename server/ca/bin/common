@@ -1,0 +1,34 @@
+#!/bin/bash
+
+COUNTRY=US
+STATE=PA
+LOCALITY=Pittsburgh
+ORG="ssdlab.sei.cmu.edu"
+DOMAIN="ssdlab.sei.cmu.edu"
+
+do_exit_error() {
+    exit 1
+}
+
+error() {
+    local msg="$1"
+    [ -z "$msg" ] && msg="Error.  Aborting."
+    echo ""
+    echo "${txtred}ERROR: $msg${txtrst}" 1>&2
+    
+    trap do_exit_error EXIT
+    print_help
+    type -t print_help && print_help 1>&2
+    exit 1
+}
+
+readval() {
+  default=$1
+  read value
+  ret=$value
+  if [ -z "$ret" ]
+  then
+    ret=$default
+  fi
+  echo -n $ret
+}

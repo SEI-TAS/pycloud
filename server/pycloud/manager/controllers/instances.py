@@ -164,9 +164,8 @@ class InstancesController(BaseController):
             print 'Disk image file was transferred: ' + str(result)
 
             # Do the memory state migration.
-            remote_hostname = remote_host.split('.')[0]
-            print 'Migrating through libvirt to ' + remote_hostname
-            svm.migrate(remote_hostname, p2p=False)
+            print 'Migrating through libvirt to ' + remote_host
+            svm.migrate(remote_host, p2p=False)
             # TODO: if migration fails, ask remote to remove svm.
 
             # Notify remote cloudlet that migration finished.
