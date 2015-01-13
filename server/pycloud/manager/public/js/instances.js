@@ -26,7 +26,7 @@ function migrateSVM()
     migrateUrl = migrateUrl + '?target=' + targetCloudlet;
 
     // Do the post to get data and load the modal.
-    ajaxGet(migrateUrl, "Migrating Service VM Instance", successHandler);
+    ajaxGet(migrateUrl, "Migrating Service VM Instance", successHandler, $('#modal-migrate'));
 }
  
 /////////////////////////////////////////////////////////////////////////////////////

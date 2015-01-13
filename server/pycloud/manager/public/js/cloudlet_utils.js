@@ -142,7 +142,7 @@ function ajaxFilePost(postURL, dataDict, waitDialogText, onSuccess, fileId, moda
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to send json request through AJAX and reload after the response, with a file.
 /////////////////////////////////////////////////////////////////////////////////////
-function ajaxGet(getURL, waitDialogText, onSuccess, fileId, modal)
+function ajaxGet(getURL, waitDialogText, onSuccess, modal)
 {
     var fileId = null;    
     ajaxCall('GET', getURL, {}, waitDialogText, onSuccess, fileId, modal);
