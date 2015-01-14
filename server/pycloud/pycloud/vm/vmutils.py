@@ -13,7 +13,7 @@ _hypervisor = None
 ################################################################################################################
 def get_hypervisor():
     global _hypervisor
-    if _hypervisor is not None:
+    if _hypervisor is None:
         _hypervisor = libvirt.open(HYPERVISOR_SYSTEM_URI)
     return _hypervisor
 
