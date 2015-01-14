@@ -406,25 +406,23 @@ class ServiceVM(Model):
 
         print "Stopping Service VM with instance id %s" % self._id
 
-        # TODO: self.closeSSHConnection()
-
-        vm = ServiceVM._get_virtual_machine(self._id)
-        if not vm:  # No VM for this ID found
-            return
-        
-        # Save the state, if our image is not cloned.
-        if not self.vm_image.cloned or foce_save_state:
-            self._save_state()
-            
-        # Destroy it.
+        vm = None
         try:
+            # Get the VM
             vm = ServiceVM._get_virtual_machine(self._id)
-            if vm:            
-                vm.destroy()
-        except:
-            print 'VM not found while destroying it.'
-        finally:
-            self.running = False
+
+            # Save the state, if our image is not cloned.
+            if not self.vm_image.cloned or foce_save_state:
+                self._save_state()
+        except Exception, e:
+            print "Warning getting VM: " + str(e)
+
+        # Destroy the VM if it exists, anr mark it as not running.
+        if vm:
+            vm.destroy()
+        else:
+            print 'VM with id %s not found while stopping it.' % self._id
+        self.running = False
 
     ################################################################################################################
     # Pauses a VM.
@@ -511,5 +509,7 @@ class ServiceVM(Model):
                 self.stop()
             except Exception, e:
                 print "Warning: error while cleaning up VM: " + str(e)
+
+        # Remove VM files, and remove it from the database of running VMs.
         self.vm_image.cleanup()
         ServiceVM.find_and_remove(self._id)
