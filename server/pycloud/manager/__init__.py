@@ -11,5 +11,6 @@ def make_app(*args, **kwargs):
     root_path = os.path.dirname(os.path.abspath(__file__))
 
     # Get the generic function to make the app, passing the particular arguments for this app.
-    from pycloud.pycloud.pylons.config.middleware import make_app as generic_make_app
+    print "Setting up WSGI environment for Manager app"
+    from pycloud.pycloud.pylons.config.middleware import generic_make_app
     return generic_make_app(routing.make_map, controllers_module, root_path, *args, **kwargs)
