@@ -60,8 +60,7 @@ class Cloudlet(object):
         
         # Load the templates to be used when creating VMs.
         self.newVmFolder = config['pycloud.servicevm.new_folder']        
-        self.newVmWinXml = config['pycloud.servicevm.win_xml_template']
-        self.newVmLinXml = config['pycloud.servicevm.lin_xml_template']
+        self.newVmXml = config['pycloud.servicevm.xml_template']
 
         # New config params
         self.service_cache = config['pycloud.servicevm.cache']

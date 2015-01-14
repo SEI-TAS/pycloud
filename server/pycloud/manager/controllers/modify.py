@@ -182,15 +182,16 @@ class ModifyController(BaseController):
             print 'calling VMImage#create with "%s" and "%s"' % (fields['source'], new_disk_image)
             new_vm_image.create(fields['source'], new_disk_image)
                         
-            # Get the XML descriptor from the config.
+            # Set the OS type.
             os_type = fields['type']
             if os_type == 'Windows':
-                template_xml_file = os.path.abspath(g.cloudlet.newVmWinXml)
+                svm.os = "win"
             else:
-                template_xml_file = os.path.abspath(g.cloudlet.newVmLinXml)
+                svm.os = "lin"
 
             # Create the VM (this will also start it).
             print "Creating and starting VM for user access..."
+            template_xml_file = os.path.abspath(g.cloudlet.newVmXml)
             svm.vm_image = new_vm_image
             svm.service_port = fields['port']
             svm.create(template_xml_file)

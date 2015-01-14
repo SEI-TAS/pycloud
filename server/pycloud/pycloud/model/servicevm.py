@@ -47,10 +47,11 @@ class ServiceVM(Model):
     def __init__(self, *args, **kwargs):
         self._id = None
         self.vm_image = None
+        self.os = "lin"     # By default, used when creating a new SVM only.
         self.prefix = 'VM'
         self.port_mappings = {}
         self.service_port = None
-        self.port = None  # Used to show the external port
+        self.port = None    # Used to show the external port
         self.ssh_port = None
         self.vnc_port = None
         self.service_id = None
@@ -160,9 +161,6 @@ class ServiceVM(Model):
     ################################################################################################################    
     def _update_descriptor(self, saved_xml_descriptor):
         # Get the descriptor and inflate it to something we can work with.
-        """
-        :rtype : (string, string)
-        """
         xml_descriptor = VirtualMachineDescriptor(saved_xml_descriptor)
 
         # Change the ID and Name (note: not currently that useful since they are changed in the saved state file).
@@ -174,6 +172,10 @@ class ServiceVM(Model):
 
         # Enable remote VNC access.
         xml_descriptor.enableRemoteVNC()
+
+        # Sets the Realtek network driver, needed for Windows-based VMs.
+        if self.os != "lin":
+            xml_descriptor.setRealtekNetworkDriver()
 
         # Configure bridged mode if enabled
         if self.network_mode == "bridged":

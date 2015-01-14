@@ -43,6 +43,19 @@ class VirtualMachineDescriptor(object):
         return vncPort
 
     ################################################################################################################
+    # Sets the realtek network driver instead of the default virtio one. Needed for Windows-based VMs that do
+    # not have the virtio driver installed (which does come installed in Linux distributions).
+    ################################################################################################################
+    def setRealtekNetworkDriver(self):
+        # Get the devices node
+        devices = self.xmlRoot.find('devices')
+
+        # We assume the VM has exactly 1 network interface.
+        network_card = devices.find("interface")
+        model = network_card.find("model")
+        model.set("type", "rtl8139")
+
+    ################################################################################################################
     # Will enable bridged mode in the XML.
     ################################################################################################################
     def enableBridgedMode(self, adapter):

@@ -29,8 +29,6 @@ def load_environment(make_map_function, root_path, global_conf={}, app_conf={}):
     # Clean up the system. This must be called after the object is already created
     get_cloudlet_instance().cleanup_system()
 
-
-
     config["pylons.g"].mako_lookup = TemplateLookup(
         directories=paths["templates"],
         input_encoding="utf-8",
