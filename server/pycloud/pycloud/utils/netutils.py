@@ -4,6 +4,9 @@
 import random
 import socket
 
+import netifaces
+import netaddr
+
 from subprocess import Popen, PIPE
 from xml.etree import ElementTree
 
@@ -26,10 +29,14 @@ def generate_random_mac():
 ################################################################################################################
 # Will locate the IP address for a given mac address
 ################################################################################################################
-def find_ip_for_mac(mac, nmap, ip_range, retry=5):
+def find_ip_for_mac(mac, nmap, adapter, retry=5):
     if retry == 0:
         print 'No more retries, IP not found.'
         return None
+
+    # Get the ip range of the given adapter.
+    addr_info = netifaces.ifaddresses(adapter)[netifaces.AF_INET][0]
+    ip_range = netaddr.IPNetwork('%s/%s' % (addr_info['addr'], addr_info['netmask']))
 
     p = Popen(['sudo', nmap, '-sP', ip_range, '-oX', '-'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     out, err = p.communicate()
@@ -43,7 +50,7 @@ def find_ip_for_mac(mac, nmap, ip_range, retry=5):
         print 'Found IP: ', ip
     except:
         print 'Failed to find IP, retrying...'
-        ip = find_ip_for_mac(mac, nmap, ip_range, retry=(retry - 1))
+        ip = find_ip_for_mac(mac, nmap, adapter, retry=(retry - 1))
 
     return ip
 

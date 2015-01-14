@@ -73,7 +73,6 @@ class Cloudlet(object):
 
         self.bridge_adapter = config['pycloud.migration.adapter']
         self.nmap = config['pycloud.migration.nmap']
-        self.nmap_ip = config['pycloud.migration.ip_range']
 
         print 'cloudlet created.'
 

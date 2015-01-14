@@ -56,7 +56,6 @@ class ServiceVM(Model):
         self.running = False
         super(ServiceVM, self).__init__(*args, **kwargs)
 
-
     ################################################################################################################
     # Sets up the internal network parameters, based onthe config.
     ################################################################################################################
@@ -234,7 +233,7 @@ class ServiceVM(Model):
         if self.mac_address is not None:
             c = get_cloudlet_instance()
             print "Retrieving IP for MAC: %s" % self.mac_address
-            ip = find_ip_for_mac(self.mac_address, c.nmap, c.nmap_ip)
+            ip = find_ip_for_mac(self.mac_address, c.nmap, c.bridge_adapter)
             if not ip:
                 print "Failed to locate the IP of the VM."
                 raise Exception('Failed to locate the IP of the VM.')

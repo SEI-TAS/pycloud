@@ -8,3 +8,5 @@ paramiko
 psutil==2.0.0
 pylzma==0.4.4
 requests>=2.5.0
+netifaces >= 0.10.0
+netaddr >= 0.7.13
