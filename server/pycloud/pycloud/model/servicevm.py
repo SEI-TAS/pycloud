@@ -401,11 +401,12 @@ class ServiceVM(Model):
             # Save the state, if our image is not cloned.
             if not self.vm_image.cloned or foce_save_state:
                 self._save_state()
+                self.running = False
         except Exception, e:
             print "Warning getting VM: " + str(e)
 
         # Destroy the VM if it exists, anr mark it as not running.
-        if vm:
+        if vm and self.running:
             print "Stopping Service VM with instance id %s" % self._id
             vm.destroy()
         else:
