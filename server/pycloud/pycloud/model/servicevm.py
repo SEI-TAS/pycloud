@@ -393,8 +393,6 @@ class ServiceVM(Model):
         if not self.running:
             return
 
-        print "Stopping Service VM with instance id %s" % self._id
-
         vm = None
         try:
             # Get the VM
@@ -408,6 +406,7 @@ class ServiceVM(Model):
 
         # Destroy the VM if it exists, anr mark it as not running.
         if vm:
+            print "Stopping Service VM with instance id %s" % self._id
             vm.destroy()
         else:
             print 'VM with id %s not found while stopping it.' % self._id
@@ -473,21 +472,17 @@ class ServiceVM(Model):
         # We indicate that we want want to use as much bandwidth as possible to store the VM's memory when suspending.
         unlimitedBandwidth = 1000000    # In Gpbs
         vm.migrateSetMaxSpeed(unlimitedBandwidth, 0)
-        
-        # We first pause the VM.
-        result = vm.suspend()
-        if(result == -1):
-            raise VirtualMachineException("Cannot pause VM: %s", str(self._id))
-        
+
         # Store the VM's memory state to a file.
         print "Storing VM memory state to file %s" % self.vm_image.state_image
-        result = 0
         try:
             result = vm.save(self.vm_image.state_image)
+            if result != 0:
+                raise VirtualMachineException("Cannot save memory state to file %s", str(self._id))
+            else:
+                print "Memory state successfully saved."
         except libvirt.libvirtError, e:
             raise VirtualMachineException(str(e))
-        if result != 0:
-            raise VirtualMachineException("Cannot save memory state to file %s", str(self._id))
 
     ################################################################################################################
     # Will delete this VM (and stop it if it is currently running)
