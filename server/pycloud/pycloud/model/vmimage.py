@@ -134,7 +134,7 @@ class VMImage(DictObject):
     def move(self, destination_folder):
         try:
             # We will overwrite any existing vm image already stored with the same name.
-            fileutils.FileUtils.recreateFolder(destination_folder)
+            fileutils.recreate_folder(destination_folder)
             
             # Move the files.
             shutil.move(self.disk_image, destination_folder)
@@ -158,7 +158,7 @@ class VMImage(DictObject):
     def store(self, destination_folder, disk_image_file_object, state_image_file_object=None):
         try:
             # Create the folder to store the files.
-            fileutils.FileUtils.recreateFolder(destination_folder)
+            fileutils.recreate_folder(destination_folder)
             new_disk_image_path = os.path.abspath(os.path.join(destination_folder, os.path.basename(self.disk_image)))
             new_state_image_path = os.path.abspath(os.path.join(destination_folder, os.path.basename(self.state_image)))
 
@@ -189,7 +189,7 @@ class VMImage(DictObject):
     def create(self, sourceDiskImageFilePath, destDiskImageFilePath):
         try:
             # Clean up the folder first.
-            fileutils.FileUtils.recreateFolder(os.path.dirname(destDiskImageFilePath))
+            fileutils.recreate_folder(os.path.dirname(destDiskImageFilePath))
             
             # Create a new disk image from the source image.
             print "VM disk image creation step."
@@ -230,29 +230,15 @@ class VMImage(DictObject):
     # Protects a VM Image by making it read-only.
     ################################################################################################################
     def protect(self):                       
-        # Check the disk_image
-        if os.path.exists(self.disk_image) and os.path.isfile(self.disk_image):
-            os.chmod(self.disk_image,
-                     stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH )
-
-        # Check the state_image
-        if os.path.exists(self.state_image) and os.path.isfile(self.state_image):
-            os.chmod(self.state_image,
-                     stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH )                
+        fileutils.make_read_only_all(self.disk_image)
+        fileutils.make_read_only_all(self.state_image)
 
     ################################################################################################################
     # Makes the files of a VM Image available (read and write) to all.
     ################################################################################################################
     def unprotect(self):
-        # Check the disk_image
-        if os.path.exists(self.disk_image) and os.path.isfile(self.disk_image):
-            os.chmod(self.disk_image,
-                     stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH)
-
-        # Check the state_image
-        if os.path.exists(self.state_image) and os.path.isfile(self.state_image):
-            os.chmod(self.state_image,
-                     stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH)
+        fileutils.make_read_write_all(self.disk_image)
+        fileutils.make_read_write_all(self.state_image)
 
     ################################################################################################################
     # Cleans up the files, if this is a clone it will delete the files. Force will delete even if not cloned.

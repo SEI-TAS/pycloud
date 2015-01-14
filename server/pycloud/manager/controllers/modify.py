@@ -181,7 +181,8 @@ class ModifyController(BaseController):
             new_vm_image = VMImage()
             print 'calling VMImage#create with "%s" and "%s"' % (fields['source'], new_disk_image)
             new_vm_image.create(fields['source'], new_disk_image)
-                        
+            new_vm_image.unprotect()
+
             # Set the OS type.
             os_type = fields['type']
             if os_type == 'Windows':
