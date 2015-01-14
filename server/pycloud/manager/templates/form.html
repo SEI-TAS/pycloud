@@ -38,8 +38,8 @@
     % endif
     <div class="">
     	<select class="form-control" placeholder="${label}" id="${id}" name="${id}"  ${'disabled' if disabled else ''}>
-    		% for value, text in sorted(options):
-    			<option value="${value}" ${'selected' if (id in page.form_values and page.form_values['id'] == value) else ''}>${text}</option> 
+    		% for value in sorted(options):
+    			<option value="${value}" ${'selected' if (id in page.form_values and page.form_values['id'] == value) else ''}>${options[value]}</option>
     		% endfor
     	</select>
     </div>
