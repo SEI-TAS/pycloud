@@ -36,7 +36,7 @@ def find_ip_for_mac(mac, nmap, adapter, retry=5):
 
     # Get the ip range of the given adapter.
     addr_info = netifaces.ifaddresses(adapter)[netifaces.AF_INET][0]
-    ip_range = netaddr.IPNetwork('%s/%s' % (addr_info['addr'], addr_info['netmask']))
+    ip_range = str(netaddr.IPNetwork('%s/%s' % (addr_info['addr'], addr_info['netmask'])))
 
     p = Popen(['sudo', nmap, '-sP', ip_range, '-oX', '-'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     out, err = p.communicate()
