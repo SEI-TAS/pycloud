@@ -18,7 +18,7 @@ from pycloud.pycloud.vm.vmsavedstate import VMSavedState
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineDescriptor
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineException
 from pycloud.pycloud.vm.vncclient import VNCClient
-from pycloud.pycloud.vm.vmutils import HYPERVISOR_SYSTEM_URI, HYPERVISOR_SESSION_URI
+from pycloud.pycloud.vm.vmutils import get_hypervisor
 from pycloud.pycloud.utils import portmanager
 from pycloud.pycloud.cloudlet import get_cloudlet_instance
 
@@ -98,20 +98,11 @@ class ServiceVM(Model):
         return ServiceVM.find({'service_id': service_id})
 
     ################################################################################################################
-    # Returns the hypervisor connection and will auto connect if the connection is null
-    ################################################################################################################
-    @staticmethod
-    def get_hypervisor():
-        if not ServiceVM._hypervisor:
-            ServiceVM._hypervisor = libvirt.open(ServiceVM._HYPERVISOR_URI)
-        return ServiceVM._hypervisor
-
-    ################################################################################################################
     # Lookup a specific instance by its uuid
     ################################################################################################################
     @staticmethod
     def _get_virtual_machine(uuid):
-        return ServiceVM.get_hypervisor().lookupByUUIDString(uuid)
+        return get_hypervisor().lookupByUUIDString(uuid)
 
     ################################################################################################################
     # Cleanly and safely gets a ServiceVM and removes it from the database.
@@ -261,7 +252,7 @@ class ServiceVM(Model):
         # Create a VM ("domain") through the hypervisor.
         print "Booting up a VM..."
         try:
-            ServiceVM.get_hypervisor().createXML(xml_descriptor, 0)
+            get_hypervisor().createXML(xml_descriptor, 0)
             print "VM object successfully created, VM started."
             self.running = True
         except:
@@ -338,19 +329,19 @@ class ServiceVM(Model):
         # Update the state image with the updated descriptor.
         # NOTE: this is only needed since libvirt wont allow us to change the ID of a VM being restored through its API. 
         # Instead, we trick it by manually changing the ID of the saved state file, so the API won't know we changed it. 
-        raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription(ServiceVM.get_hypervisor())
+        raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription(get_hypervisor())
         updated_xml_descriptor_id_only = self._update_raw_name_and_id(raw_saved_xml_descriptor)
         saved_state.updateStoredVmDescription(updated_xml_descriptor_id_only)
 
         # Get the descriptor and update it to include the current disk image path, port mappings, etc.
-        saved_xml_descriptor = saved_state.getStoredVmDescription(ServiceVM.get_hypervisor())
+        saved_xml_descriptor = saved_state.getStoredVmDescription(get_hypervisor())
         updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
 
         # Restore a VM to the state indicated in the associated memory image file, in running mode.
         # The XML descriptor is given since some things need to be changed for the instance, mainly the disk image file and the mapped ports.
         try:
             print "Resuming from VM image..."
-            ServiceVM.get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
+            get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
             print "Resumed from VM image."
             self.running = True
         except libvirt.libvirtError as e:

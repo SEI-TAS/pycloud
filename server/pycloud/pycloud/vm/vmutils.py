@@ -5,6 +5,18 @@ import libvirt
 HYPERVISOR_SYSTEM_URI = "qemu:///system"
 HYPERVISOR_SESSION_URI = "qemu:///session"
 
+_hypervisor = None
+
+
+################################################################################################################
+# Returns the hypervisor connection and will auto connect if the connection is null
+################################################################################################################
+def get_hypervisor():
+    global _hypervisor
+    if _hypervisor is not None:
+        _hypervisor = libvirt.open(HYPERVISOR_SYSTEM_URI)
+    return _hypervisor
+
 ################################################################################################################
 # Helper to convert normal uuid to string
 ################################################################################################################
@@ -24,7 +36,7 @@ def uuidstr(rawuuid):
 ################################################################################################################
 def destroy_all_vms():
     print 'Shutting down all running virtual machines:'
-    hypervisor = libvirt.open(HYPERVISOR_SYSTEM_URI)
+    hypervisor = get_hypervisor()
     vm_ids = hypervisor.listDomainsID()
     for vm_id in vm_ids:
         vm = hypervisor.lookupByID(vm_id)
