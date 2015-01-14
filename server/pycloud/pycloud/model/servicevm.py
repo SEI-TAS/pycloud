@@ -175,6 +175,7 @@ class ServiceVM(Model):
 
         # Sets the Realtek network driver, needed for Windows-based VMs.
         if self.os != "lin":
+            print "Setting Realtek network driver."
             xml_descriptor.setRealtekNetworkDriver()
 
         # Configure bridged mode if enabled
