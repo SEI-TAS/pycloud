@@ -60,6 +60,8 @@ class CloudletApp(PylonsApp):
 # Generic function used to create a WSGI app.
 ###########################################################################################################################
 def generic_make_app(make_map_function, controllers_module, root_path, global_conf, full_stack=True, static_files=True, **app_conf):
+    print "-------------------------------------------------------"
+
     # Configure the Pylons environment.
     from pycloud.pycloud.pylons.config.environment import load_environment    
     load_environment(make_map_function, root_path, global_conf, app_conf)
@@ -75,4 +77,5 @@ def generic_make_app(make_map_function, controllers_module, root_path, global_co
     # Set up the order apps are resolved (static and the main one).
     app = Cascade([static_app, app])
 
+    print "-------------------------------------------------------"
     return app
