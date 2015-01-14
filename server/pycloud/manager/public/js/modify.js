@@ -134,7 +134,7 @@ function createSVM()
     // Handler to load data when received.
     var successHandler = function(svm) {
         // Update the buttons to reflect that we can now save the SVM.
-        showImageInfoAndButtons(svm);
+        showServiceVMButtons(svm);
         
         $('#modal-new-servicevm').modal('hide');  
 

@@ -200,9 +200,7 @@ class ModifyController(BaseController):
 
             # Return info about the svm.
             svm_info = {'_id': svm._id,
-                        'vnc_port': svm.vnc_port,
-                        'disk_image': svm.vm_image.disk_image,
-                        'state_image': svm.vm_image.state_image}
+                        'vnc_port': svm.vnc_port}
             return svm_info
         except Exception as e:
             # If there was a problem creating the SVM, return that there was an error.
