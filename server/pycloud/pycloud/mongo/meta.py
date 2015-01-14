@@ -34,10 +34,10 @@ class MetaObject(type):
             coll = MongoCollection(cloudlet.get_cloudlet_instance().db, info.collection, obj_class=new_class)
             new_class._collection = coll
 
-            #Create the external attributes list and add it to the new class
+            # Create the external attributes list and add it to the new class
             if isinstance(info.external, list):
-                print 'Mapping _external attributes for "%s"' % str(new_class)
-                print info.external
+                #print 'Mapping _external attributes for "%s"' % str(new_class)
+                #print info.external
                 new_class._external = info.external
             else:
                 new_class._external = None
