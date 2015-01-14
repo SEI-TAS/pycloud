@@ -34,10 +34,6 @@ class ServiceVM(Model):
             'vm_image': VMImage
         }
 
-    # URI used to connect to the local hypervisor.
-    _HYPERVISOR_URI = HYPERVISOR_SYSTEM_URI
-    _hypervisor = None
-    
     # Constants.
     SSH_INTERNAL_PORT = 22
 
