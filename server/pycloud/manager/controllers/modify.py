@@ -197,7 +197,13 @@ class ModifyController(BaseController):
             svm.service_port = fields['port']
             svm.create(template_xml_file)
             svm.save()
-            return svm
+
+            # Return info about the svm.
+            svm_info = {'_id': svm._id,
+                        'vnc_port': svm.vnc_port,
+                        'disk_image': svm.vm_image.disk_image,
+                        'state_image': svm.vm_image.state_image}
+            return svm_info
         except Exception as e:
             # If there was a problem creating the SVM, return that there was an error.
             msg = 'Error creating Service VM: ' + str(e)
@@ -207,9 +213,6 @@ class ModifyController(BaseController):
             #    svm.vm_image.cleanup(force=True)
 
             return ajaxutils.show_and_return_error_dict(msg)
-
-        # Everything went well.
-        return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Stops and saves a Service VM that was edited to its permanent root VM image.
