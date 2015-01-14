@@ -24,7 +24,7 @@ def uuidstr(rawuuid):
 ################################################################################################################
 def destroy_all_vms():
     print 'Shutting down all running virtual machines:'
-    hypervisor = libvirt.open(HYPERVISOR_SESSION_URI)
+    hypervisor = libvirt.open(HYPERVISOR_SYSTEM_URI)
     vm_ids = hypervisor.listDomainsID()
     for vm_id in vm_ids:
         vm = hypervisor.lookupByID(vm_id)
