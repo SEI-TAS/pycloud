@@ -202,7 +202,6 @@ class ServiceVM(Model):
 
         # Get the resulting XML string and return it.
         updated_xml_descriptor = xml_descriptor.getAsString()
-        print updated_xml_descriptor
         return updated_xml_descriptor
     
     ################################################################################################################
