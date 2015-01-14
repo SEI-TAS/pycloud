@@ -35,7 +35,7 @@ class ServiceVM(Model):
         }
 
     # URI used to connect to the local hypervisor.
-    _HYPERVISOR_URI = HYPERVISOR_SYSTEM_URI
+    _HYPERVISOR_URI = HYPERVISOR_SESSION_URI
     _hypervisor = None
     
     # Constants.
