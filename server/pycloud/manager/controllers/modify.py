@@ -202,8 +202,8 @@ class ModifyController(BaseController):
             msg = 'Error creating Service VM: ' + str(e)
             import traceback, sys
             traceback.print_exc(file=sys.stdout)
-            if svm.vm_image:
-                svm.vm_image.cleanup(force=True)
+            #if svm.vm_image:
+            #    svm.vm_image.cleanup(force=True)
 
             return ajaxutils.show_and_return_error_dict(msg)
 
