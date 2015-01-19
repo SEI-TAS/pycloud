@@ -1,5 +1,7 @@
 #!/bin/bash
 
+testdir=$(readlink -m $(dirname $0))
+echo testdir
 srcdir="./bin"
 source $srcdir/common
 fqdn="$(hostname --fqdn)"
