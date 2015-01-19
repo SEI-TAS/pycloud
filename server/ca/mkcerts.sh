@@ -1,6 +1,6 @@
 #!/bin/bash
 
-srcdir=./bin
+srcdir="./bin"
 source $srcdir/common
 fqdn="$(hostname --fqdn)"
 echo $fqdn
