@@ -5,5 +5,7 @@ source $srcdir/bin/common
 fqdn="$(hostname --fqdn)"
 echo $fqdn
 
-bash $srcdir/bin/mk_server.sh $fqdn cacert.pem cacert_key.pem
-bash $srcdir/bin/mk_client.sh $fqdn cacert.pem cacert_key.pem
+chmod ug+x ./bin/*.*
+
+$srcdir/bin/mk_server.sh $fqdn cacert.pem cacert_key.pem
+$srcdir/bin/mk_client.sh $fqdn cacert.pem cacert_key.pem
