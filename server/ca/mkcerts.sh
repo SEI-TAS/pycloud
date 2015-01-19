@@ -2,6 +2,8 @@
 
 srcdir=./bin
 source $srcdir/common
+fqdn="$(hostname --fqdn)"
+echo $fqdn
 
-$srcdir/mk_server.sh $1 cacert.pem cacert_key.pem
-$srcdir/mk_client.sh $1 cacert.pem cacert_key.pem
+$srcdir/mk_server.sh $fqdn cacert.pem cacert_key.pem
+$srcdir/mk_client.sh $fqdn cacert.pem cacert_key.pem
