@@ -441,8 +441,7 @@ class ServiceVM(Model):
             # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
             # (and some hypervisors do not support it anyway).
             # TODO: figure out why shared disk is ignored.
-            flags = libvirt.VIR_MIGRATE_NON_SHARED_DISK #| libvirt.VIR_MIGRATE_PAUSED
-            print flags
+            flags = 0 # libvirt.VIR_MIGRATE_NON_SHARED_DISK | libvirt.VIR_MIGRATE_PAUSED
             new_id = None
             bandwidth = 0
 
