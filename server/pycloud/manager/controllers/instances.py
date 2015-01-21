@@ -19,6 +19,8 @@ from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.model import Service, ServiceVM
 from pycloud.pycloud.pylons.lib.util import asjson
 
+from pycloud.pycloud.utils import fileutils
+
 from pycloud.pycloud.utils import ajaxutils
 
 log = logging.getLogger(__name__)
@@ -151,6 +153,9 @@ class InstancesController(BaseController):
             if result == -1:
                 raise Exception("Cannot pause VM: %s", str(id))
             print 'VM paused.'
+
+            # Ensure we own the image file to migrate.
+            fileutils.chown_to_current_user(svm.vm_image.disk_image)
 
             # Transfer the disk image file.
             print 'Starting disk image file transfer...'
