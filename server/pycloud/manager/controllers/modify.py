@@ -15,6 +15,8 @@ from pycloud.manager.lib.pages import ModifyPage
 
 from pycloud.pycloud.utils import ajaxutils
 
+from pycloud.pycloud.utils import fileutils
+
 log = logging.getLogger(__name__)
 
 ################################################################################################################
@@ -240,6 +242,10 @@ class ModifyController(BaseController):
             # Permanently store the VM.
             print 'Moving Service VM Image to cache, from folder {} to folder {}.'.format(os.path.dirname(svm.vm_image.disk_image), vm_image_folder)
             svm.vm_image.move(vm_image_folder)
+
+            # Ensure we own the new image files.
+            fileutils.chown_to_current_user(svm.vm_image.disk_image)
+            fileutils.chown_to_current_user(svm.vm_image.state_image)
 
             # Make the VM image read only.
             print 'Making VM Image read-only.'

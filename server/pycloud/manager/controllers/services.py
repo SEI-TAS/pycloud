@@ -7,6 +7,7 @@ from pycloud.manager.lib.pages import ServicesPage
 from pycloud.pycloud.model import Service
 
 from pycloud.pycloud.utils import ajaxutils
+from pycloud.pycloud.pylons.lib.util import asjson
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +41,8 @@ class ServicesController(BaseController):
         
     ############################################################################################################
     # Shows the list of cached Services.
-    ############################################################################################################        
+    ############################################################################################################
+    @asjson
     def GET_removeService(self, id):
         try:
             service = Service.find_and_remove(id)

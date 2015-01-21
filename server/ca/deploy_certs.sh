@@ -23,3 +23,7 @@ chmod 440 /etc/pki/libvirt/clientcert.pem \
           /etc/pki/libvirt/servercert.pem \
           /etc/pki/libvirt/private/clientkey.pem \
           /etc/pki/libvirt/private/serverkey.pem
+          
+# Restart libvirt daemon so it will use the new certificates.
+stop libvirt-bin
+start libvirt-bin
