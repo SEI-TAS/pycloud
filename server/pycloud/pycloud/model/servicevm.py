@@ -210,7 +210,7 @@ class ServiceVM(Model):
     ################################################################################################################
     # Waits for the service to boot up.
     ################################################################################################################
-    def _wait_for_service(self, retries=7):
+    def _wait_for_service(self, retries=5):
         if retries == 0:
             print 'Service is not available, stopping retries.'
             return False

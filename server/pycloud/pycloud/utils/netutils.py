@@ -30,7 +30,7 @@ def generate_random_mac():
 ################################################################################################################
 # Will locate the IP address for a given mac address
 ################################################################################################################
-def find_ip_for_mac(mac, nmap, adapter, retry=8):
+def find_ip_for_mac(mac, nmap, adapter, retry=5):
     if retry == 0:
         print 'No more retries, IP not found.'
         return None
