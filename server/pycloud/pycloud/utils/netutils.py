@@ -3,6 +3,7 @@
 
 import random
 import socket
+import time
 
 import netifaces
 import netaddr
@@ -51,6 +52,7 @@ def find_ip_for_mac(mac, nmap, adapter, retry=8):
         print 'Found IP: ', ip
     except:
         print 'Failed to find IP, retrying...'
+        time.sleep(1)
         ip = find_ip_for_mac(mac, nmap, adapter, retry=(retry - 1))
 
     return ip
