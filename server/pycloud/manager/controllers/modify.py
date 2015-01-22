@@ -244,8 +244,8 @@ class ModifyController(BaseController):
             svm.vm_image.move(vm_image_folder)
 
             # Ensure we own the new image files.
-            fileutils.chown_to_current_user(svm.vm_image.disk_image)
-            fileutils.chown_to_current_user(svm.vm_image.state_image)
+            #fileutils.chown_to_current_user(svm.vm_image.disk_image)
+            #fileutils.chown_to_current_user(svm.vm_image.state_image)
 
             # Make the VM image read only.
             print 'Making VM Image read-only.'
