@@ -26,11 +26,18 @@ def generate_random_mac():
         random.randint(0x00, 0xff)
     ]
     return ':'.join(map(lambda x: "%02x" % x, mac))
-        
+
+################################################################################################################
+# Returns the IP of the given adapter.
+################################################################################################################
+def get_adapter_ip_address(adapter_name, ip_position=0):
+    addr_info = netifaces.ifaddresses(adapter_name)[netifaces.AF_INET][ip_position]
+    return addr_info['addr']
+
 ################################################################################################################
 # Will locate the IP address for a given mac address
 ################################################################################################################
-def find_ip_for_mac(mac, nmap, adapter, retry=5):
+def find_ip_for_mac(mac, adapter, nmap='nmap', retry=5):
     if retry == 0:
         print 'No more retries, IP not found.'
         return None
@@ -53,7 +60,7 @@ def find_ip_for_mac(mac, nmap, adapter, retry=5):
     except:
         print 'Failed to find IP, retrying...'
         time.sleep(1)
-        ip = find_ip_for_mac(mac, nmap, adapter, retry=(retry - 1))
+        ip = find_ip_for_mac(mac, adapter, nmap, retry=(retry - 1))
 
     return ip
 

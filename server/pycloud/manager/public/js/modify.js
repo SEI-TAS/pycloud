@@ -135,6 +135,9 @@ function createSVM()
     var successHandler = function(svm) {
         // Update the buttons to reflect that we can now save the SVM.
         showServiceVMButtons(svm);
+
+        // Show the vnc info.
+        $('#vnc-address').text(svm.vnc_port);
         
         $('#modal-new-servicevm').modal('hide');  
 
