@@ -29,7 +29,7 @@ class ServiceVM(Model):
     # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
         collection = "service_vms"
-        external = ['_id', 'service_id', 'running', 'port', 'ip_address']
+        external = ['_id', 'service_id', 'running', 'port', 'ip_address', 'vnc_port']
         mapping = {
             'vm_image': VMImage
         }
