@@ -164,6 +164,9 @@ function startInstance(url)
         // Update the buttons to reflect that we can now save the SVM.
         showServiceVMButtons(svm);
 
+        // Show the vnc info.
+        $('#vnc-address').text(svm.vnc_port);
+
         showAndLogSuccessMessage('SVM was started successfully with id ' + svm._id + ', VNC open on port ' + svm.vnc_port);
     });
 
