@@ -72,7 +72,7 @@ class Cloudlet(object):
         self.migration_enabled = self.migration_enabled.upper() in ['T', 'TRUE', 'Y', 'YES']
 
         self.bridge_adapter = config['pycloud.migration.adapter']
-        self.nmap = config['pycloud.migration.nmap']
+        #self.nmap = config['pycloud.migration.nmap']
 
         print 'cloudlet created.'
 
