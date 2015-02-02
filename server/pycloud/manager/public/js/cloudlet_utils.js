@@ -223,20 +223,18 @@ function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, 
             // Ensure we have a json response.
             var jsonObject = getAsJson(response);
         
+            // Dismiss the waiting dialog
+            if(dialog) dialog.hide();
+
             // Check if we got an error.
             if(!ajaxCallWasSuccessful(jsonObject))
             {
-                // Dismiss the waiting dialog and notify the error.
-                if(dialog) {
-                    dialog.hide();
-                }
-
+                // Notify the error.
                 showAndLogErrorMessage('There was a problem ' + description + ': ' + jsonObject.error, '', '', modal);
             }
             else
             {             
-                // Dismiss dialog and do what we defined for success.
-                if(dialog) dialog.hide();
+                // Do what we defined for success.
                 onSuccess(jsonObject);
             }        
     };
@@ -253,10 +251,7 @@ function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, 
                 successHandler(resp);
             },
             error: function( req, status, err ) {
-                if(dialog) {
-                    dialog.hide();
-                }
-
+                if(dialog) dialog.hide();
                 showAndLogErrorMessage('There was a problem ' + description + '.', status, err, modal);
             }
         });

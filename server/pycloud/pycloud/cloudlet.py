@@ -52,6 +52,9 @@ class Cloudlet(object):
             raise Exception('Unable to connect to MongoDB')
 
         self.db = self.conn[dbName]
+
+        # Get HTTP server info.
+        self.http_port = config['port']
             
         # Get information about folders to be used.
         self.svmCache = config['pycloud.servicevm.cache']

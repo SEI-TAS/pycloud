@@ -11,13 +11,12 @@ from pylons import response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 from pylons import g
 
-from webhelpers.html import HTML
-
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import InstancesPage
 from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.model import Service, ServiceVM
 from pycloud.pycloud.pylons.lib.util import asjson
+from pycloud.pycloud.cloudlet import get_cloudlet_instance
 
 from pycloud.pycloud.utils import fileutils
 
@@ -133,9 +132,11 @@ class InstancesController(BaseController):
             svm = ServiceVM.by_id(id)
             print 'VM found: ' + str(svm)
 
-            # TODO: hardcoded port
+            # TODO: assuming remote cloudlet is listening on same port as local cloudlet.
+            c = get_cloudlet_instance()
+            http_port = c.http_port
             print 'Migrating to remote cloudlet: ' + remote_host
-            remote_http_host = 'http://%s:9999' % remote_host
+            remote_http_host = 'http://%s:%s' % (remote_host, http_port)
 
             # Transfer the metadata.
             print 'Starting metadata file transfer...'
