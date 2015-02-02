@@ -158,7 +158,7 @@ function startInstance(url)
 {
     // Send additional parameter to ensure we get a full image in the instance, not a linked qcow.
     url = url + "/" + $('#serviceID').val() + "?clone_full_image=True";
-    
+
     // Do the post to get data and load the modal.
     ajaxGet(url, "Starting SVM to Modify VM Image", function(svm) {
         // Update the buttons to reflect that we can now save the SVM.
@@ -210,26 +210,6 @@ function discardInstance(url)
         showAndLogSuccessMessage('Changes were discarded.');
         showImageInfoAndButtons(null);
     });
-
-    return false;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////
-// Function to start a VNC window to edit an SVM.
-/////////////////////////////////////////////////////////////////////////////////////
-function openEditVNC(vncUrl)
-{
-    // Add the instance ID to the URL.
-    var svmId = $('#svmInstanceId').val();
-    vncUrl = vncUrl + "/" + svmId;
-    
-    // Handler to load data when received.
-    var successHandler = function(response) {
-        showAndLogSuccessMessage('VNC window was opened locally on server.');
-    };
-    
-    // Do the post to get data and load the modal.
-    ajaxGet(vncUrl, "Starting and Connecting to Service VM", successHandler);    
 
     return false;
 }

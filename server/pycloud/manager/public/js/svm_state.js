@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to update status info.
 /////////////////////////////////////////////////////////////////////////////////////
-function updateList()
+function updateSVMList()
 {
     var listUrl = $("#svm_url").val();
     ajaxGet(listUrl, waitDialogText=null, function(response) {
@@ -45,10 +45,6 @@ function updateList()
                 reloadPage();
             }
         }
-
-        // To be called again after the next interval.
-        var reloadInterval = 2000; // In milliseconds.
-        setTimeout(updateList, reloadInterval);
     });
 }
 
@@ -58,5 +54,5 @@ function updateList()
 $(document).ready( function () {
     // Start the load checker, which will check for changes continuously.
     console.log('Setting up SVM monitoring.');
-    updateList();
+    startRecurringTimer(updateSVMList);
 });    

@@ -1,4 +1,50 @@
 /////////////////////////////////////////////////////////////////////////////////////
+// List of enabled recurring timers.
+/////////////////////////////////////////////////////////////////////////////////////
+var recurringTimers = {};
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Starts a new recurring timer.
+/////////////////////////////////////////////////////////////////////////////////////
+function startRecurringTimer(timerFunction, reloadInterval) {
+    // 2 seconds default interval.
+    if(typeof(reloadInterval)==='undefined') reloadInterval = 2000;
+
+    // Start the timer, and add it to the list of timers.
+    var timerId = setInterval(timerFunction, reloadInterval);
+    recurringTimers[timerFunction] = timerId;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Pauses all registered timers.
+/////////////////////////////////////////////////////////////////////////////////////
+function pauseRecurringTimers() {
+    // Loops over the timer list stopping them all. However, they remain in the list
+    // so that they can be initialized.
+    for (var timerFunction in recurringTimers) {
+        if (recurringTimers.hasOwnProperty(timerFunction)) {
+            var timerId = recurringTimers[timerFunction];
+            if(timerId != 0) {
+                clearInterval(timerId);
+                recurringTimers[timerFunction] = 0;
+            }
+        }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Resumes all registered timers.
+/////////////////////////////////////////////////////////////////////////////////////
+function resumeRecurringTimers() {
+    for (var timerFunction in recurringTimers) {
+        if (recurringTimers.hasOwnProperty(timerFunction)) {
+            // Create a new timer for the same function (and add it to our list).
+            startRecurringTimer(timerFunction);
+        }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
 // Creates a modal dialog to show wait state for a process (no actual progress though).
 /////////////////////////////////////////////////////////////////////////////////////
 function WaitDialog (headerText) {
@@ -11,15 +57,22 @@ function WaitDialog (headerText) {
             // If there were any previous wait dialogs leftovers, remove them.
             $('#pleaseWaitDialog').remove();
             
-            // Apend a new wait dialog and show it.
+            // Append a new wait dialog and show it.
             $('body').append(pleaseWaitDiv);
             $('#pleaseWaitDialog').show();
             $('#pleaseWaitDialog').modal();
+
+            // Stop any recurring timers.
+            pauseRecurringTimers();
+
         },
         hide: function () {
             var waitDialog = $('#pleaseWaitDialog');
             waitDialog.modal('hide');
-        },
+
+            // Restart any recurring timers.
+            resumeRecurringTimers();
+        }
     };
 }
 
@@ -176,11 +229,9 @@ function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, 
                 // Dismiss the waiting dialog and notify the error.
                 if(dialog) {
                     dialog.hide();
-                    showAndLogErrorMessage('There was a problem ' + description + ': ' + jsonObject.error, '', '', modal);
                 }
-                else {
-                    console.log('There was an error getting the result.');
-                }
+
+                showAndLogErrorMessage('There was a problem ' + description + ': ' + jsonObject.error, '', '', modal);
             }
             else
             {             
@@ -204,11 +255,9 @@ function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, 
             error: function( req, status, err ) {
                 if(dialog) {
                     dialog.hide();
-                    showAndLogErrorMessage('There was a problem ' + description + '.', status, err, modal);
                 }
-                else {
-                    console.log('There was an error getting the result.');
-                }
+
+                showAndLogErrorMessage('There was a problem ' + description + '.', status, err, modal);
             }
         });
     }

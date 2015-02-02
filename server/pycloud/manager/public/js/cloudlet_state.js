@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to update status info.
 /////////////////////////////////////////////////////////////////////////////////////
-function reloadState()
+function reloadCloudletServerState()
 {
     var statusUrl = $("#state_url").val();
     ajaxGet(statusUrl, waitDialogText=null, function(response) {
@@ -27,10 +27,6 @@ function reloadState()
         {
             console.log('Error getting cloudlet status. Got: ' + JSON.stringify(response));
         }
-
-        // To be called again after the next interval.
-        var reloadInterval = 2000; // In milliseconds.
-        setTimeout(function() {reloadState();}, reloadInterval);
     });
 }
 
@@ -40,5 +36,5 @@ function reloadState()
 $(document).ready( function () {
     // Start the load checker, which will check for changes continuously.
     console.log('Setting up reload state.');
-    reloadState();
+    startRecurringTimer(reloadCloudletServerState);
 });    
