@@ -23,3 +23,8 @@ build:
 
 %:
 	dh $@ --with python-virtualenv --sourcedir debian/sdist/*
+
+# This configuration assumes that the devpi mirror server is installed locally and running with default config.
+# This speeds up rebuilds, and allows the build process to work through proxies.
+override_dh_virtualenv:
+	dh_virtualenv --pypi-url http://localhost:3141/root/pypi
