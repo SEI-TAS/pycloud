@@ -54,7 +54,7 @@ class Cloudlet(object):
         self.db = self.conn[dbName]
 
         # Get HTTP server info.
-        self.http_port = config['port']
+        self.http_port = config['pycloud.http.port']
             
         # Get information about folders to be used.
         self.svmCache = config['pycloud.servicevm.cache']
