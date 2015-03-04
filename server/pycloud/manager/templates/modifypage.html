@@ -68,7 +68,8 @@ ${parent.header()}
                     <!-- Buttons available only when the VM image is loaded into an SVM (creating or editing the image) -->
               	    <button type="button" class="btn btn-primary" id="save-svm-button" onclick="persistInstance('${page.saveInstanceURL}')" style="display:none;">Save from SVM</button>
               	    <button type="button" class="btn btn-primary" id="discard-svm-button" onclick="discardInstance('${page.stopInstanceURL}')" style="display:none;">Discard SVM</button>
-              	    <label id="vnc-button" style="display:none;">VNC available on: <label id="vnc-address"></label></label>
+              	    <label style="display:none;">SSH available on: <label id="ssh-address"></label></label>
+                    <label style="display:none;">VNC available on: <label id="vnc-address"></label></label>
                 </div>
             </div>           
             

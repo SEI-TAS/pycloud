@@ -50,6 +50,7 @@ class ServiceVM(Model):
         self.port = None    # Used to show the external port
         self.ssh_port = None
         self.vnc_address = None
+        self.vnc_port = None
         self.service_id = None
         self.ip_address = None
         self.mac_address = None
@@ -285,8 +286,8 @@ class ServiceVM(Model):
                 print 'Service was not found running inside the SVM. Check if it is configured to start at boot time.'
 
         # Get VNC connection info.
-        # TODO: rename from vnc_address to vnc_address, since now this contains more than the port.
         self.vnc_address = self.__get_vnc_address()
+        self.vnc_port = self.__get_vnc_port()
         print "VNC available on {}".format(str(self.vnc_address))
 
     ################################################################################################################
@@ -363,41 +364,17 @@ class ServiceVM(Model):
     ################################################################################################################
     # Gets the host port the VNC server is listening on for this vm, which was automatically allocated by libvirt/qemu.
     ################################################################################################################
-    def __get_vnc_address(self):
+    def __get_vnc_port(self):
         vm_xml_string = ServiceVM._get_virtual_machine(self._id).XMLDesc(libvirt.VIR_DOMAIN_XML_SECURE)
         xml_descriptor = VirtualMachineDescriptor(vm_xml_string)
-        vnc_address = xml_descriptor.getVNCPort()
-        return vnc_address
+        vnc_port = xml_descriptor.getVNCPort()
+        return vnc_port
 
     ################################################################################################################
     # Gets the host IP and por port the VNC server is listening on for this vm, which was automatically allocated by libvirt/qemu.
     ################################################################################################################
     def __get_vnc_address(self):
-        return get_adapter_ip_address(self.adapter) + ":" + self.__get_vnc_address()
-
-    ################################################################################################################
-    # Starts a VNC connection with a GUI, and, if given in the argument, waits until it is closed.
-    ################################################################################################################            
-    def open_vnc(self, wait=True):
-        # Get the VNC port, which was automatically allocated by libvirt/qemu.
-        vnc_address = self.__get_vnc_address()
-        
-        # Connect through the VNC client and wait if required.
-        print 'Starting VNC GUI to VM (on {}).'.format(str(vnc_address))
-        if wait:
-            print 'Waiting for user to close VNC GUI.'
-        vnc_client = VNCClient()
-        success = vnc_client.connectAndWait(vnc_address, wait)
-
-        if success:
-            if wait:
-                print 'VNC GUI no longer running, stopped waiting.'
-            else:
-                print 'VNC GUI has been opened.'
-        else:
-            # If there was a problem, destroy the VM.
-            print 'VNC GUI could not be opened.'
-            self.destroy()
+        return get_adapter_ip_address(self.adapter) + ":" + self.__get_vnc_port()
 
     ################################################################################################################
     # Stop this service VM
