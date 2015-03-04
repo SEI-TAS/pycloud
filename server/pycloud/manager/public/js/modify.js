@@ -137,12 +137,12 @@ function createSVM()
         showServiceVMButtons(svm);
 
         // Show the vnc info.
-        $('#vnc-address').text(svm.vnc_port);
+        $('#vnc-address').text(svm.vnc_address);
         
         $('#modal-new-servicevm').modal('hide');  
 
         // Notify that the process was successful.
-        showAndLogSuccessMessage('New VM running with id ' + svm._id + ', VNC open on port ' + svm.vnc_port);
+        showAndLogSuccessMessage('New VM running with id ' + svm._id + ', VNC open on port ' + svm.vnc_address);
     };
     
     // Do the post to get data and load the modal.
@@ -165,9 +165,9 @@ function startInstance(url)
         showServiceVMButtons(svm);
 
         // Show the vnc info.
-        $('#vnc-address').text(svm.vnc_port);
+        $('#vnc-address').text(svm.vnc_address);
 
-        showAndLogSuccessMessage('SVM was started successfully with id ' + svm._id + ', VNC open on port ' + svm.vnc_port);
+        showAndLogSuccessMessage('SVM was started successfully with id ' + svm._id + ', VNC open on port ' + svm.vnc_address);
     });
 
     return false;

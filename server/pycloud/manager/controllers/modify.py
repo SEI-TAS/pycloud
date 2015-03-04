@@ -54,7 +54,6 @@ class ModifyController(BaseController):
 
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
-        page.openVNCUrl = h.url_for(controller='instances', action='openVNC', id=None, action_name=None)
         page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot', id=None, action_name=None)
         page.stopInstanceURL = h.url_for(controller='instances', action='stopInstance', id=None, action_name=None)
         page.startInstanceURL = h.url_for(controller='instances', action='startInstance', id=None, action_name=None)
@@ -201,9 +200,7 @@ class ModifyController(BaseController):
             svm.save()
 
             # Return info about the svm.
-            svm_info = {'_id': svm._id,
-                        'vnc_port': svm.vnc_port}
-            return svm_info
+            return svm
         except Exception as e:
             # If there was a problem creating the SVM, return that there was an error.
             msg = 'Error creating Service VM: ' + str(e)
