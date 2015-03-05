@@ -214,7 +214,7 @@ class InstancesController(BaseController):
         migrated_svm.ip_address = json_svm['ip_address']
         migrated_svm.mac_address = json_svm['mac_address']
         migrated_svm.ssh_port = json_svm['ssh_port']
-        migrated_svm.vnc_port = json_svm['vnc_port']
+        migrated_svm.vnc_address = json_svm['vnc_address']
         migrated_svm.service_id = json_svm['service_id']
 
         # Save to internal DB.

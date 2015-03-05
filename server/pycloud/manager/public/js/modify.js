@@ -45,7 +45,6 @@ function showImageInfoAndButtons(vm_image)
 
     $('#save-svm-button').hide();
     $('#discard-svm-button').hide();
-    $('#vnc-button').hide();
 
     // Re-enable the Save button for the service, since we are done modifiying the image.
     $('#submitButton').disable(false);
@@ -64,7 +63,6 @@ function showServiceVMButtons(svm)
 
     $('#save-svm-button').show();
     $('#discard-svm-button').show();
-    $('#vnc-button').show();
 
     // Disable the Save button, we don't want to save the service until we've dealt with the vm image.
     $('#submitButton').disable(true);
@@ -136,13 +134,14 @@ function createSVM()
         // Update the buttons to reflect that we can now save the SVM.
         showServiceVMButtons(svm);
 
-        // Show the vnc info.
-        $('#vnc-address').text(svm.vnc_port);
+        // Show the vnc and ssh info.
+        $('#vnc-address').text(svm.vnc_address);
+        $('#ssh-address').text(svm.ip_address + ':' + svm.ssh_port);
         
         $('#modal-new-servicevm').modal('hide');  
 
         // Notify that the process was successful.
-        showAndLogSuccessMessage('New VM running with id ' + svm._id + ', VNC open on port ' + svm.vnc_port);
+        showAndLogSuccessMessage('New VM running with id ' + svm._id + ', VNC open on port ' + svm.vnc_address);
     };
     
     // Do the post to get data and load the modal.
@@ -165,9 +164,10 @@ function startInstance(url)
         showServiceVMButtons(svm);
 
         // Show the vnc info.
-        $('#vnc-address').text(svm.vnc_port);
+        $('#vnc-address').text(svm.vnc_address);
+        $('#ssh-address').text(svm.ip_address + ':' + svm.ssh_port);
 
-        showAndLogSuccessMessage('SVM was started successfully with id ' + svm._id + ', VNC open on port ' + svm.vnc_port);
+        showAndLogSuccessMessage('SVM was started successfully with id ' + svm._id + ', VNC open on port ' + svm.vnc_address);
     });
 
     return false;

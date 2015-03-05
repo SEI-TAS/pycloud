@@ -22,7 +22,6 @@ def make_map():
     connect('/instances', controller='instances', action='index')
     connect('/instances/startInstance/{id}', controller='instances', action='startInstance')
     connect('/instances/stopInstance/{id}', controller='instances', action='stopInstance')
-    connect('/instances/openvnc/{id}', controller='instances', action='openVNC')
     connect('/instances/migrate/{id}', controller='instances', action='migrateInstance')
     connect('/instances/receiveMigratedSVMMetadata', controller='instances', action='receiveMigratedSVMMetadata')
     connect('/instances/receiveMigratedSVMDiskFile', controller='instances', action='receiveMigratedSVMDiskFile')

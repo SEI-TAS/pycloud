@@ -29,7 +29,7 @@ class ServiceVM(Model):
     # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
         collection = "service_vms"
-        external = ['_id', 'service_id', 'running', 'port', 'ip_address', 'vnc_port']
+        external = ['_id', 'service_id', 'running', 'port', 'ip_address', 'vnc_address', 'ssh_port']
         mapping = {
             'vm_image': VMImage
         }
@@ -49,6 +49,7 @@ class ServiceVM(Model):
         self.service_port = None
         self.port = None    # Used to show the external port
         self.ssh_port = None
+        self.vnc_address = None
         self.vnc_port = None
         self.service_id = None
         self.ip_address = None
@@ -57,7 +58,7 @@ class ServiceVM(Model):
         super(ServiceVM, self).__init__(*args, **kwargs)
 
     ################################################################################################################
-    # Sets up the internal network parameters, based onthe config.
+    # Sets up the internal network parameters, based on the config.
     ################################################################################################################
     def _setup_network(self):
         # Configure bridged mode if enabled
@@ -230,16 +231,18 @@ class ServiceVM(Model):
     ################################################################################################################
     # Will locate the IP address from our MAC.
     ################################################################################################################
-    def _set_ip_if_mac(self):
+    def _get_ip_from_mac(self):
         # mac_address will have a value if bridged mode is enabled
-        if self.mac_address is not None:
-            print "Retrieving IP for MAC: %s" % self.mac_address
-            ip = find_ip_for_mac(self.mac_address, self.adapter)
-            if not ip:
-                print "Failed to locate the IP of the VM."
-                raise Exception('Failed to locate the IP of the VM.')
-            else:
-                self.ip_address = ip
+        if self.mac_address is None:
+            raise Exception("IP address could not be obtained since the VM has no MAC address set up.")
+
+        print "Retrieving IP for MAC: %s" % self.mac_address
+        ip = find_ip_for_mac(self.mac_address, self.adapter)
+        if not ip:
+            print "Failed to locate the IP of the VM."
+            raise Exception('Failed to locate the IP of the VM.')
+
+        return ip
 
     ################################################################################################################
     # Boots a VM using a defined disk image and a state XML.
@@ -264,13 +267,16 @@ class ServiceVM(Model):
         try:
             # Get the IP of the VM.
             if self.network_mode == 'bridged':
-                self._set_ip_if_mac()
+                # We will attempt to indirectly get the IP from the virtual MAC of the VM.
+                self.ip_address = self._get_ip_from_mac()
             else:
-                self.ip_address = '127.0.0.1'
+                # If we are not on bridged mode, the VM's IP address will be the same as the cloudlet's address.
+                self.ip_address = get_adapter_ip_address(self.adapter)
         except Exception as e:
             # TODO: throw exception.
             print "Error getting IP of new SVM: " + str(e)
             check_service = False
+        print "SSH available on {}:{}".format(str(self.ip_address), str(self.ssh_port))
 
         if check_service:
             # Wait until the service is running inside the VM.
@@ -279,8 +285,10 @@ class ServiceVM(Model):
                 # TODO: throw exception.
                 print 'Service was not found running inside the SVM. Check if it is configured to start at boot time.'
 
-        self.vnc_port = self.__get_vnc_address()
-        print "VNC available on {}".format(str(self.vnc_port))
+        # Get VNC connection info.
+        self.vnc_address = self.__get_vnc_address()
+        self.vnc_port = self.__get_vnc_port()
+        print "VNC available on {}".format(str(self.vnc_address))
 
     ################################################################################################################
     # Create a new service VM from a given template, and start it.
@@ -367,30 +375,6 @@ class ServiceVM(Model):
     ################################################################################################################
     def __get_vnc_address(self):
         return get_adapter_ip_address(self.adapter) + ":" + self.__get_vnc_port()
-
-    ################################################################################################################
-    # Starts a VNC connection with a GUI, and, if given in the argument, waits until it is closed.
-    ################################################################################################################            
-    def open_vnc(self, wait=True):
-        # Get the VNC port, which was automatically allocated by libvirt/qemu.
-        vnc_port = self.__get_vnc_port()
-        
-        # Connect through the VNC client and wait if required.
-        print 'Starting VNC GUI to VM (on {}).'.format(str(vnc_port))
-        if wait:
-            print 'Waiting for user to close VNC GUI.'
-        vnc_client = VNCClient()
-        success = vnc_client.connectAndWait(vnc_port, wait)
-
-        if success:
-            if wait:
-                print 'VNC GUI no longer running, stopped waiting.'
-            else:
-                print 'VNC GUI has been opened.'
-        else:
-            # If there was a problem, destroy the VM.
-            print 'VNC GUI could not be opened.'
-            self.destroy()
 
     ################################################################################################################
     # Stop this service VM

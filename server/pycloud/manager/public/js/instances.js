@@ -42,32 +42,6 @@ function stopSVM(stopUrl)
     ajaxGet(stopUrl, "Stopping Service VM Instance", successHandler);        
 }    
 
-/////////////////////////////////////////////////////////////////////////////////////
-// Function to start a VNC window.
-/////////////////////////////////////////////////////////////////////////////////////
-function openVNC(vncUrl)
-{
-    // Send the ajax request to start the VNC window.
-    $.ajax({
-        url: vncUrl,
-        dataType: 'json',
-        success: function( resp ) {
-            if(!ajaxCallWasSuccessful(resp))
-            {
-               showAndLogErrorMessage('Error opening VNC window'); 
-            }
-            else
-            {
-                // Do nothing, as the VNC window should have opened by now.
-                showAndLogSuccessMessage( 'VNC window opening...');
-            }
-      },
-        error: function( req, status, err ) {
-            showAndLogErrorMessage('Error opening VNC window', status, err );
-      }
-    });
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Called when the document is loaded.
 /////////////////////////////////////////////////////////////////////////////////////////////////
