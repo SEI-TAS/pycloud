@@ -115,6 +115,9 @@ class Cpu_Info(model.AttrDict):
         self.max_cores = psutil.cpu_count()
         self.usage = psutil.cpu_percent(interval=0.1)
 
+        cpu_info = cpuinfo()
+        self.speed = cpu_info['cpu MHz']
+        self.cache = int(cpu_info['cache size'].split()[0])    # In KBs, per core.
 
 class Memory_Info(model.AttrDict):
 
@@ -143,3 +146,25 @@ class Tee(object):
     def write(self, data):
         self.file.write(data)
         self.stdout.write(data)
+
+
+from collections import OrderedDict
+
+##########################################################################################
+# Returns info about the first processor. Assumes if multiprocessor, all cores are equal.
+##########################################################################################
+def cpuinfo():
+    procinfo = OrderedDict()
+
+    with open('/proc/cpuinfo') as f:
+        for line in f:
+            if not line.strip():
+                # End of one processor
+                break
+            else:
+                if len(line.split(':')) == 2:
+                    procinfo[line.split(':')[0].strip()] = line.split(':')[1].strip()
+                else:
+                    procinfo[line.split(':')[0].strip()] = ''
+
+    return procinfo
