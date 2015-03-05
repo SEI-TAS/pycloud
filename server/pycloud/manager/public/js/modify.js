@@ -45,6 +45,8 @@ function showImageInfoAndButtons(vm_image)
 
     $('#save-svm-button').hide();
     $('#discard-svm-button').hide();
+    $('#ssh-label').hide();
+    $('#vnc-label').hide();
 
     // Re-enable the Save button for the service, since we are done modifiying the image.
     $('#submitButton').disable(false);
@@ -63,6 +65,8 @@ function showServiceVMButtons(svm)
 
     $('#save-svm-button').show();
     $('#discard-svm-button').show();
+    $('#ssh-label').show();
+    $('#vnc-label').show();
 
     // Disable the Save button, we don't want to save the service until we've dealt with the vm image.
     $('#submitButton').disable(true);
