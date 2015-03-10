@@ -2,9 +2,12 @@ __author__ = 'jdroot'
 
 from setuptools import setup, find_packages
 from pip.req import parse_requirements
+from pip.download import PipSession
+
+pip_session = PipSession()
 
 #Parse the requirements file
-reqs = [str(ir.req) for ir in parse_requirements('requirements.txt')]
+reqs = [str(ir.req) for ir in parse_requirements('requirements.txt', session=pip_session)]
 
 setup(
     name='pycloud',
