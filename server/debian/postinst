@@ -15,3 +15,11 @@ echo "Creating /var/pycloud"
 mkdir -p /var/pycloud
 echo "Changing /var/pycloud permissions"
 chmod 777 /var/pycloud
+
+PYCLOUD_HOME="/usr/share/python/python-pycloud/lib/python2.7/site-packages/pycloud-0.1dev-py2.7.egg"
+
+#Copying vm template to data folder.
+echo "Creating data subfolder"
+mkdir -p /var/pycloud/data
+echo "Copying vm template to data folder"
+cp $PYCLOUD_HOME/pycloud/pycloud/vm/vm_template.xml /var/pycloud/data/
