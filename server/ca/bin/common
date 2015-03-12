@@ -1,5 +1,9 @@
 #!/bin/bash
 
+OUTPUT_FOLDER=./certs
+CA_KEY_FOLDER=./ca_key
+ORG_INFO_FILE=$OUTPUT_FOLDER/org_info
+
 do_exit_error() {
     exit 1
 }
@@ -16,6 +20,7 @@ error() {
     exit 1
 }
 
+# TODO: update this to match current uses
 print_help() {
     echo ""
     echo "USAGE: $0 hostname ca ca_key organization country state locality"

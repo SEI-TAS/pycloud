@@ -1,20 +1,30 @@
 #!/bin/bash
 
-#TODO: add ca cert deployment
+# Recreate target folder for the CA certificate.
+rm -f -r /etc/pki/CA
+mkdir -p /etc/pki/CA
 
-# TODO remove warning
-rm -r /etc/pki/libvirt
+# Copy and set permissions for CA certificate.
+cp certificate_authority_certificate.pem /etc/pki/CA/cacert.pem
+chmod 444 /etc/pki/CA/cacert.pem
 
-mkdir /etc/pki/libvirt
+# Recreate target folders for the host certificates and keys.
+
+rm -f -r /etc/pki/libvirt
+
+mkdir -p /etc/pki/libvirt
 chmod 755 /etc/pki/libvirt
 
 mkdir -p /etc/pki/libvirt/private
 chmod 750 /etc/pki/libvirt/private
 
+# Copy the certificates and private keys.
 cp *.client.pem /etc/pki/libvirt/clientcert.pem
 cp *.server.pem /etc/pki/libvirt/servercert.pem
 cp *.client.key.pem /etc/pki/libvirt/private/clientkey.pem
 cp *.server.key.pem /etc/pki/libvirt/private/serverkey.pem
+
+# Set proper ownership and permissions.
 
 chgrp kvm /etc/pki/libvirt \
           /etc/pki/libvirt/clientcert.pem \
