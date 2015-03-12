@@ -1,5 +1,14 @@
 #!/bin/bash
 
+print_help() {
+    echo ""
+    echo "USAGE: $0 organization country state locality"
+    echo
+    echo "This script will generate a CA certificate and key for the given organization"
+    echo ""
+    exit 0
+}
+
 srcdir=$(readlink -m $(dirname $0))
 source $srcdir/common
 

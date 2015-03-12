@@ -1,5 +1,15 @@
 #!/bin/bash
 
+print_help() {
+    echo ""
+    echo "USAGE: $0 hostname"
+    echo
+    echo "This script will generate server or client certificates based on a hostname"
+    echo "in the organization defined when creating the CA"
+    echo ""
+    exit 0
+}
+
 srcdir=$(readlink -m $(dirname $0))
 source $srcdir/common
 

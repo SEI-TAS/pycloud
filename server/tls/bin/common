@@ -19,14 +19,3 @@ error() {
     type -t print_help && print_help 1>&2
     exit 1
 }
-
-# TODO: update this to match current uses
-print_help() {
-    echo ""
-    echo "USAGE: $0 hostname ca ca_key organization country state locality"
-    echo
-    echo "This script will generate server or client certificates based on a hostname"
-    echo "in the given organization"
-    echo ""
-    exit 0
-}
