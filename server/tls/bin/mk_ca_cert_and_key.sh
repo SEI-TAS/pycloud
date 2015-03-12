@@ -39,6 +39,6 @@ TEMP_INFO_FILE=$(mktemp)
 $srcdir/_mk_ca_info.sh $ORG > $TEMP_INFO_FILE
 
 echo "Generating certificate"
-$srcdir/_mk_cert_self_signed.sh $NAME $TEMP_INFO_FILE
+$srcdir/_mk_ca_cert_self_signed.sh $NAME $TEMP_INFO_FILE
 
 rm TEMP_INFO_FILE
