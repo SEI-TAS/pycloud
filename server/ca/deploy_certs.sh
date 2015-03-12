@@ -1,4 +1,8 @@
 #!/bin/bash
+
+#TODO: add ca cert deployment
+
+# TODO remove warning
 rm -r /etc/pki/libvirt
 
 mkdir /etc/pki/libvirt

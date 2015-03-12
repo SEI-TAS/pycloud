@@ -1,7 +1,4 @@
 #!/bin/bash
 
-srcdir=$(readlink -m $(dirname $0))
-source $srcdir/common
-
-$srcdir/mk_server.sh $1 $2 $3
-$srcdir/mk_client.sh $1 $2 $3
+$srcdir/mk_cert_and_key.sh server $1 $2 $3 $4 $5 $6 $7
+$srcdir/mk_cert_and_key.sh client $1 $2 $3 $4 $5 $6 $7

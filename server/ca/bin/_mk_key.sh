@@ -1,8 +1,5 @@
 #!/bin/bash
 
-srcdir=$(readlink -m $(dirname $0))
-source $srcdir/common
+NAME=$1
 
-OUT_FILE=$1
-
-(umask 277 && certtool --generate-privkey > $OUT_FILE)
+(umask 277 && certtool --generate-privkey > $NAME.key.pem)

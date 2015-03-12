@@ -1,9 +1,10 @@
 #!/bin/bash
 
-srcdir=$(readlink -m $(dirname $0))
-source $srcdir/common
-
-host=$1
+HOST=$1
+ORG=$2
+COUNTRY=$3
+STATE=$4
+LOCALITY=$5
 
 echo "country = $COUNTRY"
 echo "state = $STATE"

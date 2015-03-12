@@ -1,12 +1,10 @@
 #!/bin/bash
 
-srcdir=$(readlink -m $(dirname $0))
-source $srcdir/common
-
-host=$1
+HOST=$1
+ORG=$2
 
 echo "organization = $ORG"
-echo "cn = $host"
+echo "cn = $HOST"
 echo "tls_www_server"
 echo "encryption_key"
 echo "signing_key"

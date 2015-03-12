@@ -1,17 +1,13 @@
 #!/bin/bash
 
-HOST=$1
-PRIVATE_KEY=$3
+NAME=$1
 INFO=$2
-
-CA_CERT=$4
-CA_CERT_KEY=$5
-
-OUT_FILE=$6
+CA_CERT=$3
+CA_PRIV_KEY=$4
 
 certtool --generate-certificate \
             --template $INFO \
-            --load-privkey $PRIVATE_KEY \
+            --load-privkey $NAME.key.pem \
             --load-ca-certificate $CA_CERT \
-            --load-ca-privkey $CA_CERT_KEY \
-            --outfile $OUT_FILE
+            --load-ca-privkey $CA_PRIV_KEY \
+            --outfile $NAME.certificate.pem

@@ -1,11 +1,5 @@
 #!/bin/bash
 
-COUNTRY=US
-STATE=PA
-LOCALITY=Pittsburgh
-ORG="ssdlab.sei.cmu.edu"
-DOMAIN="ssdlab.sei.cmu.edu"
-
 do_exit_error() {
     exit 1
 }
@@ -15,20 +9,19 @@ error() {
     [ -z "$msg" ] && msg="Error.  Aborting."
     echo ""
     echo "${txtred}ERROR: $msg${txtrst}" 1>&2
-    
+
     trap do_exit_error EXIT
     print_help
     type -t print_help && print_help 1>&2
     exit 1
 }
 
-readval() {
-  default=$1
-  read value
-  ret=$value
-  if [ -z "$ret" ]
-  then
-    ret=$default
-  fi
-  echo -n $ret
+print_help() {
+    echo ""
+    echo "USAGE: $0 hostname ca ca_key organization country state locality"
+    echo
+    echo "This script will generate server or client certificates based on a hostname"
+    echo "in the given organization"
+    echo ""
+    exit 0
 }
