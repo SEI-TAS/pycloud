@@ -1,8 +1,5 @@
 #!/bin/bash
 
-srcdir=$(readlink -m $(dirname $0))
-source $srcdir/common
-
 NAME=$1
 FOLDER=$2
 

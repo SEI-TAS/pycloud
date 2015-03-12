@@ -1,7 +1,6 @@
 #!/bin/bash
 
 srcdir=$(readlink -m $(dirname $0))
-source $srcdir/common
 
 chmod ugo+x ./bin/*.*
 
