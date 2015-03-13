@@ -14,6 +14,8 @@ srcdir=$(readlink -m $(dirname $0))
 source $srcdir/common
 
 TYPE=$1
+echo $TYPE
+echo $srcdir/_mk_$TYPE_info.sh
 HOST=$2
 
 CA_CERT=$OUTPUT_FOLDER/certificate_authority.certificate.pem
@@ -31,9 +33,6 @@ $srcdir/_mk_key.sh $NAME $OUTPUT_FOLDER
 
 # Load organizational info: ORG, COUNTRY, STATE, LOCALITY
 source $ORG_INFO_FILE
-
-echo $ORG
-echo "check"
 
 TEMP_INFO_FILE=$(mktemp)
 $srcdir/_mk_$TYPE_info.sh $HOST $ORG $COUNTRY $STATE $LOCALITY > $TEMP_INFO_FILE
