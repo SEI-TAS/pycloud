@@ -24,9 +24,9 @@ CA_CERT=$OUTPUT_FOLDER/certificate_authority.certificate.pem
 CA_PRIV_KEY=$CA_KEY_FOLDER/certificate_authority.key.pem
 
 test -z $HOST && error "You must supply a host"
-test -e $CA_CERT && error "CA does not exist"
-test -e $CA_PRIV_KEY && error "CA key does not exist"
-test -e $ORG_INFO_FILE && error "Information file about organization does not exist"
+test -e $CA_CERT || error "CA does not exist"
+test -e $CA_PRIV_KEY || error "CA key does not exist"
+test -e $ORG_INFO_FILE || error "Information file about organization does not exist"
 
 NAME=$HOST.$TYPE
 
