@@ -18,6 +18,7 @@ COUNTRY=$2
 STATE=$3
 LOCALITY=$4
 
+echo test -z ORG
 test -z ORG && error "You must supply an organization"
 test -z COUNTRY && error "You must supply a country"
 test -z STATE && error "You must supply a state"
