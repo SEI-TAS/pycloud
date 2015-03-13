@@ -10,7 +10,6 @@ print_help() {
 }
 
 srcdir=$(readlink -m $(dirname $0))
-echo $srcdir
 source $srcdir/common
 
 ORG=$1
@@ -18,11 +17,10 @@ COUNTRY=$2
 STATE=$3
 LOCALITY=$4
 
-echo test -z ORG
-test -z ORG && error "You must supply an organization"
-test -z COUNTRY && error "You must supply a country"
-test -z STATE && error "You must supply a state"
-test -z LOCALITY && error "You must supply a locality"
+test -z $ORG && error "You must supply an organization"
+test -z $COUNTRY && error "You must supply a country"
+test -z $STATE && error "You must supply a state"
+test -z $LOCALITY && error "You must supply a locality"
 
 # Store org info.
 rm -f $ORG_INFO_FILE
