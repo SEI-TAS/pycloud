@@ -16,9 +16,6 @@ source $srcdir/common
 TYPE=$1
 HOST=$2
 
-echo $TYPE
-echo $srcdir/_mk_info_$TYPE.sh
-
 
 CA_CERT=$OUTPUT_FOLDER/certificate_authority.certificate.pem
 CA_PRIV_KEY=$CA_KEY_FOLDER/certificate_authority.key.pem
@@ -37,7 +34,7 @@ $srcdir/_mk_key.sh $NAME $OUTPUT_FOLDER
 source $ORG_INFO_FILE
 
 TEMP_INFO_FILE=$(mktemp)
-$srcdir/_mk_$TYPE_info.sh $HOST $ORG $COUNTRY $STATE $LOCALITY > $TEMP_INFO_FILE
+$srcdir/_mk_info_$TYPE.sh $HOST $ORG $COUNTRY $STATE $LOCALITY > $TEMP_INFO_FILE
 
 echo "Generating certificate"
 $srcdir/_mk_cert.sh $NAME $TEMP_INFO_FILE $CA_CERT $CA_PRIV_KEY
