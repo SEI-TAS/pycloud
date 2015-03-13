@@ -25,7 +25,7 @@ source $ORG_INFO_FILE
 
 test -z $HOST && error "You must supply a host"
 test -e $CA_CERT || error "CA does not exist"
-test -e $CA_CERT_KEY || error "CA key does not exist"
+test -e $CA_PRIV_KEY || error "CA key does not exist"
 
 NAME=$HOST.$TYPE
 
