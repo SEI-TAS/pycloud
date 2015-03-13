@@ -17,7 +17,7 @@ TYPE=$1
 HOST=$2
 
 echo $TYPE
-echo $srcdir/_mk$TYPE_info.sh
+echo $srcdir/_mk_info_$TYPE.sh
 
 
 CA_CERT=$OUTPUT_FOLDER/certificate_authority.certificate.pem
