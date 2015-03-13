@@ -23,7 +23,7 @@ test -z STATE && error "You must supply a state"
 test -z LOCALITY && error "You must supply a locality"
 
 # Store org info.
-rm -p ORG_INFO_FILE
+rm -f ORG_INFO_FILE
 touch ORG_INFO_FILE
 echo "ORG=$ORG" > ORG_INFO_FILE
 echo "COUNTRY=$COUNTRY" > ORG_INFO_FILE

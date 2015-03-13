@@ -8,6 +8,8 @@ INFO_FILE=$2
 CA_CERT=$3
 CA_PRIV_KEY=$4
 
+mkdir -p $OUTPUT_FOLDER
+
 certtool --generate-certificate \
             --template $INFO_FILE \
             --load-privkey $OUTPUT_FOLDER/$NAME.key.pem \
