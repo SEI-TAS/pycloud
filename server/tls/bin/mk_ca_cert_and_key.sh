@@ -24,12 +24,12 @@ test -z STATE && error "You must supply a state"
 test -z LOCALITY && error "You must supply a locality"
 
 # Store org info.
-rm -f ORG_INFO_FILE
-touch ORG_INFO_FILE
-echo "ORG=$ORG" >> ORG_INFO_FILE
-echo "COUNTRY=$COUNTRY" >> ORG_INFO_FILE
-echo "STATE=$STATE" >> ORG_INFO_FILE
-echo "LOCALITY=$LOCALITY" >> ORG_INFO_FILE
+rm -f $ORG_INFO_FILE
+touch $ORG_INFO_FILE
+echo "ORG=$ORG" >> $ORG_INFO_FILE
+echo "COUNTRY=$COUNTRY" >> $ORG_INFO_FILE
+echo "STATE=$STATE" >> $ORG_INFO_FILE
+echo "LOCALITY=$LOCALITY" >> $ORG_INFO_FILE
 
 NAME=certificate_authority
 
