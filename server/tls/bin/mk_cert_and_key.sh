@@ -35,7 +35,6 @@ source $ORG_INFO_FILE
 
 TEMP_INFO_FILE=$(mktemp)
 $srcdir/_mk_info_$TYPE.sh $HOST $ORG $COUNTRY $STATE $LOCALITY > $TEMP_INFO_FILE
-cat $TEMP_INFO_FILE
 
 echo "Generating certificate"
 $srcdir/_mk_cert.sh $NAME $TEMP_INFO_FILE $CA_CERT $CA_PRIV_KEY
