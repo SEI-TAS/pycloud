@@ -1,6 +1,7 @@
 #!/bin/bash
 
-OUTPUT_FOLDER=./certs
+srcdir=$(readlink -m $(dirname $0))
+OUTPUT_FOLDER=$srcdir/certs
 
 # Recreate target folder for the CA certificate.
 rm -f -r /etc/pki/CA
