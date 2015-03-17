@@ -22,6 +22,8 @@ test -z $COUNTRY && error "You must supply a country"
 test -z $STATE && error "You must supply a state"
 test -z $LOCALITY && error "You must supply a locality"
 
+mkdir -p $OUTPUT_FOLDER
+
 # Store org info.
 rm -f $ORG_INFO_FILE
 touch $ORG_INFO_FILE
