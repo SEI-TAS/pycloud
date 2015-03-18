@@ -1,0 +1,21 @@
+
+Setup and run from this directory:
+
+python setup.py egg_info
+
+paster serve --reload development.ini
+
+Creating a Controller
+ - Create controller inside the ./controllers folder, naming the class <ContName>Controller, deriving from pycloud.manager.BaseController
+    - Each method to be an action needs to have a GET_ or POST_ prefix in its name; ie, GET_<actioname>(self):
+ - Import controller in ./controllers/__init__.py
+    from <module> import <ControllerClass>
+ - In ./config/routing.py \, add a route for each of the actions (this also needs to be done each time an action is added)
+    connect('<nickname>', '/<URL_path>', controller='<controllermodulename>', action='<actioname>')
+    
+Creating a Page
+ - Create an HTML file with the .html extension inside the ./templates folder, naming the class <PageName>Page, deriving from BasePage
+ - In ./lib/pages.py, add a line declaring the class for the page
+    class <PageName>Page(BasePage): pass
+ - To use the page from a Controller, import the page class, and then do 
+    return <PageName>Page.render()

@@ -1,21 +1,15 @@
+This folder contains the Pycloud Cloudlet Server. It is structured as follows:
 
-Setup and run from this directory:
-
-python setup.py egg_info
-
-paster serve --reload development.ini
-
-Creating a Controller
- - Create controller inside the ./controllers folder, naming the class <ContName>Controller, deriving from pycloud.manager.BaseController
-    - Each method to be an action needs to have a GET_ or POST_ prefix in its name; ie, GET_<actioname>(self):
- - Import controller in ./controllers/__init__.py
-    from <module> import <ControllerClass>
- - In ./config/routing.py \, add a route for each of the actions (this also needs to be done each time an action is added)
-    connect('<nickname>', '/<URL_path>', controller='<controllermodulename>', action='<actioname>')
-    
-Creating a Page
- - Create an HTML file with the .html extension inside the ./templates folder, naming the class <PageName>Page, deriving from BasePage
- - In ./lib/pages.py, add a line declaring the class for the page
-    class <PageName>Page(BasePage): pass
- - To use the page from a Controller, import the page class, and then do 
-    return <PageName>Page.render()
+ * debian/: files needed to create a .deb installer.
+ * discovery/: configuration files to enable Cloudlet discovery through avahi-daemon.
+ * pycloud/: the actual code for the Cloudlet Server.
+ * scripts/: some miscellaneous scripts.
+ * testing/: some test scripts.
+ * tls/: scripts to set up a CA and to set up scripts for libvirt.
+ * upstart/: Upstart script configurations for test apps.
+ * bootstrap.py: script for manually starting the server.
+ * dev_tips.txt: some hints for developing parts of the system.
+ * development.ini: config file used while developing.
+ * pycloud.ini: config file used when installing the server.
+ * MANIFEST.in, requirements.txt, setup.cfg and setup.py: config files for setting up this python package.
+ * README this file.
