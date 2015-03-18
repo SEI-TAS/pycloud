@@ -1,11 +1,14 @@
 #!/bin/bash
 
+srcdir=$(readlink -m $(dirname $0))
+OUTPUT_FOLDER=$srcdir/certs
+
 # Recreate target folder for the CA certificate.
 rm -f -r /etc/pki/CA
 mkdir -p /etc/pki/CA
 
 # Copy and set permissions for CA certificate.
-cp certificate_authority_certificate.pem /etc/pki/CA/cacert.pem
+cp $OUTPUT_FOLDER/certificate_authority.certificate.pem /etc/pki/CA/cacert.pem
 chmod 444 /etc/pki/CA/cacert.pem
 
 # Recreate target folders for the host certificates and keys.
@@ -19,10 +22,10 @@ mkdir -p /etc/pki/libvirt/private
 chmod 750 /etc/pki/libvirt/private
 
 # Copy the certificates and private keys.
-cp *.client.pem /etc/pki/libvirt/clientcert.pem
-cp *.server.pem /etc/pki/libvirt/servercert.pem
-cp *.client.key.pem /etc/pki/libvirt/private/clientkey.pem
-cp *.server.key.pem /etc/pki/libvirt/private/serverkey.pem
+cp $OUTPUT_FOLDER/*.client.certificate.pem /etc/pki/libvirt/clientcert.pem
+cp $OUTPUT_FOLDER/*.server.certificate.pem /etc/pki/libvirt/servercert.pem
+cp $OUTPUT_FOLDER/*.client.key.pem /etc/pki/libvirt/private/clientkey.pem
+cp $OUTPUT_FOLDER/*.server.key.pem /etc/pki/libvirt/private/serverkey.pem
 
 # Set proper ownership and permissions.
 
