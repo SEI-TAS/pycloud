@@ -23,3 +23,7 @@ echo "Creating data subfolder"
 mkdir -p /var/pycloud/data
 echo "Copying vm template to data folder"
 cp $PYCLOUD_HOME/pycloud/pycloud/vm/vm_template.xml /var/pycloud/data/
+
+# Ensure permissions for user that will run the server.
+echo "Changing /var/pycloud permissions"
+chmod -R 777 /var/pycloud
