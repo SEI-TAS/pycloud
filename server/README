@@ -3,7 +3,7 @@ This folder contains the Pycloud Cloudlet Server. It is structured as follows:
  * debian/: files needed to create a .deb installer.
  * discovery/: configuration files to enable Cloudlet discovery through avahi-daemon.
  * pycloud/: the actual code for the Cloudlet Server.
- * scripts/: some miscellaneous scripts.
+ * scripts/: scripts for setting up the environment for development. full_dev_setup.sh is the main one.
  * testing/: some test scripts.
  * tls/: scripts to set up a CA and to set up scripts for libvirt.
  * upstart/: Upstart script configurations for test apps.
