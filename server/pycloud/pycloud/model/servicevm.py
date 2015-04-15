@@ -181,6 +181,9 @@ class ServiceVM(Model):
             self.ssh_port = self.SSH_INTERNAL_PORT
         else:
             # No bridge mode, means we have to setup port forwarding.
+            # Ensure we are not using bridged mode.
+            xml_descriptor.enableNonBridgedMode(self.adapter)
+
             # Create a new port if we do not have an external port already.
             print 'Setting up port forwarding'
             if not self.port:

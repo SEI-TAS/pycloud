@@ -75,6 +75,23 @@ class VirtualMachineDescriptor(object):
             network_card.append(ElementTree.fromstring('<source bridge="%s"/>' % adapter))
 
     ################################################################################################################
+    # Will enable the non-bridged mode in the XML.
+    ################################################################################################################
+    def enableNonBridgedMode(self, adapter):
+        # Get the devices node
+        devices = self.xmlRoot.find('devices')
+
+        # Find the network card, change its type to ethernet.
+        # We assume the VM has exactly 1 network interface.
+        network_card = devices.find("interface")
+        network_card.set("type", "ethernet")
+        network_card.set("name", adapter)
+
+        network_card_source = network_card.find("source")
+        if network_card_source is not None:
+            network_card.remove(network_card_source)
+
+    ################################################################################################################
     # Sets the mac address to the given value.
     # We assume the VM has exactly 1 network interface.
     ################################################################################################################
