@@ -22,4 +22,3 @@ KD-Cloudlet comprises a total of 7 GitHub projects:
 
 Building and Installation information in https://github.com/SEI-AMS/pycloud/wiki. 
 
-pycloud
