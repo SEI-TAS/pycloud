@@ -1,7 +1,34 @@
+# KVM-based Discoverable Cloudlet (KD-Cloudlet)
+# Copyright (c) 2015 Carnegie Mellon University.
+# All Rights Reserved.
+#
+# THIS SOFTWARE IS PROVIDED "AS IS," WITH NO WARRANTIES WHATSOEVER. CARNEGIE MELLON UNIVERSITY EXPRESSLY DISCLAIMS TO THE FULLEST EXTENT PERMITTEDBY LAW ALL EXPRESS, IMPLIED, AND STATUTORY WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT OF PROPRIETARY RIGHTS.
+#
+# Released under a modified BSD license, please see license.txt for full terms.
+# DM-0002138
+#
+# KD-Cloudlet includes and/or makes use of the following Third-Party Software subject to their own licenses:
+# MiniMongo
+# Copyright (c) 2010-2014, Steve Lacy
+# All rights reserved. Released under BSD license.
+# https://github.com/MiniMongo/minimongo/blob/master/LICENSE
+#
+# Bootstrap
+# Copyright (c) 2011-2015 Twitter, Inc.
+# Released under the MIT License
+# https://github.com/twbs/bootstrap/blob/master/LICENSE
+#
+# jQuery JavaScript Library v1.11.0
+# http://jquery.com/
+# Includes Sizzle.js
+# http://sizzlejs.com/
+# Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
+# Released under the MIT license
+# http://jquery.org/license
 __author__ = 'Sebastian'
 
 """
-A simple Python script to send messages to a sever over Bluetooth
+A simple Python script to send messages to a server over Bluetooth
 using PyBluez (with Python 2).
 """
 
@@ -87,14 +114,21 @@ def comm_test(device_socket):
 ######################################################################################################################
 #
 ######################################################################################################################
-class BluetoothSKAAdapter(ISKADevice):
+class BluetoothSKADevice(ISKADevice):
 
     device_socket = None
 
     ####################################################################################################################
     #
     ####################################################################################################################
-    def list_devices(self):
+    def BluetoothSKADevice(self, device):
+        self.device = device
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    @staticmethod
+    def list_devices():
         # Check that there is a Bluetooth adapter available.
         adapter_address = get_adapter_address()
         if adapter_address is None:
@@ -103,19 +137,23 @@ class BluetoothSKAAdapter(ISKADevice):
         # Find a device that has the service we want to use.
         devices = find_ska_service()
 
-        return devices
+        ska_devices = []
+        for device in devices:
+            ska_devices.append(BluetoothSKADevice(device))
+
+        return ska_devices
 
     ####################################################################################################################
     #
     ####################################################################################################################
-    def connect(self, device):
+    def connect(self):
         # Check that there is a Bluetooth adapter available.
         adapter_address = get_adapter_address()
         if adapter_address is None:
             raise Exception("Bluetooth adapter not available.")
 
         # Connect to the device.
-        self.device_socket = connect_to_device(device)
+        self.device_socket = connect_to_device(self.device)
         if self.device_socket is None:
             return False
         else:
@@ -153,12 +191,13 @@ class BluetoothSKAAdapter(ISKADevice):
 # "Main"
 ######################################################################################################################
 
-adapter = BluetoothSKAAdapter()
-devices = adapter.list_devices()
+devices = BluetoothSKADevice.list_devices()
 
 if len(devices) < 0:
     sys.exit(0)
 
-adapter.connect(devices[0])
-adapter.get_id()
-adapter.disconnect()
+device = devices[0]
+
+device.connect()
+device.get_id()
+device.disconnect()
