@@ -2,9 +2,9 @@ Pylons==0.9.7
 Routes==1.11
 webob==1.0.8
 WebTest==1.4.3
-mako>=0.5
+mako==0.5
 pymongo==2.6.3
 psutil==2.0.0
-requests>=2.5.0
-netifaces >= 0.10.0
-netaddr >= 0.7.13
+requests==2.5.0
+netifaces == 0.10.0
+netaddr == 0.7.13
