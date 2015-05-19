@@ -40,7 +40,7 @@ import subprocess
 from ska_device_interface import ISKADevice
 
 ######################################################################################################################
-#
+# Checks that there is an enabled Bluetoothd evice, and returns its addresss.
 ######################################################################################################################
 def get_adapter_address():
     internal_address = None
@@ -190,14 +190,14 @@ class BluetoothSKADevice(ISKADevice):
 ######################################################################################################################
 # "Main"
 ######################################################################################################################
+def main():
+    devices = BluetoothSKADevice.list_devices()
 
-devices = BluetoothSKADevice.list_devices()
+    if len(devices) < 0:
+        sys.exit(0)
 
-if len(devices) < 0:
-    sys.exit(0)
+    device = devices[0]
 
-device = devices[0]
-
-device.connect()
-device.get_id()
-device.disconnect()
+    device.connect()
+    device.get_id()
+    device.disconnect()

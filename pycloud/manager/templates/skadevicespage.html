@@ -44,6 +44,11 @@ http://jquery.org/license
                 <h2>Available Devices</h2>
             </div>
             <div class="panel-body">
+                Connection type:
+                <select>
+                    <option>Bluetooth</option>
+                    <option>USB</option>
+                </select>
                 <a class="btn btn-large btn-success" href="#" onclick="reloadPage();">Refresh</a>
                 <br><br>
                 <table class="table table-striped">
@@ -54,8 +59,7 @@ http://jquery.org/license
                     % for device in page.devices:
                         <%
                             pair_url = h.url_for(controller='ska', action='pair', id=device.mac)
-                            #redirectUrl = h.url_for(controller='ibc', action='list')
-                            #redirectUrl = h.url_for(controller='ska', action='devices')
+                            redirectUrl = h.url_for(controller='ska', action='devices')
                             pair_click = "pair('" + pair_url + ", " + redirectUrl + "');"
                         %>
                         <tr>

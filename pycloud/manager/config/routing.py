@@ -76,5 +76,6 @@ def make_map():
     connect('import_service', '/service/importsvm', controller='import', action='import')
 
     connect('available_devices', '/ska/devices', controller='ska', action='devices')
+    connect('pair_device', '/ska/pair/{id}', controller='ska', action='pair')
 
     return mapper
