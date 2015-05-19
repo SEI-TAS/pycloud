@@ -35,6 +35,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import SKADevicesPage
 from pycloud.pycloud.ska import ska_device_interface
 from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
+from pycloud.pycloud.ibc import ibc
 
 log = logging.getLogger(__name__)
 
@@ -84,13 +85,12 @@ class SKAController(BaseController):
         device_internal_id = curr_device.get_id()
         print device_internal_id
 
-        # password = curr_device.getPassword()
+        # password = curr_device.get_password()
 
-        # ibc_private_key = ibclib.generateKeys(device_internal_id, password)
-        # ibclib.storePrivateKey(ibc_private_key)
-        # certificate = ibclib.generateCertificate(device_internal_id, ibc_private_key)
+        #ibc_private_key = ibc.generate_private_key(device_internal_id, password)
+        #certificate = ibc.generate_client_certificate(device_internal_id, ibc_private_key)
 
-        # curr_device.send_files([ibc_private_key, certificate, cert_private_key])
+        #curr_device.send_files([ibc_private_key, certificate.cert, certificate.private_key])
 
         curr_device.disconnect()
 
