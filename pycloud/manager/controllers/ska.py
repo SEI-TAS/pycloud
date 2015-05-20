@@ -72,7 +72,7 @@ class SKAController(BaseController):
 
         devices = BluetoothSKADevice.list_devices()
         for device in devices:
-            if device['id'] == id:
+            if device.device_info['host'] == id:
                 curr_device = device
                 break
 
@@ -94,4 +94,4 @@ class SKAController(BaseController):
 
         curr_device.disconnect()
 
-        return SKADevicesPage().render()
+        return self.GET_devices()

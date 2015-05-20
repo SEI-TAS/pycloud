@@ -26,7 +26,7 @@
 # Released under the MIT license
 # http://jquery.org/license
 
-__author__ = 'Sebastián'
+__author__ = 'Sebastian'
 
 def generate_master_keys(path):
     pass

@@ -42,8 +42,9 @@ Creating a Controller
     connect('<nickname>', '/<URL_path>', controller='<controllermodulename>', action='<actioname>')
     
 Creating a Page
- - Create an HTML file with the .html extension inside the ./templates folder, naming the class <PageName>Page, deriving from BasePage
+ - Create an HTML file with the .html extension inside the ./templates folder, naming the file <pagename>page.html
  - In ./lib/pages.py, add a line declaring the class for the page
     class <PageName>Page(BasePage): pass
- - To use the page from a Controller, import the page class, and then do 
-    return <PageName>Page.render()
+ - To use the page from a Controller, import the page class, and then do
+    page = <PageName>Page()
+    return page.render()

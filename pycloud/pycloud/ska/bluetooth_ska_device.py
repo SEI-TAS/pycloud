@@ -121,8 +121,8 @@ class BluetoothSKADevice(ISKADevice):
     ####################################################################################################################
     #
     ####################################################################################################################
-    def BluetoothSKADevice(self, device):
-        self.device = device
+    def __init__(self, device):
+        self.device_info = device
 
     ####################################################################################################################
     #
@@ -153,7 +153,7 @@ class BluetoothSKADevice(ISKADevice):
             raise Exception("Bluetooth adapter not available.")
 
         # Connect to the device.
-        self.device_socket = connect_to_device(self.device)
+        self.device_socket = connect_to_device(self.device_info)
         if self.device_socket is None:
             return False
         else:
