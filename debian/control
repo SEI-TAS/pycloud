@@ -20,5 +20,6 @@ Depends: ${python:Depends},
          python-libvirt,
          mongodb,
          libnss-mdns,
-         avahi-daemon
+         avahi-daemon,
+         libbluetooth-dev
 Description:

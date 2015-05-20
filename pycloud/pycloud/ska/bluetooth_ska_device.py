@@ -39,6 +39,12 @@ import subprocess
 #import pycloud.pycloud.ska.ska_device_interface.ISKADevice
 from ska_device_interface import ISKADevice
 
+# Id of the service on a mobile device that is waiting for a pairing process.
+SKA_PAIRING_UUID = "fa87c0d0-afac-11de-8a39-0800200c9a66"
+
+# Size of a chunk when transmitting through TCP .
+CHUNK_SIZE = 4096
+
 ######################################################################################################################
 # Checks that there is an enabled Bluetoothd evice, and returns its addresss.
 ######################################################################################################################
@@ -69,9 +75,8 @@ def find_bluetooth_devices():
 #
 ######################################################################################################################
 def find_ska_service(device_address=None):
-    print('Searching for the SKA secure service')
-    uuid = "fa87c0d0-afac-11de-8a39-0800200c9a66"
-    service_matches = bluetooth.find_service(uuid=uuid, address=device_address)
+    print('Searching for devices with the SKA secure service')
+    service_matches = bluetooth.find_service(uuid=SKA_PAIRING_UUID, address=device_address)
     print 'Services found: ' + str(service_matches)
 
     if len(service_matches) == 0:
@@ -80,7 +85,7 @@ def find_ska_service(device_address=None):
     return service_matches
 
 ######################################################################################################################
-#
+# Connects to a Bluetooth device given the bluetooth device info dict, and returns a socket.
 ######################################################################################################################
 def connect_to_device(device_info):
     port = device_info["port"]
@@ -107,9 +112,9 @@ def comm_test(device_socket):
             print('Getting id...')
         device_socket.send(text)
 
-        # Wait for reply.
-        reply = device_socket.recv(4096)
-        print 'Reply: ' + str(reply)
+        # Wait for reply, it should be small enough to fit in one chunk.
+        reply = device_socket.recv(CHUNK_SIZE)
+        print 'Id: ' + str(reply)
 
 ######################################################################################################################
 #
@@ -117,15 +122,16 @@ def comm_test(device_socket):
 class BluetoothSKADevice(ISKADevice):
 
     device_socket = None
+    device_info = None
 
     ####################################################################################################################
-    #
+    # Creates a device using the provided device info dict.
     ####################################################################################################################
     def __init__(self, device):
         self.device_info = device
 
     ####################################################################################################################
-    #
+    # Returns a list of BluetoothSKADevices that have the SKA Pairing service available.
     ####################################################################################################################
     @staticmethod
     def list_devices():
@@ -144,7 +150,7 @@ class BluetoothSKADevice(ISKADevice):
         return ska_devices
 
     ####################################################################################################################
-    #
+    # Makes a TCP connection over Bluetooth to this device.
     ####################################################################################################################
     def connect(self):
         # Check that there is a Bluetooth adapter available.
@@ -160,14 +166,14 @@ class BluetoothSKADevice(ISKADevice):
             return True
 
     ####################################################################################################################
-    #
+    # Closes the TCP socket.
     ####################################################################################################################
     def disconnect(self):
         if self.device_socket is not None:
             self.device_socket.close()
 
     ####################################################################################################################
-    #
+    # Obtains the internal id of this device.
     ####################################################################################################################
     def get_id(self):
         if self.device_socket is None:
@@ -175,17 +181,29 @@ class BluetoothSKADevice(ISKADevice):
 
         self.device_socket.send('id')
 
-        # Wait for reply.
-        device_id = self.device_socket.recv(4096)
-        print 'Reply: ' + str(device_id)
+        # Wait for reply, it should be small enough to fit in one chunk.
+        device_id = self.device_socket.recv(CHUNK_SIZE)
+        print 'Id: ' + str(device_id)
 
         return device_id
 
     ####################################################################################################################
-    #
+    # Send all given files
     ####################################################################################################################
     def send_files(self, file_list):
-        raise NotImplementedError()
+        # Loop over all files.
+        for file_name in file_list:
+            file_to_send = open(file_name, 'rb')
+
+            # Send until there is no more data in the file.
+            while True:
+                data_chunk = file_to_send.read(CHUNK_SIZE)
+                if not data_chunk:
+                    break
+
+                sent = self.device_socket.send(data_chunk)
+                if sent < len(data_chunk):
+                    print 'Error sending data chunk.'
 
 ######################################################################################################################
 # "Main"
