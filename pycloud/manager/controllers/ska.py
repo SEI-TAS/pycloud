@@ -58,9 +58,17 @@ class SKAController(BaseController):
         page.devices = []
 
         # if select == bluetooth:
-        page.devices = BluetoothSKADevice.list_devices()
+        try:
+            page.devices = BluetoothSKADevice.list_devices()
+        except Exception, e:
+            pass
+            # Should show a warning to user.
+        
         # else:
         # page.devices = ADBSKADevice.list_devices()
+        print("ok")
+        print(page.devices)
+        print("ok")
 
         return page.render()
 

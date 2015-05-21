@@ -138,7 +138,7 @@ class BluetoothSKADevice(ISKADevice):
         # Check that there is a Bluetooth adapter available.
         adapter_address = get_adapter_address()
         if adapter_address is None:
-            return Exception("Bluetooth adapter not available.")
+            raise Exception("Bluetooth adapter not available.")
 
         # Find a device that has the service we want to use.
         devices = find_ska_service()
