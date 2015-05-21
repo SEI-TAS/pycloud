@@ -97,6 +97,8 @@ def connect_to_device(device_info):
     socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
     socket.connect((host, port))
 
+    print("Connected to \"%s\" on %s" % (name, host))
+
     return socket
 
 ######################################################################################################################
@@ -179,6 +181,7 @@ class BluetoothSKADevice(ISKADevice):
         if self.device_socket is None:
             raise Exception("Not connected to a device.")
 
+        print 'Sending id message'
         self.device_socket.send('id')
 
         # Wait for reply, it should be small enough to fit in one chunk.

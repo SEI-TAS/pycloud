@@ -63,12 +63,9 @@ class SKAController(BaseController):
         except Exception, e:
             pass
             # Should show a warning to user.
-        
+
         # else:
         # page.devices = ADBSKADevice.list_devices()
-        print("ok")
-        print(page.devices)
-        print("ok")
 
         return page.render()
 
@@ -89,17 +86,17 @@ class SKAController(BaseController):
 
         # Here the whole pairing process should be followed, generating IBC keys and all.
         # For now, we are just getting the id.
-        curr_device.connect()
-        device_internal_id = curr_device.get_id()
-        print device_internal_id
+        if curr_device.connect():
+            device_internal_id = curr_device.get_id()
+            print device_internal_id
 
-        # password = curr_device.get_password()
+            # password = curr_device.get_password()
 
-        #ibc_private_key = ibc.generate_private_key(device_internal_id, password)
-        #certificate = ibc.generate_client_certificate(device_internal_id, ibc_private_key)
+            #ibc_private_key = ibc.generate_private_key(device_internal_id, password)
+            #certificate = ibc.generate_client_certificate(device_internal_id, ibc_private_key)
 
-        #curr_device.send_files([ibc_private_key, certificate.cert, certificate.private_key])
+            #curr_device.send_files([ibc_private_key, certificate.cert, certificate.private_key])
 
-        curr_device.disconnect()
+            curr_device.disconnect()
 
         return self.GET_devices()
