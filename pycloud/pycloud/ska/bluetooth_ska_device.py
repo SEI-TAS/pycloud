@@ -178,25 +178,49 @@ class BluetoothSKADevice(ISKADevice):
     # Obtains the internal id of this device.
     ####################################################################################################################
     def get_id(self):
-        if self.device_socket is None:
-            raise Exception("Not connected to a device.")
-
-        print 'Sending id message'
-        self.device_socket.send('id')
-
-        # Wait for reply, it should be small enough to fit in one chunk.
-        device_id = self.device_socket.recv(CHUNK_SIZE)
-        print 'Id: ' + str(device_id)
-
+        device_id = self.send_command('id')
         return device_id
 
     ####################################################################################################################
-    # Send all given files
+    # Sends the master public key file (IBE parameters file).
     ####################################################################################################################
-    def send_files(self, file_list):
-        # Loop over all files.
-        for file_name in file_list:
-            file_to_send = open(file_name, 'rb')
+    def send_master_public_key(self, file_path):
+        self.send_file('master_public_key', file_path)
+
+    ####################################################################################################################
+    # Sends the device's private IBE key.
+    ####################################################################################################################
+    def send_device_private_key(self, file_path):
+        self.send_file('device_private_key', file_path)
+
+    ####################################################################################################################
+    # Sends the server's Wi-Fi WPA2-Enterprise certificate.
+    ####################################################################################################################
+    def send_server_certificate(self, file_path):
+        self.send_file('server_certificate', file_path)
+
+    ####################################################################################################################
+    # Sends a short command.
+    ####################################################################################################################
+    def send_command(self, command):
+        if self.device_socket is None:
+            raise Exception("Not connected to a device.")
+
+        print 'Sending command message: ' + command
+        self.device_socket.send(command)
+
+        # Wait for reply, it should be small enough to fit in one chunk.
+        reply = self.device_socket.recv(CHUNK_SIZE)
+        print 'Reply: ' + reply
+        return reply
+
+    ####################################################################################################################
+    # Sends a given file, ensuring the other side is ready to store it.
+    ####################################################################################################################
+    def send_file(self, file_command, file_path):
+        ack = self.send_command(file_command)
+        if ack == 'ack':
+            file_to_send = open(file_path, 'rb')
 
             # Send until there is no more data in the file.
             while True:
@@ -207,6 +231,8 @@ class BluetoothSKADevice(ISKADevice):
                 sent = self.device_socket.send(data_chunk)
                 if sent < len(data_chunk):
                     print 'Error sending data chunk.'
+
+        self.send_command('file_end')
 
 ######################################################################################################################
 # "Main"

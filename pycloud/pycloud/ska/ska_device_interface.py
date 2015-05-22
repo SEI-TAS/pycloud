@@ -46,5 +46,12 @@ class ISKADevice:
     def get_id(self):
         raise NotImplementedError()
 
-    def send_files(self, file_list):
+    def send_master_public_key(self, file_path):
         raise NotImplementedError()
+
+    def send_device_private_key(self, file_path):
+        raise NotImplementedError()
+
+    def send_server_certificate(self, file_path):
+        raise NotImplementedError()
+
