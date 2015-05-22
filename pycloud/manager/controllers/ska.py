@@ -37,6 +37,9 @@ from pycloud.pycloud.ska import ska_device_interface
 from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
 from pycloud.pycloud.ibc import ibc
 
+from pycloud.pycloud.pylons.lib.util import asjson
+from pycloud.pycloud.utils import ajaxutils
+
 log = logging.getLogger(__name__)
 
 ################################################################################################################
@@ -72,6 +75,7 @@ class SKAController(BaseController):
     ############################################################################################################
     # Pairs with a device.
     ############################################################################################################
+    @asjson
     def GET_pair(self, id):
         curr_device = None
 
@@ -97,6 +101,8 @@ class SKAController(BaseController):
 
             #curr_device.send_files([ibc_private_key, certificate.cert, certificate.private_key])
 
+            curr_device.send_master_public_key('/home/adminuser/test.txt')
+
             curr_device.disconnect()
 
-        return self.GET_devices()
+        return ajaxutils.JSON_OK

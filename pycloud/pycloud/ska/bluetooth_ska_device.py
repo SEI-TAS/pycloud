@@ -35,6 +35,7 @@ using PyBluez (with Python 2).
 import bluetooth
 import sys
 import subprocess
+import os
 
 #import pycloud.pycloud.ska.ska_device_interface.ISKADevice
 from ska_device_interface import ISKADevice
@@ -220,19 +221,25 @@ class BluetoothSKADevice(ISKADevice):
     def send_file(self, file_command, file_path):
         ack = self.send_command(file_command)
         if ack == 'ack':
-            file_to_send = open(file_path, 'rb')
+            # First send the file size in bytes.
+            file_size = os.path.getsize(file_path)
+            ack = self.send_command(str(file_size))
+            if ack == 'ack':
+                # Open and send the file in chunks.
+                print 'Sending file.'
+                file_to_send = open(file_path, 'rb')
 
-            # Send until there is no more data in the file.
-            while True:
-                data_chunk = file_to_send.read(CHUNK_SIZE)
-                if not data_chunk:
-                    break
+                # Send until there is no more data in the file.
+                while True:
+                    data_chunk = file_to_send.read(CHUNK_SIZE)
+                    if not data_chunk:
+                        break
 
-                sent = self.device_socket.send(data_chunk)
-                if sent < len(data_chunk):
-                    print 'Error sending data chunk.'
+                    sent = self.device_socket.send(data_chunk)
+                    if sent < len(data_chunk):
+                        print 'Error sending data chunk.'
 
-        self.send_command('file_end')
+                print 'Finished sending file.'
 
 ######################################################################################################################
 # "Main"

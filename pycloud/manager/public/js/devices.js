@@ -34,7 +34,7 @@ http://jquery.org/license
 function pair(pairURL, redirectUrl)
 {
     var successHandler = function(response) {
-        window.location.href = redirectUrl;
+        showAndLogSuccessMessage("Device paired");
     };
 
     // Do the post to get data and load the modal.
