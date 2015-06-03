@@ -56,5 +56,8 @@ for device in AdbCommands.Devices():
     data = adb.Pull('/sdcard/test.txt')
     print data
 
+    print 'Starting activity'
+    adb.Shell('am start -n edu.cmu.sei.cloudlet.client/.ui.NewProcessSelectionActivity', timeout_ms=10000)
+
     device.Close()
 
