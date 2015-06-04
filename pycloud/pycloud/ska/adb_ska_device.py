@@ -31,16 +31,29 @@ __author__ = 'Sebastian'
 A simple Python script to
 """
 
+import time
+
 from adb.usb_exceptions import AdbCommandFailureException
 from adb.adb_commands import AdbCommands, M2CryptoSigner
-import cStringIO
-import time
 
 from ska_device_interface import ISKADevice
 
-GET_ID_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.SaveIdToFileService'
 DEVICE_FOLDER = '/sdcard/cloudlet/adb/'
+
+GET_ID_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.SaveIdToFileService'
 GET_ID_FILE = DEVICE_FOLDER + 'id.txt'
+
+LOCAL_CERT_FILE = 'test.txt'
+STORE_CERT_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreCertificateService'
+SERVER_CERT_FILE = DEVICE_FOLDER + 'server_certificate.cer'
+
+LOCAL_MKEY_FILE = 'test.txt'
+STORE_MKEY_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreMasterKeyService'
+MASTER_KEY_FILE = DEVICE_FOLDER + 'master_key.txt'
+
+LOCAL_PKEY_FILE = 'test.txt'
+STORE_PKEY_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreDeviceKeyService'
+DEVICE_PKEY_FILE = DEVICE_FOLDER + 'device_pkey.txt'
 
 ######################################################################################################################
 # Attempts to connect to an ADB daemon on a given USB device. Returns a proxy to that daemon if succesful, or None if
@@ -142,14 +155,26 @@ class ADBSKADevice(ISKADevice):
 
         return None
 
-    def send_master_public_key(self, file_path):
-        raise NotImplementedError()
-
-    def send_device_private_key(self, file_path):
-        raise NotImplementedError()
-
+    ####################################################################################################################
+    #
+    ####################################################################################################################
     def send_server_certificate(self, file_path):
-        raise NotImplementedError()
+        adb.Push(file_path, SERVER_CERT_FILE)
+        start_service(self.adb_daemon, STORE_CERT_SERVICE)
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def send_master_public_key(self, file_path):
+        self.adb_daemon.Push(file_path, MASTER_KEY_FILE)
+        start_service(self.adb_daemon, STORE_MKEY_SERVICE)
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def send_device_private_key(self, file_path):
+        self.adb_daemon.Push(file_path, DEVICE_PKEY_FILE)
+        start_service(self.adb_daemon, STORE_PKEY_SERVICE)
 
 ####################################################################################################################
 # Test script.
@@ -169,5 +194,11 @@ if len(devices) > 0:
         print 'Getting id'
         data = adbDevice.get_id()
         print data
+
+        print 'Sending files'
+        adbDevice.send_server_certificate(LOCAL_CERT_FILE)
+        adbDevice.send_master_public_key(LOCAL_MKEY_FILE)
+        adbDevice.send_device_private_key(LOCAL_PKEY_FILE)
+        print 'Files sent'
     finally:
         adbDevice.disconnect()
