@@ -31,10 +31,16 @@ __author__ = 'Sebastian'
 A simple Python script to
 """
 
+from adb.usb_exceptions import AdbCommandFailureException
 from adb.adb_commands import AdbCommands, M2CryptoSigner
 import cStringIO
+import time
 
 from ska_device_interface import ISKADevice
+
+GET_ID_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.SaveIdToFileService'
+DEVICE_FOLDER = '/sdcard/cloudlet/adb/'
+GET_ID_FILE = DEVICE_FOLDER + 'id.txt'
 
 ######################################################################################################################
 # Attempts to connect to an ADB daemon on a given USB device. Returns a proxy to that daemon if succesful, or None if
@@ -60,6 +66,12 @@ def connect_to_adb_daemon(device):
 ######################################################################################################################
 def disconnect_from_adb_daemon(adbDaemon):
     adbDaemon.Close()
+
+######################################################################################################################
+# Starts the given service on the given daemon.
+######################################################################################################################
+def start_service(adbDaemon, service_name):
+    adbDaemon.Shell('am startservice --user 0 ' + service_name, timeout_ms=20000)
 
 ######################################################################################################################
 # Implementation of a SKA device through ADB.
@@ -113,8 +125,22 @@ class ADBSKADevice(ISKADevice):
         if self.adb_daemon:
             disconnect_from_adb_daemon(self.adb_daemon)
 
+    ####################################################################################################################
+    # Gets a device id through pulling a file with adbd.
+    ####################################################################################################################
     def get_id(self):
-        raise NotImplementedError()
+        print 'Starting ID service.'
+        start_service(self.adb_daemon, GET_ID_SERVICE)
+        time.sleep(2)
+
+        print 'Downloading ID file.'
+        try:
+            device_id = self.adb_daemon.Pull(GET_ID_FILE)
+            return device_id
+        except AdbCommandFailureException, e:
+            print 'Could not get id file, file may not exist on device.'
+
+        return None
 
     def send_master_public_key(self, file_path):
         raise NotImplementedError()
@@ -125,7 +151,9 @@ class ADBSKADevice(ISKADevice):
     def send_server_certificate(self, file_path):
         raise NotImplementedError()
 
-
+####################################################################################################################
+# Test script.
+####################################################################################################################
 devices = ADBSKADevice.list_devices()
 if len(devices) > 0:
     device = devices[0]
@@ -133,17 +161,13 @@ if len(devices) > 0:
     print device.serial_number
 
     adbDevice = ADBSKADevice(device)
-    adbDevice.connect()
-    adb = adbDevice.adb_daemon
 
-    print 'Sending data'
-    adb.Push(cStringIO.StringIO('this is a test'), '/sdcard/test.txt')
+    try:
+        adbDevice.connect()
+        adb = adbDevice.adb_daemon
 
-    print 'Getting data back'
-    data = adb.Pull('/sdcard/test.txt')
-    print data
-
-    print 'Starting activity'
-    adb.Shell('am start -n edu.cmu.sei.cloudlet.client/.ui.NewProcessSelectionActivity', timeout_ms=10000)
-
-    adbDevice.disconnect()
+        print 'Getting id'
+        data = adbDevice.get_id()
+        print data
+    finally:
+        adbDevice.disconnect()
