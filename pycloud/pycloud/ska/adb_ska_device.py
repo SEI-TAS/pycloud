@@ -101,6 +101,12 @@ class ADBSKADevice(ISKADevice):
         self.serial_number = device.serial_number
 
     ####################################################################################################################
+    # Returns an name for the device.
+    ####################################################################################################################
+    def get_name(self):
+        return self.serial_number
+
+    ####################################################################################################################
     # Returns a list of ADBSKADevices. (Actually, it contains all USB devices connected to the computer).
     ####################################################################################################################
     @staticmethod
@@ -159,8 +165,9 @@ class ADBSKADevice(ISKADevice):
     #
     ####################################################################################################################
     def send_server_certificate(self, file_path):
-        adb.Push(file_path, SERVER_CERT_FILE)
+        self.adb_daemon.Push(file_path, SERVER_CERT_FILE)
         start_service(self.adb_daemon, STORE_CERT_SERVICE)
+        print 'File sent.'
 
     ####################################################################################################################
     #
@@ -168,6 +175,7 @@ class ADBSKADevice(ISKADevice):
     def send_master_public_key(self, file_path):
         self.adb_daemon.Push(file_path, MASTER_KEY_FILE)
         start_service(self.adb_daemon, STORE_MKEY_SERVICE)
+        print 'File sent.'
 
     ####################################################################################################################
     #
@@ -175,30 +183,34 @@ class ADBSKADevice(ISKADevice):
     def send_device_private_key(self, file_path):
         self.adb_daemon.Push(file_path, DEVICE_PKEY_FILE)
         start_service(self.adb_daemon, STORE_PKEY_SERVICE)
+        print 'File sent.'
 
 ####################################################################################################################
 # Test script.
 ####################################################################################################################
-devices = ADBSKADevice.list_devices()
-if len(devices) > 0:
-    device = devices[0]
-    print device
-    print device.serial_number
+def test():
+    devices = ADBSKADevice.list_devices()
+    if len(devices) > 0:
+        device = devices[0]
+        print device
+        print device.serial_number
 
-    adbDevice = ADBSKADevice(device)
+        adbDevice = ADBSKADevice(device)
 
-    try:
-        adbDevice.connect()
-        adb = adbDevice.adb_daemon
+        try:
+            adbDevice.connect()
 
-        print 'Getting id'
-        data = adbDevice.get_id()
-        print data
+            print 'Getting id'
+            data = adbDevice.get_id()
+            print data
 
-        print 'Sending files'
-        adbDevice.send_server_certificate(LOCAL_CERT_FILE)
-        adbDevice.send_master_public_key(LOCAL_MKEY_FILE)
-        adbDevice.send_device_private_key(LOCAL_PKEY_FILE)
-        print 'Files sent'
-    finally:
-        adbDevice.disconnect()
+            print 'Sending files'
+            adbDevice.send_server_certificate(LOCAL_CERT_FILE)
+            adbDevice.send_master_public_key(LOCAL_MKEY_FILE)
+            adbDevice.send_device_private_key(LOCAL_PKEY_FILE)
+            print 'Files sent'
+        finally:
+            adbDevice.disconnect()
+
+# Execute the test.
+#test()

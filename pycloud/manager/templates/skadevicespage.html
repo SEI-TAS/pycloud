@@ -44,12 +44,14 @@ http://jquery.org/license
                 <h2>Available Devices</h2>
             </div>
             <div class="panel-body">
-                Connection type:
-                <select>
-                    <option>Bluetooth</option>
-                    <option>USB</option>
-                </select>
-                <a class="btn btn-large btn-success" href="#" onclick="reloadPage();">Refresh</a>
+                <form id="connection_form" method="get" action="${h.url_for(controller='ska', action='devices')}">
+                    Connection type:
+                    <select name="connection">
+                        <option value="usb" ${page.usb_selected}>USB</option>
+                        <option value="bt" ${page.bt_selected}>Bluetooth</option>
+                    </select>
+                    <a class="btn btn-large btn-success" href="#" onclick="$('#connection_form').submit();">Refresh</a>
+                </form>
                 <br><br>
                 <table class="table table-striped">
                     <tr>
@@ -58,12 +60,12 @@ http://jquery.org/license
                     </tr>
                     % for device in page.devices:
                         <%
-                            pair_url = h.url_for(controller='ska', action='pair', id=device.device_info['host'])
+                            pair_url = h.url_for(controller='ska', action='pair', id=device.get_name(), connection=page.connection)
                             redirectUrl = h.url_for(controller='ska', action='devices')
                             pair_click = "pair('" + pair_url + ", " + redirectUrl + "');"
                         %>
                         <tr>
-                            <td>${device.device_info['host']}</td>
+                            <td>${device.get_name()}</td>
                             <td>
                                 <button class="btn btn-success" onclick="${pair_click}"
                                         data-toggle="tooltip" data-placement="bottom"

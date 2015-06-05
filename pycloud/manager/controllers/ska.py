@@ -35,6 +35,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import SKADevicesPage
 from pycloud.pycloud.ska import ska_device_interface
 from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
+from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 from pycloud.pycloud.ibc import ibc
 
 from pycloud.pycloud.pylons.lib.util import asjson
@@ -59,16 +60,29 @@ class SKAController(BaseController):
     def GET_devices(self):
         page = SKADevicesPage()
         page.devices = []
+        page.bt_selected = ''
+        page.usb_selected = ''
 
-        # if select == bluetooth:
-        try:
-            page.devices = BluetoothSKADevice.list_devices()
-        except Exception, e:
-            pass
-            # Should show a warning to user.
+        page.connection = request.params.get('connection', None)
+        if page.connection is None:
+            page.connection = 'usb'
 
-        # else:
-        # page.devices = ADBSKADevice.list_devices()
+        if page.connection == 'bt':
+            try:
+                page.bt_selected = 'selected'
+                page.devices = BluetoothSKADevice.list_devices()
+            except Exception, e:
+                print e
+                pass
+                # Should show a warning to user.
+        else:
+            try:
+                page.usb_selected = 'selected'
+                page.devices = ADBSKADevice.list_devices()
+            except Exception, e:
+                print e
+                pass
+                # Should show a warning to user.
 
         return page.render()
 
@@ -77,11 +91,20 @@ class SKAController(BaseController):
     ############################################################################################################
     @asjson
     def GET_pair(self, id):
-        curr_device = None
+        connection = request.params.get('connection', None)
+        if connection is None:
+            connection = 'bt'
 
-        devices = BluetoothSKADevice.list_devices()
+        # Get a list of devices depending on the connection type.
+        if connection == 'bt':
+            devices = BluetoothSKADevice.list_devices()
+        else:
+            devices = ADBSKADevice.list_devices()
+
+        # Find if the device we want to connect to is still there.
+        curr_device = None
         for device in devices:
-            if device.device_info['host'] == id:
+            if device.get_name() == id:
                 curr_device = device
                 break
 
@@ -89,7 +112,7 @@ class SKAController(BaseController):
             raise Exception("Device with id {} not found for pairing.".format(id))
 
         # Here the whole pairing process should be followed, generating IBC keys and all.
-        # For now, we are just getting the id.
+        # For now, we are just getting the id, and sending a test file.
         if curr_device.connect():
             device_internal_id = curr_device.get_id()
             print device_internal_id

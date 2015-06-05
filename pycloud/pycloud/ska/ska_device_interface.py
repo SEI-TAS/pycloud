@@ -37,6 +37,9 @@ class ISKADevice:
     def list_devices():
         raise NotImplementedError()
 
+    def get_name(self):
+        raise NotImplementedError()
+
     def connect(self):
         raise NotImplementedError()
 
