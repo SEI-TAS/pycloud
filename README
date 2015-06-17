@@ -15,3 +15,5 @@ This folder contains the Pycloud Cloudlet Server. It is structured as follows:
  * MANIFEST.in, requirements.txt, setup.cfg and setup.py: config files for setting up this python package.
  * README this file.
  * start_dev_server.sh: script to start server when developing, after env has been set up.
+ 
+ Packaging and installation instructions are available at https://github.com/SEI-AMS/pycloud/wiki
