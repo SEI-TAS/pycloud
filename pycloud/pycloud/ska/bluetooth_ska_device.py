@@ -37,7 +37,6 @@ import sys
 import subprocess
 import os
 
-#import pycloud.pycloud.ska.ska_device_interface.ISKADevice
 from ska_device_interface import ISKADevice
 
 # Id of the service on a mobile device that is waiting for a pairing process.
@@ -189,10 +188,10 @@ class BluetoothSKADevice(ISKADevice):
         return device_id
 
     ####################################################################################################################
-    # Sends the master public key file (IBE parameters file).
+    # Sends the server public key file (IBE parameters file).
     ####################################################################################################################
-    def send_master_public_key(self, file_path):
-        self.send_file('master_public_key', file_path)
+    def send_server_public_key(self, file_path):
+        self.send_file('server_public_key', file_path)
 
     ####################################################################################################################
     # Sends the device's private IBE key.
@@ -205,6 +204,18 @@ class BluetoothSKADevice(ISKADevice):
     ####################################################################################################################
     def send_server_certificate(self, file_path):
         self.send_file('server_certificate', file_path)
+
+    ####################################################################################################################
+    # Sends the devices's IBE certificate.
+    ####################################################################################################################
+    def send_device_certificate(self, file_path):
+        self.send_file('device_certificate', file_path)
+
+    ####################################################################################################################
+    # Sends the id of the network to be set up.
+    ####################################################################################################################
+    def send_network_id(self, network_id):
+        self.send_command('network_id#' + network_id)
 
     ####################################################################################################################
     # Sends a short command.

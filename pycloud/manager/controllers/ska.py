@@ -33,10 +33,10 @@ from pylons import request, response, session, tmpl_context as c, url
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import SKADevicesPage
-from pycloud.pycloud.ska import ska_device_interface
 from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
 from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 from pycloud.pycloud.ibc import ibc
+import pycloud.pycloud.utils.pki
 
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import ajaxutils
@@ -124,7 +124,13 @@ class SKAController(BaseController):
 
             #curr_device.send_files([ibc_private_key, certificate.cert, certificate.private_key])
 
-            curr_device.send_master_public_key('/home/adminuser/test.txt')
+            curr_device.send_server_public_key('/home/adminuser/test.txt')
+            curr_device.send_device_private_key('/home/adminuser/test.txt')
+            curr_device.send_server_certificate('/home/adminuser/test.txt')
+            curr_device.send_device_certificate('/home/adminuser/test.txt')
+
+            # TODO: get ssid from config file
+            curr_device.send_network_id('test_ssid')
 
             curr_device.disconnect()
 

@@ -27,39 +27,31 @@
 # http://jquery.org/license
 __author__ = 'Sebastian'
 
-######################################################################################################################
-# Interface for a device that can be used for a Secure Key Authorization exchange.
-######################################################################################################################
+from OpenSSL import crypto, SSL
+from socket import gethostname
 
-class ISKADevice:
+def create_self_signed_cert(cert_file_path, private_key_file_path):
 
-    @staticmethod
-    def list_devices():
-        raise NotImplementedError()
+    # create a key pair
+    k = crypto.PKey()
+    k.generate_key(crypto.TYPE_RSA, 1024)
 
-    def get_name(self):
-        raise NotImplementedError()
+    # create a self-signed cert
+    cert = crypto.X509()
+    cert.get_subject().C = "USA"
+    cert.get_subject().ST = "Cloudlet"
+    cert.get_subject().L = "Cloudlet"
+    cert.get_subject().O = "Pycloud"
+    cert.get_subject().OU = "Pycloud"
+    cert.get_subject().CN = gethostname()
+    cert.set_serial_number(1000)
+    cert.gmtime_adj_notBefore(0)
+    cert.gmtime_adj_notAfter(10*365*24*60*60)
+    cert.set_issuer(cert.get_subject())
+    cert.set_pubkey(k)
+    cert.sign(k, 'sha1')
 
-    def connect(self):
-        raise NotImplementedError()
-
-    def disconnect(self):
-        raise NotImplementedError()
-
-    def get_id(self):
-        raise NotImplementedError()
-
-    def send_server_public_key(self, file_path):
-        raise NotImplementedError()
-
-    def send_device_private_key(self, file_path):
-        raise NotImplementedError()
-
-    def send_server_certificate(self, file_path):
-        raise NotImplementedError()
-
-    def send_device_private_key(self, file_path):
-        raise NotImplementedError()
-
-    def send_network_id(self, network_id):
-        raise NotImplementedError()
+    open(cert_file_path, "wt").write(
+        crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+    open(private_key_file_path, "wt").write(
+        crypto.dump_privatekey(crypto.FILETYPE_PEM, k))

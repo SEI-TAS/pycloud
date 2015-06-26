@@ -38,29 +38,39 @@ from adb.adb_commands import AdbCommands, M2CryptoSigner
 
 from ska_device_interface import ISKADevice
 
-DEVICE_FOLDER = '/sdcard/cloudlet/adb/'
+REMOTE_FOLDER = '/sdcard/cloudlet/adb/'
+
+LOCAL_SERVER_CERT_FILE = 'test.txt'
+LOCAL_PKEY_FILE = 'test.txt'
+LOCAL_DEVICE_CERT_FILE = 'test.txt'
+LOCAL_MKEY_FILE = 'test.txt'
 
 GET_ID_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.SaveIdToFileService'
-GET_ID_FILE = DEVICE_FOLDER + 'id.txt'
+GET_ID_FILE = REMOTE_FOLDER + 'id.txt'
 
-LOCAL_CERT_FILE = 'test.txt'
-STORE_CERT_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreCertificateService'
-SERVER_CERT_FILE = DEVICE_FOLDER + 'server_certificate.cer'
+STORE_SERVER_CERT_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreServerCertificateService'
+SERVER_CERT_FILE = REMOTE_FOLDER + 'server_certificate.cer'
 
-LOCAL_MKEY_FILE = 'test.txt'
-STORE_MKEY_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreMasterKeyService'
-MASTER_KEY_FILE = DEVICE_FOLDER + 'master_key.txt'
+STORE_DEVICE_CERT_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreDeviceCertificateService'
+DEVICE_CERT_FILE = REMOTE_FOLDER + 'device_certificate.cer'
 
-LOCAL_PKEY_FILE = 'test.txt'
+STORE_SPUKEY_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreServerPublicKeyService'
+SERVER_PUBLIC_KEY_FILE = REMOTE_FOLDER + 'server_key.pub'
+
 STORE_PKEY_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreDeviceKeyService'
-DEVICE_PKEY_FILE = DEVICE_FOLDER + 'device_pkey.txt'
+DEVICE_PKEY_FILE = REMOTE_FOLDER + 'device_pkey.txt'
+
+# TODO: check where this temp file will be stored.
+LOCAL_NET_ID_FILE = 'network_id.txt'
+STORE_NET_ID_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreNetworkIdService'
+NET_ID_FILE = REMOTE_FOLDER + 'network_id.txt'
 
 ######################################################################################################################
-# Attempts to connect to an ADB daemon on a given USB device. Returns a proxy to that daemon if succesful, or None if
-# unsuccessful
+# Attempts to connect to an ADB daemon on a given USB device. Returns a proxy to that daemon if successful, or None if
+# unsuccessful.
 ######################################################################################################################
 def connect_to_adb_daemon(device):
-    # Load host keypair to authenticate with ADB deamon.
+    # Load host keypair to authenticate with ADB daemon.
     keySigner = M2CryptoSigner('adbkey')
 
     try:
@@ -68,7 +78,7 @@ def connect_to_adb_daemon(device):
         device.Open()
 
         print 'Connecting to ADB daemon'
-        adbDaemon = AdbCommands.Connect(device, banner="cloudlet", rsa_keys=[keySigner])
+        adbDaemon = AdbCommands.Connect(device, banner="cloudlet", rsa_keys=[keySigner], auth_timeout_ms=15000)
         return adbDaemon
     except Exception, e:
         print e
@@ -165,25 +175,50 @@ class ADBSKADevice(ISKADevice):
     #
     ####################################################################################################################
     def send_server_certificate(self, file_path):
+        print 'Starting server certificate service.'
         self.adb_daemon.Push(file_path, SERVER_CERT_FILE)
-        start_service(self.adb_daemon, STORE_CERT_SERVICE)
-        print 'File sent.'
+        start_service(self.adb_daemon, STORE_SERVER_CERT_SERVICE)
+        print 'Server certificate file sent.'
 
     ####################################################################################################################
     #
     ####################################################################################################################
-    def send_master_public_key(self, file_path):
-        self.adb_daemon.Push(file_path, MASTER_KEY_FILE)
-        start_service(self.adb_daemon, STORE_MKEY_SERVICE)
-        print 'File sent.'
+    def send_device_certificate(self, file_path):
+        print 'Starting device certificate service.'
+        self.adb_daemon.Push(file_path, DEVICE_CERT_FILE)
+        start_service(self.adb_daemon, STORE_DEVICE_CERT_SERVICE)
+        print 'Device certificate file sent.'
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def send_server_public_key(self, file_path):
+        print 'Starting server public key service.'
+        self.adb_daemon.Push(file_path, SERVER_PUBLIC_KEY_FILE)
+        start_service(self.adb_daemon, STORE_SPUKEY_SERVICE)
+        print 'Server public key file sent.'
 
     ####################################################################################################################
     #
     ####################################################################################################################
     def send_device_private_key(self, file_path):
+        print 'Starting deice private key service.'
         self.adb_daemon.Push(file_path, DEVICE_PKEY_FILE)
         start_service(self.adb_daemon, STORE_PKEY_SERVICE)
-        print 'File sent.'
+        print 'Device private key file sent.'
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def send_network_id(self, network_id):
+        # First write the network id to a file.
+        with open(LOCAL_NET_ID_FILE, 'w') as net_file:
+            net_file.write(network_id)
+
+        print 'Starting network id service.'
+        self.adb_daemon.Push(LOCAL_NET_ID_FILE, NET_ID_FILE)
+        start_service(self.adb_daemon, STORE_NET_ID_SERVICE)
+        print 'Net id file sent.'
 
 ####################################################################################################################
 # Test script.
@@ -205,7 +240,7 @@ def test():
             print data
 
             print 'Sending files'
-            adbDevice.send_server_certificate(LOCAL_CERT_FILE)
+            adbDevice.send_server_certificate(LOCAL_SERVER_CERT_FILE)
             adbDevice.send_master_public_key(LOCAL_MKEY_FILE)
             adbDevice.send_device_private_key(LOCAL_PKEY_FILE)
             print 'Files sent'
