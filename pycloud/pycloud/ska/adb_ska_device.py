@@ -48,17 +48,19 @@ LOCAL_MKEY_FILE = 'test.txt'
 GET_ID_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.SaveIdToFileService'
 GET_ID_FILE = REMOTE_FOLDER + 'id.txt'
 
-STORE_SERVER_CERT_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreServerCertificateService'
-SERVER_CERT_FILE = REMOTE_FOLDER + 'server_certificate.cer'
+STORE_FILE_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreFileService'
 
-STORE_DEVICE_CERT_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreDeviceCertificateService'
-DEVICE_CERT_FILE = REMOTE_FOLDER + 'device_certificate.cer'
-
-STORE_SPUKEY_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreServerPublicKeyService'
+SERVER_PUBLIC_KEY_FILE_ID = 'server_public_key'
 SERVER_PUBLIC_KEY_FILE = REMOTE_FOLDER + 'server_key.pub'
 
-STORE_PKEY_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreDeviceKeyService'
+DEVICE_PRIVATE_KEY_FILE_ID = 'device_private_key'
 DEVICE_PKEY_FILE = REMOTE_FOLDER + 'device_pkey.txt'
+
+SERVER_CERT_FILE_ID = 'server_certificate'
+SERVER_CERT_FILE = REMOTE_FOLDER + 'server_certificate.cer'
+
+DEVICE_CERT_FILE_ID = 'device_certificate'
+DEVICE_CERT_FILE = REMOTE_FOLDER + 'device_certificate.cer'
 
 # TODO: check where this temp file will be stored.
 LOCAL_NET_ID_FILE = 'network_id.txt'
@@ -93,8 +95,11 @@ def disconnect_from_adb_daemon(adbDaemon):
 ######################################################################################################################
 # Starts the given service on the given daemon.
 ######################################################################################################################
-def start_service(adbDaemon, service_name):
-    adbDaemon.Shell('am startservice --user 0 ' + service_name, timeout_ms=20000)
+def start_service(adbDaemon, service_name, extras={}):
+    command = 'am startservice --user 0 ' + service_name
+    for extra_key in extras:
+        command += ' -e ' + extra_key + ' ' + extras[extra_key]
+    adbDaemon.Shell(command, timeout_ms=20000)
 
 ######################################################################################################################
 # Implementation of a SKA device through ADB.
@@ -177,7 +182,7 @@ class ADBSKADevice(ISKADevice):
     def send_server_certificate(self, file_path):
         print 'Starting server certificate service.'
         self.adb_daemon.Push(file_path, SERVER_CERT_FILE)
-        start_service(self.adb_daemon, STORE_SERVER_CERT_SERVICE)
+        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file': SERVER_CERT_FILE_ID})
         print 'Server certificate file sent.'
 
     ####################################################################################################################
@@ -186,7 +191,7 @@ class ADBSKADevice(ISKADevice):
     def send_device_certificate(self, file_path):
         print 'Starting device certificate service.'
         self.adb_daemon.Push(file_path, DEVICE_CERT_FILE)
-        start_service(self.adb_daemon, STORE_DEVICE_CERT_SERVICE)
+        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file': DEVICE_CERT_FILE_ID})
         print 'Device certificate file sent.'
 
     ####################################################################################################################
@@ -195,7 +200,7 @@ class ADBSKADevice(ISKADevice):
     def send_server_public_key(self, file_path):
         print 'Starting server public key service.'
         self.adb_daemon.Push(file_path, SERVER_PUBLIC_KEY_FILE)
-        start_service(self.adb_daemon, STORE_SPUKEY_SERVICE)
+        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file': SERVER_PUBLIC_KEY_FILE_ID})
         print 'Server public key file sent.'
 
     ####################################################################################################################
@@ -204,7 +209,7 @@ class ADBSKADevice(ISKADevice):
     def send_device_private_key(self, file_path):
         print 'Starting deice private key service.'
         self.adb_daemon.Push(file_path, DEVICE_PKEY_FILE)
-        start_service(self.adb_daemon, STORE_PKEY_SERVICE)
+        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file': DEVICE_PRIVATE_KEY_FILE_ID})
         print 'Device private key file sent.'
 
     ####################################################################################################################
