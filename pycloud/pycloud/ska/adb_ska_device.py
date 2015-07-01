@@ -97,8 +97,10 @@ def disconnect_from_adb_daemon(adbDaemon):
 ######################################################################################################################
 def start_service(adbDaemon, service_name, extras={}):
     command = 'am startservice --user 0 ' + service_name
+    print extras
     for extra_key in extras:
         command += ' -e ' + extra_key + ' ' + extras[extra_key]
+    print command
     adbDaemon.Shell(command, timeout_ms=20000)
 
 ######################################################################################################################
@@ -182,7 +184,7 @@ class ADBSKADevice(ISKADevice):
     def send_server_certificate(self, file_path):
         print 'Starting server certificate service.'
         self.adb_daemon.Push(file_path, SERVER_CERT_FILE)
-        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file': SERVER_CERT_FILE_ID})
+        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file_id': SERVER_CERT_FILE_ID})
         print 'Server certificate file sent.'
 
     ####################################################################################################################
@@ -191,7 +193,7 @@ class ADBSKADevice(ISKADevice):
     def send_device_certificate(self, file_path):
         print 'Starting device certificate service.'
         self.adb_daemon.Push(file_path, DEVICE_CERT_FILE)
-        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file': DEVICE_CERT_FILE_ID})
+        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file_id': DEVICE_CERT_FILE_ID})
         print 'Device certificate file sent.'
 
     ####################################################################################################################
@@ -200,7 +202,7 @@ class ADBSKADevice(ISKADevice):
     def send_server_public_key(self, file_path):
         print 'Starting server public key service.'
         self.adb_daemon.Push(file_path, SERVER_PUBLIC_KEY_FILE)
-        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file': SERVER_PUBLIC_KEY_FILE_ID})
+        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file_id': SERVER_PUBLIC_KEY_FILE_ID})
         print 'Server public key file sent.'
 
     ####################################################################################################################
@@ -209,7 +211,7 @@ class ADBSKADevice(ISKADevice):
     def send_device_private_key(self, file_path):
         print 'Starting deice private key service.'
         self.adb_daemon.Push(file_path, DEVICE_PKEY_FILE)
-        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file': DEVICE_PRIVATE_KEY_FILE_ID})
+        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file_id': DEVICE_PRIVATE_KEY_FILE_ID})
         print 'Device private key file sent.'
 
     ####################################################################################################################
