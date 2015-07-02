@@ -46,9 +46,11 @@ class ISKADevice:
     def disconnect(self):
         raise NotImplementedError()
 
+    # DATA needs to be a dictionary of key-value pairs (the value is not used, only the key, but the value has to be non-empty).
     def get_data(self, data):
         raise NotImplementedError()
 
+    # DATA needs to be a dictionary of key-value pairs.
     def send_data(self, data):
         raise NotImplementedError()
 

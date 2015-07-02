@@ -36,6 +36,7 @@ import bluetooth
 import sys
 import subprocess
 import os
+import json
 
 from ska_device_interface import ISKADevice
 
@@ -181,41 +182,24 @@ class BluetoothSKADevice(ISKADevice):
             self.device_socket.close()
 
     ####################################################################################################################
-    # Obtains the internal id of this device.
+    #
     ####################################################################################################################
-    def get_id(self):
-        device_id = self.send_command('id')
-        return device_id
+    def get_data(self, data):
+        message = dict(data)
+        message['command'] = 'send_data'
+        message_string = json.dumps(message)
+
+        result = self.send_command(message_string)
+        return json.loads(result)
 
     ####################################################################################################################
-    # Sends the server public key file (IBE parameters file).
+    #
     ####################################################################################################################
-    def send_server_public_key(self, file_path):
-        self.send_file('server_public_key', file_path)
-
-    ####################################################################################################################
-    # Sends the device's private IBE key.
-    ####################################################################################################################
-    def send_device_private_key(self, file_path):
-        self.send_file('device_private_key', file_path)
-
-    ####################################################################################################################
-    # Sends the server's Wi-Fi WPA2-Enterprise certificate.
-    ####################################################################################################################
-    def send_server_certificate(self, file_path):
-        self.send_file('server_certificate', file_path)
-
-    ####################################################################################################################
-    # Sends the devices's IBE certificate.
-    ####################################################################################################################
-    def send_device_certificate(self, file_path):
-        self.send_file('device_certificate', file_path)
-
-    ####################################################################################################################
-    # Sends the id of the network to be set up.
-    ####################################################################################################################
-    def send_network_id(self, network_id):
-        self.send_command('network_id#' + network_id)
+    def send_data(self, data):
+        message = dict(data)
+        message['command'] = 'receive_data'
+        message_string = json.dumps(message)
+        self.send_command(message_string)
 
     ####################################################################################################################
     # Sends a short command.
@@ -235,8 +219,11 @@ class BluetoothSKADevice(ISKADevice):
     ####################################################################################################################
     # Sends a given file, ensuring the other side is ready to store it.
     ####################################################################################################################
-    def send_file(self, file_command, file_path):
-        ack = self.send_command(file_command)
+    def send_file(self, file_path, file_id):
+        message = {'command': 'receive_file', 'file_id': file_id}
+        message_string = json.dumps(message)
+
+        ack = self.send_command(message_string)
         if ack == 'ack':
             # First send the file size in bytes.
             file_size = os.path.getsize(file_path)
@@ -259,9 +246,9 @@ class BluetoothSKADevice(ISKADevice):
                 print 'Finished sending file.'
 
 ######################################################################################################################
-# "Main"
+# Test method
 ######################################################################################################################
-def main():
+def test():
     devices = BluetoothSKADevice.list_devices()
 
     if len(devices) < 0:
