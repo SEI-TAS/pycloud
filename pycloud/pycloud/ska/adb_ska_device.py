@@ -28,7 +28,7 @@
 __author__ = 'Sebastian'
 
 """
-A simple Python script to
+A simple Python script to handle Secure Key Agreement communication through USB using ADB.
 """
 
 import time
@@ -197,7 +197,7 @@ def test():
             adbDevice.connect()
 
             print 'Getting id'
-            data = adbDevice.get_id()
+            data = adbDevice.get_data({'data': 'none'})
             print data
 
             print 'Sending files'

@@ -46,20 +46,11 @@ class ISKADevice:
     def disconnect(self):
         raise NotImplementedError()
 
-    def get_id(self):
+    def get_data(self, data):
         raise NotImplementedError()
 
-    def send_server_public_key(self, file_path):
+    def send_data(self, data):
         raise NotImplementedError()
 
-    def send_device_private_key(self, file_path):
-        raise NotImplementedError()
-
-    def send_server_certificate(self, file_path):
-        raise NotImplementedError()
-
-    def send_device_private_key(self, file_path):
-        raise NotImplementedError()
-
-    def send_network_id(self, network_id):
+    def send_file(self, file_path, file_id):
         raise NotImplementedError()
