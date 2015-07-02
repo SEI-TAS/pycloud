@@ -54,13 +54,13 @@ SERVER_PUBLIC_KEY_FILE_ID = 'server_public_key'
 SERVER_PUBLIC_KEY_FILE = REMOTE_FOLDER + 'server_key.pub'
 
 DEVICE_PRIVATE_KEY_FILE_ID = 'device_private_key'
-DEVICE_PKEY_FILE = REMOTE_FOLDER + 'device_pkey.txt'
+DEVICE_PKEY_FILE = REMOTE_FOLDER + 'device.key'
 
 SERVER_CERT_FILE_ID = 'server_certificate'
-SERVER_CERT_FILE = REMOTE_FOLDER + 'server_certificate.cer'
+SERVER_CERT_FILE = REMOTE_FOLDER + 'server.pem'
 
 DEVICE_CERT_FILE_ID = 'device_certificate'
-DEVICE_CERT_FILE = REMOTE_FOLDER + 'device_certificate.cer'
+DEVICE_CERT_FILE = REMOTE_FOLDER + 'device.pem'
 
 # TODO: check where this temp file will be stored.
 LOCAL_NET_ID_FILE = 'network_id.txt'
@@ -96,11 +96,10 @@ def disconnect_from_adb_daemon(adbDaemon):
 # Starts the given service on the given daemon.
 ######################################################################################################################
 def start_service(adbDaemon, service_name, extras={}):
-    command = 'am startservice --user 0 ' + service_name
-    print extras
+    command = 'am startservice -n ' + service_name
     for extra_key in extras:
         command += ' -e ' + extra_key + ' ' + extras[extra_key]
-    print command
+    #print command
     adbDaemon.Shell(command, timeout_ms=20000)
 
 ######################################################################################################################
