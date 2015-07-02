@@ -44,7 +44,6 @@ REMOTE_FOLDER = '/sdcard/cloudlet/adb/'
 IN_DATA_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.InDataService'
 
 IN_FILE_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreFileService'
-IN_FILE_REMOTE_FILEPATH = REMOTE_FOLDER + 'in_file'
 
 OUT_DATA_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.OutDataService'
 OUT_DATA_REMOTE_FILEPATH = REMOTE_FOLDER + 'out_data.json'
@@ -175,7 +174,7 @@ class ADBSKADevice(ISKADevice):
     ####################################################################################################################
     def send_file(self, file_path, file_id):
         print 'Pushing file.'
-        self.adb_daemon.Push(file_path, IN_FILE_REMOTE_FILEPATH)
+        self.adb_daemon.Push(file_path, REMOTE_FOLDER + file_id)
 
         print 'Starting file receiver service.'
         start_service(self.adb_daemon, IN_FILE_SERVICE, {'file_id': file_id})
