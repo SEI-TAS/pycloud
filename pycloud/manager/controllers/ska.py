@@ -114,7 +114,7 @@ class SKAController(BaseController):
         # Here the whole pairing process should be followed, generating IBC keys and all.
         # For now, we are just getting the id, and sending a test file.
         if curr_device.connect():
-            device_internal_id = curr_device.get_id()
+            device_internal_id = curr_device.get_data({'device_id': 'none'})
             print device_internal_id
 
             # password = curr_device.get_password()
@@ -124,13 +124,13 @@ class SKAController(BaseController):
 
             #curr_device.send_files([ibc_private_key, certificate.cert, certificate.private_key])
 
-            curr_device.send_server_public_key('/home/adminuser/test.txt')
-            curr_device.send_device_private_key('/home/adminuser/test.txt')
-            curr_device.send_server_certificate('/home/adminuser/test.txt')
-            curr_device.send_device_certificate('/home/adminuser/test.txt')
+            #curr_device.send_server_public_key('/home/adminuser/test.txt')
+            #curr_device.send_device_private_key('/home/adminuser/test.txt')
+            #curr_device.send_server_certificate('/home/adminuser/test.txt')
+            #curr_device.send_device_certificate('/home/adminuser/test.txt')
 
             # TODO: get ssid from config file
-            curr_device.send_network_id('test_ssid')
+            curr_device.send_data({'ssid': 'test_ssid'})
 
             curr_device.disconnect()
 

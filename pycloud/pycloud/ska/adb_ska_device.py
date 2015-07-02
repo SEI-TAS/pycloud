@@ -32,6 +32,7 @@ A simple Python script to
 """
 
 import time
+import json
 
 from adb.usb_exceptions import AdbCommandFailureException
 from adb.adb_commands import AdbCommands, M2CryptoSigner
@@ -40,32 +41,13 @@ from ska_device_interface import ISKADevice
 
 REMOTE_FOLDER = '/sdcard/cloudlet/adb/'
 
-LOCAL_SERVER_CERT_FILE = 'test.txt'
-LOCAL_PKEY_FILE = 'test.txt'
-LOCAL_DEVICE_CERT_FILE = 'test.txt'
-LOCAL_MKEY_FILE = 'test.txt'
+IN_DATA_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.InDataService'
 
-GET_ID_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.SaveIdToFileService'
-GET_ID_FILE = REMOTE_FOLDER + 'id.txt'
+IN_FILE_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreFileService'
+IN_FILE_REMOTE_FILEPATH = REMOTE_FOLDER + 'in_file'
 
-STORE_FILE_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreFileService'
-
-SERVER_PUBLIC_KEY_FILE_ID = 'server_public_key'
-SERVER_PUBLIC_KEY_FILE = REMOTE_FOLDER + 'server_key.pub'
-
-DEVICE_PRIVATE_KEY_FILE_ID = 'device_private_key'
-DEVICE_PKEY_FILE = REMOTE_FOLDER + 'device.key'
-
-SERVER_CERT_FILE_ID = 'server_certificate'
-SERVER_CERT_FILE = REMOTE_FOLDER + 'server.pem'
-
-DEVICE_CERT_FILE_ID = 'device_certificate'
-DEVICE_CERT_FILE = REMOTE_FOLDER + 'device.pem'
-
-# TODO: check where this temp file will be stored.
-LOCAL_NET_ID_FILE = 'network_id.txt'
-STORE_NET_ID_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreNetworkIdService'
-NET_ID_FILE = REMOTE_FOLDER + 'network_id.txt'
+OUT_DATA_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.OutDataService'
+OUT_DATA_REMOTE_FILEPATH = REMOTE_FOLDER + 'out_data.json'
 
 ######################################################################################################################
 # Attempts to connect to an ADB daemon on a given USB device. Returns a proxy to that daemon if successful, or None if
@@ -99,7 +81,7 @@ def start_service(adbDaemon, service_name, extras={}):
     command = 'am startservice -n ' + service_name
     for extra_key in extras:
         command += ' -e ' + extra_key + ' ' + extras[extra_key]
-    #print command
+    print command
     adbDaemon.Shell(command, timeout_ms=20000)
 
 ######################################################################################################################
@@ -161,70 +143,43 @@ class ADBSKADevice(ISKADevice):
             disconnect_from_adb_daemon(self.adb_daemon)
 
     ####################################################################################################################
-    # Gets a device id through pulling a file with adbd.
+    # Gets simple data through pulling a file with adb.
+    # DATA needs to be a dictionary of key-value pairs (the value is not used, only the key).
     ####################################################################################################################
-    def get_id(self):
-        print 'Starting ID service.'
-        start_service(self.adb_daemon, GET_ID_SERVICE)
+    def get_data(self, data):
+        print 'Starting data retrieval service.'
+        start_service(self.adb_daemon, OUT_DATA_SERVICE, data)
         time.sleep(2)
 
-        print 'Downloading ID file.'
+        print 'Downloading file with data.'
         try:
-            device_id = self.adb_daemon.Pull(GET_ID_FILE)
-            return device_id
+            data = self.adb_daemon.Pull(OUT_DATA_REMOTE_FILEPATH)
+            return json.loads(data)
         except AdbCommandFailureException, e:
-            print 'Could not get id file, file may not exist on device.'
+            print 'Could not get data file, file may not exist on device.'
 
-        return None
-
-    ####################################################################################################################
-    #
-    ####################################################################################################################
-    def send_server_certificate(self, file_path):
-        print 'Starting server certificate service.'
-        self.adb_daemon.Push(file_path, SERVER_CERT_FILE)
-        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file_id': SERVER_CERT_FILE_ID})
-        print 'Server certificate file sent.'
+        return []
 
     ####################################################################################################################
-    #
+    # Sends simple data through pushing a file with adb.
+    # DATA needs to be a dictionary of key-value pairs.
     ####################################################################################################################
-    def send_device_certificate(self, file_path):
-        print 'Starting device certificate service.'
-        self.adb_daemon.Push(file_path, DEVICE_CERT_FILE)
-        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file_id': DEVICE_CERT_FILE_ID})
-        print 'Device certificate file sent.'
+    def send_data(self, data):
+        # Everything is called "in" since, from the point of view of the Service, it is getting data.
+        print 'Starting data receival service.'
+        start_service(self.adb_daemon, IN_DATA_SERVICE, data)
+        print 'Data sent.'
 
     ####################################################################################################################
     #
     ####################################################################################################################
-    def send_server_public_key(self, file_path):
-        print 'Starting server public key service.'
-        self.adb_daemon.Push(file_path, SERVER_PUBLIC_KEY_FILE)
-        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file_id': SERVER_PUBLIC_KEY_FILE_ID})
-        print 'Server public key file sent.'
+    def send_file(self, file_path, file_id):
+        print 'Pushing file.'
+        self.adb_daemon.Push(file_path, IN_FILE_REMOTE_FILEPATH)
 
-    ####################################################################################################################
-    #
-    ####################################################################################################################
-    def send_device_private_key(self, file_path):
-        print 'Starting deice private key service.'
-        self.adb_daemon.Push(file_path, DEVICE_PKEY_FILE)
-        start_service(self.adb_daemon, STORE_FILE_SERVICE, {'file_id': DEVICE_PRIVATE_KEY_FILE_ID})
-        print 'Device private key file sent.'
-
-    ####################################################################################################################
-    #
-    ####################################################################################################################
-    def send_network_id(self, network_id):
-        # First write the network id to a file.
-        with open(LOCAL_NET_ID_FILE, 'w') as net_file:
-            net_file.write(network_id)
-
-        print 'Starting network id service.'
-        self.adb_daemon.Push(LOCAL_NET_ID_FILE, NET_ID_FILE)
-        start_service(self.adb_daemon, STORE_NET_ID_SERVICE)
-        print 'Net id file sent.'
+        print 'Starting file receiver service.'
+        start_service(self.adb_daemon, IN_FILE_SERVICE, {'file_id': file_id})
+        print 'File sent.'
 
 ####################################################################################################################
 # Test script.
@@ -246,9 +201,6 @@ def test():
             print data
 
             print 'Sending files'
-            adbDevice.send_server_certificate(LOCAL_SERVER_CERT_FILE)
-            adbDevice.send_master_public_key(LOCAL_MKEY_FILE)
-            adbDevice.send_device_private_key(LOCAL_PKEY_FILE)
             print 'Files sent'
         finally:
             adbDevice.disconnect()
