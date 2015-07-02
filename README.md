@@ -14,11 +14,11 @@ KD-Cloudlet comprises a total of 7 GitHub projects:
 
 * pycloud (Cloudlet Server)
 * cloudlet-client (Cloudlet Client)
-* client-lib
-* client-lib-android
-* slf-4j-android-logger
+* client-lib-android (Library for Cloudlet-Ready Apps)
+* client-lib (Java REST Client Library)
+* android-logger (SLF4J Logger for Android)
 * speech-server (Test server: Speech Recognition Server based on Sphinx)
-* speech-client (Test client: Speech Recognition Client)
+* speech-android (Test client: Speech Recognition Client)
 
 Building and Installation information in https://github.com/SEI-AMS/pycloud/wiki. 
 
