@@ -35,6 +35,7 @@ function pair(pairURL, redirectUrl)
 {
     var successHandler = function(response) {
         showAndLogSuccessMessage("Device paired");
+        window.location.href = redirectUrl;
     };
 
     // Do the post to get data and load the modal.

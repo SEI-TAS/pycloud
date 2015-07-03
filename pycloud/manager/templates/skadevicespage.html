@@ -61,8 +61,8 @@ http://jquery.org/license
                     % for device in page.devices:
                         <%
                             pair_url = h.url_for(controller='ska', action='pair', id=device.get_name(), connection=page.connection)
-                            redirectUrl = h.url_for(controller='ska', action='devices')
-                            pair_click = "pair('" + pair_url + ", " + redirectUrl + "');"
+                            redirectUrl = h.url_for(controller='devices', action='list')
+                            pair_click = "pair('" + pair_url + "', '" + redirectUrl + "');"
                         %>
                         <tr>
                             <td>${device.get_name()}</td>

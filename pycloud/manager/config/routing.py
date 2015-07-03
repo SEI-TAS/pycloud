@@ -79,6 +79,7 @@ def make_map():
     connect('bootrstrap', '/devices/bootstrap', controller='devices', action='bootstrap')
     connect('available_devices', '/devices/available', controller='ska', action='available')
     connect('pair_device', '/devices/pair/{id}', controller='ska', action='pair')
+    connect('authorize_device', '/devices/authorize/{did}', controller='devices', action='authorize')
     connect('unpair_device', '/devices/unpair/{id}', controller='devices', action='unpair')
     connect('revoke_auth', '/devices/revoke/{id}', controller='devices', action='revoke')
 

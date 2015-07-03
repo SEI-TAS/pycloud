@@ -27,6 +27,14 @@
 # http://jquery.org/license
 __author__ = 'Sebastian'
 
+import datetime
+
+from pylons import request, response, session, tmpl_context as c, url
+from pylons.controllers.util import redirect_to
+
+from pycloud.pycloud.pylons.lib.util import asjson
+from pycloud.pycloud.utils import ajaxutils
+
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import DevicesPage
 
@@ -42,10 +50,15 @@ class DevicesController(BaseController):
     # Lists the stored devices, and allows to reset or to add more.
     ############################################################################################################
     def GET_list(self):
+        c.devices_active = 'active'
         page = DevicesPage()
 
         # Get the overall deployment info.
         page.deployment = Deployment.find_one()
+        if page.deployment is None:
+            page.deployment = Deployment()
+            page.deployment.auth_start = 'not set'
+            page.deployment.auth_duration = 'not set'
 
         # Get the paired devices.
         page.paired_devices = PairedDevice.find()
@@ -53,19 +66,68 @@ class DevicesController(BaseController):
         return page.render()
 
     ############################################################################################################
-    #
+    # Boostraps based on the remotely generated data by the pairing process.
+    # TODO: connect with the IBC bootstrap stuff.
     ############################################################################################################
     def GET_bootstrap(self):
-        return ''
+        # Remove all data from DB.
+        PairedDevice.clear_data()
+        Deployment.remove()
+
+        # Set up a new deployment.
+        # TODO: get duration as a parameter.
+        deployment = Deployment()
+        deployment.auth_start = datetime.datetime.now()
+        deployment.auth_duration = 24*60*60*1000    # in ms.
+        deployment.save()
+
+        # Go to the main page.
+        return redirect_to(controller='devices', action='list')
+
+    ############################################################################################################
+    # NOTE: this should be called from the SKA pairing process.
+    ############################################################################################################
+    @asjson
+    def GET_authorize(self, did):
+        cid = request.params.get('cid', None)
+
+        # Create a new paired device with the id info we just received.
+        print 'Adding paired device to DB.'
+        paired_device = PairedDevice()
+        paired_device.device_id = did
+        paired_device.connection_id = cid
+
+        # By default, authorization for a device will be the same as the deployment info.
+        deployment = Deployment.find_one()
+        paired_device.auth_start = deployment.auth_start
+        paired_device.auth_duration = deployment.auth_duration
+        paired_device.auth_enabled = True
+
+        # Store the paired device.
+        paired_device.save()
+
+        # Go to the main page.
+        print 'Device added to DB.'
+        return ajaxutils.JSON_OK
 
     ############################################################################################################
     #
     ############################################################################################################
-    def GET_unpair(self):
-        return ''
+    def GET_unpair(self, id):
+        # Remove it from the list.
+        PairedDevice.find_and_remove(id)
+
+        # Go to the main page.
+        return redirect_to(controller='devices', action='list')
 
     ############################################################################################################
     #
     ############################################################################################################
-    def GET_revoke(self):
-        return ''
+    def GET_revoke(self, id):
+        # Mark it as disabled.
+        paired_device = PairedDevice.by_id(id)
+        paired_device.auth_enabled = False
+        paired_device.save()
+
+        # Go to the main page.
+        return redirect_to(controller='devices', action='list')

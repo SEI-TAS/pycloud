@@ -243,7 +243,11 @@ class BluetoothSKADevice(ISKADevice):
                     if sent < len(data_chunk):
                         print 'Error sending data chunk.'
 
-                print 'Finished sending file.'
+                print 'Finished sending file. Waiting for ack.'
+
+                # Wait for reply, it should be small enough to fit in one chunk.
+                reply = self.device_socket.recv(CHUNK_SIZE)
+                print 'Reply: ' + reply
 
 ######################################################################################################################
 # Test method

@@ -71,9 +71,9 @@ class PairedDevice(Model):
     ################################################################################################################
     # noinspection PyBroadException
     @staticmethod
-    def by_id(sid=None):
+    def by_id(did=None):
         try:
-            device = PairedDevice.find_one({'device_id': sid})
+            device = PairedDevice.find_one({'device_id': did})
         except:
             return None
         return device
@@ -94,9 +94,16 @@ class PairedDevice(Model):
     # Cleanly and safely gets a Device and removes it from the database
     ################################################################################################################
     @staticmethod
-    def find_and_remove(sid):
+    def find_and_remove(id):
         # Find the right device and remove it. find_and_modify will only return the document with matching id
-        return PairedDevice.find_and_modify(query={'device_id': sid}, remove=True)
+        return PairedDevice.find_and_modify(query={'device_id': id}, remove=True)
+
+    ################################################################################################################
+    # Clears all paired devices from the db.
+    ################################################################################################################
+    @staticmethod
+    def clear_data():
+        PairedDevice.find_and_modify(query={}, remove=True)
 
     ################################################################################################################
     # Disable the given authorization for a paired device, without removing it.

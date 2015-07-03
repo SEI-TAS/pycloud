@@ -30,6 +30,7 @@ __author__ = 'Sebastian'
 import logging
 
 from pylons import request, response, session, tmpl_context as c, url
+from pylons.controllers.util import redirect_to
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import SKADevicesPage
@@ -112,10 +113,10 @@ class SKAController(BaseController):
             raise Exception("Device with id {} not found for pairing.".format(id))
 
         # Here the whole pairing process should be followed, generating IBC keys and all.
-        # For now, we are just getting the id, and sending a test file.
         if curr_device.connect():
-            device_internal_id = curr_device.get_data({'device_id': 'none'})
-            print device_internal_id
+            id_data = curr_device.get_data({'device_id': 'none'})
+            print id_data
+            device_internal_id = id_data['device_id']
 
             #ibc_private_key = ibc.generate_private_key(device_internal_id, password)
             #certificate = ibc.generate_client_certificate(device_internal_id, ibc_private_key)
@@ -126,6 +127,8 @@ class SKAController(BaseController):
             # TODO: get ssid from config file, password from hash
             curr_device.send_data({'ssid': 'test_ssid', 'server_cert_name': 'server_cert.pem', 'password': '12345'})
 
+            print 'Closing connection.'
             curr_device.disconnect()
 
-        return ajaxutils.JSON_OK
+        # Go to the pairing devices page to add it to the DB. Does not really return the ajax call in case of success.
+        return redirect_to(controller='devices', action='authorize', did=device_internal_id, cid=device.get_name())

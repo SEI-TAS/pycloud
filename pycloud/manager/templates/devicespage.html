@@ -48,7 +48,7 @@ http://jquery.org/license
                     <a class="btn btn-large btn-danger" href="#" onclick="$('#connection_form').submit();">Reset Deployment</a>
                 </form>
                 <br>
-                Current deployment info: date start, date expiration
+                Current deployment info: ${page.deployment.auth_start}, ${page.deployment.auth_duration}
                 <br><br>
                 <a class="btn btn-large btn-success" href="${h.url_for(controller='ska', action='available')}">Pair New Device</a>
                 <br><br>
@@ -67,11 +67,11 @@ http://jquery.org/license
                             revoke_url = h.url_for(controller='devices', action='revoke', id=paired_device.device_id)
                         %>
                         <tr>
-                            <td>${device.device_id}</td>
-                            <td>${device.connection_id}</td>
-                            <td>${device.auth_start}</td>
-                            <td>${device.auth_duration}</td>
-                            <td>${device.auth_enabled}</td>
+                            <td>${paired_device.device_id}</td>
+                            <td>${paired_device.connection_id}</td>
+                            <td>${paired_device.auth_start}</td>
+                            <td>${paired_device.auth_duration}</td>
+                            <td>${paired_device.auth_enabled}</td>
                             <td>
                                 <a class="btn btn-large btn-danger" href="${unpair_url}">Unpair</a>
                                 <a class="btn btn-large btn-danger" href="${revoke_url}">Revoke</a>
