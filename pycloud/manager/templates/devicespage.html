@@ -41,38 +41,40 @@ http://jquery.org/license
     <div class="col-sm-12">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h2>Available Devices</h2>
+                <h2>Paired Devices</h2>
             </div>
             <div class="panel-body">
-                <form id="connection_form" method="get" action="${h.url_for(controller='ska', action='available')}">
-                    Connection type:
-                    <select name="connection">
-                        <option value="usb" ${page.usb_selected}>USB</option>
-                        <option value="bt" ${page.bt_selected}>Bluetooth</option>
-                    </select>
-                    <a class="btn btn-large btn-success" href="#" onclick="$('#connection_form').submit();">Refresh</a>
+                <form id="connection_form" method="get" action="${h.url_for(controller='devices', action='bootstrap')}">
+                    <a class="btn btn-large btn-danger" href="#" onclick="$('#connection_form').submit();">Reset Deployment</a>
                 </form>
+                <br>
+                Current deployment info: date start, date expiration
+                <br><br>
+                <a class="btn btn-large btn-success" href="${h.url_for(controller='ska', action='available')}">Pair New Device</a>
                 <br><br>
                 <table class="table table-striped">
                     <tr>
-                        <th>Name</th>
+                        <th>Device ID</th>
+                        <th>Connection ID</th>
+                        <th>Authorization Start</th>
+                        <th>Authorization Duration</th>
+                        <th>Authorization Enabled</th>
                         <th>Actions</th>
                     </tr>
-                    % for device in page.devices:
+                    % for paired_device in page.paired_devices:
                         <%
-                            pair_url = h.url_for(controller='ska', action='pair', id=device.get_name(), connection=page.connection)
-                            redirectUrl = h.url_for(controller='ska', action='devices')
-                            pair_click = "pair('" + pair_url + ", " + redirectUrl + "');"
+                            unpair_url = h.url_for(controller='devices', action='unpair', id=paired_device.device_id)
+                            revoke_url = h.url_for(controller='devices', action='revoke', id=paired_device.device_id)
                         %>
                         <tr>
-                            <td>${device.get_name()}</td>
+                            <td>${device.device_id}</td>
+                            <td>${device.connection_id}</td>
+                            <td>${device.auth_start}</td>
+                            <td>${device.auth_duration}</td>
+                            <td>${device.auth_enabled}</td>
                             <td>
-                                <button class="btn btn-success" onclick="${pair_click}"
-                                        data-toggle="tooltip" data-placement="bottom"
-                                        title="Pair">
-                                    <span class="glyphicon glyphicon-plus" style="color: white"></span>
-                                    <span class="glyphicon glyphicon-transfery" style="color: white"></span>
-                                </button>
+                                <a class="btn btn-large btn-danger" href="${unpair_url}">Unpair</a>
+                                <a class="btn btn-large btn-danger" href="${revoke_url}">Revoke</a>
                             </td>
                         </tr>
                     % endfor
@@ -82,4 +84,3 @@ http://jquery.org/license
     </div>
 </div>
 
-<script src="${request.environ['SCRIPT_NAME']}/js/devices.js"></script>

@@ -75,7 +75,11 @@ def make_map():
     connect('export_service', '/service/exportsvm/{sid}', controller='export', action='export_svm')
     connect('import_service', '/service/importsvm', controller='import', action='import')
 
-    connect('available_devices', '/ska/devices', controller='ska', action='devices')
-    connect('pair_device', '/ska/pair/{id}', controller='ska', action='pair')
+    connect('list_devices', '/devices', controller='devices', action='list')
+    connect('bootrstrap', '/devices/bootstrap', controller='devices', action='bootstrap')
+    connect('available_devices', '/devices/available', controller='ska', action='available')
+    connect('pair_device', '/devices/pair/{id}', controller='ska', action='pair')
+    connect('unpair_device', '/devices/unpair/{id}', controller='devices', action='unpair')
+    connect('revoke_auth', '/devices/revoke/{id}', controller='devices', action='revoke')
 
     return mapper

@@ -52,12 +52,12 @@ class SKAController(BaseController):
     # Entry point.
     ############################################################################################################
     def GET_index(self):
-        return self.GET_devices()
+        return self.GET_available()
 
     ############################################################################################################
     # Lists the connected devices, and lets the system pair to one of them.
     ############################################################################################################
-    def GET_devices(self):
+    def GET_available(self):
         page = SKADevicesPage()
         page.devices = []
         page.bt_selected = ''
