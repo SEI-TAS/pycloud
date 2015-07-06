@@ -56,14 +56,27 @@ class DevicesController(BaseController):
         # Get the overall deployment info.
         page.deployment = Deployment.find_one()
         if page.deployment is None:
-            page.deployment = Deployment()
-            page.deployment.auth_start = 'not set'
-            page.deployment.auth_duration = 'not set'
+            page.deployment_auth_start = 'not set'
+            page.deployment_auth_duration = 'not set'
+        else:
+            page.deployment_auth_start = page.deployment.auth_start.strftime('%Y-%m-%d %X')
+            page.deployment_auth_duration = page.deployment.auth_duration/60/1000
 
         # Get the paired devices.
         page.paired_devices = PairedDevice.find()
 
         return page.render()
+
+    ############################################################################################################
+    # Clears all deployment info.
+    ############################################################################################################
+    def GET_clear(self):
+        # Remove all data from DB.
+        PairedDevice.clear_data()
+        Deployment.remove()
+
+        # Go to the main page.
+        return redirect_to(controller='devices', action='list')
 
     ############################################################################################################
     # Boostraps based on the remotely generated data by the pairing process.
@@ -127,6 +140,18 @@ class DevicesController(BaseController):
         # Mark it as disabled.
         paired_device = PairedDevice.by_id(id)
         paired_device.auth_enabled = False
+        paired_device.save()
+
+        # Go to the main page.
+        return redirect_to(controller='devices', action='list')
+
+    ############################################################################################################
+    #
+    ############################################################################################################
+    def GET_reauthorize(self, id):
+        # Mark it as enabled.
+        paired_device = PairedDevice.by_id(id)
+        paired_device.auth_enabled = True
         paired_device.save()
 
         # Go to the main page.

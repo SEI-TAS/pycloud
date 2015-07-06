@@ -44,20 +44,28 @@ http://jquery.org/license
                 <h2>Paired Devices</h2>
             </div>
             <div class="panel-body">
-                <form id="connection_form" method="get" action="${h.url_for(controller='devices', action='bootstrap')}">
-                    <a class="btn btn-large btn-danger" href="#" onclick="$('#connection_form').submit();">Reset Deployment</a>
-                </form>
-                <br>
-                Current deployment info: ${page.deployment.auth_start}, ${page.deployment.auth_duration}
+                <a class="btn btn-large btn-danger" href="${h.url_for(controller='devices', action='clear')}">Clear Deployment</a>
+                <a class="btn btn-large btn-danger" href="${h.url_for(controller='devices', action='bootstrap')}">Reset Deployment</a>
                 <br><br>
-                <a class="btn btn-large btn-success" href="${h.url_for(controller='ska', action='available')}">Pair New Device</a>
+                <table class="table table-striped">
+                    <tr>
+                        <th>Deployment Start Date</th>
+                        <th>Deployment Duration (mins)</th>
+                    </tr>
+                    <tr>
+                        <td>${page.deployment_auth_start}</td>
+                        <td>${page.deployment_auth_duration}</td>
+                    </tr>
+                </table>
+                <a class="btn btn-large btn-success" href="${h.url_for(controller='ska', action='available')}"
+                   ${'disabled' if page.deployment_auth_start == 'not set' else ''}>Pair New Device</a>
                 <br><br>
                 <table class="table table-striped">
                     <tr>
                         <th>Device ID</th>
                         <th>Connection ID</th>
                         <th>Authorization Start</th>
-                        <th>Authorization Duration</th>
+                        <th>Authorization Duration (mins)</th>
                         <th>Authorization Enabled</th>
                         <th>Actions</th>
                     </tr>
@@ -65,16 +73,30 @@ http://jquery.org/license
                         <%
                             unpair_url = h.url_for(controller='devices', action='unpair', id=paired_device.device_id)
                             revoke_url = h.url_for(controller='devices', action='revoke', id=paired_device.device_id)
+                            reauthorize_url = h.url_for(controller='devices', action='reauthorize', id=paired_device.device_id)
                         %>
                         <tr>
                             <td>${paired_device.device_id}</td>
                             <td>${paired_device.connection_id}</td>
-                            <td>${paired_device.auth_start}</td>
-                            <td>${paired_device.auth_duration}</td>
+                            <td>${paired_device.auth_start.strftime('%Y-%m-%d %X')}</td>
+                            <td>${paired_device.auth_duration/60/1000}</td>
                             <td>${paired_device.auth_enabled}</td>
                             <td>
-                                <a class="btn btn-large btn-danger" href="${unpair_url}">Unpair</a>
-                                <a class="btn btn-large btn-danger" href="${revoke_url}">Revoke</a>
+                                <a class="btn btn-large btn-danger" href="${unpair_url}" \
+                                   data-toggle="tooltip" data-placement="top" title="Unpair">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                </a>
+                                % if paired_device.auth_enabled:
+                                    <a class="btn btn-large btn-danger" href="${revoke_url}" \
+                                       data-toggle="tooltip" data-placement="top" title="Revoke">
+                                        <span class="glyphicon glyphicon-ban-circle"></span>
+                                    </a>
+                                % else:
+                                    <a class="btn btn-large btn-success" href="${reauthorize_url}" \
+                                       data-toggle="tooltip" data-placement="top" title="Reauthorize">
+                                        <span class="glyphicon glyphicon-ok-circle"></span>
+                                    </a>
+                                % endif
                             </td>
                         </tr>
                     % endfor
