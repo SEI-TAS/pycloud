@@ -26,7 +26,7 @@
 # Released under the MIT license
 # http://jquery.org/license
 
-__author__ = 'jdroot'
+from pycloud.server import serve_app
 
-from paste.script.serve import ServeCommand
-ServeCommand("serve").run(["--reload", "development.ini"])
+# Call assuming getting params from command line.
+serve_app()

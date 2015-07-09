@@ -26,7 +26,28 @@
 # Released under the MIT license
 # http://jquery.org/license
 
-__author__ = 'jdroot'
-
 from paste.script.serve import ServeCommand
-ServeCommand("serve").run(["--reload", "development_manager.ini"])
+
+# Generic entry point for serving app.
+def serve_app(args=None, default_config=''):
+    config = default_config
+    type = 'prod'
+
+    # Load from comand line if we didn't get them as params.
+    if args is None:
+        import sys
+        args = sys.argv[1:]
+
+    # Load values from args if available.
+    if len(args) > 0:
+        config = args[0]
+    if len(args) > 1:
+        type = args[1]
+
+    # Add the reload param if developing.
+    if type == 'prod':
+        params = [config]
+    else:
+        params = ["--reload", config]
+
+    ServeCommand("serve").run(params)

@@ -1,3 +1,3 @@
 #!/bin/bash
 source ./env/bin/activate
-python bootstrap_manager.py
+python bootstrap.py "development_manager.ini" "dev"

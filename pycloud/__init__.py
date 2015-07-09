@@ -26,15 +26,12 @@
 # Released under the MIT license
 # http://jquery.org/license
 
+from server import serve_app
 
-def main(args=None):
-    if args is None:
-        import sys
-        args = sys.argv[1:]
-    #Load the default config
-    config = '/etc/pycloud.ini'
-    if len(args) > 0:
-        config = args[0]
+# Entry point for console calling of the Pycloud API app.
+def start_api(args=None):
+    serve_app(args, default_config='/etc/pycloud_api.ini')
 
-    from paste.script.serve import ServeCommand
-    ServeCommand("serve").run([config])
+# Entry point for console calling of the Pycloud Manager app.
+def start_manager(args=None):
+    serve_app(args, default_config='/etc/pycloud_manager.ini')

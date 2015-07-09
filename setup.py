@@ -54,7 +54,8 @@ setup(
     },
     entry_points="""
     [console_scripts]
-    pycloud=pycloud:main
+    pycloud-api=pycloud:start_api
+    pycloud-manager=pycloud:start_manager
 
     [paste.app_factory]
     api = pycloud.api:make_app

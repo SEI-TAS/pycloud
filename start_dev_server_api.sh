@@ -1,3 +1,3 @@
 #!/bin/bash
 source ./env/bin/activate
-python bootstrap_api.py
+python bootstrap.py "development_api.ini" "dev"

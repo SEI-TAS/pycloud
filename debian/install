@@ -1,2 +1,3 @@
-pycloud.ini /etc/
+pycloud_api.ini /etc/
+pycloud_manager.ini /etc/
 discovery/cloudlet.service /etc/avahi/services/
