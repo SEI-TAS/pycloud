@@ -34,6 +34,7 @@ import random
 
 ################################################################################################################
 # Handles TCP ports.
+# TODO: this list has to be stored in the DB.
 ################################################################################################################
 class PortManager(object):
     
@@ -52,7 +53,7 @@ class PortManager(object):
         
         # Check if we still have ports available.
         if(len(PortManager.portsInUse) >= (rangeEnd - rangeStart)):
-            raise ServiceVMInstanceManagerException("There are no ports available.")
+            raise Exception("There are no ports available.")
         
         # This loop will eventually find an available port, since if all of them are in use, the check above would
         # have detected it. In practice, this loop will almost always run once, since we will not be handling that many
