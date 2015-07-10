@@ -29,8 +29,10 @@
 import logging
 
 from pylons import request, response, session, tmpl_context as c, url
+
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import HomePage
+from pycloud.manager.lib.auth import render_signin
 
 from pycloud.pycloud.cloudlet import Cloudlet
 from pycloud.pycloud.pylons.lib.util import asjson
@@ -57,10 +59,16 @@ class HomeController(BaseController):
         # Render the page with the grid.
         return page.render()
 
+    ############################################################################################################
+    # Returns the cloudlet state.
+    ############################################################################################################
     @asjson
     def GET_state(self):
         machine_state = Cloudlet.system_information()
         return machine_state
 
+    ############################################################################################################
+    # Shows the sign in page when signing out.
+    ############################################################################################################
     def GET_signout(self):
-        return "Successfully signed out!"
+        return render_signin()
