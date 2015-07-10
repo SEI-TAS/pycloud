@@ -61,3 +61,6 @@ class HomeController(BaseController):
     def GET_state(self):
         machine_state = Cloudlet.system_information()
         return machine_state
+
+    def GET_signout(self):
+        return "Successfully signed out!"
