@@ -36,8 +36,8 @@ import requests
 
 from pylons import request
 from pylons import response, session, tmpl_context as c, url
-from pylons.controllers.util import abort, redirect
-from pylons import g
+from pylons.controllers.util import abort
+from pylons import app_globals
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import InstancesPage
@@ -264,7 +264,7 @@ class InstancesController(BaseController):
 
         # Receive the transferred file and update its path.
         print 'Storing disk image file of SVM in migration.'
-        destination_folder = os.path.join(g.cloudlet.svmInstancesFolder, svm_id)
+        destination_folder = os.path.join(app_globals.cloudlet.svmInstancesFolder, svm_id)
         disk_image_object = request.params.get('disk_image_file').file
         migrated_svm.vm_image.store(destination_folder, disk_image_object)
         print 'Migrated SVM disk image file stored.'

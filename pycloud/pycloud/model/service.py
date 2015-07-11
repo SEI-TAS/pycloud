@@ -32,7 +32,7 @@ from pycloud.pycloud.mongo import Model, ObjectID
 from pycloud.pycloud.model.vmimage import VMImage
 from pycloud.pycloud.model.servicevm import ServiceVM
 import os
-from pylons import g
+from pylons import app_globals
 
 # ###############################################################################################################
 # Represents a Service in the system.
@@ -112,7 +112,7 @@ class Service(Model):
         svm.generate_random_id()
         svm.service_id = self.service_id
         svm.service_port = self.port
-        svm.vm_image = self.vm_image.clone(os.path.join(g.cloudlet.svmInstancesFolder, svm['_id']), clone_full_image=clone_full_image)
+        svm.vm_image = self.vm_image.clone(os.path.join(app_globals.cloudlet.svmInstancesFolder, svm['_id']), clone_full_image=clone_full_image)
         return svm
 
     ################################################################################################################

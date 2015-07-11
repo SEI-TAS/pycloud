@@ -34,7 +34,7 @@ from pycloud.pycloud.model import Service
 import tarfile
 import json
 import os
-from pylons import request, g
+from pylons import request, app_globals
 
 
 def get_service_json(tar=None):
@@ -67,7 +67,7 @@ class ImportController(BaseController):
         tar = tarfile.open(filename, "r")
         service = Service(get_service_json(tar))
 
-        svm_cache = g.cloudlet.svmCache
+        svm_cache = app_globals.cloudlet.svmCache
         svm_path = os.path.join(svm_cache, service.service_id)
         disk_image = service.vm_image.disk_image
         state_image = service.vm_image.state_image

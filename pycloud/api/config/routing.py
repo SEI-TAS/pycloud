@@ -34,10 +34,13 @@ refer to the routes manual at http://routes.groovie.org/docs/
 """
 from routes import Mapper
 
-def make_map():
+def make_map(config):
     """Create, configure and return the routes Mapper"""
     mapper = Mapper()
     connect = mapper.connect
+
+    # For backwards compatibility with 0.9.7.
+    mapper.explicit = False
 
     connect('services', '/services', controller='services', action='index')
     

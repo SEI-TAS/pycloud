@@ -26,14 +26,13 @@
 # Released under the MIT license
 # http://jquery.org/license
 
-
 __author__ = 'jdroot'
 
-from pylons import config
 from pycloud.pycloud.pylons.lib.app_globals import Globals
 from pycloud.pycloud.cloudlet import get_cloudlet_instance
 from pycloud.pycloud.pylons.lib import helpers
 from mako.lookup import TemplateLookup
+from pylons.configuration import PylonsConfig
 import os
 
 
@@ -47,23 +46,31 @@ def load_environment(make_map_function, root_path, global_conf={}, app_conf={}):
     
     print 'Templates path: ' + os.path.join(root_path, 'templates')
 
+    config = PylonsConfig()
+
     config.init_app(global_conf, app_conf, package='pycloud', paths=paths)
 
-    config['routes.map'] = make_map_function()
+    config['routes.map'] = make_map_function(config)
+    config['pylons.app_globals'] = Globals(config)
     config['debug'] = True
-    config['pylons.g'] = Globals()
     config['pylons.h'] = helpers
+
+    # For backwards compat with 0.9.7. This prevents errors from popping up when attributes from c that do not exist
+    # are used.
+    config['pylons.strict_tmpl_context'] = False
 
     # Clean up the system. This must be called after the object is already created
     get_cloudlet_instance().cleanup_system()
 
-    config["pylons.g"].mako_lookup = TemplateLookup(
+    # Set up environment for all mako templates.
+    config["pylons.app_globals"].mako_lookup = TemplateLookup(
         directories=paths["templates"],
         input_encoding="utf-8",
         imports=[
-            "from pylons import c, g, request",
+            "from pylons import tmpl_context as c, app_globals, request",
             "from pylons.i18n import _, ungettext",
-            "from pycloud.pycloud.pylons.lib import helpers as h",
-            "from routes import url_for"
+            "from pycloud.pycloud.pylons.lib import helpers as h"
             ]
     )
+
+    return config

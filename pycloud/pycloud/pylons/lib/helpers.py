@@ -34,6 +34,15 @@ available to Controllers. This module is available to templates as 'h'.
 # Import helpers as desired, or define your own, ie:
 #from webhelpers.html.tags import checkbox, password
 
-from routes import url_for
+from pylons import url as url_for
 from webhelpers.html.tags import link_to
 from webhelpers.html import literal
+from pylons.controllers.util import redirect
+
+from formbuild.helpers import field
+from formbuild import start_with_layout as form_start, end_with_layout as form_end
+from webhelpers.html.tags import *
+
+# Wrapper for backwards compatibility.
+def redirect_to(*args, **kwargs):
+    return redirect(url_for(*args, **kwargs))

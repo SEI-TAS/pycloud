@@ -31,7 +31,7 @@ __author__ = 'jdroot'
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.model import Service
-from pylons import request, g
+from pylons import request, app_globals
 import os
 import tarfile
 import StringIO
@@ -51,7 +51,7 @@ class ExportController(BaseController):
 
         path = request.params.get("export_path")
         if not path:
-            path = os.path.join(g.cloudlet.export_path, service.service_id + ".csvm")
+            path = os.path.join(app_globals.cloudlet.export_path, service.service_id + ".csvm")
 
         print "Disk Image: ", service.vm_image.disk_image
         print "State Image: ", service.vm_image.state_image

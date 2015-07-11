@@ -30,12 +30,12 @@ __author__ = 'Sebastian'
 import logging
 
 from pylons import request, response, session, tmpl_context as c, url
-from pylons.controllers.util import redirect_to
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import SKADevicesPage
 from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
 from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
+from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.ibc import ibc
 import pycloud.pycloud.utils.pki
 
@@ -131,4 +131,4 @@ class SKAController(BaseController):
             curr_device.disconnect()
 
         # Go to the pairing devices page to add it to the DB. Does not really return the ajax call in case of success.
-        return redirect_to(controller='devices', action='authorize', did=device_internal_id, cid=device.get_name())
+        return h.redirect_to(controller='devices', action='authorize', did=device_internal_id, cid=device.get_name())

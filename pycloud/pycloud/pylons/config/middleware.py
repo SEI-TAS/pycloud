@@ -92,10 +92,10 @@ def generic_make_app(make_map_function, controllers_module, root_path, global_co
 
     # Configure the Pylons environment.
     from pycloud.pycloud.pylons.config.environment import load_environment    
-    load_environment(make_map_function, root_path, global_conf, app_conf)
+    config = load_environment(make_map_function, root_path, global_conf, app_conf)
 
     # Create the base app, and wrap it in middleware.
-    app = CloudletApp(controllers_module)
+    app = CloudletApp(controllers_module, config)
     app = RoutesMiddleware(app, config["routes.map"])
     app = RegistryManager(app)
 
@@ -106,4 +106,5 @@ def generic_make_app(make_map_function, controllers_module, root_path, global_co
     app = Cascade([static_app, app])
 
     print "-------------------------------------------------------"
+    app.config = config
     return app

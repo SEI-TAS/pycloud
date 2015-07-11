@@ -35,7 +35,7 @@ import shutil
 from bson import ObjectId
 
 from pylons import request, response, session, tmpl_context as c, url
-from pylons import g
+from pylons import app_globals
 
 from webhelpers.html import HTML
 from webhelpers.html import literal
@@ -135,7 +135,7 @@ class AppsController(BaseController):
             # Check if we are uploading a new apk.
             if(request.params.get('appNewFile') != None):
                 print 'Updating file: ' + str(request.params.get('appNewFile'))
-                app.apk_file = os.path.join(os.path.abspath(g.cloudlet.appFolder), request.params.get('appNewFile').filename)
+                app.apk_file = os.path.join(os.path.abspath(app_globals.cloudlet.appFolder), request.params.get('appNewFile').filename)
                 
                 # Store the file in the folder first.
                 apk_file_dest = open(app.apk_file, 'w')            

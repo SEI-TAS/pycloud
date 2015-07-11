@@ -34,10 +34,13 @@ refer to the routes manual at http://routes.groovie.org/docs/
 """
 from routes import Mapper
 
-def make_map():
+def make_map(config):
     """Create, configure and return the routes Mapper"""
     mapper = Mapper()
     connect = mapper.connect
+
+    # For backwards compatibility with 0.9.7.
+    mapper.explicit = False
 
     # Note that all of these paths are relative to the base path, /manager. 
     connect('/', controller='services', action='index')
@@ -49,8 +52,8 @@ def make_map():
     connect('/services/removeService/{id}', controller='services', action='removeService')
     
     connect('/instances', controller='instances', action='index')
-    connect('/instances/startInstance/{id}', controller='instances', action='startInstance')
-    connect('/instances/stopInstance/{id}', controller='instances', action='stopInstance')
+    connect('/instances/startInstance', controller='instances', action='startInstance')
+    connect('/instances/stopInstance', controller='instances', action='stopInstance')
     connect('/instances/migrate/{id}', controller='instances', action='migrateInstance')
     connect('/instances/receiveMigratedSVMMetadata', controller='instances', action='receiveMigratedSVMMetadata')
     connect('/instances/receiveMigratedSVMDiskFile', controller='instances', action='receiveMigratedSVMDiskFile')
@@ -63,15 +66,15 @@ def make_map():
     connect('/service/saveNewSVM', controller='modify', action='saveNewSVM')
     connect('/service/openSVM/{id}', controller='modify', action='openSVM')
     connect('/service/edit/{id}', controller='modify', action='index')
-    connect('/service/saveSVM/{id}', controller='modify', action='saveInstanceToRoot')
+    connect('/service/saveSVM', controller='modify', action='saveInstanceToRoot')
     connect('/service/getImageInfo', controller='modify', action='getImageInfo')
 
     connect('/apps', controller='apps', action='index')
     connect('/apps/list', controller='apps', action='list')
     connect('/apps/get', controller='apps', action='get_data')
     connect('/apps/add', controller='apps', action='add')
-    connect('/apps/edit/{id}', controller='apps', action='edit')
-    connect('/apps/remove/{id}', controller='apps', action='remove')
+    connect('/apps/edit', controller='apps', action='edit')
+    connect('/apps/remove', controller='apps', action='remove')
 
     connect('export_service', '/service/exportsvm/{sid}', controller='export', action='export_svm')
     connect('import_service', '/service/importsvm', controller='import', action='import')

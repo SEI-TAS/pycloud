@@ -42,7 +42,7 @@ class TemplateManager():
         template = self.templates.get(key)
         if not template:
             try:
-                template = config['pylons.g'].mako_lookup.get_template(key)
+                template = config['pylons.app_globals'].mako_lookup.get_template(key)
                 if template:
                     self.templates[key] = template
             except TemplateLookupException:

@@ -30,8 +30,8 @@ __author__ = 'Sebastian'
 import datetime
 
 from pylons import request, response, session, tmpl_context as c, url
-from pylons.controllers.util import redirect_to
 
+from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import ajaxutils
 
@@ -76,7 +76,7 @@ class DevicesController(BaseController):
         Deployment.remove()
 
         # Go to the main page.
-        return redirect_to(controller='devices', action='list')
+        return h.redirect_to(controller='devices', action='list')
 
     ############################################################################################################
     # Boostraps based on the remotely generated data by the pairing process.
@@ -95,7 +95,7 @@ class DevicesController(BaseController):
         deployment.save()
 
         # Go to the main page.
-        return redirect_to(controller='devices', action='list')
+        return h.redirect_to(controller='devices', action='list')
 
     ############################################################################################################
     # NOTE: this should be called from the SKA pairing process.
@@ -131,7 +131,7 @@ class DevicesController(BaseController):
         PairedDevice.find_and_remove(id)
 
         # Go to the main page.
-        return redirect_to(controller='devices', action='list')
+        return h.redirect_to(controller='devices', action='list')
 
     ############################################################################################################
     #
@@ -143,7 +143,7 @@ class DevicesController(BaseController):
         paired_device.save()
 
         # Go to the main page.
-        return redirect_to(controller='devices', action='list')
+        return h.redirect_to(controller='devices', action='list')
 
     ############################################################################################################
     #
@@ -155,4 +155,4 @@ class DevicesController(BaseController):
         paired_device.save()
 
         # Go to the main page.
-        return redirect_to(controller='devices', action='list')
+        return h.redirect_to(controller='devices', action='list')

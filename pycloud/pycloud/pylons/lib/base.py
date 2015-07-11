@@ -29,7 +29,7 @@
 __author__ = 'jdroot'
 
 from pylons.controllers import WSGIController
-from pylons import g, request
+from pylons import app_globals, request
 
 # Creating this just to have it for the future
 class BaseController(WSGIController):
@@ -51,7 +51,7 @@ class BaseController(WSGIController):
 
     def __before__(self):
         # Make the database available on every request
-        self.cloudlet = g.cloudlet
+        self.cloudlet = app_globals.cloudlet
         self.pre()
 
     def __after__(self):

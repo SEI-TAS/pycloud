@@ -31,8 +31,7 @@ import os
 import os.path
 
 from pylons import request, response, session, tmpl_context as c, url
-from pylons import g
-from pylons.controllers.util import redirect_to
+from pylons import app_globals
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib import helpers as h
@@ -140,7 +139,7 @@ class ModifyController(BaseController):
         if previous_service and str(previous_service['_id']) != internalServiceId:
             # TODO: somehow notify the error.
             print "A service can't have the same service id as an existing service."
-            return redirect_to(controller='services')
+            return h.redirect_to(controller='services')
         
         # Look for a service with this id.
         service = Service.by_internal_id(internalServiceId)
@@ -182,7 +181,7 @@ class ModifyController(BaseController):
         service.save()
                
         # Render the page.
-        return redirect_to(controller='services')
+        return h.redirect_to(controller='services')
 
     ############################################################################################################
     # Creates a new Service VM and opens it in a VNC window for editing.
@@ -202,7 +201,7 @@ class ModifyController(BaseController):
         svm.service_id = fields['serviceId']
         try:
             # Set up a new VM image.
-            print 'newVmFolder: ', g.cloudlet.newVmFolder
+            print 'newVmFolder: ', app_globals.cloudlet.newVmFolder
             print 'svm._id: ', svm._id
             temp_svm_folder = os.path.join(g.cloudlet.newVmFolder, svm._id)
             print 'temp_svm_folder: ', temp_svm_folder
