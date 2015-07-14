@@ -44,7 +44,7 @@ http://jquery.org/license
                 <h2>Sign In</h2>
             </div>
             <div class="panel-body">
-                ${h.form_start('%s', method="post")}
+                ${h.form_start(h.url_for('auth', 'signin'), method="post")}
                     ${h.field(
                         "Username",
                         h.text(name='username'),

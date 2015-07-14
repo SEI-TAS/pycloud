@@ -28,11 +28,12 @@
 
 __author__ = 'jdroot'
 
-from pylons import config
 from mako.exceptions import TemplateLookupException
 from mako import exceptions
 
-class TemplateManager():
+from pylons import config
+
+class TemplateManager:
 
     def __init__(self):
         self.templates = {}

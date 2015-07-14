@@ -55,7 +55,7 @@ def load_environment(make_map_function, root_path, global_conf={}, app_conf={}):
     config['debug'] = True
     config['pylons.h'] = helpers
 
-    # For backwards compat with 0.9.7. This prevents errors from popping up when attributes from c that do not exist
+    # For backwards compat with 0.9.7. This prevents errors from showing up when attributes from c that do not exist
     # are used.
     config['pylons.strict_tmpl_context'] = False
 

@@ -28,9 +28,9 @@
 
 """The application's Globals object"""
 
-from pylons import config
-
 import pycloud.pycloud.cloudlet as cloudlet
+
+from pycloud.pycloud.pylons.lib.tm import TemplateManager
 
 class Globals(object):
 
@@ -44,4 +44,6 @@ class Globals(object):
 
         # Create or get instance of the singleton Cloudlet object.
         self.cloudlet = cloudlet.get_cloudlet_instance(config)
- 
+
+        # Set up the global template manager.
+        self.tm = TemplateManager()

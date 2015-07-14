@@ -31,6 +31,8 @@ __author__ = 'jdroot'
 from pylons.controllers import WSGIController
 from pylons import app_globals, request
 
+from pycloud.manager.lib import auth
+
 # Creating this just to have it for the future
 class BaseController(WSGIController):
 
@@ -50,6 +52,9 @@ class BaseController(WSGIController):
         return ret
 
     def __before__(self):
+        # Ensure authentication.
+        auth.ensure_authentication()
+
         # Make the database available on every request
         self.cloudlet = app_globals.cloudlet
         self.pre()

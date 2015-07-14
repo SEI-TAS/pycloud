@@ -46,7 +46,10 @@ def make_map(config):
     connect('/', controller='services', action='index')
     connect('/home', controller='home', action='index')
     connect('/home/state', controller='home', action='state')
-    connect('/home/signout', controller='home', action='signout')
+
+    connect('/auth/signin', controller='auth', action='signin')
+    connect('/auth/signin_form', controller='auth', action='signin_form')
+    connect('/auth/signout', controller='auth', action='signout')
     
     connect('/services', controller='services', action='listServices')
     connect('/services/removeService/{id}', controller='services', action='removeService')

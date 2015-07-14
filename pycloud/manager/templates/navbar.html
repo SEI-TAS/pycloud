@@ -49,7 +49,7 @@ http://jquery.org/license
                 <li class="${c.servicevms_active}">${h.link_to('Service VM Instances', h.url_for(controller='instances', action_name=None))}</li>
                 <li class="${c.apps_active}">${h.link_to('Cloudlet-Ready Apps', h.url_for(controller='apps', action='list', action_name=None))}</li>
                 <li class="${c.devices_active}">${h.link_to('Devices', h.url_for(controller='devices', action='list', action_name=None))}</li>
-                <li>${h.link_to('Sign out', h.url_for(controller='home', action='signout', action_name=None))}</li>
+                <li>${h.link_to('Sign out', h.url_for(controller='auth', action='signout', action_name=None))}</li>
             </ul>
         </div><!--/.nav-collapse -->
     </div>

@@ -27,10 +27,32 @@
 # http://jquery.org/license
 __author__ = 'Sebastian'
 
-from pylons.templating import render_mako as render
+from pylons import request, response, session, tmpl_context as c
+from pycloud.pycloud.pylons.lib import helpers as h
 
-############################################################################################################
-# Shows the sign in page.
-############################################################################################################
-def render_signin():
-    return render('/signin.html')
+#####################################################################################################################
+# Checks if we have been authenticated. If not, redirects to login page.
+#####################################################################################################################
+def ensure_authenticated():
+    user = session.get('user')
+    if not user:
+        return h.redirect_to(controller='auth', action='signin')
+
+#####################################################################################################################
+# Authenticates a user. If it doesn't work, returns to login page.
+#####################################################################################################################
+def authenticate():
+    # TODO: change this to check user from DB.
+    if len(request.params) > 1 and request.params['password'] == request.params['username']:
+        session['user'] = request.params['username']
+        session.save()
+        return h.redirect_to(controller='home', action='index')
+    else:
+        return h.redirect_to(controller='auth', action='signin')
+
+#####################################################################################################################
+# Clears out the logged in user.
+#####################################################################################################################
+def signout():
+    session.clear()
+    session.save()

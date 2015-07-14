@@ -29,9 +29,6 @@
 __author__ = 'jdroot'
 
 import os
-import authkit.authenticate
-import authkit.authorize
-from authkit.permissions import ValidAuthKitUser
 
 from pycloud.pycloud.pylons.config.middleware import generic_make_app
 
@@ -46,10 +43,5 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
     # Get the generic function to make the app, passing the particular arguments for this app.
     print "Setting up WSGI environment for Manager app"
     app = generic_make_app(routing.make_map, controllers_module, root_path, global_conf, full_stack=full_stack, static_files=static_files, app_conf=app_conf)
-
-    # Add authentication and authorization.
-    permission = ValidAuthKitUser()
-    app = authkit.authorize.middleware(app, permission)
-    app = authkit.authenticate.middleware(app, app_conf)
 
     return app

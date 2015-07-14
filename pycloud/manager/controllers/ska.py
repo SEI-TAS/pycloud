@@ -29,7 +29,7 @@ __author__ = 'Sebastian'
 
 import logging
 
-from pylons import request, response, session, tmpl_context as c, url
+from pylons import request, response, session, tmpl_context as c
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import SKADevicesPage

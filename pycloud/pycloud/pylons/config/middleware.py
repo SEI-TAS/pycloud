@@ -35,9 +35,6 @@ from paste.registry import RegistryManager
 from paste.cascade import Cascade
 from paste.urlparser import StaticURLParser
 
-# Get the object that has the config information from the main config file.
-from pylons import config
-
 ###########################################################################################################################
 # Generic WSGI app appropriate for Cloudlets. Can be used by different actual apps.
 ###########################################################################################################################

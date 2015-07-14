@@ -34,7 +34,7 @@ import shutil
 
 from bson import ObjectId
 
-from pylons import request, response, session, tmpl_context as c, url
+from pylons import request, response, session, tmpl_context as c
 from pylons import app_globals
 
 from webhelpers.html import HTML

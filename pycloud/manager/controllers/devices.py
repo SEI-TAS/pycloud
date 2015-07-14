@@ -29,7 +29,7 @@ __author__ = 'Sebastian'
 
 import datetime
 
-from pylons import request, response, session, tmpl_context as c, url
+from pylons import request, response, session, tmpl_context as c
 
 from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.pylons.lib.util import asjson

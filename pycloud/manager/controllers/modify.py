@@ -30,7 +30,7 @@ import logging
 import os
 import os.path
 
-from pylons import request, response, session, tmpl_context as c, url
+from pylons import request, response, session, tmpl_context as c
 from pylons import app_globals
 
 from pycloud.pycloud.pylons.lib.base import BaseController

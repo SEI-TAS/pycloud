@@ -26,60 +26,33 @@
 # Released under the MIT license
 # http://jquery.org/license
 
-import logging
-
 from pylons import request, response, session, tmpl_context as c
 
 from pycloud.pycloud.pylons.lib.base import BaseController
-from pycloud.manager.lib.pages import ServicesPage
-from pycloud.pycloud.model import Service
+from pycloud.manager.lib.pages import SigninPage
 
-from pycloud.pycloud.utils import ajaxutils
-from pycloud.pycloud.pylons.lib.util import asjson
-
-log = logging.getLogger(__name__)
+from pycloud.manager.lib import auth
 
 ################################################################################################################
-# Controller for the Services page.
+# Controller for authentication.
 ################################################################################################################
-class ServicesController(BaseController):
+class AuthController(BaseController):
 
     ############################################################################################################
-    # Entry point.
+    # Shows the sign in page.
     ############################################################################################################
-    def GET_index(self):
-        return self.GET_listServices()
+    def GET_signin_form(self):
+        page = SigninPage()
+        return page.render()
 
     ############################################################################################################
-    # Shows the list of cached Services.
+    # Attempts to authenticte the user.
     ############################################################################################################
-    def GET_listServices(self):
-        # Mark the active tab.
-        c.services_active = 'active'
-    
-        # Get a list of existing stored VMs in the cache.
-        services = Service.find()
-        
-        # Pass the grid and render the page.
-        servicesPage = ServicesPage()
-        # servicesPage.servicesGrid = servicesGrid
-        servicesPage.services = services
+    def GET_signin(self):
+        return auth.authenticate()
 
-        return servicesPage.render()
-        
     ############################################################################################################
-    # Shows the list of cached Services.
+    # Logs out the user.
     ############################################################################################################
-    @asjson
-    def GET_removeService(self, id):
-        try:
-            service = Service.find_and_remove(id)
-            if service:
-                service.destroy(force=True)
-        except Exception as e:
-            # If there was a problem removing the service, return that there was an error.
-            msg = 'Error removing Service: ' + str(e)
-            return ajaxutils.show_and_return_error_dict(msg)
-        
-        # Everything went well.
-        return ajaxutils.JSON_OK
+    def GET_signout(self):
+        return auth.signout()

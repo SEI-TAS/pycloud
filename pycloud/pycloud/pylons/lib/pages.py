@@ -31,7 +31,7 @@ from pylons import config
 class Templated(object):
 
     def template(self):
-        from pycloud.pycloud.pylons.config.templates import tm
+        tm = config['pylons.app_globals'].tm
         return tm.get(self.__class__.__name__)
 
     def render(self):

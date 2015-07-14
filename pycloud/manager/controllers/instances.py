@@ -35,7 +35,7 @@ import os
 import requests
 
 from pylons import request
-from pylons import response, session, tmpl_context as c, url
+from pylons import response, session, tmpl_context as c
 from pylons.controllers.util import abort
 from pylons import app_globals
 
