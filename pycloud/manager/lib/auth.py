@@ -30,6 +30,10 @@ __author__ = 'Sebastian'
 from pylons import request, response, session, tmpl_context as c
 from pycloud.pycloud.pylons.lib import helpers as h
 
+from pycloud.pycloud.model.user import User
+
+import hashlib
+
 #####################################################################################################################
 # Checks if we have been authenticated. If not, redirects to login page.
 #####################################################################################################################
@@ -42,14 +46,21 @@ def ensure_authenticated():
 # Authenticates a user. If it doesn't work, returns to login page.
 #####################################################################################################################
 def authenticate():
-    # TODO: change this to check user from DB.
-    if len(request.params) > 1 and request.params['password'] == request.params['username']:
-        session['user'] = request.params['username']
-        session.save()
-        return h.redirect_to(controller='home', action='index')
-    else:
-        h.flash('Invalid credentials.')
-        return h.redirect_to(controller='auth', action='signin_form')
+    if len(request.params) > 1:
+        user = User.by_username(request.params['username'])
+        if user:
+            # Compare a hash of the given password with the stored hash.
+            hashed_password = hashlib.sha256(request.params['password']).hexdigest()
+            stored_password = user.hashed_pwd
+
+            if stored_password == hashed_password:
+                session['user'] = request.params['username']
+                session.save()
+                return h.redirect_to(controller='home', action='index')
+
+    # Else for all ifs..
+    h.flash('Invalid credentials.')
+    return h.redirect_to(controller='auth', action='signin_form')
 
 #####################################################################################################################
 # Clears out the logged in user.
