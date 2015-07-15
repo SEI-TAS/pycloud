@@ -62,10 +62,10 @@ http://jquery.org/license
                     </tr>
                     % for svm in page.svms:
                         <%
-                            stop_url      = h.url_for(controller='instances', action='stopInstance', id=svm._id, action_name=None)
+                            stop_url      = h.url_for(controller='instances', action='stopInstance', id=svm._id)
                             stop_click    = "stopSVM('"+ stop_url +"');"
 
-                            migrate_url   = h.url_for(controller='instances', action='migrateInstance', id=svm._id, action_name=None)
+                            migrate_url   = h.url_for(controller='instances', action='migrateInstance', id=svm._id)
                             migrate_click = "showMigrationModal('" + migrate_url + "');"
                         %>
                         <tr>

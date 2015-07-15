@@ -29,7 +29,8 @@
 __author__ = 'jdroot'
 
 from pylons.controllers import WSGIController
-from pylons import app_globals, request
+from pylons import app_globals, request, session
+from pylons import config
 
 from pycloud.manager.lib import auth
 
@@ -45,15 +46,17 @@ class BaseController(WSGIController):
 
             handler_name = method + '_' + action
 
-            request.environ['pylons.routes_dict']['action_name'] = action
+            #request.environ['pylons.routes_dict']['action_name'] = action
             request.environ['pylons.routes_dict']['action'] = handler_name
 
         ret = WSGIController.__call__(self, environ, start_response)
         return ret
 
     def __before__(self):
-        # Ensure authentication.
-        auth.ensure_authentication()
+        # Only check authentication if we are not the authentication controller.
+        if type(self).__name__ != config['pycloud.auth']:
+            # Ensure authentication.
+            auth.ensure_authenticated()
 
         # Make the database available on every request
         self.cloudlet = app_globals.cloudlet
@@ -67,7 +70,6 @@ class BaseController(WSGIController):
 
     def post(self):
         pass
-
 
 # Get a boolean from a request param
 def bool_param(name, default=False):

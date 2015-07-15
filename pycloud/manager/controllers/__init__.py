@@ -53,6 +53,7 @@ def load_controllers():
     from pycloud.manager.controllers.importsvm import ImportController
     from pycloud.manager.controllers.ska import SKAController
     from pycloud.manager.controllers.devices import DevicesController
+    from pycloud.manager.controllers.auth import AuthController
 
     # Cache the controllers in a look up map
     controllers.update((name.lower(), obj) for name, obj in locals().iteritems())

@@ -33,6 +33,8 @@ from pycloud.manager.lib.pages import SigninPage
 
 from pycloud.manager.lib import auth
 
+from pycloud.pycloud.pylons.lib import helpers as h
+
 ################################################################################################################
 # Controller for authentication.
 ################################################################################################################
@@ -46,13 +48,14 @@ class AuthController(BaseController):
         return page.render()
 
     ############################################################################################################
-    # Attempts to authenticte the user.
+    # Attempts to authenticate the user.
     ############################################################################################################
-    def GET_signin(self):
+    def POST_signin(self):
         return auth.authenticate()
 
     ############################################################################################################
     # Logs out the user.
     ############################################################################################################
     def GET_signout(self):
-        return auth.signout()
+        auth.signout()
+        return h.redirect_to(controller='auth', action='signin_form')

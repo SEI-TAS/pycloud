@@ -43,6 +43,9 @@ from formbuild.helpers import field
 from formbuild import start_with_layout as form_start, end_with_layout as form_end
 from webhelpers.html.tags import *
 
+from webhelpers.pylonslib import Flash as _Flash
+flash = _Flash()
+
 # Wrapper for backwards compatibility.
 def redirect_to(*args, **kwargs):
     return redirect(url_for(*args, **kwargs))

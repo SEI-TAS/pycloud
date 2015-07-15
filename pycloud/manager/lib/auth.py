@@ -36,7 +36,7 @@ from pycloud.pycloud.pylons.lib import helpers as h
 def ensure_authenticated():
     user = session.get('user')
     if not user:
-        return h.redirect_to(controller='auth', action='signin')
+        return h.redirect_to(controller='auth', action='signin_form')
 
 #####################################################################################################################
 # Authenticates a user. If it doesn't work, returns to login page.
@@ -48,7 +48,8 @@ def authenticate():
         session.save()
         return h.redirect_to(controller='home', action='index')
     else:
-        return h.redirect_to(controller='auth', action='signin')
+        h.flash('Invalid credentials.')
+        return h.redirect_to(controller='auth', action='signin_form')
 
 #####################################################################################################################
 # Clears out the logged in user.

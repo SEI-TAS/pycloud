@@ -34,6 +34,7 @@ from routes.middleware import RoutesMiddleware
 from paste.registry import RegistryManager
 from paste.cascade import Cascade
 from paste.urlparser import StaticURLParser
+from beaker.middleware import SessionMiddleware
 
 ###########################################################################################################################
 # Generic WSGI app appropriate for Cloudlets. Can be used by different actual apps.
@@ -94,7 +95,8 @@ def generic_make_app(make_map_function, controllers_module, root_path, global_co
     # Create the base app, and wrap it in middleware.
     app = CloudletApp(controllers_module, config)
     app = RoutesMiddleware(app, config["routes.map"])
-    app = RegistryManager(app)
+    app = SessionMiddleware(app, config)
+    app = RegistryManager(app, streaming=True)
 
     # Create the sub-app to serve static files.
     static_app = StaticURLParser(config['pylons.paths']['static_files'])

@@ -81,10 +81,10 @@ class ModifyController(BaseController):
 
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
-        page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot', id=None, action_name=None)
-        page.stopInstanceURL = h.url_for(controller='instances', action='stopInstance', id=None, action_name=None)
-        page.startInstanceURL = h.url_for(controller='instances', action='startInstance', id=None, action_name=None)
-        page.chooseImageURL = h.url_for(controller='modify', action='getImageInfo', id=None, action_name=None)
+        page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot', id=None)
+        page.stopInstanceURL = h.url_for(controller='instances', action='stopInstance', id=None)
+        page.startInstanceURL = h.url_for(controller='instances', action='startInstance', id=None)
+        page.chooseImageURL = h.url_for(controller='modify', action='getImageInfo', id=None)
         if(creatingNew):
             # We are creating a new service.
             page.newService = True

@@ -72,6 +72,15 @@ http://jquery.org/license
                         </h1>
                     </%block>
                 </div>
+
+                <% flashes = h.flash.pop_messages() %>
+                % if flashes:
+                    % for flash in flashes:
+                        <div id="flash">
+                            <span class="message" style="color: orangered;">${flash}</span>
+                        </div>
+                    % endfor
+                % endif
     
                 ${next.body()}
     
