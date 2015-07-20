@@ -48,3 +48,51 @@ body {
     border-top: 1px;
     border-color: #ddd;
 }
+.grey{
+    background-color: #B2B2B2;
+}
+.dark-grey{
+    background-color: #6B6B6B;
+}
+.blue{
+    background-color: #207BC1;
+}
+.orange{
+    background-color: #C16C12;
+}
+.white{
+    background-color: #ffffff;
+}
+
+.cloudlet-icon{
+    width: 32px;
+    height: 25px;
+    margin: 10px;
+    float:left;
+}
+.vm-icon{
+    width: 289.8px;
+    height: 100px;
+}
+.service-icon{
+    width: 102.5px;
+    height: 100px;
+}
+.apps-icon{
+    width: 60px;
+    height: 100px;
+}
+
+.centered{
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.tidbit{
+    margin: 0px;
+}
+.blurb{
+    /*text-align: left;*/
+    width: 300px; 
+}
