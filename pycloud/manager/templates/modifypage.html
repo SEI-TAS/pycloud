@@ -132,7 +132,7 @@ ${parent.header()}
 		        <div class="well">
 		            <form id="new-svm-form" class="form-horizontal" action="${page.createSVMURL}" method="post">
 		            	${text(id='sourceDiskImage', input_width=12, label=_('Source Disk Image Path'), mandatory=True)}
-		                ${dropdown(id='osType', options={'Linux':'Linux','Windows':'Windows'}, input_width=12, label=_('OS Type'))}
+		                ${dropdown(id='osType', options=page.os_options, input_width=12, label=_('OS Type'))}
 		            </form>
 		        </div>
 		    </div>
