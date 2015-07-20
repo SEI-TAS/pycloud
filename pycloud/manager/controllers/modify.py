@@ -77,6 +77,8 @@ class ModifyController(BaseController):
         page.form_values = {}
         page.form_errors = {}
         
+        page.os_options = {'Linux':'Linux','Windows':'Windows'}
+        
         # URL to create a new Service VM.
         page.createSVMURL = h.url_for(controller="modify", action='createSVM')
 
