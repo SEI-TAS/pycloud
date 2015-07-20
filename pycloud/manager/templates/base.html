@@ -65,19 +65,16 @@ http://jquery.org/license
 
         <div id="wrap">
     
-            <div class="container-fluid">
-    
-                <div class="header">
-                    <%block name="header">
-                        <h1>
-                            <%block name="title"/>
-                        </h1>
-                    </%block>
-                </div>
-    
-                ${next.body()}
-    
+            <div class="header">
+                <%block name="header">
+                    <h1>
+                        <%block name="title"/>
+                    </h1>
+                </%block>
             </div>
+
+            ${next.body()}
+    
             <div id="push"></div>
         </div>
 
