@@ -19,3 +19,6 @@ bash install_pip_packages.sh
 
 # Create the egg files.
 bash egg_setup.sh
+
+# Add user to the kvm group to get correct permissions.
+usermod -a -G kvm $USER
