@@ -5,3 +5,6 @@ unzip master.zip
 cd python-adb-master
 python setup.py install
 cd ..
+
+rm master.zip
+rm -r python-adb-master

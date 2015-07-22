@@ -44,17 +44,11 @@ http://jquery.org/license
                 <h2>Sign In</h2>
             </div>
             <div class="panel-body">
-                ${h.form_start(h.url_for(controller='auth', action='signin'), method="post")}
-                    ${h.field(
-                        "Username",
-                        h.text(name='username'),
-                    )}
-                    ${h.field(
-                        "Password",
-                        h.password(name='password'),
-                    )}
-                    ${h.field(field=h.submit(value="Sign in", name='submit'))}
-                ${h.form_end()}
+                <form action="${h.url_for(controller='auth', action='signin')}" method="post">
+                    <label for="username">Username</label> <input type="text" name="username" id="username"/> <br/>
+                    <label for="password">Password <input type="password" name="password" id="password" /> <br/>
+                    <input type="submit" value="Sign in" name="submit"/>
+                </form>
             </div>
         </div>
     </div>
