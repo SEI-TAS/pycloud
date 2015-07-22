@@ -29,7 +29,24 @@ __author__ = 'Sebastian'
 
 from OpenSSL import crypto, SSL
 from socket import gethostname
+import M2Crypto
+import os
 
+#############################################################################################
+# Creates a key pair and stores it in the given locations.
+#############################################################################################
+def create_key_pair(private_key_file_path, public_key_file_path):
+    # Seed the random number generator with 1024 random bytes (8192 bits)
+    M2Crypto.Rand.rand_seed(os.urandom(1024))
+
+    print "Generating a 2048 bit private/public key pair..."
+    keypair = M2Crypto.RSA.gen_key(2048, 65537)
+    keypair.save_key(private_key_file_path, None)
+    keypair.save_pub_key(public_key_file_path)
+
+#############################################################################################
+#
+#############################################################################################
 def create_self_signed_cert(cert_file_path, private_key_file_path):
 
     # create a key pair
