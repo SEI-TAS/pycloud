@@ -4,7 +4,8 @@ This folder contains the Pycloud Cloudlet Server. It is structured as follows:
  * discovery/: configuration files to enable Cloudlet discovery through avahi-daemon.
  * pycloud/: the actual code for the Cloudlet Server.
  * scripts/: scripts for setting up the environment for development. full_dev_setup.sh is the main one. Execute this
-             way from inside the scripts/ folder: "sudo -H bash full_dev_setup.sh"
+             way from inside the scripts/ folder: "bash full_dev_setup.sh" (do NOT call with sudo).
+             NOTE: these scripts assume Ubuntu 14.0.4 or higher is being used.
  * testing/: some test scripts.
  * tls/: scripts to set up a CA and to set up scripts for libvirt.
  * upstart/: Upstart script configurations for test apps.

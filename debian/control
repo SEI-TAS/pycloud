@@ -21,8 +21,10 @@ Depends: ${python:Depends},
          mongodb,
          libnss-mdns,
          avahi-daemon,
+         libusb-1.0.0-dev,
          libbluetooth-dev,
          build-essential,
          libssl-dev,
-         libffi-dev
+         libffi-dev,
+         swig
 Description:
