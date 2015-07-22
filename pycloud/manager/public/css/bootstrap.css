@@ -4368,7 +4368,7 @@ a.list-group-item.active > .badge,
   padding: 30px;
   margin-bottom: 30px;
   color: inherit;
-  background-color: #eee;
+  background-color: #F5F5F5;
 }
 .jumbotron h1,
 .jumbotron .h1 {
@@ -4965,7 +4965,7 @@ a.list-group-item-danger.active:focus {
   border-bottom-color: #ddd;
 }
 .panel-primary {
-  border-color: #428bca;
+  border-color: #B8B8B8;
 }
 .panel-primary > .panel-heading {
   color: #fff;
@@ -4993,18 +4993,18 @@ a.list-group-item-danger.active:focus {
   border-bottom-color: #d6e9c6;
 }
 .panel-info {
-  border-color: #bce8f1;
+  border-color: #F9F9F9;
 }
 .panel-info > .panel-heading {
-  color: #31708f;
-  background-color: #d9edf7;
-  border-color: #bce8f1;
+  color: #222;
+  background-color: #F5F5F5;
+  border-color: #F9F9F9;
 }
 .panel-info > .panel-heading + .panel-collapse .panel-body {
-  border-top-color: #bce8f1;
+  border-top-color: #F9F9F9;
 }
 .panel-info > .panel-footer + .panel-collapse .panel-body {
-  border-bottom-color: #bce8f1;
+  border-bottom-color: #F9F9F9;
 }
 .panel-warning {
   border-color: #faebcc;

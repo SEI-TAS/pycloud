@@ -67,8 +67,6 @@ body {
 .cloudlet-icon{
     width: 32px;
     height: 25px;
-    margin: 10px;
-    float:left;
 }
 .vm-icon{
     width: 289.8px;
@@ -93,6 +91,6 @@ body {
     margin: 0px;
 }
 .blurb{
-    text-align: left;
-    width: 300px; 
+    text-align: justify;
+    width: 317px; 
 }

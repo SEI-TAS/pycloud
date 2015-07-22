@@ -318,9 +318,9 @@
   background-repeat: repeat-x;
 }
 .panel-info > .panel-heading {
-  background-image: -webkit-linear-gradient(top, #d9edf7 0%, #c4e3f3 100%);
-  background-image:         linear-gradient(to bottom, #d9edf7 0%, #c4e3f3 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffd9edf7', endColorstr='#ffc4e3f3', GradientType=0);
+  background-image: -webkit-linear-gradient(top, #B2B2B2 0%, #B8B8B8 100%);
+  background-image:         linear-gradient(to bottom, #B2B2B2 0%, #B8B8B8 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffB2B2B2', endColorstr='#ffB8B8B8', GradientType=0);
   background-repeat: repeat-x;
 }
 .panel-warning > .panel-heading {
