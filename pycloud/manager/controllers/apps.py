@@ -80,6 +80,8 @@ class AppsController(BaseController):
         for service in services:
             page.stored_services[service.service_id] = service.service_id
         
+        page.os_options = {'Android': 'Android'}
+        
         # Pass the grid and render the page.
         return page.render()
 

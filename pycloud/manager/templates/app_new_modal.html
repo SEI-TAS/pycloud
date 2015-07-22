@@ -50,7 +50,7 @@ http://jquery.org/license
                         ${text('appVersion', input_width=12, label=_('Version'))}
                         ${text('appPackage', input_width=12, label=_('Package'))}
                         ${text('appTags', input_width=12, label=_('Tags'))}
-                        ${dropdown(id='appOS', options={'Android':'Android'}, input_width=12, label=_('Target OS'))}
+                        ${dropdown('appOS', options=page.os_options, input_width=12, label=_('Target OS'))}
                         ${text('appOSVersion', input_width=12, label=_('Min OS Version'))}
                         ${browse('appNewFile', input_width=12, label=_('Upload New File'))}
                     </form>
