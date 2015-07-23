@@ -11,4 +11,4 @@ netaddr==0.7.14
 pybluez==0.21
 pyOpenSSL==0.15.1
 libusb1==1.4.0
-m2crypto
+M2Crypto==0.22.3
