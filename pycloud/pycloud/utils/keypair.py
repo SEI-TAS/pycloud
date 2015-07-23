@@ -28,6 +28,7 @@
 __author__ = 'Sebastian'
 
 import M2Crypto
+
 import os
 import binascii
 import base64
