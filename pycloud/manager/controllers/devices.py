@@ -30,6 +30,7 @@ __author__ = 'Sebastian'
 import datetime
 
 from pylons import request, response, session, tmpl_context as c
+from pylons import app_globals
 
 from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.pylons.lib.util import asjson
@@ -40,6 +41,8 @@ from pycloud.manager.lib.pages import DevicesPage
 
 from pycloud.pycloud.model.deployment import Deployment
 from pycloud.pycloud.model.paired_device import PairedDevice
+
+from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 
 ################################################################################################################
 # Controller for the page.
@@ -86,6 +89,9 @@ class DevicesController(BaseController):
         # Remove all data from DB.
         PairedDevice.clear_data()
         Deployment.remove()
+
+        # Setup general device configurations.
+        ADBSKADevice.setup(app_globals.cloudlet.data_folder)
 
         # Set up a new deployment.
         # TODO: get duration as a parameter.

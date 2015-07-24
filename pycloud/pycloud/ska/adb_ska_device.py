@@ -34,10 +34,17 @@ A simple Python script to handle Secure Key Agreement communication through USB 
 import time
 import json
 
+import os.path
+
 from adb.usb_exceptions import AdbCommandFailureException
 from adb.adb_commands import AdbCommands, M2CryptoSigner
 
 from ska_device_interface import ISKADevice
+
+from pycloud.pycloud.utils import rsa
+from pycloud.pycloud.utils import fileutils
+
+LOCAL_TEMP_FOLDER = 'adb/keys'
 
 REMOTE_FOLDER = '/sdcard/cloudlet/adb/'
 
@@ -48,13 +55,21 @@ IN_FILE_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreFileService'
 OUT_DATA_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.OutDataService'
 OUT_DATA_REMOTE_FILEPATH = REMOTE_FOLDER + 'out_data.json'
 
+adb_data_folder = './'
+
+######################################################################################################################
+# Returns the full path for the adbkey file.
+######################################################################################################################
+def get_adb_key_path():
+    return os.path.join(adb_data_folder, 'adbkey')
+
 ######################################################################################################################
 # Attempts to connect to an ADB daemon on a given USB device. Returns a proxy to that daemon if successful, or None if
 # unsuccessful.
 ######################################################################################################################
 def connect_to_adb_daemon(device):
     # Load host keypair to authenticate with ADB daemon.
-    keySigner = M2CryptoSigner('adbkey')
+    keySigner = M2CryptoSigner(get_adb_key_path())
 
     try:
         print 'Connecting to USB device'
@@ -102,6 +117,24 @@ class ADBSKADevice(ISKADevice):
     ####################################################################################################################
     def get_name(self):
         return self.serial_number
+
+    ####################################################################################################################
+    # Sets up basic ADB stuff.
+    ####################################################################################################################
+    @staticmethod
+    def setup(new_data_folder):
+        # Set the data folder.
+        global adb_data_folder
+        adb_data_folder = os.path.join(os.path.abspath(new_data_folder), LOCAL_TEMP_FOLDER)
+        fileutils.recreate_folder(adb_data_folder)
+
+        # Generate the adb keys.
+        adb_private_key_path = get_adb_key_path()
+        adb_public_key_path = adb_private_key_path + '.pub'
+        adb_public_rsa_key_path = adb_private_key_path + '_rsa.pub'
+
+        rsa.create_key_pair(adb_private_key_path, adb_public_rsa_key_path)
+        rsa.convert_pub_rsa_to_adb(adb_public_rsa_key_path, adb_public_key_path)
 
     ####################################################################################################################
     # Returns a list of ADBSKADevices. (Actually, it contains all USB devices connected to the computer).

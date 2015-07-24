@@ -34,6 +34,10 @@ __author__ = 'Sebastian'
 class ISKADevice:
 
     @staticmethod
+    def setup(new_data_folder):
+        raise NotImplementedError()
+
+    @staticmethod
     def list_devices():
         raise NotImplementedError()
 

@@ -83,7 +83,10 @@ class Cloudlet(object):
 
         # Get HTTP server info.
         self.http_port = config['pycloud.http.port']
-            
+
+        # Data folder
+        self.data_folder = config['pycloud.data_folder']
+
         # Get information about folders to be used.
         self.svmCache = config['pycloud.servicevm.cache']
         self.svmInstancesFolder = config['pycloud.servicevm.instances_folder']

@@ -84,7 +84,7 @@ def convert_pub_rsa_to_adb(rsa_file_path, adb_file_path):
     r = pow(2, key_size_bits)
     rr = pow(r, 2) % modulus
     #print 'R: ' + str(pow(2, key_size_bits))
-    print 'RR: ' + hex(rr)
+    #print 'RR: ' + hex(rr)
 
     # Transform length and exponent into byte arrays.
     length_array = int_to_bytes(length, endianness='little')
@@ -94,8 +94,8 @@ def convert_pub_rsa_to_adb(rsa_file_path, adb_file_path):
     # Move big integers into arrays.
     modulus_array = int_to_bytes(modulus, endianness='little')
     rr_array = int_to_bytes(rr, endianness='little')
-    print 'Mod Array: ' + binascii.hexlify(modulus_array)
-    print 'RR Array: ' + binascii.hexlify(rr_array)
+    #print 'Mod Array: ' + binascii.hexlify(modulus_array)
+    #print 'RR Array: ' + binascii.hexlify(rr_array)
 
     # Calculate remaining values.
     b = pow(2, 32)
@@ -140,7 +140,7 @@ def get_int_from_der(der_value, bytes_to_remove=0):
 #
 ###################################################################################
 def int_to_bytes(val, endianness='big'):
-    print 'Original value: ' + hex(val)
+    #print 'Original value: ' + hex(val)
 
     # Define endianness for each byte.
     if endianness == 'big':
@@ -171,12 +171,12 @@ def int_to_bytes(val, endianness='big'):
     if endianness == 'big':
         parts = parts[::-1]
 
-    print 'Num words: ' + str(num_words)
+    #print 'Num words: ' + str(num_words)
 
     struct_def = struct.Struct(prefix + 'I'*num_words)
     data = struct_def.pack(*parts)
     #print str(val) + ' Packed: ' + binascii.hexlify(data) +
-    print 'Size ' + str(struct_def.size)
+    #print 'Size ' + str(struct_def.size)
 
     return bytearray(data)
 
@@ -198,7 +198,3 @@ def mod_inverse(x, p):
         x, p = p, x % p
 
     return inv2
-
-# Test
-create_key_pair('./test', './test2')
-convert_pub_rsa_to_adb('./test2', './adbkey_test.pub')
