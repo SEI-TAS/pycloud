@@ -49,8 +49,8 @@ def create_key_pair(private_key_file_path, public_key_file_path, key_length=DEFA
     keypair.save_key(private_key_file_path, None)
     keypair.save_pub_key(public_key_file_path)
 
-    print "Public exponent: " + str(get_exponent(keypair))
-    print "Modulus: " + str(get_modulus(keypair))
+    #print "Public exponent: " + str(get_exponent(keypair))
+    #print "Modulus: " + str(get_modulus(keypair))
 
 #############################################################################################
 # Returns the exponent as an int, assuming its size in bytes is written in 1 byte.

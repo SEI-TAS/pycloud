@@ -82,20 +82,21 @@ http://jquery.org/license
                             <td>${paired_device.auth_duration/60/1000}</td>
                             <td>${paired_device.auth_enabled}</td>
                             <td>
-                                <a class="btn btn-large btn-danger" href="${unpair_url}" \
+                                <button class="btn btn-large btn-danger" href="${unpair_url}" \
                                    data-toggle="tooltip" data-placement="top" title="Unpair">
-                                    <span class="glyphicon glyphicon-remove"></span>
-                                </a>
+                                    <span class="glyphicon glyphicon-remove" style="color: white"></span>
+                                    <span class="glyphicon glyphicon-remove" style="color: white"></span>
+                                </button>
                                 % if paired_device.auth_enabled:
-                                    <a class="btn btn-large btn-danger" href="${revoke_url}" \
+                                    <button class="btn btn-large btn-danger" href="${revoke_url}" \
                                        data-toggle="tooltip" data-placement="top" title="Revoke">
-                                        <span class="glyphicon glyphicon-ban-circle"></span>
-                                    </a>
+                                        <span class="glyphicon glyphicon-ban-circle" style="color: white"></span>
+                                    </button>
                                 % else:
-                                    <a class="btn btn-large btn-success" href="${reauthorize_url}" \
+                                    <button class="btn btn-large btn-success" href="${reauthorize_url}" \
                                        data-toggle="tooltip" data-placement="top" title="Reauthorize">
-                                        <span class="glyphicon glyphicon-ok-circle"></span>
-                                    </a>
+                                        <span class="glyphicon glyphicon-ok-circle" style="color: white"></span>
+                                    </button>
                                 % endif
                             </td>
                         </tr>
