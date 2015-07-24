@@ -44,64 +44,71 @@ http://jquery.org/license
                 <h2>Paired Devices</h2>
             </div>
             <div class="panel-body">
-                <a class="btn btn-large btn-danger" href="${h.url_for(controller='devices', action='clear')}">Clear Deployment</a>
-                <a class="btn btn-large btn-danger" href="${h.url_for(controller='devices', action='bootstrap')}">Reset Deployment</a>
-                <br><br>
-                <table class="table table-striped">
-                    <tr>
-                        <th>Deployment Start Date</th>
-                        <th>Deployment Duration (mins)</th>
-                    </tr>
-                    <tr>
-                        <td>${page.deployment_auth_start}</td>
-                        <td>${page.deployment_auth_duration}</td>
-                    </tr>
-                </table>
-                <a class="btn btn-large btn-success" href="${h.url_for(controller='ska', action='available')}"
-                   ${'disabled' if page.deployment_auth_start == 'not set' else ''}>Pair New Device</a>
-                <br><br>
-                <table class="table table-striped">
-                    <tr>
-                        <th>Device ID</th>
-                        <th>Connection ID</th>
-                        <th>Authorization Start</th>
-                        <th>Authorization Duration (mins)</th>
-                        <th>Authorization Enabled</th>
-                        <th>Actions</th>
-                    </tr>
-                    % for paired_device in page.paired_devices:
-                        <%
-                            unpair_url = h.url_for(controller='devices', action='unpair', id=paired_device.device_id)
-                            revoke_url = h.url_for(controller='devices', action='revoke', id=paired_device.device_id)
-                            reauthorize_url = h.url_for(controller='devices', action='reauthorize', id=paired_device.device_id)
-                        %>
+                <div>
+                    <h3>Deployment</h3>
+                    <a class="btn btn-large btn-success" href="${h.url_for(controller='devices', action='bootstrap')}">Set/Reset Deployment</a>
+                    <a class="btn btn-large btn-danger" href="${h.url_for(controller='devices', action='clear')}">Clear Deployment</a>
+                    <br><br>
+                    <table class="table table-striped">
                         <tr>
-                            <td>${paired_device.device_id}</td>
-                            <td>${paired_device.connection_id}</td>
-                            <td>${paired_device.auth_start.strftime('%Y-%m-%d %X')}</td>
-                            <td>${paired_device.auth_duration/60/1000}</td>
-                            <td>${paired_device.auth_enabled}</td>
-                            <td>
-                                <button class="btn btn-large btn-danger" href="${unpair_url}" \
-                                   data-toggle="tooltip" data-placement="top" title="Unpair">
-                                    <span class="glyphicon glyphicon-remove" style="color: white"></span>
-                                    <span class="glyphicon glyphicon-remove" style="color: white"></span>
-                                </button>
-                                % if paired_device.auth_enabled:
-                                    <button class="btn btn-large btn-danger" href="${revoke_url}" \
-                                       data-toggle="tooltip" data-placement="top" title="Revoke">
-                                        <span class="glyphicon glyphicon-ban-circle" style="color: white"></span>
-                                    </button>
-                                % else:
-                                    <button class="btn btn-large btn-success" href="${reauthorize_url}" \
-                                       data-toggle="tooltip" data-placement="top" title="Reauthorize">
-                                        <span class="glyphicon glyphicon-ok-circle" style="color: white"></span>
-                                    </button>
-                                % endif
-                            </td>
+                            <th>Deployment Start Date</th>
+                            <th>Deployment Duration (mins)</th>
                         </tr>
-                    % endfor
-                </table>
+                        <tr>
+                            <td>${page.deployment_auth_start}</td>
+                            <td>${page.deployment_auth_duration}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div>
+                    <hr>
+                    <h3>Devices</h3>
+                    <a class="btn btn-large btn-success" href="${h.url_for(controller='ska', action='available')}"
+                       ${'disabled' if page.deployment_auth_start == 'not set' else ''}>Pair New Device
+                    </a>
+                    <br><br>
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Device ID</th>
+                            <th>Connection ID</th>
+                            <th>Authorization Start</th>
+                            <th>Authorization Duration (mins)</th>
+                            <th>Authorization Enabled</th>
+                            <th>Actions</th>
+                        </tr>
+                        % for paired_device in page.paired_devices:
+                            <%
+                                unpair_url = h.url_for(controller='devices', action='unpair', id=paired_device.device_id)
+                                revoke_url = h.url_for(controller='devices', action='revoke', id=paired_device.device_id)
+                                reauthorize_url = h.url_for(controller='devices', action='reauthorize', id=paired_device.device_id)
+                            %>
+                            <tr>
+                                <td>${paired_device.device_id}</td>
+                                <td>${paired_device.connection_id}</td>
+                                <td>${paired_device.auth_start.strftime('%Y-%m-%d %X')}</td>
+                                <td>${paired_device.auth_duration/60/1000}</td>
+                                <td>${paired_device.auth_enabled}</td>
+                                <td>
+                                    <a class="btn btn-large btn-danger" href="${unpair_url}" \
+                                       data-toggle="tooltip" data-placement="top" title="Unpair">
+                                        <span class="glyphicon glyphicon-remove" style="color: white"></span>
+                                    </a>
+                                    % if paired_device.auth_enabled:
+                                        <a class="btn btn-large btn-danger" href="${revoke_url}" \
+                                           data-toggle="tooltip" data-placement="top" title="Revoke">
+                                            <span class="glyphicon glyphicon-ban-circle" style="color: white"></span>
+                                        </a>
+                                    % else:
+                                        <a class="btn btn-large btn-success" href="${reauthorize_url}" \
+                                           data-toggle="tooltip" data-placement="top" title="Reauthorize">
+                                            <span class="glyphicon glyphicon-ok-circle" style="color: white"></span>
+                                        </a>
+                                    % endif
+                                </td>
+                            </tr>
+                        % endfor
+                    </table>
+                </div>
             </div>
         </div>
     </div>
