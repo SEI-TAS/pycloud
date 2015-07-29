@@ -63,7 +63,7 @@ class DevicesController(BaseController):
             page.deployment_auth_duration = 'not set'
         else:
             page.deployment_auth_start = page.deployment.auth_start.strftime('%Y-%m-%d %X')
-            page.deployment_auth_duration = page.deployment.auth_duration/60/1000
+            page.deployment_auth_duration = page.deployment.auth_duration
 
         # Get the paired devices.
         page.paired_devices = PairedDevice.find()
@@ -85,7 +85,12 @@ class DevicesController(BaseController):
     # Boostraps based on the remotely generated data by the pairing process.
     # TODO: connect with the IBC bootstrap stuff.
     ############################################################################################################
-    def GET_bootstrap(self):
+    def POST_bootstrap(self):
+        # Get the duration.
+        # TODO: check when no duration is received, or an invalid duration is received.
+        duration = int(request.params.get('duration', 0))
+        print duration
+
         # Remove all data from DB.
         PairedDevice.clear_data()
         Deployment.remove()
@@ -94,10 +99,9 @@ class DevicesController(BaseController):
         ADBSKADevice.setup(app_globals.cloudlet.data_folder)
 
         # Set up a new deployment.
-        # TODO: get duration as a parameter.
         deployment = Deployment()
         deployment.auth_start = datetime.datetime.now()
-        deployment.auth_duration = 24*60*60*1000    # in ms.
+        deployment.auth_duration = duration
         deployment.save()
 
         # Go to the main page.

@@ -29,6 +29,8 @@ http://jquery.org/license
 -->
 <%inherit file="base.html"/>
 
+<%namespace file="form.html" import="text"/>
+
 <%block name="header">
     ${parent.header()}
 </%block>
@@ -46,8 +48,8 @@ http://jquery.org/license
             <div class="panel-body">
                 <div>
                     <h3>Deployment</h3>
-                    <a class="btn btn-large btn-success" href="${h.url_for(controller='devices', action='bootstrap')}">Set/Reset Deployment</a>
-                    <a class="btn btn-large btn-danger" href="${h.url_for(controller='devices', action='clear')}">Clear Deployment</a>
+                    <button class="btn btn-large btn-success" type="button" data-toggle="modal" data-target="#modal-new-deployment">Set/Reset Deployment</button>
+                    <a class="btn btn-large btn-danger" type="button" data-toggle="modal" data-target="#modal-clear-deployment">Clear Deployment</a>
                     <br><br>
                     <table class="table table-striped">
                         <tr>
@@ -114,3 +116,48 @@ http://jquery.org/license
     </div>
 </div>
 
+<!-- New deployment modal -->
+<div class="modal fade" id="modal-new-deployment" role="dialog" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">x</button>
+                <h3><div>Setup Deployment</div></h3>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    <p><b>WARNING</b>: setting up a deployment will delete all previous deployment information, as well as information about all previously paired devices.</p>
+                    <form id="new-app-form" class="form-horizontal" action="${h.url_for(controller='devices', action='bootstrap')}" method="post">
+                        ${text('duration', input_width=4, input_type='number', label=_('Deployment Duration (in minutes)'))}
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                <button type="button" class="btn btn-primary" id="new-deployment-button" onclick="$('#new-app-form').submit()">Setup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Clear deployment modal -->
+<div class="modal fade" id="modal-clear-deployment" role="dialog" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">x</button>
+                <h3><div>Clear Deployment</div></h3>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    <p><b>WARNING</b>: clearing up a deployment will delete all previous deployment information,
+                        as well as information about all previously paired devices. Are you sure you want to do this?</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                <a href="${h.url_for(controller='devices', action='clear')}" class="btn btn-danger" id="clear-deployment-button">Clear</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -45,7 +45,7 @@ http://jquery.org/license
         <span style="color:#EF5F5F;">*</span>
         % endif
     % endif
-    <div class="">
+    <div style="width: ${30*input_width}px">
         <input type="${input_type}" class="form-control" placeholder="${label}" name="${id}" id="${id}" value="${page.form_values[id] if id in page.form_values else ''}" ${'disabled' if disabled else ''} />
     </div>
     % if id in c.form_errors:
