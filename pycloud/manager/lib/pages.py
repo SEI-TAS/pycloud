@@ -41,5 +41,5 @@ class ModifyPage(BasePage): pass
 class ImportPage(BasePage): pass
 class AppsPage(BasePage): pass
 class DevicesPage(BasePage): pass
-class SKADevicesPage(BasePage): pass
+class PairingPage(BasePage): pass
 class SigninPage(BasePage): pass

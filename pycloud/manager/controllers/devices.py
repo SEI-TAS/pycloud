@@ -83,7 +83,6 @@ class DevicesController(BaseController):
 
     ############################################################################################################
     # Boostraps based on the remotely generated data by the pairing process.
-    # TODO: connect with the IBC bootstrap stuff.
     ############################################################################################################
     def POST_bootstrap(self):
         # Get the duration.
@@ -97,6 +96,12 @@ class DevicesController(BaseController):
 
         # Setup general device configurations.
         ADBSKADevice.setup(app_globals.cloudlet.data_folder)
+
+        # TODO: Create server keys.
+        # server_keys = ServerCredentials()
+        # server_keys.create_key()
+
+        # TODO: Create server certificate.
 
         # Set up a new deployment.
         deployment = Deployment()

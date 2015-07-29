@@ -32,12 +32,12 @@ import logging
 from pylons import request, response, session, tmpl_context as c
 
 from pycloud.pycloud.pylons.lib.base import BaseController
-from pycloud.manager.lib.pages import SKADevicesPage
+from pycloud.manager.lib.pages import PairingPage
 from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
 from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 from pycloud.pycloud.pylons.lib import helpers as h
-from pycloud.pycloud.ibc import ibc
-import pycloud.pycloud.utils.pki
+
+from pycloud.pycloud.model.paired_device import PairedDevice
 
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import ajaxutils
@@ -45,9 +45,9 @@ from pycloud.pycloud.utils import ajaxutils
 log = logging.getLogger(__name__)
 
 ################################################################################################################
-# Controller for the Services page.
+# Controller for the Pairing page.
 ################################################################################################################
-class SKAController(BaseController):
+class PairingController(BaseController):
 
     ############################################################################################################
     # Entry point.
@@ -59,7 +59,7 @@ class SKAController(BaseController):
     # Lists the connected devices, and lets the system pair to one of them.
     ############################################################################################################
     def GET_available(self):
-        page = SKADevicesPage()
+        page = PairingPage()
         page.devices = []
         page.bt_selected = ''
         page.usb_selected = ''
@@ -118,7 +118,15 @@ class SKAController(BaseController):
             print id_data
             device_internal_id = id_data['device_id']
 
-            #ibc_private_key = ibc.generate_private_key(device_internal_id, password)
+            # Check if the device was already paired, and if so, abort.
+            previously_paired_device = PairedDevice.by_id(device_internal_id)
+            if previously_paired_device:
+                return ajaxutils.show_and_return_error_dict("Device with id " + device_internal_id + " is already paired.")
+
+            # TODO: Create device private key.
+            # device_keys = DeviceCredentials("SKE")
+            # device_keys.create_key([device_internal_id])
+
             #certificate = ibc.generate_client_certificate(device_internal_id, ibc_private_key)
 
             curr_device.send_file('/home/adminuser/test.txt', 'server_cert.pem')
