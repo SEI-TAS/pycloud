@@ -60,8 +60,10 @@ def create_self_signed_cert(cert_file_path, private_key_file_path):
     cert.set_not_before(before)
     cert.set_not_after(after)
 
-    # It is self-signed.
+    # It is self-signed (meaning it is also a CA).
     cert.set_issuer(cert.get_subject())
+    ext = X509.new_extension('basicConstraints', 'CA:TRUE')
+    cert.add_ext(ext)
 
     # Generate an RSA key pair, store it in files, and load it.
     rsa.create_key_pair(private_key_file_path, private_key_file_path + ".pub")

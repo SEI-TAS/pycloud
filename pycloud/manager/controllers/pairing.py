@@ -38,6 +38,7 @@ from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 from pycloud.pycloud.pylons.lib import helpers as h
 
 from pycloud.pycloud.model.paired_device import PairedDevice
+from pycloud.pycloud.ibc import radius
 
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import ajaxutils
@@ -126,14 +127,16 @@ class PairingController(BaseController):
             # TODO: Create device private key.
             # device_keys = DeviceCredentials("SKE")
             # device_keys.create_key([device_internal_id])
+            # curr_device.send_file('/home/adminuser/test.txt', 'device.key')
 
-            #certificate = ibc.generate_client_certificate(device_internal_id, ibc_private_key)
+            # Send certificate.
+            cert_path = radius.get_radius_cert_path()
+            cert_file_name = radius.RADIUS_CERT_FILE_NAME
+            curr_device.send_file(cert_path, cert_file_name)
 
-            curr_device.send_file('/home/adminuser/test.txt', 'server_cert.pem')
-            curr_device.send_file('/home/adminuser/test.txt', 'device.key')
-
+            # Send data needed to finish configuration in device.
             # TODO: get ssid from config file, password from hash
-            curr_device.send_data({'ssid': 'test_ssid', 'server_cert_name': 'server_cert.pem', 'password': '12345'})
+            curr_device.send_data({'ssid': 'test_ssid', 'server_cert_name': cert_file_name, 'password': '12345'})
 
             print 'Closing connection.'
             curr_device.disconnect()

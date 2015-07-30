@@ -34,15 +34,29 @@ from pycloud.pycloud.utils import pki
 
 LOCAL_TEMP_FOLDER = 'radius/'
 
+RADIUS_CERT_FILE_NAME = 'radius_cert.pem'
+RADIUS_PRIVATE_KEY_FILE_NAME = 'radius_private_key'
+
+# Folder to store and retrieve files.
+radius_data_folder = './'
+
+######################################################################################################################
+# Returns the full path for the RADIUS certificate.
+######################################################################################################################
+def get_radius_cert_path():
+    return os.path.join(radius_data_folder, RADIUS_CERT_FILE_NAME)
+
 ####################################################################################################################
-#
+# Sets up a new RADIUS certificate and its keys.
 ####################################################################################################################
 def generate_certificate(new_data_folder):
+    global radius_data_folder
+
     # Set the data folder.
-    data_folder = os.path.join(os.path.abspath(new_data_folder), LOCAL_TEMP_FOLDER)
-    fileutils.recreate_folder(data_folder)
+    radius_data_folder = os.path.join(os.path.abspath(new_data_folder), LOCAL_TEMP_FOLDER)
+    fileutils.recreate_folder(radius_data_folder)
 
     # Generate the cert.
-    radius_cert_path = os.path.join(data_folder, 'radius_cert.pem')
-    radius_private_key_path = os.path.join(data_folder, 'radius_private_key')
+    radius_cert_path = os.path.join(radius_data_folder, RADIUS_CERT_FILE_NAME)
+    radius_private_key_path = os.path.join(radius_data_folder, RADIUS_PRIVATE_KEY_FILE_NAME)
     pki.create_self_signed_cert(radius_cert_path, radius_private_key_path)
