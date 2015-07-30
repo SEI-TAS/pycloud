@@ -44,6 +44,8 @@ from pycloud.pycloud.model.paired_device import PairedDevice
 
 from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 
+from pycloud.pycloud.ibc import radius
+
 ################################################################################################################
 # Controller for the page.
 ################################################################################################################
@@ -101,7 +103,8 @@ class DevicesController(BaseController):
         # server_keys = ServerCredentials()
         # server_keys.create_key()
 
-        # TODO: Create server certificate.
+        # Create RADIUS server certificate.
+        radius.generate_certificate(app_globals.cloudlet.data_folder)
 
         # Set up a new deployment.
         deployment = Deployment()
