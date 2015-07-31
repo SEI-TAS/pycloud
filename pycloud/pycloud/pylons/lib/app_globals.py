@@ -40,7 +40,7 @@ class Globals(object):
     def __init__(self, config):
         # One instance of Globals is created during application
         # initialization and is available during requests via the
-        # 'g' variable.
+        # 'pylons.app_globals' variable.
 
         # Create or get instance of the singleton Cloudlet object.
         self.cloudlet = cloudlet.get_cloudlet_instance(config)

@@ -85,7 +85,7 @@ class CloudletApp(PylonsApp):
 ###########################################################################################################################
 # Generic function used to create a WSGI app.
 ###########################################################################################################################
-def generic_make_app(make_map_function, controllers_module, root_path, global_conf, full_stack=True, static_files=True, **app_conf):
+def generic_make_app(make_map_function, controllers_module, root_path, global_conf, **app_conf):
     print "-------------------------------------------------------"
 
     # Configure the Pylons environment.

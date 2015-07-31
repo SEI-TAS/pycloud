@@ -87,17 +87,17 @@ class Cloudlet(object):
         self.data_folder = config['pycloud.data_folder']
 
         # Get information about folders to be used.
-        self.svmCache = os.path.join(self.data_folder, config['pycloud.servicevm.cache'])
-        self.service_cache = os.path.join(self.data_folder, config['pycloud.servicevm.cache'])
-        self.svmInstancesFolder = os.path.join(self.data_folder, config['pycloud.servicevm.instances_folder'])
-        self.appFolder = os.path.join(self.data_folder, config['pycloud.push.app_folder'])
+        self.svmCache = os.path.join(self.data_folder, 'svmcache/')
+        self.service_cache = os.path.join(self.data_folder, 'svmcache/')
+        self.svmInstancesFolder = os.path.join(self.data_folder, 'temp/instances/')
+        self.appFolder = os.path.join(self.data_folder, 'apks/')
         
         # Load the templates to be used when creating VMs.
-        self.newVmFolder = os.path.join(self.data_folder, config['pycloud.servicevm.new_folder'])
-        self.newVmXml = config['pycloud.servicevm.xml_template']
+        self.newVmFolder = os.path.join(self.data_folder, 'temp/servicevm/')
+        self.newVmXml = os.path.join(config['pycloud.servicevm.xml_template'], 'vm_template.xml')
 
         # Export
-        self.export_path = os.path.join(self.data_folder, config['pycloud.export.default'])
+        self.export_path = os.path.join(self.data_folder, 'temp/export')
 
         # Migration params.
         self.migration_enabled = config['pycloud.migration.enabled'].upper() in ['T', 'TRUE', 'Y', 'YES']

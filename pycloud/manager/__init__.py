@@ -30,18 +30,18 @@ __author__ = 'jdroot'
 
 import os
 
+from pycloud.manager.config import routing
 from pycloud.pycloud.pylons.config.middleware import generic_make_app
 
 # Gets general parameters and calls function to create the WSGI app.
 # This will be called automatically by Pylons when creating the app.
-def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
+def make_app(global_conf, **app_conf):
     # Arguments needed to make some lower level functions more generic to be used in multiple apps.
-    from pycloud.manager.config import routing   
     controllers_module = "pycloud.manager.controllers"
     root_path = os.path.dirname(os.path.abspath(__file__))
 
     # Get the generic function to make the app, passing the particular arguments for this app.
     print "Setting up WSGI environment for Manager app"
-    app = generic_make_app(routing.make_map, controllers_module, root_path, global_conf, full_stack=full_stack, static_files=static_files, app_conf=app_conf)
+    app = generic_make_app(routing.make_map, controllers_module, root_path, global_conf, **app_conf)
 
     return app
