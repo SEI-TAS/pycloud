@@ -103,8 +103,9 @@ class Cloudlet(object):
         self.migration_enabled = config['pycloud.migration.enabled'].upper() in ['T', 'TRUE', 'Y', 'YES']
         self.bridge_adapter = config['pycloud.migration.adapter']
 
-        # Auth.
-        self.auth_controller = config['pycloud.auth_controller']
+        # Auth and pairing.
+        self.auth_controller = config['pycloud.auth_controller'] if 'pycloud.auth_controller' in config else None
+        self.ssid = config['pycloud.pairing.ssid'] if 'pycloud.pairing.ssid' in config else ''
 
         print 'cloudlet created.'
 

@@ -30,6 +30,7 @@ __author__ = 'Sebastian'
 import logging
 
 from pylons import request, response, session, tmpl_context as c
+from pylons import app_globals
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import PairingPage
@@ -125,9 +126,11 @@ class PairingController(BaseController):
                 return ajaxutils.show_and_return_error_dict("Device with id " + device_internal_id + " is already paired.")
 
             # TODO: Create device private key.
+            # TODO: get password from hash
             # device_keys = DeviceCredentials("SKE")
             # device_keys.create_key([device_internal_id])
             # curr_device.send_file('/home/adminuser/test.txt', 'device.key')
+            password = '12345'
 
             # Send certificate.
             cert_path = radius.get_radius_cert_path()
@@ -135,8 +138,8 @@ class PairingController(BaseController):
             curr_device.send_file(cert_path, cert_file_name)
 
             # Send data needed to finish configuration in device.
-            # TODO: get ssid from config file, password from hash
-            curr_device.send_data({'ssid': 'test_ssid', 'server_cert_name': cert_file_name, 'password': '12345'})
+            ssid = app_globals.cloudlet.ssid
+            curr_device.send_data({'ssid': ssid, 'server_cert_name': cert_file_name, 'password': password})
 
             print 'Closing connection.'
             curr_device.disconnect()
