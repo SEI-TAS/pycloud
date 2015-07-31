@@ -29,10 +29,7 @@ __author__ = 'Sebastian'
 
 import os
 
-from pycloud.pycloud.utils import fileutils
 from pycloud.pycloud.utils import pki
-
-LOCAL_TEMP_FOLDER = 'radius/'
 
 RADIUS_CERT_FILE_NAME = 'radius_cert.pem'
 RADIUS_PRIVATE_KEY_FILE_NAME = 'radius_private_key'
