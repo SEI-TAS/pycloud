@@ -38,7 +38,6 @@ from pycloud.pycloud.vm.vmutils import destroy_all_vms
 import pycloud.pycloud.mongo.model as model
 import sys
 
-
 # Singleton object to maintain intra- and inter-app variables.
 _g_singletonCloudlet = None
 
@@ -82,31 +81,30 @@ class Cloudlet(object):
         self.db = self.conn[dbName]
 
         # Get HTTP server info.
-        self.http_port = config['pycloud.http.port']
+        self.api_port = config['pycloud.api.port']
 
         # Data folder
         self.data_folder = config['pycloud.data_folder']
 
         # Get information about folders to be used.
-        self.svmCache = config['pycloud.servicevm.cache']
-        self.svmInstancesFolder = config['pycloud.servicevm.instances_folder']
-        self.appFolder = config['pycloud.push.app_folder']
+        self.svmCache = os.path.join(self.data_folder, config['pycloud.servicevm.cache'])
+        self.service_cache = os.path.join(self.data_folder, config['pycloud.servicevm.cache'])
+        self.svmInstancesFolder = os.path.join(self.data_folder, config['pycloud.servicevm.instances_folder'])
+        self.appFolder = os.path.join(self.data_folder, config['pycloud.push.app_folder'])
         
         # Load the templates to be used when creating VMs.
-        self.newVmFolder = config['pycloud.servicevm.new_folder']        
+        self.newVmFolder = os.path.join(self.data_folder, config['pycloud.servicevm.new_folder'])
         self.newVmXml = config['pycloud.servicevm.xml_template']
 
-        # New config params
-        self.service_cache = config['pycloud.servicevm.cache']
-
         # Export
-        self.export_path = config['pycloud.export.default']
+        self.export_path = os.path.join(self.data_folder, config['pycloud.export.default'])
 
-        self.migration_enabled = config['pycloud.migration.enabled']
-        self.migration_enabled = self.migration_enabled.upper() in ['T', 'TRUE', 'Y', 'YES']
-
+        # Migration params.
+        self.migration_enabled = config['pycloud.migration.enabled'].upper() in ['T', 'TRUE', 'Y', 'YES']
         self.bridge_adapter = config['pycloud.migration.adapter']
-        #self.nmap = config['pycloud.migration.nmap']
+
+        # Auth.
+        self.auth_controller = config['pycloud.auth_controller']
 
         print 'cloudlet created.'
 

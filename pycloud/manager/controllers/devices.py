@@ -43,6 +43,7 @@ from pycloud.pycloud.model.deployment import Deployment
 from pycloud.pycloud.model.paired_device import PairedDevice
 
 from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
+from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
 
 from pycloud.pycloud.ibc import radius
 
@@ -97,6 +98,7 @@ class DevicesController(BaseController):
         Deployment.remove()
 
         # Setup general device configurations.
+        BluetoothSKADevice.setup(app_globals.cloudlet.data_folder)
         ADBSKADevice.setup(app_globals.cloudlet.data_folder)
 
         # TODO: Create server keys.

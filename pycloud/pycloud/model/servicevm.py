@@ -45,7 +45,6 @@ from pycloud.pycloud.model.vmimage import VMImage
 from pycloud.pycloud.vm.vmsavedstate import VMSavedState
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineDescriptor
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineException
-from pycloud.pycloud.vm.vncclient import VNCClient
 from pycloud.pycloud.vm.vmutils import get_hypervisor
 from pycloud.pycloud.utils import portmanager
 from pycloud.pycloud.cloudlet import get_cloudlet_instance
