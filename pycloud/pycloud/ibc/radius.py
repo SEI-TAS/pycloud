@@ -37,26 +37,30 @@ LOCAL_TEMP_FOLDER = 'radius/'
 RADIUS_CERT_FILE_NAME = 'radius_cert.pem'
 RADIUS_PRIVATE_KEY_FILE_NAME = 'radius_private_key'
 
+# User file for FreeRADIUS.
+USERS_FILE_PATH = '/usr/local/etc/raddb/users'
+
 # Folder to store and retrieve files.
-radius_data_folder = './'
+CERT_STORE_FOLDER = '/etc/raddb/certs'
 
 ######################################################################################################################
 # Returns the full path for the RADIUS certificate.
 ######################################################################################################################
 def get_radius_cert_path():
-    return os.path.join(radius_data_folder, RADIUS_CERT_FILE_NAME)
+    return os.path.join(CERT_STORE_FOLDER, RADIUS_CERT_FILE_NAME)
 
 ####################################################################################################################
 # Sets up a new RADIUS certificate and its keys.
 ####################################################################################################################
-def generate_certificate(new_data_folder):
-    global radius_data_folder
-
-    # Set the data folder.
-    radius_data_folder = os.path.join(os.path.abspath(new_data_folder), LOCAL_TEMP_FOLDER)
-    fileutils.recreate_folder(radius_data_folder)
-
-    # Generate the cert.
-    radius_cert_path = os.path.join(radius_data_folder, RADIUS_CERT_FILE_NAME)
-    radius_private_key_path = os.path.join(radius_data_folder, RADIUS_PRIVATE_KEY_FILE_NAME)
+def generate_certificate():
+    radius_cert_path = get_radius_cert_path()
+    radius_private_key_path = os.path.join(CERT_STORE_FOLDER, RADIUS_PRIVATE_KEY_FILE_NAME)
     pki.create_self_signed_cert(radius_cert_path, radius_private_key_path)
+
+####################################################################################################################
+# Stores user credentials into a RADIUS server. This method works for FreeRADIUS servers.
+####################################################################################################################
+def store_freeradius_user_credentials(user_id, password):
+    user_entry = user_id + '\tCleartext-Password := "' + password + '"'
+    with open(USERS_FILE_PATH, 'a') as users_file:
+        users_file.write(user_entry)

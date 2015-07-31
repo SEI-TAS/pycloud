@@ -106,7 +106,7 @@ class DevicesController(BaseController):
         # server_keys.create_key()
 
         # Create RADIUS server certificate.
-        radius.generate_certificate(app_globals.cloudlet.data_folder)
+        radius.generate_certificate()
 
         # Set up a new deployment.
         deployment = Deployment()
