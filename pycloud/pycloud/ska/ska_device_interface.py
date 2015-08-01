@@ -38,7 +38,7 @@ class ISKADevice:
         raise NotImplementedError()
 
     @staticmethod
-    def list_devices():
+    def list_devices(root_folder):
         raise NotImplementedError()
 
     def get_name(self):

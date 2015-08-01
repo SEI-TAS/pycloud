@@ -104,9 +104,8 @@ class DevicesController(BaseController):
         ADBSKADevice.setup(app_globals.cloudlet.data_folder)
 
         # Create server keys.
-        server_private_key_path = os.path.join(app_globals.cloudlet.data_folder, 'credentials/server_private_key')
-        server_keys = credentials.ServerCredentials('SKE')
-        server_keys.save_to_file([server_private_key_path])
+        server_keys = credentials.ServerCredentials(app_globals.cloudlet.credentials_type)
+        server_keys.save_to_file([app_globals.cloudlet.data_folder])
 
         # Create RADIUS server certificate.
         radius.generate_certificate()

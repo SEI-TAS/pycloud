@@ -40,7 +40,7 @@ USERS_FILE_PATH = './data/users'
 
 # Folder to store and retrieve files.
 #CERT_STORE_FOLDER = '/etc/raddb/certs'
-CERT_STORE_FOLDER = './data'
+CERT_STORE_FOLDER = './data/credentials'
 
 ######################################################################################################################
 # Returns the full path for the RADIUS certificate.

@@ -28,7 +28,6 @@
 __author__ = 'Sebastian'
 
 import logging
-import os
 
 from pylons import request, response, session, tmpl_context as c
 from pylons import app_globals
@@ -75,7 +74,7 @@ class PairingController(BaseController):
         if page.connection == 'bt':
             try:
                 page.bt_selected = 'selected'
-                page.devices = BluetoothSKADevice.list_devices()
+                page.devices = BluetoothSKADevice.list_devices(app_globals.cloudlet.data_folder)
             except Exception, e:
                 print e
                 pass
@@ -83,7 +82,7 @@ class PairingController(BaseController):
         else:
             try:
                 page.usb_selected = 'selected'
-                page.devices = ADBSKADevice.list_devices()
+                page.devices = ADBSKADevice.list_devices(app_globals.cloudlet.data_folder)
             except Exception, e:
                 print e
                 pass
@@ -102,9 +101,9 @@ class PairingController(BaseController):
 
         # Get a list of devices depending on the connection type.
         if connection == 'bt':
-            devices = BluetoothSKADevice.list_devices()
+            devices = BluetoothSKADevice.list_devices(app_globals.cloudlet.data_folder)
         else:
-            devices = ADBSKADevice.list_devices()
+            devices = ADBSKADevice.list_devices(app_globals.cloudlet.data_folder)
 
         # Find if the device we want to connect to is still there.
         curr_device = None
@@ -128,15 +127,16 @@ class PairingController(BaseController):
                 return ajaxutils.show_and_return_error_dict("Device with id " + device_internal_id + " is already paired.")
 
             # Create device private key and get the password from hash.
-            server_private_key_path = os.path.join(app_globals.cloudlet.data_folder, 'credentials/server_private_key')
-            client_private_key_path = os.path.join(app_globals.cloudlet.data_folder, 'credentials/temp_device_key')
-            device_keys = credentials.DeviceCredentials("SKE", [server_private_key_path, device_internal_id])
-            device_keys.insert_into_radius()
-            device_keys.save_to_file([client_private_key_path])
+            server_private_key_path = credentials.ServerCredentials.get_private_key_file_path(app_globals.cloudlet.data_folder)
+            device_keys = credentials.DeviceCredentials(app_globals.cloudlet.credentials_type, [server_private_key_path, device_internal_id])
+            device_keys.save_to_file([app_globals.cloudlet.data_folder])
             password = device_keys.device_hash
 
+            # Store the new credentials in the raidus server.
+            device_keys.insert_into_radius()
+
             # Send the device's private key.
-            curr_device.send_file(client_private_key_path, 'device.key')
+            curr_device.send_file(credentials.DeviceCredentials.get_private_key_file_path(app_globals.cloudlet.data_folder), 'device.key')
 
             # Send certificate.
             cert_path = radius.get_radius_cert_path()

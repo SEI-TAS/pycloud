@@ -31,6 +31,11 @@ import binascii
 import hashlib
 
 import radius
+from pycloud.pycloud.utils import fileutils
+
+LOCAL_FOLDER = 'credentials/'
+SERVER_KEY_FILE_NAME = 'server_private_key'
+DEVICE_KEY_FILE_NAME = 'temp_device_key'
 
 ############################################################################################################
 #
@@ -49,7 +54,7 @@ class ServerCredentials(object):
             self.server_key = self.server_key_ascii.decode("ascii")
             self.ServerPub = ""
         else:
-            raise RuntimeError("That crypter type is not currently supported.")
+            raise RuntimeError("The crypter type '{}' is not currently supported.".format(self.type))
 
     ############################################################################################################
     #
@@ -58,8 +63,23 @@ class ServerCredentials(object):
         if self.type == "IBE":
             raise RuntimeError("IBE is not yet implemented")
         elif self.type == "SKE":
-            with open(args[0], 'w') as keyfile:
+            # Ensure the folder is there, and clean it up too.
+            root_folder = args[0]
+            folder = os.path.join(root_folder, LOCAL_FOLDER)
+            fileutils.recreate_folder(folder)
+
+            # Store the key.
+            path = ServerCredentials.get_private_key_file_path(args[0])
+            with open(path, 'w') as keyfile:
                 keyfile.write(self.server_key)
+
+    ############################################################################################################
+    #
+    ############################################################################################################
+    @staticmethod
+    def get_private_key_file_path(root_folder):
+        path = os.path.join(root_folder, LOCAL_FOLDER, SERVER_KEY_FILE_NAME)
+        return path
 
 ############################################################################################################
 #
@@ -80,7 +100,7 @@ class DeviceCredentials(object):
             self.device_private_key = self.server_key + self.device_id
             self.device_hash = hashlib.sha256(self.device_private_key).hexdigest()
         else:
-            raise RuntimeError("That crypter type is not currently supported.")
+            raise RuntimeError("That crypter type '{}' is not currently supported.".format(self.type))
 
     ############################################################################################################
     #
@@ -89,8 +109,17 @@ class DeviceCredentials(object):
         if self.type == "IBE":
             raise RuntimeError("IBE is not yet implemented")
         elif self.type == "SKE":
-            with open(args[0], 'w') as keyfile:
+            path = DeviceCredentials.get_private_key_file_path(args[0])
+            with open(path, 'w') as keyfile:
                 keyfile.write(self.device_private_key)
+
+    ############################################################################################################
+    #
+    ############################################################################################################
+    @staticmethod
+    def get_private_key_file_path(root_folder):
+        path = os.path.join(root_folder, LOCAL_FOLDER, DEVICE_KEY_FILE_NAME)
+        return path
 
     ############################################################################################################
     #
