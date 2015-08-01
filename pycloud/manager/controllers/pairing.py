@@ -28,6 +28,7 @@
 __author__ = 'Sebastian'
 
 import logging
+import os
 
 from pylons import request, response, session, tmpl_context as c
 from pylons import app_globals
@@ -40,6 +41,7 @@ from pycloud.pycloud.pylons.lib import helpers as h
 
 from pycloud.pycloud.model.paired_device import PairedDevice
 from pycloud.pycloud.ibc import radius
+from pycloud.pycloud.ibc import credentials
 
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import ajaxutils
@@ -125,12 +127,16 @@ class PairingController(BaseController):
             if previously_paired_device:
                 return ajaxutils.show_and_return_error_dict("Device with id " + device_internal_id + " is already paired.")
 
-            # TODO: Create device private key.
-            # TODO: get password from hash
-            # device_keys = DeviceCredentials("SKE")
-            # device_keys.create_key([device_internal_id])
-            # curr_device.send_file('/home/adminuser/test.txt', 'device.key')
-            password = '12345'
+            # Create device private key and get the password from hash.
+            server_private_key_path = os.path.join(app_globals.cloudlet.data_folder, 'credentials/server_private_key')
+            client_private_key_path = os.path.join(app_globals.cloudlet.data_folder, 'credentials/temp_device_key')
+            device_keys = credentials.DeviceCredentials("SKE", [server_private_key_path, device_internal_id])
+            device_keys.insert_into_radius()
+            device_keys.save_to_file([client_private_key_path])
+            password = device_keys.device_hash
+
+            # Send the device's private key.
+            curr_device.send_file(client_private_key_path, 'device.key')
 
             # Send certificate.
             cert_path = radius.get_radius_cert_path()

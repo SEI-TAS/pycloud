@@ -28,6 +28,7 @@
 __author__ = 'Sebastian'
 
 import datetime
+import os
 
 from pylons import request, response, session, tmpl_context as c
 from pylons import app_globals
@@ -46,6 +47,7 @@ from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
 
 from pycloud.pycloud.ibc import radius
+from pycloud.pycloud.ibc import credentials
 
 ################################################################################################################
 # Controller for the page.
@@ -101,9 +103,10 @@ class DevicesController(BaseController):
         BluetoothSKADevice.setup(app_globals.cloudlet.data_folder)
         ADBSKADevice.setup(app_globals.cloudlet.data_folder)
 
-        # TODO: Create server keys.
-        # server_keys = ServerCredentials()
-        # server_keys.create_key()
+        # Create server keys.
+        server_private_key_path = os.path.join(app_globals.cloudlet.data_folder, 'credentials/server_private_key')
+        server_keys = credentials.ServerCredentials('SKE')
+        server_keys.save_to_file([server_private_key_path])
 
         # Create RADIUS server certificate.
         radius.generate_certificate()

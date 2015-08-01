@@ -35,10 +35,12 @@ RADIUS_CERT_FILE_NAME = 'radius_cert.pem'
 RADIUS_PRIVATE_KEY_FILE_NAME = 'radius_private_key'
 
 # User file for FreeRADIUS.
-USERS_FILE_PATH = '/usr/local/etc/raddb/users'
+#USERS_FILE_PATH = '/usr/local/etc/raddb/users'
+USERS_FILE_PATH = './data/users'
 
 # Folder to store and retrieve files.
-CERT_STORE_FOLDER = '/etc/raddb/certs'
+#CERT_STORE_FOLDER = '/etc/raddb/certs'
+CERT_STORE_FOLDER = './data'
 
 ######################################################################################################################
 # Returns the full path for the RADIUS certificate.
