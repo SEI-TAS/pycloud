@@ -33,12 +33,18 @@ __author__ = 'Sebastian'
 
 class ISKADevice:
 
+    # To be called on each execution of the server before starting to use a device type.
     @staticmethod
-    def setup(new_data_folder):
+    def initialize(root_folder):
+        raise NotImplementedError()
+
+    # To be called when bootstrapping or re-bootstrapping the server.
+    @staticmethod
+    def bootstrap():
         raise NotImplementedError()
 
     @staticmethod
-    def list_devices(root_folder):
+    def list_devices():
         raise NotImplementedError()
 
     def get_name(self):

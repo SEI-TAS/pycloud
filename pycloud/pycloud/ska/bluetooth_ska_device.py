@@ -143,7 +143,15 @@ class BluetoothSKADevice(ISKADevice):
     #
     ####################################################################################################################
     @staticmethod
-    def setup(new_data_folder):
+    def initialize(root_folder):
+        # Nothing to be done.
+        pass
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    @staticmethod
+    def bootstrap():
         # Nothing to be done.
         pass
 
@@ -151,7 +159,7 @@ class BluetoothSKADevice(ISKADevice):
     # Returns a list of BluetoothSKADevices that have the SKA Pairing service available.
     ####################################################################################################################
     @staticmethod
-    def list_devices(root_folder):
+    def list_devices():
         # Check that there is a Bluetooth adapter available.
         adapter_address = get_adapter_address()
         if adapter_address is None:

@@ -67,26 +67,24 @@ class PairingController(BaseController):
         page.bt_selected = ''
         page.usb_selected = ''
 
+        # Ensure the device types are initialized.
+        BluetoothSKADevice.initialize(app_globals.cloudlet.data_folder)
+        ADBSKADevice.initialize(app_globals.cloudlet.data_folder)
+
         page.connection = request.params.get('connection', None)
         if page.connection is None:
             page.connection = 'usb'
 
-        if page.connection == 'bt':
-            try:
+        try:
+            if page.connection == 'bt':
                 page.bt_selected = 'selected'
-                page.devices = BluetoothSKADevice.list_devices(app_globals.cloudlet.data_folder)
-            except Exception, e:
-                print e
-                pass
-                # Should show a warning to user.
-        else:
-            try:
+                page.devices = BluetoothSKADevice.list_devices()
+            else:
                 page.usb_selected = 'selected'
-                page.devices = ADBSKADevice.list_devices(app_globals.cloudlet.data_folder)
-            except Exception, e:
-                print e
-                pass
-                # Should show a warning to user.
+                page.devices = ADBSKADevice.list_devices()
+        except Exception, e:
+            print e
+            # Should show a warning to user.
 
         return page.render()
 
@@ -101,9 +99,9 @@ class PairingController(BaseController):
 
         # Get a list of devices depending on the connection type.
         if connection == 'bt':
-            devices = BluetoothSKADevice.list_devices(app_globals.cloudlet.data_folder)
+            devices = BluetoothSKADevice.list_devices()
         else:
-            devices = ADBSKADevice.list_devices(app_globals.cloudlet.data_folder)
+            devices = ADBSKADevice.list_devices()
 
         # Find if the device we want to connect to is still there.
         curr_device = None

@@ -61,6 +61,10 @@ class DevicesController(BaseController):
         c.devices_active = 'active'
         page = DevicesPage()
 
+        # Ensure the device types are initialized.
+        BluetoothSKADevice.initialize(app_globals.cloudlet.data_folder)
+        ADBSKADevice.initialize(app_globals.cloudlet.data_folder)
+
         # Get the overall deployment info.
         page.deployment = Deployment.find_one()
         if page.deployment is None:
@@ -99,9 +103,9 @@ class DevicesController(BaseController):
         PairedDevice.clear_data()
         Deployment.remove()
 
-        # Setup general device configurations.
-        BluetoothSKADevice.setup(app_globals.cloudlet.data_folder)
-        ADBSKADevice.setup(app_globals.cloudlet.data_folder)
+        # Setup initial configurations for each device type.
+        BluetoothSKADevice.bootstrap()
+        ADBSKADevice.bootstrap()
 
         # Create server keys.
         server_keys = credentials.ServerCredentials(app_globals.cloudlet.credentials_type)

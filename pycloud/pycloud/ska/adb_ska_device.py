@@ -55,19 +55,22 @@ IN_FILE_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreFileService'
 OUT_DATA_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.OutDataService'
 OUT_DATA_REMOTE_FILEPATH = REMOTE_FOLDER + 'out_data.json'
 
+# Global to store root folder.
+root_data_folder = './'
+
 ######################################################################################################################
 # Returns the full path for the adbkey file.
 ######################################################################################################################
-def get_adb_key_path(root_folder):
-    return os.path.join(root_folder, LOCAL_TEMP_FOLDER, 'adbkey')
+def get_adb_key_path():
+    return os.path.join(root_data_folder, LOCAL_TEMP_FOLDER, 'adbkey')
 
 ######################################################################################################################
 # Attempts to connect to an ADB daemon on a given USB device. Returns a proxy to that daemon if successful, or None if
 # unsuccessful.
 ######################################################################################################################
-def connect_to_adb_daemon(device, root_folder):
+def connect_to_adb_daemon(device):
     # Load host keypair to authenticate with ADB daemon.
-    keySigner = M2CryptoSigner(get_adb_key_path(root_folder))
+    keySigner = M2CryptoSigner(get_adb_key_path())
 
     try:
         print 'Connecting to USB device'
@@ -102,15 +105,21 @@ def start_service(adbDaemon, service_name, extras={}):
 class ADBSKADevice(ISKADevice):
 
     serial_number = None
-    root_folder = None
     adb_daemon = None
+
+    ####################################################################################################################
+    # Sets up basic ADB stuff.
+    ####################################################################################################################
+    @staticmethod
+    def initialize(root_folder):
+        global root_data_folder
+        root_data_folder = root_folder
 
     ####################################################################################################################
     # Creates a device using the provided device info.
     ####################################################################################################################
-    def __init__(self, device, root_folder):
+    def __init__(self, device):
         self.serial_number = device.serial_number
-        self.root_folder = root_folder
 
     ####################################################################################################################
     # Returns an name for the device.
@@ -122,13 +131,13 @@ class ADBSKADevice(ISKADevice):
     # Sets up basic ADB stuff.
     ####################################################################################################################
     @staticmethod
-    def setup(root_folder):
+    def bootstrap():
         # Set the data folder.
-        adb_data_folder = os.path.join(os.path.abspath(root_folder), LOCAL_TEMP_FOLDER)
+        adb_data_folder = os.path.join(os.path.abspath(root_data_folder), LOCAL_TEMP_FOLDER)
         fileutils.recreate_folder(adb_data_folder)
 
         # Generate the adb keys.
-        adb_private_key_path = get_adb_key_path(root_folder)
+        adb_private_key_path = get_adb_key_path()
         adb_public_key_path = adb_private_key_path + '.pub'
         adb_public_rsa_key_path = adb_private_key_path + '_rsa.pub'
 
@@ -139,10 +148,10 @@ class ADBSKADevice(ISKADevice):
     # Returns a list of ADBSKADevices. (Actually, it contains all USB devices connected to the computer).
     ####################################################################################################################
     @staticmethod
-    def list_devices(root_folder):
+    def list_devices():
         usb_devices = []
         for device in AdbCommands.Devices():
-            usb_devices.append(ADBSKADevice(device, root_folder))
+            usb_devices.append(ADBSKADevice(device))
 
         return usb_devices
 
@@ -156,7 +165,7 @@ class ADBSKADevice(ISKADevice):
 
         for device in AdbCommands.Devices():
             if device.serial_number == self.serial_number:
-                self.adb_daemon = connect_to_adb_daemon(device, self.root_folder)
+                self.adb_daemon = connect_to_adb_daemon(device)
                 if self.adb_daemon is not None:
                     return True
                 else:
