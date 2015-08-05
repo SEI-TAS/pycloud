@@ -25,33 +25,25 @@
 # Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
 # Released under the MIT license
 # http://jquery.org/license
-
 __author__ = 'Sebastian'
 
+from Crypto.Cipher import AES
 
-
-def generate_master_keys(path):
+def encrypt_message_for_device(message, device_id):
     pass
 
-def generate_server_certificate(path):
-    pass
+#################################################################################################################
+# Encrypts a message with the default encryption settings.
+#################################################################################################################
+def encrypt_message(message, key):
+    encryption_suite = AES.new(key, AES.MODE_ECB)
+    cipher_text = encryption_suite.encrypt(message)
+    return cipher_text
 
-def generate_private_key(id, password):
-    pass
-
-def generate_client_certificate(id, private_key):
-    pass
-
-class DeviceRepository():
-
-    def register_device(self, id, timeout):
-        pass
-
-    def get_device_info(self, id):
-        pass
-
-    def list_devices(self):
-        pass
-
-    def remove_device(self):
-        pass
+#################################################################################################################
+# Decrypts a message with the default encryption settings.
+#################################################################################################################
+def decrypt_message(message, key):
+    decryption_suite = AES.new(key, AES.MODE_ECB)
+    plain_text = decryption_suite.decrypt(message)
+    return plain_text

@@ -39,8 +39,8 @@ from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 from pycloud.pycloud.pylons.lib import helpers as h
 
 from pycloud.pycloud.model.paired_device import PairedDevice
-from pycloud.pycloud.ibc import radius
-from pycloud.pycloud.ibc import credentials
+from pycloud.pycloud.security import radius
+from pycloud.pycloud.security import credentials
 
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import ajaxutils
@@ -126,15 +126,18 @@ class PairingController(BaseController):
 
             # Create device private key and get the password from hash.
             server_private_key_path = credentials.ServerCredentials.get_private_key_file_path(app_globals.cloudlet.data_folder)
-            device_keys = credentials.DeviceCredentials(app_globals.cloudlet.credentials_type, [server_private_key_path, device_internal_id])
-            device_keys.save_to_file([app_globals.cloudlet.data_folder])
+            device_keys = credentials.DeviceCredentials(app_globals.cloudlet.credentials_type,
+                                                        device_internal_id,
+                                                        server_private_key_path)
+            device_keys.save_to_file(app_globals.cloudlet.data_folder)
             password = device_keys.device_hash
 
-            # Store the new credentials in the raidus server.
+            # Store the new credentials in the RADIUS server.
             device_keys.insert_into_radius()
 
             # Send the device's private key.
-            curr_device.send_file(credentials.DeviceCredentials.get_private_key_file_path(app_globals.cloudlet.data_folder), 'device.key')
+            device_private_key_file = credentials.DeviceCredentials.get_private_key_file_path(app_globals.cloudlet.data_folder)
+            curr_device.send_file(device_private_key_file, 'device.key')
 
             # Send certificate.
             cert_path = radius.get_radius_cert_path()

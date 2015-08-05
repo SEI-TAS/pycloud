@@ -36,6 +36,7 @@ from pycloud.pycloud.utils import fileutils
 LOCAL_FOLDER = 'credentials/'
 SERVER_KEY_FILE_NAME = 'server_private_key'
 DEVICE_KEY_FILE_NAME = 'temp_device_key'
+DEVICE_ENCRYPTION_KEY_FILE_NAME = 'device_encryption_key'
 
 ############################################################################################################
 #
@@ -59,17 +60,16 @@ class ServerCredentials(object):
     ############################################################################################################
     #
     ############################################################################################################
-    def save_to_file(self, args):
+    def save_to_file(self, key_folder):
         if self.type == "IBE":
             raise RuntimeError("IBE is not yet implemented")
         elif self.type == "SKE":
             # Ensure the folder is there, and clean it up too.
-            root_folder = args[0]
-            folder = os.path.join(root_folder, LOCAL_FOLDER)
+            folder = os.path.join(key_folder, LOCAL_FOLDER)
             fileutils.recreate_folder(folder)
 
             # Store the key.
-            path = ServerCredentials.get_private_key_file_path(args[0])
+            path = ServerCredentials.get_private_key_file_path(key_folder)
             with open(path, 'w') as keyfile:
                 keyfile.write(self.server_key)
 
@@ -88,7 +88,7 @@ class DeviceCredentials(object):
     ############################################################################################################
     #
     ############################################################################################################
-    def __init__(self, type, args):
+    def __init__(self, type, device_id, *args):
         self.type = type
         with open(args[0], 'r') as keyfile:
             self.server_key = keyfile.read()
@@ -96,7 +96,7 @@ class DeviceCredentials(object):
         if self.type == "IBE":
             raise RuntimeError("IBE is not yet implemented")
         elif self.type == "SKE":
-            self.device_id = args[1]
+            self.device_id = device_id
             self.device_private_key = self.server_key + self.device_id
             self.device_hash = hashlib.sha256(self.device_private_key).hexdigest()
         else:
@@ -105,13 +105,17 @@ class DeviceCredentials(object):
     ############################################################################################################
     #
     ############################################################################################################
-    def save_to_file(self, args):
+    def save_to_file(self, key_folder):
         if self.type == "IBE":
             raise RuntimeError("IBE is not yet implemented")
         elif self.type == "SKE":
-            path = DeviceCredentials.get_private_key_file_path(args[0])
+            path = DeviceCredentials.get_private_key_file_path(key_folder)
             with open(path, 'w') as keyfile:
                 keyfile.write(self.device_private_key)
+
+            path = DeviceCredentials.get_encryption_key_file_path(key_folder)
+            with open(path, 'w') as keyfile:
+                keyfile.write(self.device_hash)
 
     ############################################################################################################
     #
@@ -119,6 +123,14 @@ class DeviceCredentials(object):
     @staticmethod
     def get_private_key_file_path(root_folder):
         path = os.path.join(root_folder, LOCAL_FOLDER, DEVICE_KEY_FILE_NAME)
+        return path
+
+    ############################################################################################################
+    #
+    ############################################################################################################
+    @staticmethod
+    def get_encryption_key_file_path(root_folder):
+        path = os.path.join(root_folder, LOCAL_FOLDER, DEVICE_ENCRYPTION_KEY_FILE_NAME)
         return path
 
     ############################################################################################################
