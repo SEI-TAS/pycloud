@@ -97,34 +97,40 @@ class PairingController(BaseController):
         if connection is None:
             connection = 'bt'
 
-        # Get a list of devices depending on the connection type.
-        if connection == 'bt':
-            devices = BluetoothSKADevice.list_devices()
-        else:
-            devices = ADBSKADevice.list_devices()
+        try:
+            # Get a list of devices depending on the connection type.
+            if connection == 'bt':
+                devices = BluetoothSKADevice.list_devices()
+            else:
+                devices = ADBSKADevice.list_devices()
 
-        # Find if the device we want to connect to is still there.
-        curr_device = None
-        for device in devices:
-            if device.get_name() == id:
-                curr_device = device
-                break
+            # Find if the device we want to connect to is still there.
+            curr_device = None
+            for device in devices:
+                if device.get_name() == id:
+                    curr_device = device
+                    break
 
-        if curr_device is None:
-            raise Exception("Device with id {} not found for pairing.".format(id))
+            if curr_device is None:
+                return ajaxutils.show_and_return_error_dict("Device with id {} not found for pairing.".format(id))
 
-        # Here the whole pairing process should be followed, generating IBC keys and all.
-        if curr_device.connect():
+            # Now the pairing process will be followed, generating all required credentials.
+            # The first step is to connect to the device.
+            successful_connection = curr_device.connect()
+            if not successful_connection:
+                return ajaxutils.show_and_return_error_dict("Could not connect to device with id {}.".format(id))
+
+            # Get the device id.
             id_data = curr_device.get_data({'device_id': 'none'})
-            print id_data
             device_internal_id = id_data['device_id']
+            print 'Device id: ' + device_internal_id
 
             # Check if the device was already paired, and if so, abort.
             previously_paired_device = PairedDevice.by_id(device_internal_id)
             if previously_paired_device:
-                return ajaxutils.show_and_return_error_dict("Device with id " + device_internal_id + " is already paired.")
+                return ajaxutils.show_and_return_error_dict("Device with id {} is already paired.".format(device_internal_id))
 
-            # Create device private key and get the password from hash.
+            # Create device private key and the device's password/hash.
             server_private_key_path = credentials.ServerCredentials.get_private_key_file_path(app_globals.cloudlet.data_folder)
             device_keys = credentials.DeviceCredentials(app_globals.cloudlet.credentials_type,
                                                         device_internal_id,
@@ -132,14 +138,14 @@ class PairingController(BaseController):
             device_keys.save_to_file(app_globals.cloudlet.data_folder)
             password = device_keys.device_hash
 
-            # Store the new credentials in the RADIUS server.
-            device_keys.insert_into_radius()
+            # Store the new device credentials in the RADIUS server.
+            radius.store_freeradius_user_credentials(device_keys.device_id, device_keys.device_hash)
 
-            # Send the device's private key.
+            # Send the device's private key to the device.
             device_private_key_file = credentials.DeviceCredentials.get_private_key_file_path(app_globals.cloudlet.data_folder)
             curr_device.send_file(device_private_key_file, 'device.key')
 
-            # Send certificate.
+            # Send RADIUS certificate to the device.
             cert_path = radius.get_radius_cert_path()
             cert_file_name = radius.RADIUS_CERT_FILE_NAME
             curr_device.send_file(cert_path, cert_file_name)
@@ -150,6 +156,9 @@ class PairingController(BaseController):
 
             print 'Closing connection.'
             curr_device.disconnect()
+        except Exception, e:
+            print e
+            return ajaxutils.show_and_return_error_dict("Error pairing with device: " + str(e))
 
         # Go to the pairing devices page to add it to the DB. Does not really return the ajax call in case of success.
         return h.redirect_to(controller='devices', action='authorize', did=device_internal_id, cid=device.get_name())

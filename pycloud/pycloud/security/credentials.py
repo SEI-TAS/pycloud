@@ -132,9 +132,3 @@ class DeviceCredentials(object):
     def get_encryption_key_file_path(root_folder):
         path = os.path.join(root_folder, LOCAL_FOLDER, DEVICE_ENCRYPTION_KEY_FILE_NAME)
         return path
-
-    ############################################################################################################
-    #
-    ############################################################################################################
-    def insert_into_radius(self):
-        radius.store_freeradius_user_credentials(self.device_id, self.device_hash)
