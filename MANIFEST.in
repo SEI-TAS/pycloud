@@ -2,5 +2,6 @@ recursive-include pycloud/manager/public **.*
 recursive-include pycloud/manager/templates **.*
 recursive-include pycloud *.xml
 include requirements.txt
-include pycloud.ini
+include pycloud_manager.ini
+include pycloud_api.ini
 include discovery/cloudlet.service
