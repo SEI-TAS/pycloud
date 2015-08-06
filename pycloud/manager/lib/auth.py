@@ -38,6 +38,9 @@ import hashlib
 # Checks if we have been authenticated. If not, redirects to login page.
 #####################################################################################################################
 def ensure_authenticated():
+    # TODO: remove this, admin user should not be created in this integrated manner. Or should it?
+    create_admin_user()
+
     user = session.get('user')
     if not user:
         return h.redirect_to(controller='auth', action='signin_form')
@@ -68,3 +71,16 @@ def authenticate():
 def signout():
     session.clear()
     session.save()
+
+#####################################################################################################################
+# Creates a default admin user.
+#####################################################################################################################
+def create_admin_user():
+    admin_username = 'admin'
+    user = User.by_username(admin_username)
+    if not user:
+        print 'Creating admin user'
+        admin_user = User()
+        admin_user.username = admin_username
+        admin_user.hashed_pwd = hashlib.sha256('admin.123').hexdigest()
+        admin_user.save()
