@@ -1,8 +1,8 @@
 Source: python-pycloud
 Section: python
 Priority: optional
-Maintainer: James Root <jdroot@sei.cmu.edu>
-Uploaders: James Root <jdroot@sei.cmu.edu>
+Maintainer: Sebastian Echeverria <secheverria@sei.cmu.edu>
+Uploaders: Sebastian Echeverria <secheverria@sei.cmu.edu>
 Build-Depends: debhelper (>= 7.0.50~), python (>= 2.6.6-3), python-dev
 Build-Depends-Indep: python-setuptools (>= 0.6c1)
 Standards-Version: 3.9.1
