@@ -1,1 +1,2 @@
-/usr/share/python/python-pycloud/bin/pycloud /usr/bin/pycloud
+/usr/share/python/python-pycloud/bin/pycloud-api /usr/bin/pycloud-api
+/usr/share/python/python-pycloud/bin/pycloud-manager /usr/bin/pycloud-manager
