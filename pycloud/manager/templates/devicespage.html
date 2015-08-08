@@ -65,9 +65,9 @@ http://jquery.org/license
                 <div>
                     <hr>
                     <h3>Devices</h3>
-                    <a class="btn btn-large btn-success" href="${h.url_for(controller='pairing', action='available')}"
+                    <button type="button" class="btn btn-large btn-success" onclick="window.location.href='${h.url_for(controller='pairing', action='available')}'"
                        ${'disabled' if page.deployment_auth_start == 'not set' else ''}>Pair New Device
-                    </a>
+                    </button>
                     <br><br>
                     <table class="table table-striped">
                         <tr>

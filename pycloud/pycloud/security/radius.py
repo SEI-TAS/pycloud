@@ -30,6 +30,7 @@ __author__ = 'Sebastian'
 import os
 
 from pycloud.pycloud.utils import pki
+from pycloud.pycloud.utils import fileutils
 
 RADIUS_CERT_FILE_NAME = 'radius_cert.pem'
 RADIUS_PRIVATE_KEY_FILE_NAME = 'radius_private_key'
@@ -52,6 +53,8 @@ def get_radius_cert_path():
 # Sets up a new RADIUS certificate and its keys.
 ####################################################################################################################
 def generate_certificate():
+    fileutils.create_folder_if_new(CERT_STORE_FOLDER)
+
     radius_cert_path = get_radius_cert_path()
     radius_private_key_path = os.path.join(CERT_STORE_FOLDER, RADIUS_PRIVATE_KEY_FILE_NAME)
     pki.create_self_signed_cert(radius_cert_path, radius_private_key_path)
