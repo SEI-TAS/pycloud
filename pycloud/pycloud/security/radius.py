@@ -36,33 +36,46 @@ RADIUS_CERT_FILE_NAME = 'radius_cert.pem'
 RADIUS_PRIVATE_KEY_FILE_NAME = 'radius_private_key'
 
 # User file for FreeRADIUS.
-#USERS_FILE_PATH = '/usr/local/etc/raddb/users'
-USERS_FILE_PATH = './data/users'
+DEFAULT_USERS_FILE_PATH = './data/users'
+users_file_path = DEFAULT_USERS_FILE_PATH
 
 # Folder to store and retrieve files.
-#CERT_STORE_FOLDER = '/etc/raddb/certs'
-CERT_STORE_FOLDER = './data/credentials'
+DEFAULT_CERT_STORE_FOLDER = './data/credentials'
+cert_store_folder = DEFAULT_CERT_STORE_FOLDER
+
+####################################################################################################################
+# Sets up folders and paths.
+####################################################################################################################
+def initialize(config_users_file_path, config_cert_store_folder):
+    global users_file_path
+    global cert_store_folder
+
+    if config_users_file_path is not None:
+        users_file_path = config_users_file_path
+
+    if config_cert_store_folder is not None:
+        cert_store_folder = config_cert_store_folder
 
 ######################################################################################################################
 # Returns the full path for the RADIUS certificate.
 ######################################################################################################################
 def get_radius_cert_path():
-    return os.path.join(CERT_STORE_FOLDER, RADIUS_CERT_FILE_NAME)
+    return os.path.join(cert_store_folder, RADIUS_CERT_FILE_NAME)
 
 ####################################################################################################################
 # Sets up a new RADIUS certificate and its keys.
 ####################################################################################################################
 def generate_certificate():
-    fileutils.create_folder_if_new(CERT_STORE_FOLDER)
+    fileutils.create_folder_if_new(cert_store_folder)
 
     radius_cert_path = get_radius_cert_path()
-    radius_private_key_path = os.path.join(CERT_STORE_FOLDER, RADIUS_PRIVATE_KEY_FILE_NAME)
+    radius_private_key_path = os.path.join(cert_store_folder, RADIUS_PRIVATE_KEY_FILE_NAME)
     pki.create_self_signed_cert(radius_cert_path, radius_private_key_path)
 
 ####################################################################################################################
 # Stores user credentials into a RADIUS server. This method works for FreeRADIUS servers.
 ####################################################################################################################
-def store_freeradius_user_credentials(user_id, password):
+def store_radius_user_credentials(user_id, password):
     user_entry = user_id + '\tCleartext-Password := "' + password + '"'
-    with open(USERS_FILE_PATH, 'a') as users_file:
+    with open(users_file_path, 'a') as users_file:
         users_file.write(user_entry)

@@ -112,6 +112,7 @@ class DevicesController(BaseController):
         server_keys.save_to_file(app_globals.cloudlet.data_folder)
 
         # Create RADIUS server certificate.
+        radius.initialize(app_globals.cloudlet.radius_users_file, app_globals.cloudlet.radius_certs_folder)
         radius.generate_certificate()
 
         # Set up a new deployment.

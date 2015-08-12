@@ -108,6 +108,10 @@ class Cloudlet(object):
         self.credentials_type = config['pycloud.credentials_type'] if 'pycloud.credentials_type' in config else ''
         self.ssid = config['pycloud.pairing.ssid'] if 'pycloud.pairing.ssid' in config else ''
 
+        # RADIUS.
+        self.radius_users_file = config['pycloud.radius.users_file'] if 'pycloud.radius.users_file' in config else None
+        self.radius_certs_folder = config['pycloud.radius.certs_folder'] if 'pycloud.radius.certs_folder' in config else None
+
         print 'cloudlet created.'
 
     @staticmethod

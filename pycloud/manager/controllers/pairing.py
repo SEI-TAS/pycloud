@@ -139,7 +139,8 @@ class PairingController(BaseController):
             password = device_keys.device_hash
 
             # Store the new device credentials in the RADIUS server.
-            radius.store_freeradius_user_credentials(device_keys.device_id, device_keys.device_hash)
+            radius.initialize(app_globals.cloudlet.radius_users_file, app_globals.cloudlet.radius_certs_folder)
+            radius.store_radius_user_credentials(device_keys.device_id, device_keys.device_hash)
 
             # Send the device's private key to the device.
             device_private_key_file = credentials.DeviceCredentials.get_private_key_file_path(app_globals.cloudlet.data_folder)
