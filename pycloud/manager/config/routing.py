@@ -55,8 +55,8 @@ def make_map(config):
     connect('/services/removeService/{id}', controller='services', action='removeService')
     
     connect('/instances', controller='instances', action='index')
-    connect('/instances/startInstance', controller='instances', action='startInstance')
-    connect('/instances/stopInstance', controller='instances', action='stopInstance')
+    connect('/instances/startInstance/{id}', controller='instances', action='startInstance')
+    connect('/instances/stopInstance/{id}', controller='instances', action='stopInstance')
     connect('/instances/migrate/{id}', controller='instances', action='migrateInstance')
     connect('/instances/receiveMigratedSVMMetadata', controller='instances', action='receiveMigratedSVMMetadata')
     connect('/instances/receiveMigratedSVMDiskFile', controller='instances', action='receiveMigratedSVMDiskFile')
