@@ -36,7 +36,7 @@ class PairedDevice(Model):
     # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
         collection = "paired_devices"
-        external = ['_id', 'device_id', 'connection_id', 'auth_start', 'auth_duration', 'auth_enabled']
+        external = ['_id', 'device_id', 'connection_id', 'auth_start', 'auth_duration', 'auth_enabled', 'hash']
         mapping = {
         }
 

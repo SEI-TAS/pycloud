@@ -48,6 +48,7 @@ def load_controllers():
     from pycloud.api.controllers.servicevm import ServiceVMController
     from pycloud.api.controllers.apppush import AppPushController
     from pycloud.api.controllers.cloudlet import CloudletController
+    from pycloud.api.controllers.encrypted import EncryptedController
 
     # Cache the controllers in a look up map
     controllers.update((name.lower(), obj) for name, obj in locals().iteritems())

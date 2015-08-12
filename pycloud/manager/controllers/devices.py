@@ -130,12 +130,14 @@ class DevicesController(BaseController):
     @asjson
     def GET_authorize(self, did):
         cid = request.params.get('cid', None)
+        hash = request.params.get('hash', None)
 
         # Create a new paired device with the id info we just received.
         print 'Adding paired device to DB.'
         paired_device = PairedDevice()
         paired_device.device_id = did
         paired_device.connection_id = cid
+        paired_device.hash = hash
 
         # By default, authorization for a device will be the same as the deployment info.
         deployment = Deployment.find_one()

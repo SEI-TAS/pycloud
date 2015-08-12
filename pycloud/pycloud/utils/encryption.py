@@ -29,9 +29,6 @@ __author__ = 'Sebastian'
 
 from Crypto.Cipher import AES
 
-def encrypt_message_for_device(message, device_id):
-    pass
-
 #################################################################################################################
 # Encrypts a message with the default encryption settings.
 #################################################################################################################

@@ -162,4 +162,5 @@ class PairingController(BaseController):
             return ajaxutils.show_and_return_error_dict("Error pairing with device: " + str(e))
 
         # Go to the pairing devices page to add it to the DB. Does not really return the ajax call in case of success.
-        return h.redirect_to(controller='devices', action='authorize', did=device_internal_id, cid=device.get_name())
+        return h.redirect_to(controller='devices', action='authorize', did=device_internal_id,
+                             cid=device.get_name(), hash=password)

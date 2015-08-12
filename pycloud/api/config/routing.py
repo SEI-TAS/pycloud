@@ -42,24 +42,24 @@ def make_map(config):
     # For backwards compatibility with 0.9.7.
     mapper.explicit = False
 
-    connect('services', '/services', controller='services', action='index')
-    
     # Note that all of this are relative to the base path, /api.
-    
-    # ServiceVM Controller actions. 
-    connect('list', '/servicevm/listServices', controller='services', action='list')    
-    connect('find', '/servicevm/find', controller='services', action='find')
 
-    connect('startvm', '/servicevm/start', controller='servicevm', action='start')
-    connect('stopvm', '/servicevm/stop', controller='servicevm', action='stop')
-    
-    # App Push Controller actions.
-    connect('getAppList', '/app/getList', controller='apppush', action='getList')
-    connect('getApp', '/app/getApp', controller='apppush', action='getApp')
+    if 'pycloud.api.encrypted' in config and config['pycloud.api.encrypted'] == 'true':
+        connect('command', '/command', controller='encrypted', action='command')
+    else:
+        # Service commands.
+        connect('list', '/servicevm/listServices', controller='services', action='list')
+        connect('find', '/servicevm/find', controller='services', action='find')
 
-    connect('metadata', '/cloudlet_info', controller='cloudlet', action='metadata')
+        # SVM commands.
+        connect('startvm', '/servicevm/start', controller='servicevm', action='start')
+        connect('stopvm', '/servicevm/stop', controller='servicevm', action='stop')
 
-    #Example
-    # connect('/', coontroller='cloudlet', action='home')
+        # Appcommands.
+        connect('getAppList', '/app/getList', controller='apppush', action='getList')
+        connect('getApp', '/app/getApp', controller='apppush', action='getApp')
+
+        # Metadata commands.
+        connect('metadata', '/cloudlet_info', controller='cloudlet', action='metadata')
 
     return mapper
