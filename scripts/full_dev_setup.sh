@@ -22,3 +22,4 @@ bash egg_setup.sh
 
 # Add user to the kvm group to get correct permissions.
 sudo usermod -a -G kvm $USER
+sudo usermod -a -G libvirtd $USER
