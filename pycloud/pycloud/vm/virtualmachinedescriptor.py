@@ -112,7 +112,7 @@ class VirtualMachineDescriptor(object):
         # Find the network card, change its type to ethernet.
         # We assume the VM has exactly 1 network interface.
         network_card = devices.find("interface")
-        network_card.set("type", "ethernet")
+        network_card.set("type", "user")
         network_card.set("name", adapter)
 
         network_card_source = network_card.find("source")

@@ -91,17 +91,17 @@ class ServiceVM(Model):
         # Configure bridged mode if enabled
         c = get_cloudlet_instance()
         print 'Migration enabled: ', c.migration_enabled
-        print 'Bridge Adapter: ', c.bridge_adapter
+        print 'Network Adapter: ', c.network_adapter
         if c.migration_enabled:
             self.network_mode = "bridged"
-            self.adapter = c.bridge_adapter
+            self.adapter = c.network_adapter
 
             # In bridge mode we need a new MAC in case we are a clone.
             self.mac_address = generate_random_mac()
             print 'Generated new mac address: ' + self.mac_address
         else:
             self.network_mode = "user"
-            self.adapter = "eth0"   # Only used to get the IP we are listening on.
+            self.adapter = c.network_adapter
 
     ################################################################################################################
     # Locate a servicevm by its ID
