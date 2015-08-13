@@ -59,7 +59,12 @@ def generate_random_mac():
 # Returns the IP of the given adapter.
 ################################################################################################################
 def get_adapter_ip_address(adapter_name, ip_position=0):
-    addr_info = netifaces.ifaddresses(adapter_name)[netifaces.AF_INET][ip_position]
+    connections = netifaces.ifaddresses(adapter_name)
+    try:
+        addr_info = connections[netifaces.AF_INET][ip_position]
+    except KeyError, e:
+        raise Exception("Adapter {} is not connected to a valid network.".format(adapter_name))
+
     return addr_info['addr']
 
 ################################################################################################################
