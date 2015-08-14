@@ -42,7 +42,7 @@ from pycloud.api.controllers.servicevm import ServiceVMController
 from pycloud.api.controllers.apppush import AppPushController
 from pycloud.api.controllers.cloudlet import CloudletController
 
-from pycloud.pycloud.utils import encryption
+from pycloud.pycloud.security import encryption
 from pycloud.pycloud.model.paired_device import PairedDevice
 
 ################################################################################################################

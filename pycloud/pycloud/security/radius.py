@@ -29,7 +29,7 @@ __author__ = 'Sebastian'
 
 import os
 
-from pycloud.pycloud.utils import pki
+from pycloud.pycloud.security import pki
 from pycloud.pycloud.utils import fileutils
 
 RADIUS_CERT_FILE_NAME = 'radius_cert.pem'

@@ -33,15 +33,12 @@ A simple Python script to handle Secure Key Agreement communication through USB 
 
 import time
 import json
-
 import os.path
 
 from adb.usb_exceptions import AdbCommandFailureException
 from adb.adb_commands import AdbCommands, M2CryptoSigner
-
 from ska_device_interface import ISKADevice
-
-from pycloud.pycloud.utils import rsa
+from pycloud.pycloud.security import rsa
 from pycloud.pycloud.utils import fileutils
 
 LOCAL_TEMP_FOLDER = 'adb/keys'

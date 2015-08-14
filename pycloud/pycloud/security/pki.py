@@ -28,10 +28,11 @@
 __author__ = 'Sebastian'
 
 from socket import gethostname
-from M2Crypto import X509, RSA, ASN1, EVP
 import time
 
-import rsa
+from M2Crypto import X509, RSA, ASN1, EVP
+from pycloud.pycloud.security import rsa
+
 
 # Standard times to be used for any certificate: valid from now to 10 more years.
 t = long(time.time()) + time.timezone
