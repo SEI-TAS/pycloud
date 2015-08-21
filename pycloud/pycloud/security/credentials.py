@@ -34,9 +34,12 @@ import radius
 from pycloud.pycloud.utils import fileutils
 
 LOCAL_FOLDER = 'credentials/'
-SERVER_KEY_FILE_NAME = 'server_private_key'
-DEVICE_KEY_FILE_NAME = 'temp_device_key'
-DEVICE_ENCRYPTION_KEY_FILE_NAME = 'device_encryption_key'
+
+SERVER_PRIVATE_KEY_FILE_NAME = 'server_private_key'
+SERVER_PUBLIC_KEY_FILE_NAME = 'server_public_key'
+
+DEVICE_PRIVATE_KEY_FILE_NAME = 'temp_device_private_key'
+DEVICE_PASSWORD_FILE_NAME = 'temp_device_password'
 
 ############################################################################################################
 #
@@ -51,34 +54,46 @@ class ServerCredentials(object):
             raise RuntimeError("IBE is not yet implemented")
         elif self.type == "SKE":
             random_number = os.urandom(256)
-            self.server_key_ascii = binascii.hexlify(random_number)
-            self.server_key = self.server_key_ascii.decode("ascii")
-            self.ServerPub = ""
+            self.private_key_ascii = binascii.hexlify(random_number)
+            self.private_key = self.private_key_ascii.decode("ascii")
+            self.public_key = ""
         else:
             raise RuntimeError("The crypter type '{}' is not currently supported.".format(self.type))
 
     ############################################################################################################
     #
     ############################################################################################################
-    def save_to_file(self, key_folder):
+    def save_to_file(self, root_folder):
         if self.type == "IBE":
             raise RuntimeError("IBE is not yet implemented")
         elif self.type == "SKE":
             # Ensure the folder is there, and clean it up too.
-            folder = os.path.join(key_folder, LOCAL_FOLDER)
-            fileutils.recreate_folder(folder)
+            key_folder = os.path.join(root_folder, LOCAL_FOLDER)
+            fileutils.recreate_folder(key_folder)
 
-            # Store the key.
-            path = ServerCredentials.get_private_key_file_path(key_folder)
+            # Store the keys.
+            path = ServerCredentials.get_private_key_file_path(root_folder)
             with open(path, 'w') as keyfile:
-                keyfile.write(self.server_key)
+                keyfile.write(self.private_key)
+
+            path = ServerCredentials.get_public_key_file_path(root_folder)
+            with open(path, 'w') as keyfile:
+                keyfile.write(self.public_key)
 
     ############################################################################################################
     #
     ############################################################################################################
     @staticmethod
     def get_private_key_file_path(root_folder):
-        path = os.path.join(root_folder, LOCAL_FOLDER, SERVER_KEY_FILE_NAME)
+        path = os.path.join(root_folder, LOCAL_FOLDER, SERVER_PRIVATE_KEY_FILE_NAME)
+        return path
+
+    ############################################################################################################
+    #
+    ############################################################################################################
+    @staticmethod
+    def get_public_key_file_path(root_folder):
+        path = os.path.join(root_folder, LOCAL_FOLDER, SERVER_PUBLIC_KEY_FILE_NAME)
         return path
 
 ############################################################################################################
@@ -96,39 +111,39 @@ class DeviceCredentials(object):
         if self.type == "IBE":
             raise RuntimeError("IBE is not yet implemented")
         elif self.type == "SKE":
-            self.device_id = device_id
-            self.device_private_key = self.server_key + self.device_id
-            self.device_hash = hashlib.sha256(self.device_private_key).hexdigest()
+            self.id = device_id
+            self.private_key = self.private_key + self.id
+            self.password = hashlib.sha256(self.private_key).hexdigest()
         else:
             raise RuntimeError("That crypter type '{}' is not currently supported.".format(self.type))
 
     ############################################################################################################
     #
     ############################################################################################################
-    def save_to_file(self, key_folder):
+    def save_to_file(self, root_folder):
         if self.type == "IBE":
             raise RuntimeError("IBE is not yet implemented")
         elif self.type == "SKE":
-            path = DeviceCredentials.get_private_key_file_path(key_folder)
+            path = DeviceCredentials.get_private_key_file_path(root_folder)
             with open(path, 'w') as keyfile:
-                keyfile.write(self.device_private_key)
+                keyfile.write(self.private_key)
 
-            path = DeviceCredentials.get_encryption_key_file_path(key_folder)
+            path = DeviceCredentials.get_password_file_path(root_folder)
             with open(path, 'w') as keyfile:
-                keyfile.write(self.device_hash)
+                keyfile.write(self.password)
 
     ############################################################################################################
     #
     ############################################################################################################
     @staticmethod
     def get_private_key_file_path(root_folder):
-        path = os.path.join(root_folder, LOCAL_FOLDER, DEVICE_KEY_FILE_NAME)
+        path = os.path.join(root_folder, LOCAL_FOLDER, DEVICE_PRIVATE_KEY_FILE_NAME)
         return path
 
     ############################################################################################################
     #
     ############################################################################################################
     @staticmethod
-    def get_encryption_key_file_path(root_folder):
-        path = os.path.join(root_folder, LOCAL_FOLDER, DEVICE_ENCRYPTION_KEY_FILE_NAME)
+    def get_password_file_path(root_folder):
+        path = os.path.join(root_folder, LOCAL_FOLDER, DEVICE_PASSWORD_FILE_NAME)
         return path

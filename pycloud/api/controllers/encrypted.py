@@ -51,15 +51,11 @@ from pycloud.pycloud.model.paired_device import PairedDevice
 class EncryptedController(BaseController):
 
     def POST_command(self):
-        # TODO: define how to identify device so we can get their particular key.
         # Check what device is sending this request.
-        device_id = request.params['device_id']
+        device_id = request.headers['X-Device-ID']
         device_info = PairedDevice.by_id(device_id)
         if not device_info:
             abort(404, '404 Not Found - device %s not found' % device_id)
-
-        # TODO: add and check signature?
-        signature = request.params['signature']
 
         # Check if device is authorized to send messages, and permission has not expired.
         if not device_info.auth_enabled:
@@ -84,18 +80,18 @@ class EncryptedController(BaseController):
         if command == 'servicevm/listServices':
             reply = ServicesController.GET_list()
         elif command == 'servicevm/find':
-            request.params['serviceId'] = params[0]
+            request.params['serviceId'] = params[0].split("=")[1]
             reply = ServicesController.GET_find()
         elif command == 'servicevm/start':
-            request.params['serviceId'] = params[0]
+            request.params['serviceId'] = params[0].split("=")[1]
             reply = ServiceVMController.GET_start()
         elif command == 'servicevm/stop':
-            request.params['instanceId'] = params[0]
+            request.params['instanceId'] = params[0].split("=")[1]
             reply = ServiceVMController.GET_start()
         elif command == 'app/getList':
             reply = AppPushController.GET_getList()
         elif command == 'app/getApp':
-            request.params['app_id'] = params[0]
+            request.params['app_id'] = params[0].split("=")[1]
             reply = AppPushController.GET_getApp()
         elif command == 'cloudlet_info':
             reply = CloudletController.GET_metadata()

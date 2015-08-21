@@ -28,19 +28,43 @@
 __author__ = 'Sebastian'
 
 from Crypto.Cipher import AES
+from Crypto import Random
+import hashlib
+import base64
 
 #################################################################################################################
-# Encrypts a message with the default encryption settings.
+# Encrypts a message in an AES encrypted base64 string.
 #################################################################################################################
-def encrypt_message(message, key):
-    encryption_suite = AES.new(key, AES.MODE_ECB)
+def encrypt_message(message, password):
+    key = hashlib.sha256(password).digest()
+    iv = Random.new().read(AES.block_size)
+    encryption_suite = AES.new(key, AES.MODE_CFB, IV=iv)
+
     cipher_text = encryption_suite.encrypt(message)
-    return cipher_text
+    return base64.b64encode(iv + cipher_text)
 
 #################################################################################################################
-# Decrypts a message with the default encryption settings.
+# Decrypts an AES encrypted base64 string into plain text.
 #################################################################################################################
-def decrypt_message(message, key):
-    decryption_suite = AES.new(key, AES.MODE_ECB)
-    plain_text = decryption_suite.decrypt(message)
+def decrypt_message(message, password):
+    decoded_message = base64.b64decode(message)
+
+    key = hashlib.sha256(password).digest()
+    iv = decoded_message[:16]
+    cipher_text = decoded_message[16:]
+    decryption_suite = AES.new(key, AES.MODE_CFB, IV=iv)
+
+    plain_text = decryption_suite.decrypt(cipher_text)
     return plain_text
+
+#################################################################################################################
+# Test.
+#################################################################################################################
+def test():
+    message = 'hadasd asd asd sdf as sdf ksfdj kjsdk ksjd lkds ghaksfn ksdi'
+    password = '12345'
+    print message
+    crypted = encrypt_message(message, password)
+    print crypted
+    decrypted = decrypt_message(crypted, password)
+    print decrypted

@@ -136,11 +136,11 @@ class PairingController(BaseController):
                                                         device_internal_id,
                                                         server_private_key_path)
             device_keys.save_to_file(app_globals.cloudlet.data_folder)
-            password = device_keys.device_hash
+            password = device_keys.password
 
-            # Store the new device credentials in the RADIUS server.
-            radius.initialize(app_globals.cloudlet.radius_users_file, app_globals.cloudlet.radius_certs_folder)
-            radius.store_radius_user_credentials(device_keys.device_id, device_keys.device_hash)
+            # Send the server's public key.
+            server_public_key_path = credentials.ServerCredentials.get_public_key_file_path(app_globals.cloudlet.data_folder)
+            curr_device.send_file(server_public_key_path, 'server_public.key')
 
             # Send the device's private key to the device.
             device_private_key_file = credentials.DeviceCredentials.get_private_key_file_path(app_globals.cloudlet.data_folder)
@@ -151,9 +151,14 @@ class PairingController(BaseController):
             cert_file_name = radius.RADIUS_CERT_FILE_NAME
             curr_device.send_file(cert_path, cert_file_name)
 
-            # Send data needed to finish configuration in device.
+            # Store the new device credentials in the RADIUS server.
+            radius.initialize(app_globals.cloudlet.radius_users_file, app_globals.cloudlet.radius_certs_folder)
+            radius.store_radius_user_credentials(device_keys.id, device_keys.password)
+
+            # Send a command to create a Wi-Fi profile on the device. The message has to contain three key pairs:
+            # ssid, the RADIUS certificate filename, and the password to be used in the profile.
             ssid = app_globals.cloudlet.ssid
-            curr_device.send_data({'ssid': ssid, 'server_cert_name': cert_file_name, 'password': password})
+            curr_device.send_data({'command': 'wifi-profile', 'ssid': ssid, 'server_cert_name': cert_file_name, 'password': password})
 
             print 'Closing connection.'
             curr_device.disconnect()
