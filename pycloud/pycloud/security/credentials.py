@@ -112,7 +112,7 @@ class DeviceCredentials(object):
             raise RuntimeError("IBE is not yet implemented")
         elif self.type == "SKE":
             self.id = device_id
-            self.private_key = self.private_key + self.id
+            self.private_key = self.server_key + self.id
             self.password = hashlib.sha256(self.private_key).hexdigest()
         else:
             raise RuntimeError("That crypter type '{}' is not currently supported.".format(self.type))
