@@ -54,7 +54,7 @@ class BaseController(WSGIController):
 
     def __before__(self):
         # Only check authentication if we are not the authentication controller.
-        if type(self).__name__ != app_globals.cloudlet.auth_controller:
+        if type(self).__name__ != app_globals.cloudlet.auth_controller and app_globals.cloudlet.auth_enabled == 'true':
             # Ensure authentication.
             auth.ensure_authenticated()
 

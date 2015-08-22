@@ -104,6 +104,7 @@ class Cloudlet(object):
         self.network_adapter = config['pycloud.network.adapter']
 
         # Auth and pairing.
+        self.auth_enabled = config['pycloud.auth.enabled'] if 'pycloud.auth.enabled' in config else 'false'
         self.auth_controller = config['pycloud.auth_controller'] if 'pycloud.auth_controller' in config else None
         self.credentials_type = config['pycloud.credentials_type'] if 'pycloud.credentials_type' in config else ''
         self.ssid = config['pycloud.pairing.ssid'] if 'pycloud.pairing.ssid' in config else ''

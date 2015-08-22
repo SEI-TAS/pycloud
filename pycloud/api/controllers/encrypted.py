@@ -53,20 +53,25 @@ class EncryptedController(BaseController):
     def POST_command(self):
         # Check what device is sending this request.
         device_id = request.headers['X-Device-ID']
+        print 'Received request from device ' + device_id
         device_info = PairedDevice.by_id(device_id)
         if not device_info:
             abort(404, '404 Not Found - device %s not found' % device_id)
 
         # Check if device is authorized to send messages, and permission has not expired.
         if not device_info.auth_enabled:
+            print 'Authorization has been revoked for device %s' % device_id
             abort(403, '403 Forbidden - authorization has been revoked for device %s' % device_id)
         if device_info.auth_start + datetime.timedelta(minutes=device_info.auth_duration) < datetime.datetime.now():
+            print 'Authorization has expired for device %s' % device_id
             abort(403, '403 Forbidden - authorization has expired for device %s' % device_id)
 
         # Decrypt the request.
         key = device_info.hash
-        encrypted_request = request.params['request']
+        encrypted_request = request.params['command']
+        print 'Encrypted request: ' + encrypted_request
         decrypted_request = encryption.decrypt_message(encrypted_request, key)
+        print 'Decrypted request: ' + decrypted_request
 
         # Parse the request.
         parts = decrypted_request.split("&")
@@ -99,5 +104,7 @@ class EncryptedController(BaseController):
             abort(404, '404 Not Found - command %s not found' % command)
 
         # Encrypt the reply and return it.
+        print 'Reply: ' + reply
         encrypted_reply = encryption.encrypt_message(reply, key)
+        print 'Encrypted reply: ' + encrypted_reply
         return encrypted_reply
