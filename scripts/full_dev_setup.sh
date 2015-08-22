@@ -20,6 +20,9 @@ bash install_pip_packages.sh
 # Create the egg files.
 bash egg_setup.sh
 
+# Setup Avahi Discovery Service.
+sudo bash avahi_setup.sh
+
 # Add user to the kvm group to get correct permissions.
 sudo usermod -a -G kvm $USER
 sudo usermod -a -G libvirtd $USER
