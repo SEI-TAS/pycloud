@@ -49,6 +49,7 @@ class BaseController(WSGIController):
             #request.environ['pylons.routes_dict']['action_name'] = action
             request.environ['pylons.routes_dict']['action'] = handler_name
 
+        self.environ = environ
         ret = WSGIController.__call__(self, environ, start_response)
         return ret
 

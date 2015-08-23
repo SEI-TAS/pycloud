@@ -73,7 +73,7 @@ class AppPushController(BaseController):
             query['tags'] = {"$in": tags.split(',')}
 
         apps = App.find(query)
-        
+
         # Send the response.
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
         timelog.TimeLog.writeToFile()

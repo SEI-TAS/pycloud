@@ -31,31 +31,44 @@ from Crypto.Cipher import AES
 from Crypto import Random
 import hashlib
 import base64
+import binascii
+
+BS = 16
+pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
+unpad = lambda s : s[0:-ord(s[-1])]
 
 #################################################################################################################
 # Encrypts a message in an AES encrypted base64 string.
 #################################################################################################################
 def encrypt_message(message, password):
+    print 'Using password: ' + password
     key = hashlib.sha256(password).digest()
     iv = Random.new().read(AES.block_size)
-    encryption_suite = AES.new(key, AES.MODE_CFB, IV=iv)
+    encryption_suite = AES.new(key, AES.MODE_CBC, IV=iv)
+    print 'IV: ' + binascii.hexlify(bytearray(iv))
 
-    cipher_text = encryption_suite.encrypt(message)
+    padded = pad(message)
+    cipher_text = encryption_suite.encrypt(padded)
+    print 'Cipher Text: ' + binascii.hexlify(bytearray(cipher_text))
     return base64.b64encode(iv + cipher_text)
 
 #################################################################################################################
 # Decrypts an AES encrypted base64 string into plain text.
 #################################################################################################################
 def decrypt_message(message, password):
+    print 'Using password: ' + password
     decoded_message = base64.b64decode(message)
 
     key = hashlib.sha256(password).digest()
     iv = decoded_message[:16]
     cipher_text = decoded_message[16:]
-    decryption_suite = AES.new(key, AES.MODE_CFB, IV=iv)
+    print 'IV: ' + binascii.hexlify(bytearray(iv))
+    print 'Cipher Text: ' + binascii.hexlify(bytearray(cipher_text))
+    decryption_suite = AES.new(key, AES.MODE_CBC, IV=iv)
 
     plain_text = decryption_suite.decrypt(cipher_text)
-    return plain_text
+    unpadded = unpad(plain_text)
+    return unpadded
 
 #################################################################################################################
 # Test.

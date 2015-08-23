@@ -30,7 +30,7 @@ __author__ = 'Sebastian'
 import datetime
 
 # Pylon imports.
-from pylons import request
+from pylons import request, response
 from pylons.controllers.util import abort
 
 # Controller to derive from.
@@ -49,6 +49,9 @@ from pycloud.pycloud.model.paired_device import PairedDevice
 # Class that handles all encrypted commands.
 ################################################################################################################
 class EncryptedController(BaseController):
+    
+    def fake_start_response(self, *args):
+        pass
 
     def POST_command(self):
         # Check what device is sending this request.
@@ -67,10 +70,10 @@ class EncryptedController(BaseController):
             abort(403, '403 Forbidden - authorization has expired for device %s' % device_id)
 
         # Decrypt the request.
-        key = device_info.hash
+        password = device_info.hash
         encrypted_request = request.params['command']
         print 'Encrypted request: ' + encrypted_request
-        decrypted_request = encryption.decrypt_message(encrypted_request, key)
+        decrypted_request = encryption.decrypt_message(encrypted_request, password)
         print 'Decrypted request: ' + decrypted_request
 
         # Parse the request.
@@ -79,32 +82,67 @@ class EncryptedController(BaseController):
         params = []
         if len(parts) > 1:
             params = parts[1:]
+            params_dict = {}
+            for param in params:
+                key = param.split("=")[0]
+                value = param.split("=")[1]
+                params_dict[key] = value
 
         # Then redirect to the appropriate controller.
+        print 'Received command: ' + command
         reply = ''
-        if command == 'servicevm/listServices':
-            reply = ServicesController.GET_list()
-        elif command == 'servicevm/find':
-            request.params['serviceId'] = params[0].split("=")[1]
-            reply = ServicesController.GET_find()
-        elif command == 'servicevm/start':
-            request.params['serviceId'] = params[0].split("=")[1]
-            reply = ServiceVMController.GET_start()
-        elif command == 'servicevm/stop':
-            request.params['instanceId'] = params[0].split("=")[1]
-            reply = ServiceVMController.GET_start()
-        elif command == 'app/getList':
-            reply = AppPushController.GET_getList()
-        elif command == 'app/getApp':
-            request.params['app_id'] = params[0].split("=")[1]
-            reply = AppPushController.GET_getApp()
-        elif command == 'cloudlet_info':
-            reply = CloudletController.GET_metadata()
+        if command == '/servicevm/listServices':
+            controller = ServicesController()
+            request.environ['pylons.routes_dict']['action'] = 'list'
+            request.method = 'GET'
+            reply = controller(self.environ, self.fake_start_response)
+        elif command == '/servicevm/find':
+            request.GET['serviceId'] = params_dict['serviceId']
+            controller = ServicesController()
+            request.environ['pylons.routes_dict']['action'] = 'find'
+            request.method = 'GET'
+            reply = controller(self.environ, self.fake_start_response)
+        elif command == '/servicevm/start':
+            request.GET['serviceId'] = params_dict['serviceId']
+            controller = ServiceVMController()
+            request.environ['pylons.routes_dict']['action'] = 'start'
+            request.method = 'GET'
+            reply = controller(self.environ, self.fake_start_response)
+        elif command == '/servicevm/stop':
+            request.GET['instanceId'] = params_dict['instanceId']
+            controller = ServiceVMController()
+            request.environ['pylons.routes_dict']['action'] = 'stop'
+            request.method = 'GET'
+            reply = controller(self.environ, self.fake_start_response)
+        elif command == '/app/getList':
+            for param in params_dict:
+                request.GET[param] = params_dict[param]
+            controller = AppPushController()
+            request.environ['pylons.routes_dict']['action'] = 'getList'
+            request.method = 'GET'
+            reply = controller(self.environ, self.fake_start_response)
+        elif command == '/app/getApp':
+            request.GET['app_id'] = params_dict['app_id']
+            controller = AppPushController()
+            request.environ['pylons.routes_dict']['action'] = 'getApp'
+            request.method = 'GET'
+            reply = controller(self.environ, self.fake_start_response)
+        elif command == '/cloudlet_info':
+            controller = CloudletController()
+            request.environ['pylons.routes_dict']['action'] = 'metadata'
+            request.method = 'GET'
+            reply = controller(self.environ, self.fake_start_response)
         else:
             abort(404, '404 Not Found - command %s not found' % command)
 
         # Encrypt the reply and return it.
-        print 'Reply: ' + reply
-        encrypted_reply = encryption.encrypt_message(reply, key)
+        print 'Reply: ' + str(reply)
+        encrypted_reply = encryption.encrypt_message(reply[0], password)
         print 'Encrypted reply: ' + encrypted_reply
+
+        # Reset the response body that each controller may have added, and set the content length to the length of the
+        # encrypted reply.
+        response.body = ''
+        response.content_length = len(encrypted_reply)
+
         return encrypted_reply

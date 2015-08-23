@@ -114,7 +114,7 @@ function createApp()
     if(!validateMandatoryField(newApp.name, "App Name", newAppModal)) return false;
     if(!validateMandatoryField(newApp.serviceId, "Service Id", newAppModal)) return false;
     
-    // File is only mandatory when creatig (no need to change it when modifying).
+    // File is only mandatory when creating (no need to change it when modifying).
     if(newApp.appId == '')
         if(!validateMandatoryField(newApp.filename, "APK File", newAppModal)) return false;
     
