@@ -51,21 +51,21 @@ http://jquery.org/license
             <div class="row">
                 <div class="col-md-4 centered">
                     <div class="tidbit">
-                        <img src="${request.environ['SCRIPT_NAME']}/images/Services.png" class="service-icon centered">
+                        <img src="${request.environ['SCRIPT_NAME']}/images/ServicesC.png" class="service-icon centered">
                         <h2>${h.link_to('Available Services', h.url_for(controller='services'))} </h2>
                         <p class="blurb centered">A list of services which are able to be put on the Virtual Machine. Add, remove and start services for the Cloudlet here.</p>
                     </div>
                 </div>
                 <div class="col-md-4 centered">
                     <div class="tidbit">
-                        <img src="${request.environ['SCRIPT_NAME']}/images/VMServices.png" class="vm-icon centered">
+                        <img src="${request.environ['SCRIPT_NAME']}/images/VMServicesC.png" class="vm-icon centered">
                         <h2>${h.link_to('Running Service Instances', h.url_for(controller='instances'))}</h2>
                         <p class="blurb centered">The complete list of services currently running on the VM. Once launched from the avaliable services screen, your services will be shown here.</p>
                     </div>
                 </div>
                 <div class="col-md-4 centered">
                     <div class="tidbit">
-                        <img src="${request.environ['SCRIPT_NAME']}/images/Apps.png" class="apps-icon centered">
+                        <img src="${request.environ['SCRIPT_NAME']}/images/AppsC.png" class="apps-icon centered">
                         <h2>${h.link_to('Cloudlet-Ready Apps', h.url_for(controller='apps', action='list'))}</h2>
                         <div class="blurb centered">
                             <p class="">Many apps which can run off of cloudlet based services. These apps demonstrate the capabilities of a Cloudlet.</p>

@@ -102,7 +102,7 @@ class ServiceVM(Model):
             print 'Generated new mac address: ' + self.mac_address
         else:
             self.network_mode = "user"
-            self.adapter = "eth0"   # Only used to get the IP we are listening on.
+            self.adapter = "wlan0"   # Only used to get the IP we are listening on.
 
     ################################################################################################################
     # Locate a servicevm by its ID
@@ -286,6 +286,7 @@ class ServiceVM(Model):
             print "VM object successfully created, VM started."
             self.running = True
         except:
+            print xml_descriptor
             # Ensure we destroy the VM if there was some problem after creating it.
             self.destroy()
             raise
@@ -304,6 +305,8 @@ class ServiceVM(Model):
                 # If we are not on bridged mode, the VM's IP address will be the same as the cloudlet's address.
                 self.ip_address = get_adapter_ip_address(self.adapter)
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             # TODO: throw exception.
             print "Error getting IP of new SVM: " + str(e)
             check_service = False
