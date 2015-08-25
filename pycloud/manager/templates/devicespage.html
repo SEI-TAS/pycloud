@@ -48,7 +48,7 @@ http://jquery.org/license
             <div class="panel-body">
                 <div>
                     <h3>Deployment</h3>
-                    <button class="btn btn-large btn-success" type="button" data-toggle="modal" data-target="#modal-new-deployment">Set/Reset Deployment</button>
+                    <button class="btn btn-large btn-primary" type="button" data-toggle="modal" data-target="#modal-new-deployment">Set/Reset Deployment</button>
                     <a class="btn btn-large btn-danger" type="button" data-toggle="modal" data-target="#modal-clear-deployment">Clear Deployment</a>
                     <br><br>
                     <table class="table table-striped">
@@ -65,7 +65,7 @@ http://jquery.org/license
                 <div>
                     <hr>
                     <h3>Devices</h3>
-                    <button type="button" class="btn btn-large btn-success" onclick="window.location.href='${h.url_for(controller='pairing', action='available')}'"
+                    <button type="button" class="btn btn-large btn-primary" onclick="window.location.href='${h.url_for(controller='pairing', action='available')}'"
                        ${'disabled' if page.deployment_auth_start == 'not set' else ''}>Pair New Device
                     </button>
                     <br><br>

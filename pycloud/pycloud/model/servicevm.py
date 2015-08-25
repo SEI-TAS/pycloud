@@ -303,6 +303,8 @@ class ServiceVM(Model):
                 # If we are not on bridged mode, the VM's IP address will be the same as the cloudlet's address.
                 self.ip_address = get_adapter_ip_address(self.adapter)
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             # TODO: throw exception.
             print "Error getting IP of new SVM: " + str(e)
             check_service = False

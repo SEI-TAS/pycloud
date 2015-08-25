@@ -44,81 +44,92 @@ ${parent.header()}
     % else:
         Edit Service
     % endif
+    <div class="form-group col-sm-5 pull-right">
+        <button type="button" class="btn btn-primary col-sm-offset-1 col-sm-4" name="submitButton" id="submitButton" onClick="validateSubmission();">Save</button>
+        <button type="button" class="btn btn-default col-sm-offset-2 col-sm-4" name="cancelButton" id="cancelButton" onclick="history.back()">Cancel</button>
+    </div>
 </%block>
 
 <%block>
 
-<form id="service-form" class="form-service" method="post" action="${h.url_for(controller='modify')}" role="form">
+<div class="container">
 
-    <div class="row">
+    <form id="service-form" class="form-service" method="post" action="${h.url_for(controller='modify')}" role="form">
 
-        <div class="container col-sm-6">
+        <div class="row">
 
-            <!-- GENERAL -->
-            <div class="panel panel-info col-sm-12">
-                <div class="panel-heading"> General </div>
-                <div class="panel-body">
-                    <input type="hidden" name="internalServiceId" id="internalServiceId" value="${page.internalServiceId}" />
-                    ${text('serviceID', input_width=12, label=_('Service ID'), mandatory=True)}
-                    ${text('servicePort', input_width=12, label=_('Port'), mandatory=True)}
-                    ${text('serviceVersion', input_width=12, label=_('Service Version'))}
-                    ${text('serviceDescription', input_width=12, label=_('Description'))}
-                    ${text('serviceTags', input_width=12, label=_('Tags'))}
-                    ${text('numClientsSupported', input_width=12, label=_('Maximum Concurrent Clients'))}
-                    ${text('reqMinMem', input_width=12, label=_('Min Memory (MB)'))}
-                    ${text('reqIdealMem', input_width=12, label=_('Ideal Memory (MB)'))}                    
+            <div class="container col-sm-7">
+
+                <!-- GENERAL -->
+                <div class="panel panel-info col-sm-12">
+                    <div class="panel-heading"><h4> General </h4></div>
+                    <div class="panel-body">
+                        <input type="hidden" name="internalServiceId" id="internalServiceId" value="${page.internalServiceId}" />
+                        ${text('serviceID', input_width=12, label=_('Service ID'), mandatory=True)}
+                        ${text('servicePort', input_width=12, label=_('Port'), mandatory=True)}
+                        ${text('serviceVersion', input_width=12, label=_('Service Version'))}
+                        ${text('serviceDescription', input_width=12, label=_('Description'))}
+                        ${text('serviceTags', input_width=12, label=_('Tags'))}
+                        ${text('numClientsSupported', input_width=12, label=_('Maximum Concurrent Clients'))}
+                        ${text('reqMinMem', input_width=12, label=_('Min Memory (MB)'))}
+                        ${text('reqIdealMem', input_width=12, label=_('Ideal Memory (MB)'))}                    
+                    </div>
                 </div>
-            </div>
+                
+            </div>        
             
+            <div class="container col-sm-5">
+            
+                <!-- STORAGE -->
+                <div class="panel panel-info col-sm-12">
+                    <div class="panel-heading"><h4> VM Image</h4></div>
+                    <div class="panel-body">
+                        <div class="panel">
+                            <!-- Button available while not on SVM edition. -->
+                            <button type="button" class="btn btn-default col-sm-12" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm">Create New VM Image</button>
+
+                            <!-- Button available only when editing an existing service. -->
+                            <button type="button" class="btn btn-default col-sm-12" id="modify-svm-button" onclick="startInstance('${page.startInstanceURL}')" ${'style="display:none;"' if page.newService else ''}>Edit Current VM Image</button>
+
+                            <!-- Button available while not on SVM edition. -->
+                            <button type="button" class="btn btn-default col-sm-12" id="choose-image-button" data-toggle="modal" data-target="#modal-choose-image">Select Existing VM Image</button>
+
+                            <!-- Buttons available only when the VM image is loaded into an SVM (creating or editing the image) -->
+                            <button type="button" class="btn btn-default col-sm-12" id="save-svm-button" onclick="persistInstance('${page.saveInstanceURL}')" style="display:none;">Save from SVM</button>
+                            <button type="button" class="btn btn-default col-sm-12" id="discard-svm-button" onclick="discardInstance('${page.stopInstanceURL}')" style="display:none;">Discard SVM</button>
+                            <span><br></span>
+                        </div>
+                        ${text('vmStoredFolder', input_width=12, label=_('VM Image Folder'), disabled=True)}
+                        ${text('vmDiskImageFile', input_width=12, label=_('Disk Image File'), disabled=True)}
+                        ${text('vmStateImageFile', input_width=12, label=_('State Image File'), disabled=True)}
+                        ${hidden('vmDiskImageFileValue')}
+                        ${hidden('vmStateImageFileValue')}
+                        ${hidden('svmInstanceId')}
+
+                        
+                        <label id="ssh-label" style="display:none;">SSH available on: <label id="ssh-address"></label></label>
+                        <br />
+                        <label id="vnc-label" style="display:none;">VNC available on: <label id="vnc-address"></label></label>
+                    </div>
+                </div>           
+                
+            </div>
         </div>        
         
-        <div class="container col-sm-6">
-        
-            <!-- STORAGE -->
-            <div class="panel panel-info col-sm-12">
-                <div class="panel-heading"> VM Image</div>
+        <!-- <div class="row">
+            <div class="panel panel-primary col-sm-12">
                 <div class="panel-body">
-                    ${text('vmStoredFolder', input_width=12, label=_('VM Image Folder'), disabled=True)}
-                    ${text('vmDiskImageFile', input_width=12, label=_('Disk Image File'), disabled=True)}
-                    ${text('vmStateImageFile', input_width=12, label=_('State Image File'), disabled=True)}
-                    ${hidden('vmDiskImageFileValue')}
-                    ${hidden('vmStateImageFileValue')}
-                    ${hidden('svmInstanceId')}
-
-                    <!-- Button available while not on SVM edition. -->
-            	    <button type="button" class="btn btn-primary" id="new-svm-button" data-toggle="modal" data-target="#modal-new-servicevm">Create New VM Image</button>
-
-                    <!-- Button available only when editing an existing service. -->
-              	    <button type="button" class="btn btn-primary" id="modify-svm-button" onclick="startInstance('${page.startInstanceURL}')" ${'style="display:none;"' if page.newService else ''}>Edit Current VM Image</button>
-
-                    <!-- Button available while not on SVM edition. -->
-            	    <button type="button" class="btn btn-primary" id="choose-image-button" data-toggle="modal" data-target="#modal-choose-image">Select Existing VM Image</button>
-
-                    <!-- Buttons available only when the VM image is loaded into an SVM (creating or editing the image) -->
-              	    <button type="button" class="btn btn-primary" id="save-svm-button" onclick="persistInstance('${page.saveInstanceURL}')" style="display:none;">Save from SVM</button>
-              	    <button type="button" class="btn btn-primary" id="discard-svm-button" onclick="discardInstance('${page.stopInstanceURL}')" style="display:none;">Discard SVM</button>
-              	    <br />
-                    <label id="ssh-label" style="display:none;">SSH available on: <label id="ssh-address"></label></label>
-                    <br />
-                    <label id="vnc-label" style="display:none;">VNC available on: <label id="vnc-address"></label></label>
-                </div>
-            </div>           
-            
-        </div>
-    </div>        
-    
-    <div class="row">
-        <div class="panel panel-primary col-sm-12">
-            <div class="panel-body">
-                <div class="form-group col-sm-12">
-                    <button type="button" class="btn btn-default col-sm-offset-1 col-sm-4" name="cancelButton" id="cancelButton" onclick="history.back()">Cancel</button>
-                    <button type="button" class="btn btn-primary col-sm-offset-2 col-sm-4" name="submitButton" id="submitButton" onClick="validateSubmission();">Save</button>
+                    <div class="form-group col-sm-12">
+                        <button type="button" class="btn btn-default col-sm-offset-1 col-sm-4" name="cancelButton" id="cancelButton" onclick="history.back()">Cancel</button>
+                        <button type="button" class="btn btn-primary col-sm-offset-2 col-sm-4" name="submitButton" id="submitButton" onClick="validateSubmission();">Save</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        -->
 
-</form>
+    </form>
+</div>
 
 <!-- Create New VM Image modal. -->
 <div class="modal fade" id="modal-new-servicevm" role="dialog" data-backdrop="static">

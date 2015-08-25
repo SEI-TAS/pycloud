@@ -29,6 +29,8 @@ http://jquery.org/license
 -->
 ## base.html
 <%namespace file="navbar.html" import="navbar"/>
+
+<% import socket %>
 <html>
     <head>
         <meta charset="utf-8">
@@ -63,15 +65,16 @@ http://jquery.org/license
 
         <div id="wrap">
     
-            <div class="container-fluid">
+            <div class="container header">
+                <%block name="header">
+                    <h1>
+                        <%block name="title"/>
+                    </h1>
+                </%block>
+            </div>
+
     
-                <div class="header">
-                    <%block name="header">
-                        <h1>
-                            <%block name="title"/>
-                        </h1>
-                    </%block>
-                </div>
+
 
                 <% flashes = h.flash.pop_messages() %>
                 % if flashes:
@@ -91,11 +94,14 @@ http://jquery.org/license
         <footer class="footer" id="footer">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-8">
+                    <div class="col-md-7">
                         Software Engineering Institute of Carnegie Mellon University
                     </div>
+                    <div class="col-md-1">
+                        <p>Host : ${socket.gethostname()}</p>
+                    </div>
                     <div class="col-md-4">
-                        <input type="hidden" id="state_url" value="${h.url_for(controller='home', action='state')}"/>
+                        <input type="hidden" id="state_url" value="${h.url_for(controller='home', action='state')}"/>\
                         <ul>
                             <li>CPU Load: <span id="cpu_load"></span>% (cores: <span id="cpu_cores"></span>)</li>
                             <li>Mem Load: <span id="mem_load"></span>% (<span id="mem_used"></span> GB / <span id="mem_max"></span> GB)</li>

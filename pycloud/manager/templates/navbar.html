@@ -40,13 +40,16 @@ http://jquery.org/license
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">Cloudlet Manager - ${socket.gethostname()}</a>
+            <!-- <a class="navbar-brand" href="#"> -->
+            <h4 style="color: #999; float: right; margin: 12px;"><img src="${request.environ['SCRIPT_NAME']}/images/Icon.png" class="cloudlet-icon centered">  Cloudlet Manager</h4>
+            <!-- </a> -->
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
+
                 <li class="${c.home_active}">${h.link_to('Home', h.url_for(controller='home'))}</li>
-                <li class="${c.services_active}">${h.link_to('Services', h.url_for(controller='services'))}</li>
-                <li class="${c.servicevms_active}">${h.link_to('Service VM Instances', h.url_for(controller='instances'))}</li>
+                <li class="${c.services_active}">${h.link_to('Available Services', h.url_for(controller='services'))}</li>
+                <li class="${c.servicevms_active}">${h.link_to('Running Service Instances', h.url_for(controller='instances'))}</li>
                 <li class="${c.apps_active}">${h.link_to('Cloudlet-Ready Apps', h.url_for(controller='apps', action='list'))}</li>
                 <li class="${c.devices_active}">${h.link_to('Devices', h.url_for(controller='devices', action='list'))}</li>
                 <li>${h.link_to('Sign out', h.url_for(controller='auth', action='signout'))}</li>
