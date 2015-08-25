@@ -70,7 +70,7 @@ class EncryptedController(BaseController):
             abort(403, '403 Forbidden - authorization has expired for device %s' % device_id)
 
         # Decrypt the request.
-        password = device_info.hash
+        password = device_info.password
         encrypted_request = request.params['command']
         print 'Encrypted request: ' + encrypted_request
         decrypted_request = encryption.decrypt_message(encrypted_request, password)

@@ -168,4 +168,4 @@ class PairingController(BaseController):
 
         # Go to the pairing devices page to add it to the DB. Does not really return the ajax call in case of success.
         return h.redirect_to(controller='devices', action='authorize', did=device_internal_id,
-                             cid=device.get_name(), hash=password)
+                             cid=device.get_name(), password=password)
