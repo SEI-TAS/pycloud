@@ -70,9 +70,11 @@ class DevicesController(BaseController):
         if page.deployment is None:
             page.deployment_auth_start = 'not set'
             page.deployment_auth_duration = 'not set'
+            page.deployment_auth_end = 'not set'
         else:
             page.deployment_auth_start = page.deployment.auth_start.strftime('%Y-%m-%d %X')
             page.deployment_auth_duration = page.deployment.auth_duration
+            page.deployment_auth_end = (page.deployment.auth_start + datetime.timedelta(minutes=page.deployment.auth_duration)).strftime('%Y-%m-%d %X')
 
         # Get the paired devices.
         page.paired_devices = PairedDevice.find()

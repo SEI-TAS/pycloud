@@ -28,6 +28,7 @@ Released under the MIT license
 http://jquery.org/license
 -->
 <%inherit file="base.html"/>
+<%import datetime%>
 
 <%namespace file="form.html" import="text"/>
 
@@ -55,10 +56,12 @@ http://jquery.org/license
                         <tr>
                             <th>Deployment Start Date</th>
                             <th>Deployment Duration (mins)</th>
+                            <th>Deployment End Date</th>
                         </tr>
                         <tr>
                             <td>${page.deployment_auth_start}</td>
                             <td>${page.deployment_auth_duration}</td>
+                            <td>${page.deployment_auth_end}</td>
                         </tr>
                     </table>
                 </div>
@@ -74,8 +77,9 @@ http://jquery.org/license
                             <th>Device ID</th>
                             <th>Connection ID</th>
                             <th>Authorization Start</th>
-                            <th>Authorization Duration (mins)</th>
-                            <th>Authorization Enabled</th>
+                            <th>Duration (mins)</th>
+                            <th>Authorization End</th>
+                            <th>Enabled</th>
                             <th>Actions</th>
                         </tr>
                         % for paired_device in page.paired_devices:
@@ -89,6 +93,7 @@ http://jquery.org/license
                                 <td>${paired_device.connection_id}</td>
                                 <td>${paired_device.auth_start.strftime('%Y-%m-%d %X')}</td>
                                 <td>${paired_device.auth_duration}</td>
+                                <td>${(paired_device.auth_start + datetime.timedelta(minutes=paired_device.auth_duration)).strftime('%Y-%m-%d %X')}</td>
                                 <td>${paired_device.auth_enabled}</td>
                                 <td>
                                     <a class="btn btn-large btn-danger" href="${unpair_url}" \
