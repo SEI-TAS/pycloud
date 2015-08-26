@@ -29,7 +29,7 @@
 import logging
 
 # Pylon imports.
-from pylons import request
+from pylons import request, response
 from pylons.controllers.util import abort
 from paste import fileapp
 
@@ -105,7 +105,13 @@ class AppPushController(BaseController):
         # Create a FileApp to return the APK to download. This app will do the actually return execution;
         # this makes the current action a middleware for this app in WSGI definitions.
         # The content_disposition header allows the file to be downloaded properly and with its actual name.
-        fapp = fileapp.FileApp(app.apk_file, content_disposition='attachment; filename="' + app.file_name() + '"')
+        #fapp = fileapp.FileApp(app.apk_file, content_disposition='attachment; filename="' + app.file_name() + '"')
+        #reply = fapp(request.environ, self.start_response)
+
+        # Instead of returning the file by parts with FileApp, we will return it as a whole so that it can be encrypted.
+        response.headers['Content-disposition'] = 'attachment; filename="' + app.file_name() + '"'
+        with open(app.apk_file, 'rb') as f:
+            reply = f.read()
 
         # Send the response, serving the apk file back to the client.
-        return fapp(request.environ, self.start_response)
+        return reply

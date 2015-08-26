@@ -49,10 +49,18 @@ from pycloud.pycloud.model.paired_device import PairedDevice
 # Class that handles all encrypted commands.
 ################################################################################################################
 class EncryptedController(BaseController):
-    
-    def fake_start_response(self, *args):
+
+    ##################################################################################################################
+    # Dummy function, used as a start response function for the controllers caled from this action, since we don't
+    # want them to set the headers, as we will do that when we return.
+    ##################################################################################################################
+    def dummy_start_response(self, *args):
         pass
 
+    #################################################################################################################
+    # Main function of the encrypted API, receives a command and its parameters encrypted. Will call the corresponding
+    # unecrypted controller, then encrypt its result and return the encrypted reply.
+    #################################################################################################################
     def POST_command(self):
         # Check what device is sending this request.
         device_id = request.headers['X-Device-ID']
@@ -95,54 +103,55 @@ class EncryptedController(BaseController):
             controller = ServicesController()
             request.environ['pylons.routes_dict']['action'] = 'list'
             request.method = 'GET'
-            reply = controller(self.environ, self.fake_start_response)
+            reply = controller(self.environ, self.dummy_start_response)
         elif command == '/servicevm/find':
             request.GET['serviceId'] = params_dict['serviceId']
             controller = ServicesController()
             request.environ['pylons.routes_dict']['action'] = 'find'
             request.method = 'GET'
-            reply = controller(self.environ, self.fake_start_response)
+            reply = controller(self.environ, self.dummy_start_response)
         elif command == '/servicevm/start':
             request.GET['serviceId'] = params_dict['serviceId']
             controller = ServiceVMController()
             request.environ['pylons.routes_dict']['action'] = 'start'
             request.method = 'GET'
-            reply = controller(self.environ, self.fake_start_response)
+            reply = controller(self.environ, self.dummy_start_response)
         elif command == '/servicevm/stop':
             request.GET['instanceId'] = params_dict['instanceId']
             controller = ServiceVMController()
             request.environ['pylons.routes_dict']['action'] = 'stop'
             request.method = 'GET'
-            reply = controller(self.environ, self.fake_start_response)
+            reply = controller(self.environ, self.dummy_start_response)
         elif command == '/app/getList':
             for param in params_dict:
                 request.GET[param] = params_dict[param]
             controller = AppPushController()
             request.environ['pylons.routes_dict']['action'] = 'getList'
             request.method = 'GET'
-            reply = controller(self.environ, self.fake_start_response)
+            reply = controller(self.environ, self.dummy_start_response)
         elif command == '/app/getApp':
             request.GET['app_id'] = params_dict['app_id']
             controller = AppPushController()
             request.environ['pylons.routes_dict']['action'] = 'getApp'
             request.method = 'GET'
-            reply = controller(self.environ, self.fake_start_response)
+            reply = controller(self.environ, self.dummy_start_response)
         elif command == '/cloudlet_info':
             controller = CloudletController()
             request.environ['pylons.routes_dict']['action'] = 'metadata'
             request.method = 'GET'
-            reply = controller(self.environ, self.fake_start_response)
+            reply = controller(self.environ, self.dummy_start_response)
         else:
             abort(404, '404 Not Found - command %s not found' % command)
 
-        # Encrypt the reply and return it.
-        print 'Reply: ' + str(reply)
+        # Encrypt the reply.
+        #    print 'Reply: ' + str(reply)
         encrypted_reply = encryption.encrypt_message(reply[0], password)
-        print 'Encrypted reply: ' + encrypted_reply
+        #print 'Encrypted reply: ' + encrypted_reply
 
         # Reset the response body that each controller may have added, and set the content length to the length of the
         # encrypted reply.
         response.body = ''
         response.content_length = len(encrypted_reply)
 
+        print 'Sending encrypted reply.'
         return encrypted_reply
