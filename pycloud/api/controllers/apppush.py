@@ -70,6 +70,7 @@ class AppPushController(BaseController):
         query = {}
 
         if tags:
+            # TODO: modify this to search not only in tags, but in service id as well.
             query['tags'] = {"$in": tags.split(',')}
 
         apps = App.find(query)

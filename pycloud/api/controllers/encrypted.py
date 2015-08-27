@@ -67,7 +67,7 @@ class EncryptedController(BaseController):
         print 'Received request from device ' + device_id
         device_info = PairedDevice.by_id(device_id)
         if not device_info:
-            abort(404, '404 Not Found - device %s not found' % device_id)
+            abort(403, '403 Forbidden - device %s is not paired to this cloudlet' % device_id)
 
         # Check if device is authorized to send messages, and permission has not expired.
         if not device_info.auth_enabled:
