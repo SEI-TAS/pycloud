@@ -39,6 +39,7 @@ import os
 import json
 
 from ska_device_interface import ISKADevice
+from pycloud.pycloud.ska import ska_constants
 
 # Id of the service on a mobile device that is waiting for a pairing process.
 SKA_PAIRING_UUID = "fa87c0d0-afac-11de-8a39-0800200c9a66"
@@ -202,10 +203,17 @@ class BluetoothSKADevice(ISKADevice):
     ####################################################################################################################
     def get_data(self, data):
         message = dict(data)
-        message['command'] = 'send_data'
+        message['bt_command'] = 'send_data'
         message_string = json.dumps(message)
 
         result = self.send_command(message_string)
+
+        # Check error and log it.
+        json_data = json.loads(result)
+        if json_data[ska_constants.RESULT_KEY] != ska_constants.SUCCESS:
+            error_messge = 'Error processing command on device: ' + json_data[ska_constants.ERROR_MSG_KEY]
+            raise Exception(error_messge)
+
         return json.loads(result)
 
     ####################################################################################################################
@@ -213,9 +221,16 @@ class BluetoothSKADevice(ISKADevice):
     ####################################################################################################################
     def send_data(self, data):
         message = dict(data)
-        message['command'] = 'receive_data'
+        message['bt_command'] = 'receive_data'
         message_string = json.dumps(message)
-        self.send_command(message_string)
+        result = self.send_command(message_string)
+
+        # Check error and log it.
+        json_data = json.loads(result)
+        if json_data[ska_constants.RESULT_KEY] != ska_constants.SUCCESS:
+            error_messge = 'Error processing command on device: ' + json_data[ska_constants.ERROR_MSG_KEY]
+            raise Exception(error_messge)
+
 
     ####################################################################################################################
     # Sends a short command.
@@ -236,7 +251,7 @@ class BluetoothSKADevice(ISKADevice):
     # Sends a given file, ensuring the other side is ready to store it.
     ####################################################################################################################
     def send_file(self, file_path, file_id):
-        message = {'command': 'receive_file', 'file_id': file_id}
+        message = {'bt_command': 'receive_file', 'file_id': file_id}
         message_string = json.dumps(message)
 
         ack = self.send_command(message_string)
@@ -259,11 +274,17 @@ class BluetoothSKADevice(ISKADevice):
                     if sent < len(data_chunk):
                         print 'Error sending data chunk.'
 
-                print 'Finished sending file. Waiting for ack.'
+                print 'Finished sending file. Waiting for result.'
 
                 # Wait for reply, it should be small enough to fit in one chunk.
                 reply = self.device_socket.recv(CHUNK_SIZE)
                 print 'Reply: ' + reply
+
+                # Check error and log it.
+                json_data = json.loads(reply)
+                if json_data[ska_constants.RESULT_KEY] != ska_constants.SUCCESS:
+                    error_messge = 'Error processing command on device: ' + json_data[ska_constants.ERROR_MSG_KEY]
+                    raise Exception(error_messge)
 
 ######################################################################################################################
 # Test method

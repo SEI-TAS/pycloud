@@ -40,6 +40,7 @@ from adb.adb_commands import AdbCommands, M2CryptoSigner
 from ska_device_interface import ISKADevice
 from pycloud.pycloud.security import rsa
 from pycloud.pycloud.utils import fileutils
+from pycloud.pycloud.ska import ska_constants
 
 LOCAL_TEMP_FOLDER = 'adb/keys'
 
@@ -53,12 +54,6 @@ OUT_DATA_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.OutDataService'
 OUT_DATA_REMOTE_FILEPATH = REMOTE_FOLDER + 'out_data.json'
 
 CLEANUP_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.CleanupService'
-
-# Keys and values for error handling.
-RESULT_KEY = "result"
-SUCCESS = "success"
-ERROR = "error"
-ERROR_MSG_KEY = "error_message"
 
 # Global to store root folder.
 root_data_folder = './'
@@ -202,8 +197,8 @@ class ADBSKADevice(ISKADevice):
                 json_data = json.loads(data)
 
                 # Check error and log it.
-                if json_data[RESULT_KEY] != SUCCESS:
-                    error_messge = 'Error processing command on device: ' + json_data[ERROR_MSG_KEY]
+                if json_data[ska_constants.RESULT_KEY] != ska_constants.SUCCESS:
+                    error_messge = 'Error processing command on device: ' + json_data[ska_constants.ERROR_MSG_KEY]
                     raise Exception(error_messge)
 
                 # Clean up remote output file, and give it some time to ensure it is cleaned.
