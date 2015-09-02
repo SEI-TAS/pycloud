@@ -52,6 +52,14 @@ IN_FILE_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.StoreFileService'
 OUT_DATA_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.OutDataService'
 OUT_DATA_REMOTE_FILEPATH = REMOTE_FOLDER + 'out_data.json'
 
+CLEANUP_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.CleanupService'
+
+# Keys and values for error handling.
+RESULT_KEY = "result"
+SUCCESS = "success"
+ERROR = "error"
+ERROR_MSG_KEY = "error_message"
+
 # Global to store root folder.
 root_data_folder = './'
 
@@ -180,22 +188,48 @@ class ADBSKADevice(ISKADevice):
             disconnect_from_adb_daemon(self.adb_daemon)
 
     ####################################################################################################################
+    # Gets a file from the device, retrying until the timeout is reached.
+    ####################################################################################################################
+    def get_data_from_device(self, timeout=5):
+        # Wait some time to ensure the device creates the output file with the result.
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            print 'Attempting to download file with data.'
+            try:
+                # Get and pars the result.
+                data = self.adb_daemon.Pull(OUT_DATA_REMOTE_FILEPATH)
+                print 'Successfully downloaded output file.'
+                json_data = json.loads(data)
+
+                # Check error and log it.
+                if json_data[RESULT_KEY] != SUCCESS:
+                    error_messge = 'Error processing command on device: ' + json_data[ERROR_MSG_KEY]
+                    raise Exception(error_messge)
+
+                # Clean up remote output file, and give it some time to ensure it is cleaned.
+                start_service(self.adb_daemon, CLEANUP_SERVICE, {})
+                time.sleep(1)
+
+                return json_data
+            except AdbCommandFailureException, e:
+                print 'Could not get data file, file may not be ready. Will wait and retry.'
+                time.sleep(1)
+
+        print 'Could not get data file, file may not exist on device.'
+        return []
+
+    ####################################################################################################################
     # Gets simple data through pulling a file with adb.
     # DATA needs to be a dictionary of key-value pairs (the value is not used, only the key).
     ####################################################################################################################
     def get_data(self, data):
         print 'Starting data retrieval service.'
         start_service(self.adb_daemon, OUT_DATA_SERVICE, data)
-        time.sleep(2)
 
-        print 'Downloading file with data.'
-        try:
-            data = self.adb_daemon.Pull(OUT_DATA_REMOTE_FILEPATH)
-            return json.loads(data)
-        except AdbCommandFailureException, e:
-            print 'Could not get data file, file may not exist on device.'
+        print 'Getting result.'
+        result = self.get_data_from_device()
 
-        return []
+        return result
 
     ####################################################################################################################
     # Sends simple data through pushing a file with adb.
@@ -203,9 +237,12 @@ class ADBSKADevice(ISKADevice):
     ####################################################################################################################
     def send_data(self, data):
         # Everything is called "in" since, from the point of view of the Service, it is getting data.
-        print 'Starting data receival service.'
+        print 'Starting data receiving service.'
         start_service(self.adb_daemon, IN_DATA_SERVICE, data)
         print 'Data sent.'
+
+        print 'Checking result.'
+        result = self.get_data_from_device()
 
     ####################################################################################################################
     #
@@ -217,6 +254,9 @@ class ADBSKADevice(ISKADevice):
         print 'Starting file receiver service.'
         start_service(self.adb_daemon, IN_FILE_SERVICE, {'file_id': file_id})
         print 'File sent.'
+
+        print 'Checking result.'
+        result = self.get_data_from_device()
 
 ####################################################################################################################
 # Test script.
