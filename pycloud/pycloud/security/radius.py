@@ -76,6 +76,20 @@ def generate_certificate():
 # Stores user credentials into a RADIUS server. This method works for FreeRADIUS servers.
 ####################################################################################################################
 def store_radius_user_credentials(user_id, password):
-    user_entry = user_id + '\tCleartext-Password := "' + password + '"'
+    user_entry = user_id + '\tCleartext-Password := "' + password + '"' + '\n'
     with open(users_file_path, 'a') as users_file:
         users_file.write(user_entry)
+
+####################################################################################################################
+# Removes a specific user from the users list.
+####################################################################################################################
+def remove_radius_user_cretendials(user_id):
+    # First get all lines.
+    with open(users_file_path, 'r') as users_file:
+        file_lines = users_file.readlines()
+
+    # Now rewrite all lines, minus the user we want to remove.
+    with open(users_file_path, 'w') as users_file:
+        for line in file_lines:
+            if not line.startswith(user_id):
+                users_file.write(line)

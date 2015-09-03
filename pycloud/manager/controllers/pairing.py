@@ -151,10 +151,6 @@ class PairingController(BaseController):
             cert_file_name = radius.RADIUS_CERT_FILE_NAME
             curr_device.send_file(cert_path, cert_file_name)
 
-            # Store the new device credentials in the RADIUS server.
-            radius.initialize(app_globals.cloudlet.radius_users_file, app_globals.cloudlet.radius_certs_folder)
-            radius.store_radius_user_credentials(device_keys.id, device_keys.password)
-
             # Send a command to create a Wi-Fi profile on the device. The message has to contain three key pairs:
             # ssid, the RADIUS certificate filename, and the password to be used in the profile.
             ssid = app_globals.cloudlet.ssid

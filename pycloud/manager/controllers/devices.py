@@ -131,14 +131,14 @@ class DevicesController(BaseController):
     ############################################################################################################
     @asjson
     def GET_authorize(self, did):
-        cid = request.params.get('cid', None)
+        connection_id = request.params.get('cid', None)
         password = request.params.get('password', None)
 
         # Create a new paired device with the id info we just received.
         print 'Adding paired device to DB.'
         paired_device = PairedDevice()
         paired_device.device_id = did
-        paired_device.connection_id = cid
+        paired_device.connection_id = connection_id
         paired_device.password = password
 
         # By default, authorization for a device will be the same as the deployment info.
@@ -150,6 +150,10 @@ class DevicesController(BaseController):
         # Store the paired device.
         paired_device.save()
 
+        # Store the new device credentials in the RADIUS server.
+        radius.initialize(app_globals.cloudlet.radius_users_file, app_globals.cloudlet.radius_certs_folder)
+        radius.store_radius_user_credentials(paired_device.device_id, paired_device.password)
+
         # Go to the main page.
         print 'Device added to DB.'
         return ajaxutils.JSON_OK
@@ -159,7 +163,13 @@ class DevicesController(BaseController):
     ############################################################################################################
     def GET_unpair(self, id):
         # Remove it from the list.
+        print 'Removing paired device from DB.'
         PairedDevice.find_and_remove(id)
+
+        # Remove from RADIUS server.
+        print 'Removing paired device from RADIUS server.'
+        radius.initialize(app_globals.cloudlet.radius_users_file, app_globals.cloudlet.radius_certs_folder)
+        radius.remove_radius_user_cretendials(id)
 
         # Go to the main page.
         return h.redirect_to(controller='devices', action='list')
