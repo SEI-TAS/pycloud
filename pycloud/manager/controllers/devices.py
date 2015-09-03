@@ -84,10 +84,24 @@ class DevicesController(BaseController):
     ############################################################################################################
     # Clears all deployment info.
     ############################################################################################################
-    def GET_clear(self):
+    def clear_deployment(self):
+        # Remove users from RADIUS server.
+        print 'Removing paired devices from RADIUS server.'
+        radius.initialize(app_globals.cloudlet.radius_users_file, app_globals.cloudlet.radius_certs_folder)
+        devices = PairedDevice.find()
+        for device in devices:
+            radius.remove_radius_user_cretendials(device.device_id)
+
         # Remove all data from DB.
+        print 'Clearing up database.'
         PairedDevice.clear_data()
         Deployment.remove()
+
+    ############################################################################################################
+    # Clears all deployment info.
+    ############################################################################################################
+    def GET_clear(self):
+        self.clear_deployment()
 
         # Go to the main page.
         return h.redirect_to(controller='devices', action='list')
@@ -102,8 +116,7 @@ class DevicesController(BaseController):
         print duration
 
         # Remove all data from DB.
-        PairedDevice.clear_data()
-        Deployment.remove()
+        self.clear_deployment()
 
         # Setup initial configurations for each device type.
         BluetoothSKADevice.bootstrap()
