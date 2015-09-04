@@ -35,7 +35,7 @@ from pycloud.pycloud.security import rsa
 
 
 # Standard times to be used for any certificate: valid from now to 10 more years.
-t = long(time.time()) + time.timezone
+t = long(time.time())
 before = ASN1.ASN1_UTCTIME()
 before.set_time(t)
 after = ASN1.ASN1_UTCTIME()
