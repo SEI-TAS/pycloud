@@ -28,7 +28,7 @@
 __author__ = 'Sebastian'
 
 import datetime
-
+import json
 # Pylon imports.
 from pylons import request, response
 from pylons.controllers.util import abort
@@ -58,6 +58,14 @@ class EncryptedController(BaseController):
         pass
 
     #################################################################################################################
+    # Helper function to abort with an encrypted reply.
+    #################################################################################################################
+    def encrypted_abort(self, code, message, password):
+        print message
+        encrypted_message = message #encryption.encrypt_message(message, password)
+        abort(code, encrypted_message)
+
+    #################################################################################################################
     # Main function of the encrypted API, receives a command and its parameters encrypted. Will call the corresponding
     # unecrypted controller, then encrypt its result and return the encrypted reply.
     #################################################################################################################
@@ -67,18 +75,23 @@ class EncryptedController(BaseController):
         print 'Received request from device ' + device_id
         device_info = PairedDevice.by_id(device_id)
         if not device_info:
-            abort(403, '403 Forbidden - device %s is not paired to this cloudlet' % device_id)
+            # We can't encrypt the reply since we got an invalid device id.
+            error = '401 Unauthorized - device %s is not paired to this cloudlet' % device_id
+            print error
+            abort(401, error)
+
+        # Get the device password.
+        password = device_info.password
 
         # Check if device is authorized to send messages, and permission has not expired.
         if not device_info.auth_enabled:
-            print 'Authorization has been revoked for device %s' % device_id
-            abort(403, '403 Forbidden - authorization has been revoked for device %s' % device_id)
+            error = '403 Forbidden - authorization has been revoked for device %s' % device_id
+            self.encrypted_abort(403, error, password)
         if device_info.auth_start + datetime.timedelta(minutes=device_info.auth_duration) < datetime.datetime.now():
-            print 'Authorization has expired for device %s' % device_id
-            abort(403, '403 Forbidden - authorization has expired for device %s' % device_id)
+            error = '403 Forbidden - authorization has expired for device %s' % device_id
+            self.encrypted_abort(403, error, password)
 
         # Decrypt the request.
-        password = device_info.password
         encrypted_request = request.params['command']
         print 'Encrypted request: ' + encrypted_request
         decrypted_request = encryption.decrypt_message(encrypted_request, password)
@@ -87,7 +100,6 @@ class EncryptedController(BaseController):
         # Parse the request.
         parts = decrypted_request.split("&")
         command = parts[0]
-        params = []
         if len(parts) > 1:
             params = parts[1:]
             params_dict = {}
@@ -141,17 +153,26 @@ class EncryptedController(BaseController):
             request.method = 'GET'
             reply = controller(self.environ, self.dummy_start_response)
         else:
-            abort(404, '404 Not Found - command %s not found' % command)
+            self.encrypted_abort(404, '404 Not Found - command %s not found' % command, password)
+
+        text_repy = reply[0]
+
+        # Check if the reply is an error.
+        try:
+            json_object = json.loads(text_repy)
+        except ValueError, e:
+            self.encrypted_abort(500, text_repy, password)
 
         # Encrypt the reply.
-        #    print 'Reply: ' + str(reply)
-        encrypted_reply = encryption.encrypt_message(reply[0], password)
-        #print 'Encrypted reply: ' + encrypted_reply
+        # print 'Reply: ' + str(reply)
+        encrypted_reply = encryption.encrypt_message(text_repy, password)
+        # print 'Encrypted reply: ' + encrypted_reply
 
         # Reset the response body that each controller may have added, and set the content length to the length of the
         # encrypted reply.
         response.body = ''
         response.content_length = len(encrypted_reply)
 
+        # If there was no error, respond with OK and the encrypted reply.
         print 'Sending encrypted reply.'
         return encrypted_reply
