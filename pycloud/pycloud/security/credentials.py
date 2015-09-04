@@ -30,7 +30,7 @@ import os
 import binascii
 import hashlib
 
-import radius
+from libibe import LibIBE
 from pycloud.pycloud.utils import fileutils
 
 LOCAL_FOLDER = 'credentials/'
@@ -46,38 +46,50 @@ DEVICE_PASSWORD_FILE_NAME = 'temp_device_password'
 ############################################################################################################
 class ServerCredentials(object):
     ############################################################################################################
-    #
+    # Just creates an object, checking that the type is valid.
     ############################################################################################################
     def __init__(self, type):
         self.type = type
+
+        self.private_key_ascii = None
+        self.private_key = None
+        self.public_key = None
+
         if self.type == "IBE":
-            raise RuntimeError("IBE is not yet implemented")
+            pass
         elif self.type == "SKE":
-            random_number = os.urandom(256)
-            self.private_key_ascii = binascii.hexlify(random_number)
-            self.private_key = self.private_key_ascii.decode("ascii")
-            self.public_key = ""
+            pass
         else:
             raise RuntimeError("The crypter type '{}' is not currently supported.".format(self.type))
 
     ############################################################################################################
-    #
+    # Creates the server keys and saves them to files.
     ############################################################################################################
-    def save_to_file(self, root_folder):
+    def generate_and_save_to_file(self, root_folder):
+        # Ensure the folder is there, and clean it up too.
+        key_folder = os.path.join(root_folder, LOCAL_FOLDER)
+        fileutils.recreate_folder(key_folder)
+
+        # Build the full paths.
+        private_key_path = ServerCredentials.get_private_key_file_path(root_folder)
+        public_key_path = ServerCredentials.get_public_key_file_path(root_folder)
+
         if self.type == "IBE":
-            raise RuntimeError("IBE is not yet implemented")
+            # The IBE lib saves to files when creating the keys.
+            ibe = LibIBE()
+            ibe.gen(private_key_path, public_key_path)
         elif self.type == "SKE":
-            # Ensure the folder is there, and clean it up too.
-            key_folder = os.path.join(root_folder, LOCAL_FOLDER)
-            fileutils.recreate_folder(key_folder)
+            # First create the keys.
+            random_number = os.urandom(256)
+            self.private_key_ascii = binascii.hexlify(random_number)
+            self.private_key = self.private_key_ascii.decode("ascii")
+            self.public_key = ""
 
             # Store the keys.
-            path = ServerCredentials.get_private_key_file_path(root_folder)
-            with open(path, 'w') as keyfile:
+            with open(private_key_path, 'w') as keyfile:
                 keyfile.write(self.private_key)
 
-            path = ServerCredentials.get_public_key_file_path(root_folder)
-            with open(path, 'w') as keyfile:
+            with open(public_key_path, 'w') as keyfile:
                 keyfile.write(self.public_key)
 
     ############################################################################################################
@@ -103,34 +115,48 @@ class DeviceCredentials(object):
     ############################################################################################################
     #
     ############################################################################################################
-    def __init__(self, type, device_id, *args):
+    def __init__(self, type, device_id, server_private_key_path):
+        self.id = device_id
         self.type = type
-        with open(args[0], 'r') as keyfile:
-            self.server_key = keyfile.read()
+
+        self.private_key = None
+        self.password = None
+
+        # Load the server private key file, which we will need for generation.
+        with open(server_private_key_path, 'r') as keyfile:
+            self.server_private_key = keyfile.read()
 
         if self.type == "IBE":
-            raise RuntimeError("IBE is not yet implemented")
+            pass
         elif self.type == "SKE":
-            self.id = device_id
-            self.private_key = self.server_key + self.id
-            self.password = hashlib.sha256(self.private_key).hexdigest()
+            pass
         else:
-            raise RuntimeError("That crypter type '{}' is not currently supported.".format(self.type))
+            raise RuntimeError("The crypter type '{}' is not currently supported.".format(self.type))
+
+    ############################################################################################################
+    # Creates the credentials.
+    ############################################################################################################
+    def generate(self):
+        # Create the keys depending on the type.
+        if self.type == "IBE":
+            ibe = LibIBE()
+            self.private_key = ibe.extract(self.id, self.server_private_key)
+            self.password = ibe.certify(self.id, self.server_private_key)
+        elif self.type == "SKE":
+            self.private_key = self.server_private_key + self.id
+            self.password = hashlib.sha256(self.private_key).hexdigest()
 
     ############################################################################################################
     #
     ############################################################################################################
     def save_to_file(self, root_folder):
-        if self.type == "IBE":
-            raise RuntimeError("IBE is not yet implemented")
-        elif self.type == "SKE":
-            path = DeviceCredentials.get_private_key_file_path(root_folder)
-            with open(path, 'w') as keyfile:
-                keyfile.write(self.private_key)
+        path = DeviceCredentials.get_private_key_file_path(root_folder)
+        with open(path, 'w') as keyfile:
+            keyfile.write(self.private_key)
 
-            path = DeviceCredentials.get_password_file_path(root_folder)
-            with open(path, 'w') as keyfile:
-                keyfile.write(self.password)
+        path = DeviceCredentials.get_password_file_path(root_folder)
+        with open(path, 'w') as keyfile:
+            keyfile.write(self.password)
 
     ############################################################################################################
     #

@@ -129,7 +129,7 @@ class DevicesController(BaseController):
 
         # Create server keys.
         server_keys = credentials.ServerCredentials(app_globals.cloudlet.credentials_type)
-        server_keys.save_to_file(app_globals.cloudlet.data_folder)
+        server_keys.generate_and_save_to_file(app_globals.cloudlet.data_folder)
 
         # Create RADIUS server certificate.
         radius.initialize(app_globals.cloudlet.radius_users_file,

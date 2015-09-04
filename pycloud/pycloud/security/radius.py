@@ -102,6 +102,6 @@ def remove_radius_user_credentials(user_ids):
     with open(users_file_path, 'w') as users_file:
         for line in file_lines:
             potential_id = line.split('\t')[0]
-            print potential_id + '.'
+            #print potential_id + '.'
             if not potential_id in user_ids:
                 users_file.write(line)

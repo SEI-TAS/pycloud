@@ -135,6 +135,7 @@ class PairingController(BaseController):
             device_keys = credentials.DeviceCredentials(app_globals.cloudlet.credentials_type,
                                                         device_internal_id,
                                                         server_private_key_path)
+            device_keys.generate()
             device_keys.save_to_file(app_globals.cloudlet.data_folder)
             password = device_keys.password
 
