@@ -43,10 +43,14 @@ users_file_path = DEFAULT_USERS_FILE_PATH
 DEFAULT_CERT_STORE_FOLDER = './data/credentials'
 cert_store_folder = DEFAULT_CERT_STORE_FOLDER
 
+# FreeRADIUS EAP config file.
+DEFAULT_EAP_CONF_FILE = './data/credentials/eap.conf'
+eap_conf_file = DEFAULT_EAP_CONF_FILE
+
 ####################################################################################################################
 # Sets up folders and paths.
 ####################################################################################################################
-def initialize(config_users_file_path, config_cert_store_folder):
+def initialize(config_users_file_path, config_cert_store_folder, config_eap_file):
     global users_file_path
     global cert_store_folder
 
@@ -55,6 +59,9 @@ def initialize(config_users_file_path, config_cert_store_folder):
 
     if config_cert_store_folder is not None:
         cert_store_folder = config_cert_store_folder
+
+    if config_eap_file is not None:
+        eap_conf_file = config_eap_file
 
 ######################################################################################################################
 # Returns the full path for the RADIUS certificate.
@@ -72,6 +79,9 @@ def generate_certificate():
     radius_private_key_path = os.path.join(cert_store_folder, RADIUS_PRIVATE_KEY_FILE_NAME)
     pki.create_self_signed_cert(radius_cert_path, radius_private_key_path)
 
+    # Configure FreeRADIUS to use the certificate we just created.
+    # TODO
+
 ####################################################################################################################
 # Stores user credentials into a RADIUS server. This method works for FreeRADIUS servers.
 ####################################################################################################################
@@ -81,9 +91,9 @@ def store_radius_user_credentials(user_id, password):
         users_file.write(user_entry)
 
 ####################################################################################################################
-# Removes a specific user from the users list.
+# Removes a specific list of users from the users list.
 ####################################################################################################################
-def remove_radius_user_cretendials(user_id):
+def remove_radius_user_credentials(user_ids):
     # First get all lines.
     with open(users_file_path, 'r') as users_file:
         file_lines = users_file.readlines()
@@ -91,5 +101,7 @@ def remove_radius_user_cretendials(user_id):
     # Now rewrite all lines, minus the user we want to remove.
     with open(users_file_path, 'w') as users_file:
         for line in file_lines:
-            if not line.startswith(user_id):
+            potential_id = line.split('\t')[0]
+            print potential_id + '.'
+            if not potential_id in user_ids:
                 users_file.write(line)
