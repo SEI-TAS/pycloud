@@ -72,7 +72,8 @@ class EncryptedController(BaseController):
     def POST_command(self):
         # Check what device is sending this request.
         device_id = request.headers['X-Device-ID']
-        print 'Received request from device ' + device_id
+        print ''
+        print 'Received encrypted request from device ' + device_id
         device_info = PairedDevice.by_id(device_id)
         if not device_info:
             # We can't encrypt the reply since we got an invalid device id.
@@ -111,6 +112,7 @@ class EncryptedController(BaseController):
         # Then redirect to the appropriate controller.
         print 'Received command: ' + command
         reply = ''
+        reply_format = 'json'
         if command == '/servicevm/listServices':
             controller = ServicesController()
             request.environ['pylons.routes_dict']['action'] = 'list'
@@ -147,6 +149,7 @@ class EncryptedController(BaseController):
             request.environ['pylons.routes_dict']['action'] = 'getApp'
             request.method = 'GET'
             reply = controller(self.environ, self.dummy_start_response)
+            reply_format = 'binary'
         elif command == '/cloudlet_info':
             controller = CloudletController()
             request.environ['pylons.routes_dict']['action'] = 'metadata'
@@ -158,15 +161,17 @@ class EncryptedController(BaseController):
         text_repy = reply[0]
 
         # Check if the reply is an error.
-        try:
-            json_object = json.loads(text_repy)
-        except ValueError, e:
-            self.encrypted_abort(500, text_repy, password)
+        if reply_format == 'json':
+            try:
+                json_object = json.loads(text_repy)
+            except ValueError, e:
+                print 'Error in repy: not a json object, assuming internal error. Will return a 500 error.'
+                self.encrypted_abort(500, text_repy, password)
 
         # Encrypt the reply.
         # print 'Reply: ' + str(reply)
         encrypted_reply = encryption.encrypt_message(text_repy, password)
-        # print 'Encrypted reply: ' + encrypted_reply
+        print 'Encrypted reply' #: ' + encrypted_reply
 
         # Reset the response body that each controller may have added, and set the content length to the length of the
         # encrypted reply.

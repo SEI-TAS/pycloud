@@ -101,9 +101,9 @@ class AppPushController(BaseController):
             abort(404, '404 Not Found - app with id "%s" was not found' % app_id)
 
         # Check that the APK file actually exists.
-        file_exists = os.path.isfile(app.file_name())
+        file_exists = os.path.isfile(app.apk_file)
         if not file_exists:
-            print "No APK found for app with specified id"
+            print "No APK found for app with specified id. Path: " + app.apk_file
             abort(404, '404 Not Found - APK for app with id "%s" was not found' % app_id)
 
         # Log that we are responding.
@@ -118,6 +118,7 @@ class AppPushController(BaseController):
 
         # Instead of returning the file by parts with FileApp, we will return it as a whole so that it can be encrypted.
         response.headers['Content-disposition'] = 'attachment; filename="' + app.file_name() + '"'
+        response.headers['Content-type'] = 'application/vnd.android.package-archive'
         with open(app.apk_file, 'rb') as f:
             reply = f.read()
 
