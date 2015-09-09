@@ -27,6 +27,7 @@
 # http://jquery.org/license
 
 import logging
+import os.path
 
 # Pylon imports.
 from pylons import request, response
@@ -98,7 +99,13 @@ class AppPushController(BaseController):
         if not app:
             print "No app found for specified id"
             abort(404, '404 Not Found - app with id "%s" was not found' % app_id)
-                                
+
+        # Check that the APK file actually exists.
+        file_exists = os.path.isfile(app.file_name())
+        if not file_exists:
+            print "No APK found for app with specified id"
+            abort(404, '404 Not Found - APK for app with id "%s" was not found' % app_id)
+
         # Log that we are responding.
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
         timelog.TimeLog.writeToFile()                                
