@@ -90,9 +90,9 @@ class ServiceVM(Model):
     def _setup_network(self):
         # Configure bridged mode if enabled
         c = get_cloudlet_instance()
-        print 'Migration enabled: ', c.migration_enabled
+        print 'Bridge enabled: ', c.network_bridge_enabled
         print 'Network Adapter: ', c.network_adapter
-        if c.migration_enabled:
+        if c.network_bridge_enabled:
             self.network_mode = "bridged"
             self.adapter = c.network_adapter
 

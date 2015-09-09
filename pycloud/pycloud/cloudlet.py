@@ -100,7 +100,7 @@ class Cloudlet(object):
         self.export_path = os.path.join(self.data_folder, 'temp/export')
 
         # Migration and network params.
-        self.migration_enabled = config['pycloud.migration.enabled'].upper() in ['T', 'TRUE', 'Y', 'YES']
+        self.network_bridge_enabled = config['pycloud.network.bridge_enabled'].upper() in ['T', 'TRUE', 'Y', 'YES']
         self.network_adapter = config['pycloud.network.adapter']
 
         # Auth and pairing.
