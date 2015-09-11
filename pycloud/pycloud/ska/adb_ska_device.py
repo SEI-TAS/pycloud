@@ -56,7 +56,7 @@ OUT_DATA_REMOTE_FILEPATH = REMOTE_FOLDER + 'out_data.json'
 CLEANUP_SERVICE = 'edu.cmu.sei.cloudlet.client/.ska.adb.CleanupService'
 
 # Global to store root folder.
-root_data_folder = './'
+root_data_folder = './data/'
 
 ######################################################################################################################
 # Returns the full path for the adbkey file.

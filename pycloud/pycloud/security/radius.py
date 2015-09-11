@@ -34,16 +34,16 @@ from pycloud.pycloud.security import pki
 from pycloud.pycloud.utils import fileutils
 
 RADIUS_CERT_FILE_NAME = 'radius_cert.pem'
-RADIUS_PRIVATE_KEY_FILE_NAME = 'radius_private_key'
+RADIUS_PRIVATE_KEY_FILE_NAME = 'radius_key'
 
 # User file for FreeRADIUS.
-DEFAULT_USERS_FILE_PATH = './data/users'
+DEFAULT_USERS_FILE_PATH = './data/credentials/radius/users'
 
 # Folder to store and retrieve files.
-DEFAULT_CERT_STORE_FOLDER = './data/credentials'
+DEFAULT_CERT_STORE_FOLDER = './data/credentials/radius/certs'
 
 # FreeRADIUS EAP config file.
-DEFAULT_EAP_CONF_FILE = ''
+DEFAULT_EAP_CONF_FILE = './data/credentials/radius/eap.conf'
 
 # Command to restart.
 RESTART_COMMAND = "sudo service freeradius restart"
@@ -98,10 +98,17 @@ class RadiusServer(object):
         with open(self.users_file_path, 'a') as users_file:
             users_file.write(user_entry)
 
+        print "The following entry has been added to RADIUS:"
+        print "Device: " + user_id + " and the DeviceCert is " + password
+
     ####################################################################################################################
     # Removes a specific list of users from the users list.
     ####################################################################################################################
     def remove_user_credentials(self, user_ids):
+        if not os.path.isfile(self.users_file_path):
+            print 'No users file... no users to remove.'
+            return
+
         # First get all lines.
         with open(self.users_file_path, 'r') as users_file:
             file_lines = users_file.readlines()

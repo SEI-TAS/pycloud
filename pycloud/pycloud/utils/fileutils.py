@@ -94,3 +94,11 @@ def chown_to_current_user(file_path):
     if rc != 0:
         print "Error getting ownership of file:\n%s" % err
         raise Exception("Error getting ownersip of file:\n%s" % err)
+
+##############################################################################################################
+# Replaces a given string with a new one in the given file.
+##############################################################################################################
+def replace_in_file(original_text, new_text, filen_path):
+    reg_exp = "s/ " + original_text + ";/ " + new_text + ";/g"
+    command = ['/bin/sed', '-i', reg_exp, filen_path]
+    Popen(command)

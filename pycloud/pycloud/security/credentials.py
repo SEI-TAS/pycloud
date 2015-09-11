@@ -122,7 +122,7 @@ class DeviceCredentials(object):
             # IBE ignores the root folder as it needs an absolute predefined folder.
             self.keys_folder = libibe.IBE_FILES_FOLDER
         elif self.type == "SKE":
-            self.keys_folder = os.path.join('credentials/', root_folder)
+            self.keys_folder = os.path.join(root_folder, 'credentials/')
         else:
             raise RuntimeError("The crypter type '{}' is not currently supported.".format(self.type))
 
