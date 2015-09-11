@@ -47,6 +47,17 @@ from subprocess import Popen, PIPE
 ################################################################################################################
 
 ################################################################################################################
+# Removes all contents of a folder. Exceptions can be added as a list (full path).
+################################################################################################################
+def remove_folder_contents(folder_path, exceptions=[]):
+    for file_name in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, file_name)
+        if os.path.isfile(file_path) and file_path not in exceptions:
+            os.unlink(file_path)
+        elif os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+
+################################################################################################################
 # Removes a folder and its contents (if they exist), and then creates the folder.
 ################################################################################################################
 def recreate_folder(folder_path):

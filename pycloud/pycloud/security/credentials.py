@@ -72,7 +72,8 @@ class ServerCredentials(object):
     ############################################################################################################
     def generate_and_save_to_file(self):
         # Ensure the folder is there, and clean it up too.
-        #fileutils.recreate_folder(self.keys_folder)
+        # TODO: fix this so that this works for both IBE and SKE. Currently in IBE we cant delete the folder since there are config files
+        fileutils.remove_folder_contents(self.keys_folder, exceptions=[libibe.IBE_GEN_CONFIG_FILE, libibe.IBE_CRYPT_CONFIG_FILE])
 
         if self.type == "IBE":
             # The IBE lib saves to files when creating the keys.
