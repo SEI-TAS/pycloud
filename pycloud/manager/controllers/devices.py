@@ -28,9 +28,8 @@
 __author__ = 'Sebastian'
 
 import datetime
-import os
 
-from pylons import request, response, session, tmpl_context as c
+from pylons import request, tmpl_context as c
 from pylons import app_globals
 
 from pycloud.pycloud.pylons.lib import helpers as h
@@ -92,10 +91,10 @@ class DevicesController(BaseController):
         for device in devices:
             device_ids.append(device.device_id)
 
-        radius.initialize(app_globals.cloudlet.radius_users_file,
-                          app_globals.cloudlet.radius_certs_folder,
-                          app_globals.cloudlet.radius_eap_conf_file)
-        radius.remove_radius_user_credentials(device_ids)
+        radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
+                                            app_globals.cloudlet.radius_certs_folder,
+                                            app_globals.cloudlet.radius_eap_conf_file)
+        radius_server.remove_user_credentials(device_ids)
 
         # Remove all data from DB.
         print 'Clearing up database.'
@@ -128,14 +127,15 @@ class DevicesController(BaseController):
         ADBSKADevice.bootstrap()
 
         # Create server keys.
-        server_keys = credentials.ServerCredentials(app_globals.cloudlet.credentials_type)
-        server_keys.generate_and_save_to_file(app_globals.cloudlet.data_folder)
+        server_keys = credentials.ServerCredentials(app_globals.cloudlet.credentials_type,
+                                                    app_globals.cloudlet.data_folder)
+        server_keys.generate_and_save_to_file()
 
         # Create RADIUS server certificate.
-        radius.initialize(app_globals.cloudlet.radius_users_file,
-                          app_globals.cloudlet.radius_certs_folder,
-                          app_globals.cloudlet.radius_eap_conf_file)
-        radius.generate_certificate()
+        radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
+                                            app_globals.cloudlet.radius_certs_folder,
+                                            app_globals.cloudlet.radius_eap_conf_file)
+        radius_server.generate_certificate()
 
         # Set up a new deployment.
         deployment = Deployment()
@@ -171,10 +171,10 @@ class DevicesController(BaseController):
         paired_device.save()
 
         # Store the new device credentials in the RADIUS server.
-        radius.initialize(app_globals.cloudlet.radius_users_file,
-                          app_globals.cloudlet.radius_certs_folder,
-                          app_globals.cloudlet.radius_eap_conf_file)
-        radius.store_radius_user_credentials(paired_device.device_id, paired_device.password)
+        radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
+                                            app_globals.cloudlet.radius_certs_folder,
+                                            app_globals.cloudlet.radius_eap_conf_file)
+        radius_server.add_user_credentials(paired_device.device_id, paired_device.password)
 
         # Go to the main page.
         print 'Device added to DB.'
@@ -190,10 +190,10 @@ class DevicesController(BaseController):
 
         # Remove from RADIUS server.
         print 'Removing paired device from RADIUS server.'
-        radius.initialize(app_globals.cloudlet.radius_users_file,
-                          app_globals.cloudlet.radius_certs_folder,
-                          app_globals.cloudlet.radius_eap_conf_file)
-        radius.remove_radius_user_credentials([id])
+        radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
+                                            app_globals.cloudlet.radius_certs_folder,
+                                            app_globals.cloudlet.radius_eap_conf_file)
+        radius_server.remove_user_credentials([id])
 
         # Go to the main page.
         return h.redirect_to(controller='devices', action='list')
@@ -209,10 +209,10 @@ class DevicesController(BaseController):
 
         # Remove from RADIUS server.
         print 'Removing paired device from RADIUS server.'
-        radius.initialize(app_globals.cloudlet.radius_users_file,
-                          app_globals.cloudlet.radius_certs_folder,
-                          app_globals.cloudlet.radius_eap_conf_file)
-        radius.remove_radius_user_credentials([id])
+        radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
+                                            app_globals.cloudlet.radius_certs_folder,
+                                            app_globals.cloudlet.radius_eap_conf_file)
+        radius_server.remove_user_credentials([id])
 
         # Go to the main page.
         return h.redirect_to(controller='devices', action='list')
@@ -227,10 +227,10 @@ class DevicesController(BaseController):
         paired_device.save()
 
         # Store the device credentials in the RADIUS server.
-        radius.initialize(app_globals.cloudlet.radius_users_file,
-                          app_globals.cloudlet.radius_certs_folder,
-                          app_globals.cloudlet.radius_eap_conf_file)
-        radius.store_radius_user_credentials(paired_device.device_id, paired_device.password)
+        radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
+                                            app_globals.cloudlet.radius_certs_folder,
+                                            app_globals.cloudlet.radius_eap_conf_file)
+        radius_server.add_user_credentials(paired_device.device_id, paired_device.password)
 
         # Go to the main page.
         return h.redirect_to(controller='devices', action='list')

@@ -32,38 +32,43 @@ import subprocess
 
 IBE_GEN_EXECUTABLE = "/usr/local/bin/gen"
 IBE_CRYPT_EXECUTABLE = "/usr/local/bin/ibe"
-IBE_CONFIG_FILES_FOLDER = "/usr/local/etc"
+IBE_FILES_FOLDER = "/usr/local/etc/ibe"
 
-class LibIBE():
+##############################################################################################################
+# Replaces a given string with a new one in the given file.
+##############################################################################################################
+def replace_in_file(original_text, new_text, filename, folder):
+    reg_exp = "s/ " + original_text + ";/ " + new_text + ";/g"
+    command = ['/bin/sed', '-i', reg_exp, filename]
+    subprocess.Popen(command, cwd=folder)
+
+class LibIBE(object):
     ##############################################################################################################
     # Runs ibe gen command to create master private key and parameters.
     ##############################################################################################################
-    def gen(self, private_key_filepath, public_key_filepath):
+    def gen(self, private_key_filename, public_key_filename):
         # Set the private key filepath.
-        command = "sed -ie s/share/" + private_key_filepath + "/g gen.cnf"
-        subprocess.Popen(command, cwd=IBE_CONFIG_FILES_FOLDER)
+        replace_in_file('share', private_key_filename, 'gen.cnf', IBE_FILES_FOLDER)
 
         # Sets the IBE params file name in the IBE generation config file. This is where the IBE params will be stored.
-        command = "sed -ie s/params.txt/" + public_key_filepath + "/g gen.cnf"
-        subprocess.Popen(command, cwd=IBE_CONFIG_FILES_FOLDER)
+        replace_in_file('params.txt', public_key_filename, 'gen.cnf', IBE_FILES_FOLDER)
 
         # Sets the IBE params file in the IBE execution config file. This is so that encryption can find the params.
-        command = "sed -ie s/params.txt/" + public_key_filepath + "/g ibe.cnf"
-        subprocess.Popen(command, cwd=IBE_CONFIG_FILES_FOLDER)
+        replace_in_file('params.txt', public_key_filename, 'ibe.cnf', IBE_FILES_FOLDER)
 
         # Actually generate the params and master private key.
-        subprocess.Popen(IBE_GEN_EXECUTABLE, cwd=IBE_CONFIG_FILES_FOLDER)
+        subprocess.Popen(IBE_GEN_EXECUTABLE, cwd=IBE_FILES_FOLDER)
 
     ##############################################################################################################
     # Creates a private key from the given id and master private key ("share"), using the stored IBE params.
     ##############################################################################################################
     def extract(self, id, share):
-        privkey = subprocess.check_output([IBE_CRYPT_EXECUTABLE, "extract", id, share], cwd=IBE_CONFIG_FILES_FOLDER)
+        privkey = subprocess.check_output([IBE_CRYPT_EXECUTABLE, "extract", id, share], cwd=IBE_FILES_FOLDER)
         return privkey
 
     ##############################################################################################################
     # Creates a "certificate" hash from the given id and master private key ("share"), using the stored IBE params.
     ##############################################################################################################
     def certify(self, id, share):
-        cert = subprocess.check_output([IBE_CRYPT_EXECUTABLE, "certify", id, share], cwd=IBE_CONFIG_FILES_FOLDER)
+        cert = subprocess.check_output([IBE_CRYPT_EXECUTABLE, "certify", id, share], cwd=IBE_FILES_FOLDER)
         return cert
