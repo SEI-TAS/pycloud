@@ -117,7 +117,6 @@ class DevicesController(BaseController):
         # Get the duration.
         # TODO: check when no duration is received, or an invalid duration is received.
         duration = int(request.params.get('duration', 0))
-        print duration
 
         # Remove all data from DB.
         self.clear_deployment()

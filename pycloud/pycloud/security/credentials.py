@@ -72,7 +72,7 @@ class ServerCredentials(object):
     ############################################################################################################
     def generate_and_save_to_file(self):
         # Ensure the folder is there, and clean it up too.
-        fileutils.recreate_folder(self.keys_folder)
+        #fileutils.recreate_folder(self.keys_folder)
 
         if self.type == "IBE":
             # The IBE lib saves to files when creating the keys.

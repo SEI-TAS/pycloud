@@ -55,8 +55,8 @@ def recreate_folder(folder_path):
         shutil.rmtree(folder_path)
 
     # Now create it.
-    os.makedirs(folder_path)
-        
+    create_folder_if_new(folder_path)
+
 ################################################################################################################
 # Creates a folder path only if it does not exist.
 ################################################################################################################
@@ -96,9 +96,9 @@ def chown_to_current_user(file_path):
         raise Exception("Error getting ownersip of file:\n%s" % err)
 
 ##############################################################################################################
-# Replaces a given string with a new one in the given file.
+# Replaces all occurrences of a given string "original_text" with a new one "new_text" in the given file.
 ##############################################################################################################
-def replace_in_file(original_text, new_text, filen_path):
-    reg_exp = "s/ " + original_text + ";/ " + new_text + ";/g"
-    command = ['/bin/sed', '-i', reg_exp, filen_path]
+def replace_in_file(original_text, new_text, file_path):
+    reg_exp = "s#" + original_text + "#" + new_text + "#g"
+    command = ['/bin/sed', '-i', reg_exp, file_path]
     Popen(command)

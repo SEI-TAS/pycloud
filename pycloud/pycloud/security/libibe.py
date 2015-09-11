@@ -35,10 +35,10 @@ from pycloud.pycloud.utils.fileutils import replace_in_file
 
 IBE_GEN_EXECUTABLE = "/usr/local/bin/gen"
 IBE_CRYPT_EXECUTABLE = "/usr/local/bin/ibe"
-IBE_FILES_FOLDER = "/usr/local/etc/ibe"
+IBE_FILES_FOLDER = "/usr/local/etc/ibe/"
 
-IBE_GEN_CONFIG_FILE = os.path.join(IBE_FILES_FOLDER, 'gen.cf')
-IBE_CRYPT_CONFIG_FILE = os.path.join(IBE_FILES_FOLDER, 'ibe.cf')
+IBE_GEN_CONFIG_FILE = os.path.join(IBE_FILES_FOLDER, 'gen.cnf')
+IBE_CRYPT_CONFIG_FILE = os.path.join(IBE_FILES_FOLDER, 'ibe.cnf')
 
 ##############################################################################################################
 # Encapsulates IBE access.
@@ -49,16 +49,16 @@ class LibIBE(object):
     ##############################################################################################################
     def gen(self, private_key_file_path, public_key_file_path):
         # Set the private key filepath.
-        replace_in_file('share', private_key_file_path, IBE_GEN_CONFIG_FILE)
+        replace_in_file('IBE-share;', private_key_file_path + ";", IBE_GEN_CONFIG_FILE)
 
         # Sets the IBE params file name in the IBE generation config file. This is where the IBE params will be stored.
-        replace_in_file('params.txt', public_key_file_path, IBE_GEN_CONFIG_FILE)
+        replace_in_file('IBE-params.txt', public_key_file_path, IBE_GEN_CONFIG_FILE)
 
         # Sets the IBE params file in the IBE execution config file. This is so that encryption can find the params.
-        replace_in_file('params.txt', public_key_file_path, IBE_CRYPT_CONFIG_FILE)
+        replace_in_file('IBE-params.txt', public_key_file_path, IBE_CRYPT_CONFIG_FILE)
 
         # Actually generate the params and master private key.
-        subprocess.Popen(IBE_GEN_EXECUTABLE, cwd=IBE_FILES_FOLDER)
+        subprocess.call(IBE_GEN_EXECUTABLE, cwd=IBE_FILES_FOLDER)
 
     ##############################################################################################################
     # Creates a private key from the given id and master private key ("share"), using the stored IBE params.
