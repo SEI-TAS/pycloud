@@ -26,5 +26,6 @@ Depends: ${python:Depends},
          build-essential,
          libssl-dev,
          libffi-dev,
-         swig
+         swig,
+         freeradius
 Description: Pycloud is the Cloudlet Server component of KD-Cloudlet.

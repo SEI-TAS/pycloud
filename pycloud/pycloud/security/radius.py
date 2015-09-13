@@ -43,7 +43,7 @@ DEFAULT_USERS_FILE_PATH = './data/credentials/radius/users'
 DEFAULT_CERT_STORE_FOLDER = './data/credentials/radius/certs'
 
 # FreeRADIUS EAP config file.
-DEFAULT_EAP_CONF_FILE = './data/credentials/radius/eap.conf'
+DEFAULT_EAP_CONF_FILE = './data/config/eap.conf'
 
 # Command to restart.
 RESTART_COMMAND = "sudo service freeradius restart"
@@ -57,22 +57,28 @@ class RadiusServer(object):
     ####################################################################################################################
     def __init__(self, config_users_file_path, config_cert_store_folder, config_eap_file):
         if config_users_file_path is not None:
-            self.users_file_path = config_users_file_path
+            self.users_file_path = os.path.abspath(config_users_file_path)
         else:
-            self.users_file_path = DEFAULT_USERS_FILE_PATH
+            self.users_file_path = os.path.abspath(DEFAULT_USERS_FILE_PATH)
 
         if config_cert_store_folder is not None:
-            self.cert_store_folder = config_cert_store_folder
+            self.cert_store_folder = os.path.abspath(config_cert_store_folder)
         else:
-            self.cert_store_folder = DEFAULT_CERT_STORE_FOLDER
+            self.cert_store_folder = os.path.abspath(DEFAULT_CERT_STORE_FOLDER)
 
         if config_eap_file is not None:
-            self.eap_conf_file = config_eap_file
+            self.eap_conf_file = os.path.abspath(config_eap_file)
         else:
-            self.eap_conf_file = DEFAULT_EAP_CONF_FILE
+            self.eap_conf_file = os.path.abspath(DEFAULT_EAP_CONF_FILE)
 
         self.cert_file_path = os.path.join(self.cert_store_folder, RADIUS_CERT_FILE_NAME)
         self.private_key_path = os.path.join(self.cert_store_folder, RADIUS_PRIVATE_KEY_FILE_NAME)
+
+    ####################################################################################################################
+    # Restarts the server.
+    ####################################################################################################################
+    def _restart(self):
+        subprocess.Popen(RESTART_COMMAND)
 
     ####################################################################################################################
     # Sets up a new RADIUS certificate and its keys.
@@ -82,13 +88,12 @@ class RadiusServer(object):
         pki.create_self_signed_cert(self.cert_file_path, self.private_key_path)
 
         # Configure FreeRADIUS to use the certificate we just created.
-        # TODO
+        fileutils.replace_in_file(r'private_key_password = .*$', 'private_key_password = ', self.eap_conf_file)
+        fileutils.replace_in_file(r'private_key_file =.*$', 'private_key_file = ' + self.private_key_path, self.eap_conf_file)
+        fileutils.replace_in_file(r'certificate_file =.*$', 'certificate_file = ' + self.cert_file_path, self.eap_conf_file)
 
-    ####################################################################################################################
-    # Restarts the server.
-    ####################################################################################################################
-    def restart(self):
-        subprocess.Popen(RESTART_COMMAND)
+        # Server needs to be restarted for the command to work.
+        #self._restart()
 
     ####################################################################################################################
     # Stores user credentials into a RADIUS server. This method works for FreeRADIUS servers.
@@ -100,6 +105,9 @@ class RadiusServer(object):
 
         print "The following entry has been added to RADIUS:"
         print "Device: " + user_id + " and the DeviceCert is " + password
+
+        # Server needs to be restarted for the command to work.
+        #self._restart()
 
     ####################################################################################################################
     # Removes a specific list of users from the users list.
@@ -120,3 +128,6 @@ class RadiusServer(object):
                 #print potential_id + '.'
                 if not potential_id in user_ids:
                     users_file.write(line)
+
+        # Server needs to be restarted for the command to work.
+        #self._restart()

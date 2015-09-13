@@ -49,13 +49,13 @@ class LibIBE(object):
     ##############################################################################################################
     def gen(self, private_key_file_path, public_key_file_path):
         # Set the private key filepath.
-        replace_in_file('IBE-share;', private_key_file_path + ";", IBE_GEN_CONFIG_FILE)
+        replace_in_file(r'^sharefiles = [^;]*;', 'sharefiles = ' + private_key_file_path + ";", IBE_GEN_CONFIG_FILE)
 
         # Sets the IBE params file name in the IBE generation config file. This is where the IBE params will be stored.
-        replace_in_file('IBE-params.txt', public_key_file_path, IBE_GEN_CONFIG_FILE)
+        replace_in_file(r'^params =.*$', 'params =' + public_key_file_path, IBE_GEN_CONFIG_FILE)
 
         # Sets the IBE params file in the IBE execution config file. This is so that encryption can find the params.
-        replace_in_file('IBE-params.txt', public_key_file_path, IBE_CRYPT_CONFIG_FILE)
+        replace_in_file(r'^params =.*$', 'params =' + public_key_file_path, IBE_CRYPT_CONFIG_FILE)
 
         # Actually generate the params and master private key.
         subprocess.call(IBE_GEN_EXECUTABLE, cwd=IBE_FILES_FOLDER)

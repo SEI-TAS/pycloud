@@ -30,15 +30,12 @@
 #
 
 import os
-
-# Used to check file existence and handle paths.
 import os.path
-
-# Used to copy files.
 import shutil
-
-# Used to change file permissions
 import stat
+import fileinput
+import sys
+import re
 
 from subprocess import Popen, PIPE
 
@@ -107,9 +104,19 @@ def chown_to_current_user(file_path):
         raise Exception("Error getting ownersip of file:\n%s" % err)
 
 ##############################################################################################################
-# Replaces all occurrences of a given string "original_text" with a new one "new_text" in the given file.
+# Replaces all occurrences of a given regular expression "original_text" with a new one "new_text" in the given file.
 ##############################################################################################################
 def replace_in_file(original_text, new_text, file_path):
-    reg_exp = "s#" + original_text + "#" + new_text + "#g"
-    command = ['/bin/sed', '-i', reg_exp, file_path]
-    Popen(command)
+    # Iterate over all lines in the file, modifying it in place.
+    regex = re.compile(original_text, re.IGNORECASE)
+    if os.path.isfile(file_path):
+        for line in fileinput.input(file_path, inplace=True):
+            # Replace the string, if found in the current line.
+            line = regex.sub(new_text, line)
+
+            # Writes to stdout while using fileinput will replace the contents of the original file.
+            sys.stdout.write(line)
+    else:
+        print 'File ' + file_path + ' not found, not replacing text.'
+
+
