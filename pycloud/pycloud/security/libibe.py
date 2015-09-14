@@ -48,7 +48,7 @@ class LibIBE(object):
     # Sets a param in a config file.
     ##############################################################################################################
     def set_config_param(self, param, value, config_file_path):
-        replace_in_file(r'^' + param + ' = .*$', param + ' = ' + value, config_file_path)
+        replace_in_file(r'^' + param + ' =.*$', param + ' = ' + value, config_file_path)
 
     ##############################################################################################################
     # Runs ibe gen command to create master private key and parameters.
