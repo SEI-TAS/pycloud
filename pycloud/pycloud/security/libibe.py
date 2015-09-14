@@ -45,17 +45,23 @@ IBE_CRYPT_CONFIG_FILE = os.path.join(IBE_CONFIG_FILES_FOLDER, 'ibe.cnf')
 ##############################################################################################################
 class LibIBE(object):
     ##############################################################################################################
+    # Sets a param in a config file.
+    ##############################################################################################################
+    def set_config_param(self, param, value, config_file_path):
+        replace_in_file(r'^' + param + ' = .*$', param + ' = ' + value, config_file_path)
+
+    ##############################################################################################################
     # Runs ibe gen command to create master private key and parameters.
     ##############################################################################################################
     def gen(self, private_key_file_path, public_key_file_path):
         # Set the private key filepath.
-        replace_in_file(r'^sharefiles = [^;]*;', 'sharefiles = ' + private_key_file_path + ";", IBE_GEN_CONFIG_FILE)
+        self.set_config_param('sharefiles', private_key_file_path, IBE_GEN_CONFIG_FILE)
 
         # Sets the IBE params file name in the IBE generation config file. This is where the IBE params will be stored.
-        replace_in_file(r'^params =.*$', 'params =' + public_key_file_path, IBE_GEN_CONFIG_FILE)
+        self.set_config_param('params', public_key_file_path, IBE_GEN_CONFIG_FILE)
 
         # Sets the IBE params file in the IBE execution config file. This is so that encryption can find the params.
-        replace_in_file(r'^params =.*$', 'params =' + public_key_file_path, IBE_CRYPT_CONFIG_FILE)
+        self.set_config_param('params', public_key_file_path, IBE_CRYPT_CONFIG_FILE)
 
         # Actually generate the params and master private key.
         subprocess.call(IBE_GEN_EXECUTABLE, cwd=IBE_CONFIG_FILES_FOLDER)
@@ -63,13 +69,16 @@ class LibIBE(object):
     ##############################################################################################################
     # Creates a private key from the given id and master private key ("share"), using the stored IBE params.
     ##############################################################################################################
-    def extract(self, id, share):
-        privkey = subprocess.check_output([IBE_CRYPT_EXECUTABLE, "extract", id, share], cwd=IBE_CONFIG_FILES_FOLDER)
+    def extract(self, id, master_key_file, device_private_key_filepath):
+        # Sets the output file for the device key in the config file.
+        self.set_config_param('keyfile', device_private_key_filepath, IBE_CRYPT_CONFIG_FILE)
+
+        privkey = subprocess.check_output([IBE_CRYPT_EXECUTABLE, "extract", id, master_key_file], cwd=IBE_CONFIG_FILES_FOLDER)
         return privkey
 
     ##############################################################################################################
     # Creates a "certificate" hash from the given id and master private key ("share"), using the stored IBE params.
     ##############################################################################################################
-    def certify(self, id, share):
-        cert = subprocess.check_output([IBE_CRYPT_EXECUTABLE, "certify", id, share], cwd=IBE_CONFIG_FILES_FOLDER)
+    def certify(self, id, master_key_file):
+        cert = subprocess.check_output([IBE_CRYPT_EXECUTABLE, "certify", id, master_key_file], cwd=IBE_CONFIG_FILES_FOLDER)
         return cert

@@ -137,15 +137,19 @@ class DeviceCredentials(object):
         # Create the keys depending on the type.
         if self.type == "IBE":
             ibe = libibe.LibIBE()
-            self.private_key = ibe.extract(self.id, self.server_private_key_file_path)
+            # IBE generates and stores the private key.
+            self.private_key = ibe.extract(self.id, self.server_private_key_file_path, self.private_key_path)
+
+            # IBE generates but doesn't store the cert/password.
             self.password = ibe.certify(self.id, self.server_private_key_file_path)
         elif self.type == "SKE":
             self.private_key = self.server_private_key + self.id
             self.password = hashlib.sha256(self.private_key).hexdigest()
 
-        # Store them to files.
-        with open(self.private_key_path, 'w') as keyfile:
-            keyfile.write(self.private_key)
+            # Store the private key.
+            with open(self.private_key_path, 'w') as keyfile:
+                keyfile.write(self.private_key)
 
+        # Store the password.
         with open(self.password_file_path, 'w') as keyfile:
             keyfile.write(self.password)
