@@ -35,10 +35,10 @@ from pycloud.pycloud.utils.fileutils import replace_in_file
 
 IBE_GEN_EXECUTABLE = "/usr/local/bin/gen"
 IBE_CRYPT_EXECUTABLE = "/usr/local/bin/ibe"
-IBE_FILES_FOLDER = "/usr/local/etc/ibe/"
+IBE_CONFIG_FILES_FOLDER = "/usr/local/etc/ibe/"
 
-IBE_GEN_CONFIG_FILE = os.path.join(IBE_FILES_FOLDER, 'gen.cnf')
-IBE_CRYPT_CONFIG_FILE = os.path.join(IBE_FILES_FOLDER, 'ibe.cnf')
+IBE_GEN_CONFIG_FILE = os.path.join(IBE_CONFIG_FILES_FOLDER, 'gen.cnf')
+IBE_CRYPT_CONFIG_FILE = os.path.join(IBE_CONFIG_FILES_FOLDER, 'ibe.cnf')
 
 ##############################################################################################################
 # Encapsulates IBE access.
@@ -58,18 +58,18 @@ class LibIBE(object):
         replace_in_file(r'^params =.*$', 'params =' + public_key_file_path, IBE_CRYPT_CONFIG_FILE)
 
         # Actually generate the params and master private key.
-        subprocess.call(IBE_GEN_EXECUTABLE, cwd=IBE_FILES_FOLDER)
+        subprocess.call(IBE_GEN_EXECUTABLE, cwd=IBE_CONFIG_FILES_FOLDER)
 
     ##############################################################################################################
     # Creates a private key from the given id and master private key ("share"), using the stored IBE params.
     ##############################################################################################################
     def extract(self, id, share):
-        privkey = subprocess.check_output([IBE_CRYPT_EXECUTABLE, "extract", id, share], cwd=IBE_FILES_FOLDER)
+        privkey = subprocess.check_output([IBE_CRYPT_EXECUTABLE, "extract", id, share], cwd=IBE_CONFIG_FILES_FOLDER)
         return privkey
 
     ##############################################################################################################
     # Creates a "certificate" hash from the given id and master private key ("share"), using the stored IBE params.
     ##############################################################################################################
     def certify(self, id, share):
-        cert = subprocess.check_output([IBE_CRYPT_EXECUTABLE, "certify", id, share], cwd=IBE_FILES_FOLDER)
+        cert = subprocess.check_output([IBE_CRYPT_EXECUTABLE, "certify", id, share], cwd=IBE_CONFIG_FILES_FOLDER)
         return cert

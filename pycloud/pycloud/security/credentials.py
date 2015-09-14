@@ -56,14 +56,14 @@ class ServerCredentials(object):
         self.public_key = None
 
         if self.type == "IBE":
-            # IBE ignores the root folder as it needs an absolute predefined folder.
-            self.keys_folder = libibe.IBE_FILES_FOLDER
+            pass
         elif self.type == "SKE":
-            self.keys_folder = os.path.join(root_folder, 'credentials/')
+            pass
         else:
             raise RuntimeError("The crypter type '{}' is not currently supported.".format(self.type))
 
         # Build the full paths.
+        self.keys_folder = os.path.join(root_folder, LOCAL_FOLDER)
         self.private_key_path = os.path.join(self.keys_folder, SERVER_PRIVATE_KEY_FILE_NAME)
         self.public_key_path = os.path.join(self.keys_folder, SERVER_PUBLIC_KEY_FILE_NAME)
 
@@ -72,8 +72,7 @@ class ServerCredentials(object):
     ############################################################################################################
     def generate_and_save_to_file(self):
         # Ensure the folder is there, and clean it up too.
-        # TODO: fix this so that this works for both IBE and SKE. Currently in IBE we cant delete the folder since there are config files
-        fileutils.remove_folder_contents(self.keys_folder, exceptions=[libibe.IBE_GEN_CONFIG_FILE, libibe.IBE_CRYPT_CONFIG_FILE])
+        fileutils.recreate_folder(self.keys_folder)
 
         if self.type == "IBE":
             # The IBE lib saves to files when creating the keys.
@@ -120,14 +119,14 @@ class DeviceCredentials(object):
             self.server_private_key = keyfile.read()
 
         if self.type == "IBE":
-            # IBE ignores the root folder as it needs an absolute predefined folder.
-            self.keys_folder = libibe.IBE_FILES_FOLDER
+            pass
         elif self.type == "SKE":
-            self.keys_folder = os.path.join(root_folder, 'credentials/')
+            pass
         else:
             raise RuntimeError("The crypter type '{}' is not currently supported.".format(self.type))
 
         # Build the full paths.
+        self.keys_folder = os.path.join(root_folder, LOCAL_FOLDER)
         self.private_key_path = os.path.join(self.keys_folder, DEVICE_PRIVATE_KEY_FILE_NAME)
         self.password_file_path = os.path.join(self.keys_folder, DEVICE_PASSWORD_FILE_NAME)
 

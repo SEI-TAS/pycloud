@@ -48,7 +48,7 @@ SKA_PAIRING_UUID = "fa87c0d0-afac-11de-8a39-0800200c9a66"
 CHUNK_SIZE = 4096
 
 ######################################################################################################################
-# Checks that there is an enabled Bluetoothd evice, and returns its addresss.
+# Checks that there is an enabled Bluetooth device, and returns its address.
 ######################################################################################################################
 def get_adapter_address():
     internal_address = None
