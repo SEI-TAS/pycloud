@@ -140,8 +140,9 @@ class DeviceCredentials(object):
             # IBE generates and stores the private key.
             self.private_key = ibe.extract(self.id, self.server_private_key_file_path, self.private_key_path)
 
-            # IBE generates but doesn't store the cert/password.
-            self.password = ibe.certify(self.id, self.server_private_key_file_path)
+            # IBE generates but doesn't store the cert/password. We remove spaces and convert to lowercase to have a
+            # more standardized password.
+            self.password = ibe.certify(self.id, self.server_private_key_file_path).replace(' ', '').lower()
         elif self.type == "SKE":
             self.private_key = self.server_private_key + self.id
             self.password = hashlib.sha256(self.private_key).hexdigest()
