@@ -3,9 +3,34 @@
 # Update to ensure that the next calls will work.
 apt-get update
 
-# Dependencies for the Cloudlet Server.
-apt-get -y install qemu-kvm libvirt-bin nmap python2.7 python-dev python-libvirt mongodb
-apt-get -y install libusb-1.0-0-dev libbluetooth-dev build-essential swig libssl-dev libffi-dev freeradius libgmp-dev
+# Basic Python deps.
+apt-get -y install python2.7 python-dev
 
-# Dependencies for the Discovery Server.
-apt-get install libnss-mdns avahi-daemon
+# Get all dependencies from the debian installer control file.
+depsfile="../debian/control"
+getdep=false
+deparray=()
+while read -r line
+do
+    dep=${line%","}
+    if [[ "$getdep" = false && "$dep" == "qemu-kvm" ]]; then
+        getdep=true
+    fi
+
+    if [[ "$getdep" = true && "$dep" == Description* ]]; then
+        getdep=false
+    fi
+
+    # Add all deps to an array.
+    if [[ "$getdep" = true ]]; then
+        echo "***Found dependency: $dep"
+        deparray=("${deparray[@]}" "$dep")
+    fi
+done < "$depsfile"
+
+# Install all deps in the array.
+for curr_dep in "${deparray[@]}"
+do
+    echo "***Installing: $curr_dep"
+    apt-get -y install "$curr_dep"
+done

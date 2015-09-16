@@ -89,7 +89,7 @@ class RadiusServer(object):
         pki.create_self_signed_cert(self.cert_file_path, self.private_key_path)
 
         # Configure FreeRADIUS to use the certificate we just created.
-        fileutils.replace_in_file(r'private_key_password = .*$', 'private_key_password = ', self.eap_conf_file)
+        fileutils.replace_in_file(r'private_key_password =.*$', 'private_key_password = ', self.eap_conf_file)
         fileutils.replace_in_file(r'private_key_file =.*$', 'private_key_file = ' + self.private_key_path, self.eap_conf_file)
         fileutils.replace_in_file(r'certificate_file =.*$', 'certificate_file = ' + self.cert_file_path, self.eap_conf_file)
 
