@@ -142,7 +142,10 @@ class DeviceCredentials(object):
 
             # IBE generates but doesn't store the cert/password. We remove spaces and convert to lowercase to have a
             # more standardized password.
-            self.password = ibe.certify(self.id, self.server_private_key_file_path).replace(' ', '').lower()
+            ibe_password = ibe.certify(self.id, self.server_private_key_file_path).replace(' ', '').lower()
+
+            # Now truncate it since it is too big for RADIUS, by calculating the 256 SHA hash.
+            self.password = hashlib.sha256(ibe_password).hexdigest()
         elif self.type == "SKE":
             self.private_key = self.server_private_key + self.id
             self.password = hashlib.sha256(self.private_key).hexdigest()

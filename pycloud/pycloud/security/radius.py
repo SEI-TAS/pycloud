@@ -76,6 +76,9 @@ class RadiusServer(object):
 
     ####################################################################################################################
     # Restarts the server. NOTE: for this command to work properly, sudo needs to be run withut asking for a password.
+    # NOTE: this will ask for a sudo password if the computer is not configured for sudo access without passwords.
+    # In a console, this can be input, but on an installed version, where pycloud runs a daemon, this won't work.
+    # TODO: find better way to handle this (see above).
     ####################################################################################################################
     def _restart(self):
         print 'Restarting radius server...'
@@ -94,9 +97,6 @@ class RadiusServer(object):
         fileutils.replace_in_file(r'certificate_file =.*$', 'certificate_file = ' + self.cert_file_path, self.eap_conf_file)
 
         # Server needs to be restarted for the command to work.
-        # NOTE: this will ask for a sudo password if the computer is not configured for sudo access without passwords.
-        # In a console, this can be input, but on an installed version, where pycloud runs a daemon, this won't work.
-        # TODO: find better way to handle this (see above).
         self._restart()
 
     ####################################################################################################################
@@ -108,7 +108,10 @@ class RadiusServer(object):
             users_file.write(user_entry)
 
         print "The following entry has been added to RADIUS:"
-        print "Device: " + user_id + " and the DeviceCert is " + password
+        print "User: " + user_id + " and the Password is " + password
+
+        # Server needs to be restarted for the command to work.
+        self._restart()
 
     ####################################################################################################################
     # Removes a specific list of users from the users list.
@@ -129,3 +132,6 @@ class RadiusServer(object):
                 #print potential_id + '.'
                 if not potential_id in user_ids:
                     users_file.write(line)
+
+        # Server needs to be restarted for the command to work.
+        self._restart()

@@ -12,11 +12,13 @@ getdep=false
 deparray=()
 while read -r line
 do
+    # We are assuming the first non-python dep is qemu-kvm. If this changes, it should be changed here.
     dep=${line%","}
     if [[ "$getdep" = false && "$dep" == "qemu-kvm" ]]; then
         getdep=true
     fi
 
+    # We are assuming the Description line is right after the last dep.
     if [[ "$getdep" = true && "$dep" == Description* ]]; then
         getdep=false
     fi
