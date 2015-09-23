@@ -28,7 +28,6 @@
 __author__ = 'Sebastian'
 
 import os
-import subprocess
 
 from pycloud.pycloud.security import pki
 from pycloud.pycloud.utils import fileutils
@@ -44,9 +43,6 @@ DEFAULT_CERT_STORE_FOLDER = './data/credentials/radius/certs'
 
 # FreeRADIUS EAP config file.
 DEFAULT_EAP_CONF_FILE = './data/config/eap.conf'
-
-# Command to restart.
-RESTART_COMMAND = ['sudo', 'service', 'freeradius', 'restart']
 
 ####################################################################################################################
 # Class that represents the Radius server interface.
@@ -75,16 +71,6 @@ class RadiusServer(object):
         self.private_key_path = os.path.join(self.cert_store_folder, RADIUS_PRIVATE_KEY_FILE_NAME)
 
     ####################################################################################################################
-    # Restarts the server. NOTE: for this command to work properly, sudo needs to be run withut asking for a password.
-    # NOTE: this will ask for a sudo password if the computer is not configured for sudo access without passwords.
-    # In a console, this can be input, but on an installed version, where pycloud runs a daemon, this won't work.
-    # TODO: find better way to handle this (see above).
-    ####################################################################################################################
-    def _restart(self):
-        print 'Restarting radius server...'
-        subprocess.Popen(RESTART_COMMAND)
-
-    ####################################################################################################################
     # Sets up a new RADIUS certificate and its keys.
     ####################################################################################################################
     def generate_certificate(self):
@@ -96,9 +82,6 @@ class RadiusServer(object):
         fileutils.replace_in_file(r'private_key_file =.*$', 'private_key_file = ' + self.private_key_path, self.eap_conf_file)
         fileutils.replace_in_file(r'certificate_file =.*$', 'certificate_file = ' + self.cert_file_path, self.eap_conf_file)
 
-        # Server needs to be restarted for the command to work.
-        self._restart()
-
     ####################################################################################################################
     # Stores user credentials into a RADIUS server. This method works for FreeRADIUS servers.
     ####################################################################################################################
@@ -109,9 +92,6 @@ class RadiusServer(object):
 
         print "The following entry has been added to RADIUS:"
         print "User: " + user_id + " and the Password is " + password
-
-        # Server needs to be restarted for the command to work.
-        self._restart()
 
     ####################################################################################################################
     # Removes a specific list of users from the users list.
@@ -129,9 +109,5 @@ class RadiusServer(object):
         with open(self.users_file_path, 'w') as users_file:
             for line in file_lines:
                 potential_id = line.split('\t')[0]
-                #print potential_id + '.'
                 if not potential_id in user_ids:
                     users_file.write(line)
-
-        # Server needs to be restarted for the command to work.
-        self._restart()
