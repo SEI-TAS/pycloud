@@ -1,1 +1,1 @@
-*/1 * * * * root bash /home/adminuser/pycloud/radius/run-every.sh 5 "bash /home/adminuser/pycloud/radius/reload_configs.sh" >> /var/log/radius_reload.log 2>&1
+*/1 * * * * root bash pycloud_scripts_path/run-every.sh 5 "bash pycloud_scripts_path/reload_configs.sh" >> /var/log/radius_reload.log 2>&1
