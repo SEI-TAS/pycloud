@@ -171,15 +171,11 @@ class AppsController(BaseController):
     ############################################################################################################
     @asjson       
     def POST_remove(self):
-        # Parse the body of the request as JSON into a python object.
-        # First remove URL quotes added to string, and then remove trailing "=" (no idea why it is there).
-        parsedJsonString = urllib.unquote(request.body)[:-1]
-        fields = json.loads(parsedJsonString)
-        print 'App removal request received, data: ' + parsedJsonString        
+        print 'App removal request received'
         
         try:
             # Remove the app.
-            appId = ObjectId(fields['appId'])
+            appId = ObjectId(request.params.get('appId'))
             app = App.find_and_remove(appId)
             
             # Try to remove the app file.
