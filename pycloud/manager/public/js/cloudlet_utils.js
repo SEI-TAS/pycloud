@@ -186,11 +186,16 @@ function getAsJson(response)
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to check if an Ajax call was successful.
 /////////////////////////////////////////////////////////////////////////////////////
-function ajaxCallWasSuccessful(jsonObject)
-{    
+function ajaxCallWasSuccessful(jsonObject) {
     // Check if we got an error.
-    if(jsonObject.hasOwnProperty('STATUS') && jsonObject.STATUS=='NOT OK')
+    if (jsonObject.hasOwnProperty('STATUS') && jsonObject.STATUS == 'NOT OK')
         return false;
+    else if (jsonObject.hasOwnProperty('status') && jsonObject.status == false || jsonObject.status == 'false')
+    {
+        // This is to handle the type of answers we get from the File upload lib.
+        jsonObject.error = jsonObject.message;
+        return false;
+    }
     else
         return true;
 }

@@ -4,7 +4,7 @@ cd /etc/freeradius
 # Reload server if certs changed.
 restarting=false
 if [[ ! -e .last-reload ]]  || [[ "eap.conf" -nt ".last-reload" ]]; then
-    echo "Restarting Freeradius configs..."
+    echo "Restarting Freeradius..."
     service freeradius restart
     restarting=true
 fi
