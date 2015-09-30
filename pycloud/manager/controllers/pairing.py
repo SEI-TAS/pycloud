@@ -84,7 +84,7 @@ class PairingController(BaseController):
                 page.devices = ADBSKADevice.list_devices()
         except Exception, e:
             print e
-            # Should show a warning to user.
+            h.flash('Error looking for devices: ' + str(e))
 
         return page.render()
 

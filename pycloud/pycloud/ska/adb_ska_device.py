@@ -192,7 +192,8 @@ class ADBSKADevice(ISKADevice):
             print 'Attempting to download file with data.'
             try:
                 # Get and pars the result.
-                data = self.adb_daemon.Pull(OUT_DATA_REMOTE_FILEPATH)
+                pull_timeout = 2000
+                data = self.adb_daemon.Pull(OUT_DATA_REMOTE_FILEPATH, timeout_ms=pull_timeout)
                 print 'Successfully downloaded output file.'
                 json_data = json.loads(data)
 
@@ -208,6 +209,7 @@ class ADBSKADevice(ISKADevice):
                 return json_data
             except AdbCommandFailureException, e:
                 print 'Could not get data file, file may not be ready. Will wait and retry.'
+                print 'Problem details: ' + str(e)
                 time.sleep(1)
 
         print 'Could not get data file, file may not exist on device.'

@@ -73,14 +73,14 @@ http://jquery.org/license
                 </%block>
             </div>
 
-    
-
-
                 <% flashes = h.flash.pop_messages() %>
                 % if flashes:
                     % for flash in flashes:
-                        <div id="flash">
-                            <span class="message" style="color: orangered;">${flash}</span>
+                        <div id="alert-div" style="position: fixed; top: 55px; display: block; left: 30%; width: 35%; z-index: 100">
+                            <div class="alert alert-dismissable fade in alert-danger" id="alert-element">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                <div id="alert-text">${flash}</div>
+                            </div>
                         </div>
                     % endfor
                 % endif
