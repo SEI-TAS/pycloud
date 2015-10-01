@@ -77,7 +77,7 @@ class EncryptedController(BaseController):
         device_info = PairedDevice.by_id(device_id)
         if not device_info:
             # We can't encrypt the reply since we got an invalid device id.
-            error = '401 Unauthorized - device %s is not paired to this cloudlet' % device_id
+            error = '#Device with id %s is not paired to this cloudlet' % device_id
             print error
             abort(401, error)
 
@@ -86,10 +86,10 @@ class EncryptedController(BaseController):
 
         # Check if device is authorized to send messages, and permission has not expired.
         if not device_info.auth_enabled:
-            error = '403 Forbidden - authorization has been revoked for device %s' % device_id
+            error = '#Authorization has been revoked for device with id %s' % device_id
             self.encrypted_abort(403, error, password)
         if device_info.auth_start + datetime.timedelta(minutes=device_info.auth_duration) < datetime.datetime.now():
-            error = '403 Forbidden - authorization has expired for device %s' % device_id
+            error = '#Authorization has expired for device with id %s' % device_id
             self.encrypted_abort(403, error, password)
 
         # Decrypt the request.
