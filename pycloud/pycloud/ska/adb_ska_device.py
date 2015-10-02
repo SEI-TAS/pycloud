@@ -136,11 +136,12 @@ class ADBSKADevice(ISKADevice):
         adb_data_folder = os.path.join(os.path.abspath(root_data_folder), LOCAL_TEMP_FOLDER)
         fileutils.recreate_folder(adb_data_folder)
 
-        # Generate the adb keys.
+        # Generate the adb keys. NOTE: this is a key pair required to connect to the ADB daemon on the Android device.
         adb_private_key_path = get_adb_key_path()
         adb_public_key_path = adb_private_key_path + '.pub'
         adb_public_rsa_key_path = adb_private_key_path + '_rsa.pub'
 
+        # We create a stanard RSA key pair, but the format used by ADB is different, so we need to convert the public key.
         rsa.create_key_pair(adb_private_key_path, adb_public_rsa_key_path)
         rsa.convert_pub_rsa_to_adb(adb_public_rsa_key_path, adb_public_key_path)
 
