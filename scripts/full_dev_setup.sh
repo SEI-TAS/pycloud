@@ -23,6 +23,9 @@ bash egg_setup.sh
 # Setup Avahi Discovery Service.
 sudo bash avahi_setup.sh
 
+# Set up Feerad permissions.
+sudo freerad_setup.sh
+
 # Setup USB permissions.
 cd ../libusb
 bash setup.sh
