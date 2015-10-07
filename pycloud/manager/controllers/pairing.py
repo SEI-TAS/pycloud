@@ -97,6 +97,7 @@ class PairingController(BaseController):
         if connection is None:
             connection = 'bt'
 
+        curr_device = None
         try:
             # Get a list of devices depending on the connection type.
             if connection == 'bt':
@@ -105,7 +106,6 @@ class PairingController(BaseController):
                 devices = ADBSKADevice.list_devices()
 
             # Find if the device we want to connect to is still there.
-            curr_device = None
             for device in devices:
                 if device.get_name() == id:
                     curr_device = device
@@ -160,11 +160,15 @@ class PairingController(BaseController):
             curr_device.send_data({'command': 'wifi-profile', 'ssid': ssid, 'server_cert_name': cert_file_name,
                                    'password': device_keys.password})
 
-            print 'Closing connection.'
-            curr_device.disconnect()
         except Exception, e:
-            print e
             return ajaxutils.show_and_return_error_dict("Error pairing with device: " + str(e))
+        finally:
+            if curr_device is not None:
+                try:
+                    print 'Closing connection.'
+                    curr_device.disconnect()
+                except Exception, e:
+                    return ajaxutils.show_and_return_error_dict("Error closing connection with device: " + str(e))
 
         # Go to the pairing devices page to add it to the DB. Does not really return the ajax call in case of success.
         return h.redirect_to(controller='devices', action='authorize', did=device_internal_id,

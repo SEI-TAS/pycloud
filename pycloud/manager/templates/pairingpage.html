@@ -50,7 +50,7 @@ http://jquery.org/license
                         <option value="usb" ${page.usb_selected}>USB</option>
                         <option value="bt" ${page.bt_selected}>Bluetooth</option>
                     </select>
-                    <a class="btn btn-large btn-success" href="#" onclick="$('#connection_form').submit();">Refresh</a>
+                    <button class="btn btn-large btn-success" onclick="$(this).prop('disabled', true); $('#connection_form').submit();">Refresh</button>
                 </form>
                 <br><br>
                 <table class="table table-striped">
