@@ -27,3 +27,11 @@ cp $PYCLOUD_HOME/pycloud/pycloud/vm/vm_template.xml /var/pycloud/data/
 # Ensure permissions for user that will run the server.
 echo "Changing /var/pycloud permissions"
 chmod -R 777 /var/pycloud
+
+# Setup to ensure USB rules will work.
+chmod a+r /etc/udev/rules.d/95-android.rules
+udevadm control --reload-rules
+service udev restart
+udevadm trigger
+
+# TODO: add freerad setup

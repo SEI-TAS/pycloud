@@ -1,3 +1,10 @@
+#!/usr/bin/dh-exec
+
 pycloud_api.ini /etc/
 pycloud_manager.ini /etc/
 discovery/cloudlet.service /etc/avahi/services/
+libusb/95-android.rules /etc/udev/rules.d/
+radius/run-every.sh => /opt/pycloud-run-every.sh
+radius/reload_configs.sh => /opt/pycloud-reload_configs.sh
+radius/freeradius.conf /etc/init/
+radius/freerad.prod => /etc/cron.d/freerad

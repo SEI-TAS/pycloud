@@ -23,7 +23,14 @@ bash egg_setup.sh
 # Setup Avahi Discovery Service.
 sudo bash avahi_setup.sh
 
-# Add user to the appropriate group to get correct permissions.
+# Setup USB permissions.
+cd ../libusb
+bash setup.sh
+
+# Adds the current user to the appropriate group to get correct permissions.
+# NOTE: this is done manually in a production set up, as it has to be done to the user that will be running
+# system, not the current user.
 sudo adduser $USER kvm
 sudo adduser $USER libvirtd
 sudo adduser $USER freerad
+sudo adduser $USER plugdev
