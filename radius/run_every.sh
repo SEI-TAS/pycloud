@@ -1,4 +1,5 @@
 #!/bin/bash
+# Source: https://stackoverflow.com/questions/4672383/how-to-run-cronjobs-more-often-than-once-per-minute/17132983#17132983
 
 inputPeriod=$1
 runCommand=$2
