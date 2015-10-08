@@ -24,7 +24,7 @@ bash egg_setup.sh
 sudo bash avahi_setup.sh
 
 # Set up Feerad permissions.
-sudo freerad_setup.sh
+sudo bash freerad_setup.sh
 
 # Setup USB permissions.
 cd ../libusb
