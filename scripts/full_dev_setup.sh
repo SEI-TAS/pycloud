@@ -23,8 +23,13 @@ bash egg_setup.sh
 # Setup Avahi Discovery Service.
 sudo bash avahi_setup.sh
 
-# Set up Feerad permissions.
+# Set up FreeRADIUS permissions.
 sudo bash freerad_setup.sh
+
+# Setup FreeRADIUS reload job.
+cd ../radius/auto_reload
+sudo bash setup.sh
+cd ../../scripts
 
 # Setup USB permissions.
 cd ../libusb
