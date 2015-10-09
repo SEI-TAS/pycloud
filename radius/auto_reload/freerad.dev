@@ -1,0 +1,1 @@
+*/1 * * * * root bash pycloud_scripts_path/pycloud-run_every.sh 5 "bash pycloud_scripts_path/pycloud-reload_configs.sh" >> /var/log/freeradius_auto_reload.log 2>&1
