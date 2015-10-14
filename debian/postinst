@@ -10,17 +10,6 @@ VIRT="$SITE_PACKAGES/libvirt*"
 ln -s -v $VIRT -t $PYCLOUD_ENV
 echo "Done linking lib"
 
-# Create data folder.
-echo "Creating /var/pycloud"
-mkdir -p /var/pycloud
-echo "Creating data subfolder"
-mkdir -p /var/pycloud/data
-
-# Copying vm template to data folder.
-PYCLOUD_HOME="/usr/share/python/python-pycloud/lib/python2.7/site-packages/pycloud-0.1.dev-py2.7.egg"
-echo "Copying vm template to data folder"
-cp $PYCLOUD_HOME/pycloud/pycloud/vm/vm_template.xml /var/pycloud/data/
-
 # Change permission on /var/pycloud so all users can access it.
 echo "Changing /var/pycloud permissions"
 chmod -R 777 /var/pycloud
