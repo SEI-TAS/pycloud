@@ -6,6 +6,7 @@ include pycloud_manager.ini
 include pycloud_api.ini
 include discovery/cloudlet.service
 include libusb/95-android.rules
+include upstart/*.conf
 include radius/auto_reload/pycloud-run_every.sh
 include radius/auto_reload/pycloud-reload_configs.sh
 include radius/auto_reload/freeradius.conf

@@ -2,6 +2,8 @@ pycloud_api.ini /etc/
 pycloud_manager.ini /etc/
 discovery/cloudlet.service /etc/avahi/services/
 pycloud/pycloud/vm/vm_template.xml /var/pycloud/data/
+upstart/pycloud-api.conf /etc/init
+upstart/pycloud-manager.conf /etc/init
 libusb/95-android.rules /etc/udev/rules.d/
 radius/auto_reload/pycloud-run_every.sh /opt/
 radius/auto_reload/pycloud-reload_configs.sh /opt/
