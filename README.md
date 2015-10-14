@@ -20,7 +20,7 @@ KD-Cloudlet comprises a total of 7 GitHub projects:
 * speech-server (Test server: Speech Recognition Server based on Sphinx)
 * speech-android (Test client: Speech Recognition Client)
 
-Building and Installation information in https://github.com/SEI-AMS/pycloud/wiki. 
+Packaging and installation instructions are available at https://github.com/SEI-AMS/pycloud/wiki
 
 # Project Contents
 
@@ -46,6 +46,3 @@ Building and Installation information in https://github.com/SEI-AMS/pycloud/wiki
  * README.md this file.
  * start_dev_api.sh: script to start API when developing, after env has been set up.
  * start_dev_manager.sh: script to start Manager when developing, after env has been set up.
- 
- Packaging and installation instructions are available at https://github.com/SEI-AMS/pycloud/wiki
-
