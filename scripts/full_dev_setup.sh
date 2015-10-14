@@ -17,7 +17,7 @@ bash venv_setup.sh
 # Setup the pip packages in the environment.
 bash install_pip_packages.sh
 
-# Create the egg files.
+# Create the egg metadata files, needed so that Paste can actually serve pycloud apps.
 bash egg_setup.sh
 
 # Setup Avahi Discovery Service.

@@ -10,21 +10,18 @@ VIRT="$SITE_PACKAGES/libvirt*"
 ln -s -v $VIRT -t $PYCLOUD_ENV
 echo "Done linking lib"
 
-#Change permission on /var/pycloud so all users can access it
+# Create data folder.
 echo "Creating /var/pycloud"
 mkdir -p /var/pycloud
-echo "Changing /var/pycloud permissions"
-chmod 777 /var/pycloud
-
-PYCLOUD_HOME="/usr/share/python/python-pycloud/lib/python2.7/site-packages/pycloud-0.1dev-py2.7.egg"
-
-#Copying vm template to data folder.
 echo "Creating data subfolder"
 mkdir -p /var/pycloud/data
+
+# Copying vm template to data folder.
+PYCLOUD_HOME="/usr/share/python/python-pycloud/lib/python2.7/site-packages/pycloud-0.1.dev-py2.7.egg"
 echo "Copying vm template to data folder"
 cp $PYCLOUD_HOME/pycloud/pycloud/vm/vm_template.xml /var/pycloud/data/
 
-# Ensure permissions for user that will run the server.
+# Change permission on /var/pycloud so all users can access it.
 echo "Changing /var/pycloud permissions"
 chmod -R 777 /var/pycloud
 
@@ -34,4 +31,6 @@ udevadm control --reload-rules
 service udev restart
 udevadm trigger
 
-# TODO: add freerad setup
+# Set up freeradius permissions.
+chown -R freerad:freerad /etc/freeradius/
+chmod -R g+rw /etc/freeradius/

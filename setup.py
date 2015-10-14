@@ -29,20 +29,20 @@
 __author__ = 'jdroot'
 
 from setuptools import setup, find_packages
+
 from pip.req import parse_requirements
 from pip.download import PipSession
 
+# Parse the requirements file.
 pip_session = PipSession()
-
-#Parse the requirements file
 reqs = [str(ir.req) for ir in parse_requirements('requirements.txt', session=pip_session)]
 
 setup(
     name='pycloud',
-    version='0.1',
+    version='0.2.0',
     description='Cloudlet Server',
     author='Software Engineering Institute',
-    author_email='James Root <jdroot@sei.cmu.edu>',
+    author_email='Sebastian Echeverria <secheverria@sei.cmu.edu>',
     url='',
     install_requires=reqs,
     packages=find_packages(exclude=['ez_setup']),
