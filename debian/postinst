@@ -23,3 +23,15 @@ udevadm trigger
 # Set up freeradius permissions.
 chown -R freerad:freerad /etc/freeradius/
 chmod -R g+rw /etc/freeradius/
+
+# Create a user and group.
+useradd -U -p pycloud pycloud
+chown -R pycloud:pycloud /var/pycloud
+chmod g+s /var/pycloud
+
+# Add user to groups.
+CURRENT_USER="pycloud"
+adduser $CURRENT_USER kvm
+adduser $CURRENT_USER libvirtd
+adduser $CURRENT_USER freerad
+adduser $CURRENT_USER plugdev

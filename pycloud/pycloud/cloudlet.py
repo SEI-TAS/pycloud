@@ -63,7 +63,14 @@ class Cloudlet(object):
     ################################################################################################################    
     def __init__(self, config, *args, **kwargs):
 
-        sys.stdout = Tee('pycloud.log', 'w')
+        # Data folder
+        self.data_folder = config['pycloud.data_folder']
+
+        # Detect the app we are running in depending on the config params in the file.
+        app = 'api' if 'pycloud.api.encrypted' in config else 'manager'
+
+        # Write output to log file.
+        sys.stdout = Tee(os.path.join(self.data_folder, 'pycloud-' + app + '.log'), 'w')
 
         print 'Loading cloudlet configuration...'
 
@@ -80,12 +87,6 @@ class Cloudlet(object):
 
         self.db = self.conn[dbName]
 
-        # Get HTTP server info.
-        self.api_port = config['pycloud.api.port']
-
-        # Data folder
-        self.data_folder = config['pycloud.data_folder']
-
         # Get information about folders to be used.
         self.svmCache = os.path.join(self.data_folder, 'svmcache/')
         self.service_cache = os.path.join(self.data_folder, 'svmcache/')
@@ -99,9 +100,12 @@ class Cloudlet(object):
         # Export
         self.export_path = os.path.join(self.data_folder, 'temp/export')
 
-        # Migration and network params.
+        # Network params.
         self.network_bridge_enabled = config['pycloud.network.bridge_enabled'].upper() in ['T', 'TRUE', 'Y', 'YES']
         self.network_adapter = config['pycloud.network.adapter']
+
+        # API port of remote APIs, needed for migration.
+        self.api_port = config['pycloud.remote_api.port'] if 'pycloud.remote_api.port' in config else 0
 
         # Auth and pairing.
         self.auth_enabled = config['pycloud.auth.enabled'] if 'pycloud.auth.enabled' in config else 'false'
