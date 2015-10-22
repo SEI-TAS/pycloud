@@ -28,6 +28,34 @@
 __author__ = 'Sebastian'
 
 from pycloud.pycloud.mongo import Model, ObjectID
+from pycloud.pycloud.model import ServiceVM
+
+################################################################################################################
+# Destroys the running instance associated with the given device id.
+# NOTE: this is not handling the case of instances shared between multiple devices. It will destroy it without
+# checking if it was also associated to another id.
+################################################################################################################
+def stop_associated_instance(device_id):
+    device_info = PairedDevice.by_id(device_id)
+    if not device_info:
+        print 'Deployment timeout: device info not found for id ' + str(device_id)
+        return
+
+    if 'instance' not in device_info:
+        # No instance was associated with the device info, we can ignore this call.
+        return
+
+    svm = ServiceVM.find_and_remove(device_info.instance)
+    if not svm:
+        print 'Deployment timeout: Instance to be stopped could not be found (id: ' + str(device_info.instance) + ')'
+        return
+
+    try:
+        svm.destroy()
+        print 'Deployment timeout: instance stopped for device ' + device_id
+    except Exception as e:
+        print 'Deployment timeout: Error stopping Service VM Instance: ' + str(e)
+
 
 # ###############################################################################################################
 # Represents a device authorized into the system.

@@ -29,6 +29,8 @@ __author__ = 'Sebastian'
 
 import datetime
 import json
+import threading
+
 # Pylon imports.
 from pylons import request, response
 from pylons.controllers.util import abort
@@ -43,7 +45,7 @@ from pycloud.api.controllers.apppush import AppPushController
 from pycloud.api.controllers.cloudlet import CloudletController
 
 from pycloud.pycloud.security import encryption
-from pycloud.pycloud.model.paired_device import PairedDevice
+from pycloud.pycloud.model.paired_device import PairedDevice, stop_associated_instance
 
 ################################################################################################################
 # Class that handles all encrypted commands.
@@ -51,7 +53,7 @@ from pycloud.pycloud.model.paired_device import PairedDevice
 class EncryptedController(BaseController):
 
     ##################################################################################################################
-    # Dummy function, used as a start response function for the controllers caled from this action, since we don't
+    # Dummy function, used as a start response function for the controllers called from this action, since we don't
     # want them to set the headers, as we will do that when we return.
     ##################################################################################################################
     def dummy_start_response(self, *args):
@@ -131,10 +133,8 @@ class EncryptedController(BaseController):
             request.method = 'GET'
             reply = controller(self.environ, self.dummy_start_response)
 
-            # TODO: hack to store SVM id in DB along with paired device info.
-            # Step 1: obtain SVM id from reply
-            # Step 2: get device record with device_id, add svm_id (what to do if there was another one before?)
-            # Step 3: start a threading.Timer to kill the VM when the mission ends?
+            # Hack to store SVM id in DB along with paired device info to stop it when mission ends.
+            associate_instance_to_device(device_info, reply[0])
         elif command == '/servicevm/stop':
             request.GET['instanceId'] = params_dict['instanceId']
             controller = ServiceVMController()
@@ -186,3 +186,27 @@ class EncryptedController(BaseController):
         # If there was no error, respond with OK and the encrypted reply.
         print 'Sending encrypted reply.'
         return encrypted_reply
+
+################################################################################################################
+# Stores the instance id of a running Service VM instance associtaed with a paired device.
+################################################################################################################
+def associate_instance_to_device(device_info, reply):
+    try:
+        json_object = json.loads(reply)
+    except ValueError, e:
+        print 'VM not started, will not be stored to be stopped later.'
+        return
+
+    # Store the instance info in the DB.
+    instance_id = json_object['_id']
+    device_info.instance = instance_id
+    device_info.save()
+
+    # Start a timer to stop the instance when the mission time ends.
+    time_to_wait = ((device_info.auth_start + datetime.timedelta(minutes=device_info.auth_duration)) - datetime.datetime.now()).seconds
+    if time_to_wait > 0:
+        timer_thread = threading.Timer(5, stop_associated_instance, [device_info.device_id])
+        timer_thread.start()
+    else:
+        # If we are already past end time, stop VM right away.
+        stop_associated_instance(device_info)

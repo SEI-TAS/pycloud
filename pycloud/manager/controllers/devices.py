@@ -40,7 +40,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import DevicesPage
 
 from pycloud.pycloud.model.deployment import Deployment
-from pycloud.pycloud.model.paired_device import PairedDevice
+from pycloud.pycloud.model.paired_device import PairedDevice, stop_associated_instance
 
 from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
@@ -90,6 +90,7 @@ class DevicesController(BaseController):
         device_ids = []
         for device in devices:
             device_ids.append(device.device_id)
+            stop_associated_instance(device.device_id)
 
         radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
                                             app_globals.cloudlet.radius_certs_folder,
@@ -185,6 +186,7 @@ class DevicesController(BaseController):
     def GET_unpair(self, id):
         # Remove it from the list.
         print 'Removing paired device from DB.'
+        stop_associated_instance(id)
         PairedDevice.find_and_remove(id)
 
         # Remove from RADIUS server.
@@ -205,6 +207,7 @@ class DevicesController(BaseController):
         paired_device = PairedDevice.by_id(id)
         paired_device.auth_enabled = False
         paired_device.save()
+        stop_associated_instance(id)
 
         # Remove from RADIUS server.
         print 'Removing paired device from RADIUS server.'
