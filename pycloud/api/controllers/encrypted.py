@@ -113,12 +113,12 @@ class EncryptedController(BaseController):
         print 'Received command: ' + command
         reply = ''
         reply_format = 'json'
-        if command == '/servicevm/listServices':
+        if command == '/services':
             controller = ServicesController()
             request.environ['pylons.routes_dict']['action'] = 'list'
             request.method = 'GET'
             reply = controller(self.environ, self.dummy_start_response)
-        elif command == '/servicevm/find':
+        elif command == '/services/get':
             request.GET['serviceId'] = params_dict['serviceId']
             controller = ServicesController()
             request.environ['pylons.routes_dict']['action'] = 'find'
@@ -130,27 +130,32 @@ class EncryptedController(BaseController):
             request.environ['pylons.routes_dict']['action'] = 'start'
             request.method = 'GET'
             reply = controller(self.environ, self.dummy_start_response)
+
+            # TODO: hack to store SVM id in DB along with paired device info.
+            # Step 1: obtain SVM id from reply
+            # Step 2: get device record with device_id, add svm_id (what to do if there was another one before?)
+            # Step 3: start a threading.Timer to kill the VM when the mission ends?
         elif command == '/servicevm/stop':
             request.GET['instanceId'] = params_dict['instanceId']
             controller = ServiceVMController()
             request.environ['pylons.routes_dict']['action'] = 'stop'
             request.method = 'GET'
             reply = controller(self.environ, self.dummy_start_response)
-        elif command == '/app/getList':
+        elif command == '/apps':
             for param in params_dict:
                 request.GET[param] = params_dict[param]
             controller = AppPushController()
             request.environ['pylons.routes_dict']['action'] = 'getList'
             request.method = 'GET'
             reply = controller(self.environ, self.dummy_start_response)
-        elif command == '/app/getApp':
-            request.GET['app_id'] = params_dict['app_id']
+        elif command == '/apps/get':
+            request.GET['appId'] = params_dict['appId']
             controller = AppPushController()
             request.environ['pylons.routes_dict']['action'] = 'getApp'
             request.method = 'GET'
             reply = controller(self.environ, self.dummy_start_response)
             reply_format = 'binary'
-        elif command == '/cloudlet_info':
+        elif command == '/system':
             controller = CloudletController()
             request.environ['pylons.routes_dict']['action'] = 'metadata'
             request.method = 'GET'

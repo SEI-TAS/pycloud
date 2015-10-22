@@ -60,8 +60,8 @@ class AppPushController(BaseController):
         timelog.TimeLog.reset()
         timelog.TimeLog.stamp("Request for stored apps received.")
 
-        os_name = request.params.get('os_name', None)
-        os_version = request.params.get('os_version', None)
+        os_name = request.params.get('osName', None)
+        os_version = request.params.get('osVersion', None)
         tags = request.params.get('tags', None)
 
         print "OS Name: ", os_name
@@ -85,7 +85,7 @@ class AppPushController(BaseController):
     # Called to get an app from the server.
     ################################################################################################################
     def GET_getApp(self):
-        app_id = request.params.get('app_id', None)
+        app_id = request.params.get('appId', None)
         if not app_id:
             # If we didnt get a valid one, just return an error message.
             print "No app name to be retrieved was received."

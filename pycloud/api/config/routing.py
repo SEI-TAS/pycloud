@@ -48,18 +48,18 @@ def make_map(config):
         connect('command', '/command', controller='encrypted', action='command')
     else:
         # Service commands.
-        connect('list', '/servicevm/listServices', controller='services', action='list')
-        connect('find', '/servicevm/find', controller='services', action='find')
+        connect('list', '/services', controller='services', action='list')
+        connect('find', '/services/get', controller='services', action='find')
 
         # SVM commands.
         connect('startvm', '/servicevm/start', controller='servicevm', action='start')
         connect('stopvm', '/servicevm/stop', controller='servicevm', action='stop')
 
         # Appcommands.
-        connect('getAppList', '/app/getList', controller='apppush', action='getList')
-        connect('getApp', '/app/getApp', controller='apppush', action='getApp')
+        connect('getAppList', '/apps', controller='apppush', action='getList')
+        connect('getApp', '/apps/get', controller='apppush', action='getApp')
 
         # Metadata commands.
-        connect('metadata', '/cloudlet_info', controller='cloudlet', action='metadata')
+        connect('metadata', '/system', controller='cloudlet', action='metadata')
 
     return mapper
