@@ -80,14 +80,17 @@ def connect_to_adb_daemon(device):
         adbDaemon = AdbCommands.Connect(device, banner="cloudlet", rsa_keys=[keySigner], auth_timeout_ms=15000)
         return adbDaemon
     except Exception, e:
-        print e
+        print 'Error connecting to ADB daemon: ' + str(e)
         return None
 
 ######################################################################################################################
 #
 ######################################################################################################################
-def disconnect_from_adb_daemon(adbDaemon):
-    adbDaemon.Close()
+def disconnect_from_adb_daemon(adbDaemon, device):
+    if adbDaemon:
+        adbDaemon.Close()
+    if device:
+        device.Close()
 
 ######################################################################################################################
 # Starts the given service on the given daemon.
@@ -106,6 +109,7 @@ class ADBSKADevice(ISKADevice):
 
     serial_number = None
     adb_daemon = None
+    usb_device = None
 
     ####################################################################################################################
     # Sets up basic ADB stuff.
@@ -168,6 +172,7 @@ class ADBSKADevice(ISKADevice):
             if device.serial_number == self.serial_number:
                 self.adb_daemon = connect_to_adb_daemon(device)
                 if self.adb_daemon is not None:
+                    self.usb_device = device
                     return True
                 else:
                     print 'Unable to connect to ADB daemon on device ' + self.serial_number + '.'
@@ -181,7 +186,7 @@ class ADBSKADevice(ISKADevice):
     ####################################################################################################################
     def disconnect(self):
         if self.adb_daemon:
-            disconnect_from_adb_daemon(self.adb_daemon)
+            disconnect_from_adb_daemon(self.adb_daemon, self.usb_device)
 
     ####################################################################################################################
     # Gets a file from the device, retrying until the timeout is reached.
@@ -192,6 +197,9 @@ class ADBSKADevice(ISKADevice):
         while time.time() - start_time < timeout:
             print 'Attempting to download file with data.'
             try:
+                # Wait a bit to ensure the data out file has been written.
+                time.sleep(1)
+
                 # Get and pars the result.
                 pull_timeout = 2000
                 data = self.adb_daemon.Pull(OUT_DATA_REMOTE_FILEPATH, timeout_ms=pull_timeout)
@@ -211,7 +219,6 @@ class ADBSKADevice(ISKADevice):
             except AdbCommandFailureException, e:
                 print 'Could not get data file, file may not be ready. Will wait and retry.'
                 print 'Problem details: ' + str(e)
-                time.sleep(1)
 
         print 'Could not get data file, file may not exist on device.'
         return []
