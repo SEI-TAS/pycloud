@@ -205,8 +205,10 @@ def associate_instance_to_device(device_info, reply):
     # Start a timer to stop the instance when the mission time ends.
     time_to_wait = ((device_info.auth_start + datetime.timedelta(minutes=device_info.auth_duration)) - datetime.datetime.now()).seconds
     if time_to_wait > 0:
-        timer_thread = threading.Timer(5, stop_associated_instance, [device_info.device_id])
+        print 'Setting up timer to stop Service VM once deployment time runs out (time to wait: ' + str(time_to_wait) + ' seconds)'
+        timer_thread = threading.Timer(time_to_wait, stop_associated_instance, [device_info.device_id])
         timer_thread.start()
     else:
         # If we are already past end time, stop VM right away.
+        print 'Stopping service VM right away since deployment has already timed out.'
         stop_associated_instance(device_info)
