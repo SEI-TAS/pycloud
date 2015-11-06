@@ -50,6 +50,12 @@ class ISKADevice:
     def get_name(self):
         raise NotImplementedError()
 
+    def get_port(self):
+        raise NotImplementedError()
+
+    def get_friendly_name(self):
+        raise NotImplementedError()
+
     def connect(self):
         raise NotImplementedError()
 

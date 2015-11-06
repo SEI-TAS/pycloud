@@ -87,14 +87,31 @@ def find_ska_service(device_address=None):
     return service_matches
 
 ######################################################################################################################
+# Pairs to a device, trying to force numeric comparison.
+######################################################################################################################
+def pair_through_numeric_comparison(device_info):
+    pass
+    # Register an agent to handle pairing.
+    # TODO: is this really needed on Ubuntu? Don't we have an agent already? How to set up its capabilities?
+    #bus = dbus.SystemBus()
+    #obj = bus.get_object('org.bluez', '/org/bluez')
+    #manager = dbus.Interface(obj, "org.bluez.AgentManager1")
+    #manager.RegisterAgent(path, 'DisplayYesNo')
+
+    #
+    #import bluezutils
+    #device = bluezutils.find_device(device_info['host'], 'hci0')
+    #device.Pair(reply_handler=pair_reply, error_handler=pair_error, timeout=60000)
+
+
+######################################################################################################################
 # Connects to a Bluetooth device given the bluetooth device info dict, and returns a socket.
 ######################################################################################################################
-def connect_to_device(device_info):
-    port = device_info["port"]
-    name = device_info["name"]
-    host = device_info["host"]
-
+def connect_to_device(host, port, name):
     print("Connecting to \"%s\" on %s" % (name, host))
+
+    # TODO: test pairing manually through d-bus here, before opening socket through Pybluez.
+    # Seems to be only way to configure agent capabilities.
 
     socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
     socket.connect((host, port))
@@ -141,6 +158,18 @@ class BluetoothSKADevice(ISKADevice):
         return self.device_info['host']
 
     ####################################################################################################################
+    # The port.
+    ####################################################################################################################
+    def get_port(self):
+            return self.device_info['port']
+
+    ####################################################################################################################
+    # The friendly name.
+    ####################################################################################################################
+    def get_friendly_name(self):
+            return self.device_info['name']
+
+    ####################################################################################################################
     #
     ####################################################################################################################
     @staticmethod
@@ -183,9 +212,8 @@ class BluetoothSKADevice(ISKADevice):
         adapter_address = get_adapter_address()
         if adapter_address is None:
             raise Exception("Bluetooth adapter not available.")
-
         # Connect to the device.
-        self.device_socket = connect_to_device(self.device_info)
+        self.device_socket = connect_to_device(self.device_info['host'], self.device_info['port'], self.device_info['name'])
         if self.device_socket is None:
             return False
         else:

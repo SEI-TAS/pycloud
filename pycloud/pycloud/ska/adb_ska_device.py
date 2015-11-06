@@ -122,13 +122,25 @@ class ADBSKADevice(ISKADevice):
     ####################################################################################################################
     # Creates a device using the provided device info.
     ####################################################################################################################
-    def __init__(self, device):
-        self.serial_number = device.serial_number
+    def __init__(self, serial_number):
+        self.serial_number = serial_number
 
     ####################################################################################################################
     # Returns an name for the device.
     ####################################################################################################################
     def get_name(self):
+        return self.serial_number
+
+    ####################################################################################################################
+    # Not used in ADB.
+    ####################################################################################################################
+    def get_port(self):
+        return 0
+
+    ####################################################################################################################
+    # Not different in ADB.
+    ####################################################################################################################
+    def get_friendly_name(self):
         return self.serial_number
 
     ####################################################################################################################
@@ -156,7 +168,7 @@ class ADBSKADevice(ISKADevice):
     def list_devices():
         usb_devices = []
         for device in AdbCommands.Devices():
-            usb_devices.append(ADBSKADevice(device))
+            usb_devices.append(ADBSKADevice(device.serial_number))
 
         return usb_devices
 
@@ -273,7 +285,7 @@ def test():
         print device
         print device.serial_number
 
-        adbDevice = ADBSKADevice(device)
+        adbDevice = ADBSKADevice(device.serial_number)
 
         try:
             adbDevice.connect()

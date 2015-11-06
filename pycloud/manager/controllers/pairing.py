@@ -99,20 +99,13 @@ class PairingController(BaseController):
 
         curr_device = None
         try:
-            # Get a list of devices depending on the connection type.
+            # Create a device depending on the type.
             if connection == 'bt':
-                devices = BluetoothSKADevice.list_devices()
+                port = request.params.get('port', None)
+                name = request.params.get('name', None)
+                curr_device = BluetoothSKADevice({'host': id, 'port': int(port), 'name': name})
             else:
-                devices = ADBSKADevice.list_devices()
-
-            # Find if the device we want to connect to is still there.
-            for device in devices:
-                if device.get_name() == id:
-                    curr_device = device
-                    break
-
-            if curr_device is None:
-                return ajaxutils.show_and_return_error_dict("Device with id {} not found for pairing.".format(id))
+                curr_device = ADBSKADevice(id)
 
             # Now the pairing process will be followed, generating all required credentials.
             # The first step is to connect to the device.
