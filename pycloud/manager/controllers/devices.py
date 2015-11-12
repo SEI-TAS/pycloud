@@ -127,8 +127,8 @@ class DevicesController(BaseController):
         ADBSKADevice.bootstrap()
 
         # Create server keys.
-        server_keys = credentials.ServerCredentials(app_globals.cloudlet.credentials_type,
-                                                    app_globals.cloudlet.data_folder)
+        server_keys = credentials.ServerCredentials.create_object(app_globals.cloudlet.credentials_type,
+                                                                  app_globals.cloudlet.data_folder)
         server_keys.generate_and_save_to_file()
 
         # Create RADIUS server certificate.
@@ -152,14 +152,15 @@ class DevicesController(BaseController):
     @asjson
     def GET_authorize(self, did):
         connection_id = request.params.get('cid', None)
-        password = request.params.get('password', None)
+        auth_password = request.params.get('auth_password', None)
+        enc_password = request.params.get('enc_password', None)
 
         # Create a new paired device with the id info we just received.
         print 'Adding paired device to DB.'
         paired_device = PairedDevice()
         paired_device.device_id = did
         paired_device.connection_id = connection_id
-        paired_device.password = password
+        paired_device.password = enc_password
 
         # By default, authorization for a device will be the same as the deployment info.
         deployment = Deployment.find_one()
@@ -174,7 +175,7 @@ class DevicesController(BaseController):
         radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
                                             app_globals.cloudlet.radius_certs_folder,
                                             app_globals.cloudlet.radius_eap_conf_file)
-        radius_server.add_user_credentials(paired_device.device_id, paired_device.password)
+        radius_server.add_user_credentials(paired_device.device_id, auth_password)
 
         # Go to the main page.
         print 'Device added to DB.'

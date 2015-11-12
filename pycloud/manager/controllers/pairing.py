@@ -124,14 +124,14 @@ class PairingController(BaseController):
                 return ajaxutils.show_and_return_error_dict("Device with id {} is already paired.".format(device_internal_id))
 
             # Prepare the server and device credential objects.
-            server_keys = credentials.ServerCredentials(app_globals.cloudlet.credentials_type,
-                                                        app_globals.cloudlet.data_folder)
-            device_keys = credentials.DeviceCredentials(app_globals.cloudlet.credentials_type,
-                                                        app_globals.cloudlet.data_folder,
-                                                        device_internal_id,
-                                                        server_keys.private_key_path)
+            server_keys = credentials.ServerCredentials.create_object(app_globals.cloudlet.credentials_type,
+                                                                      app_globals.cloudlet.data_folder)
+            device_keys = credentials.DeviceCredentials.create_object(app_globals.cloudlet.credentials_type,
+                                                                      app_globals.cloudlet.data_folder,
+                                                                      device_internal_id,
+                                                                      server_keys.private_key_path)
 
-            # Create the device's private key and the device's password/hash.
+            # Create the device's private key and the device's passwords.
             device_keys.generate_and_save_to_file()
 
             # Send the server's public key.
@@ -139,6 +139,9 @@ class PairingController(BaseController):
 
             # Send the device's private key to the device.
             curr_device.send_file(device_keys.private_key_path, 'device.key')
+
+            # Send the device's encryption password to the device.
+            curr_device.send_file(device_keys.encryption_password_file_path, 'encryption_password.txt')
 
             # Send RADIUS certificate to the device.
             radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
@@ -151,7 +154,7 @@ class PairingController(BaseController):
             # ssid, the RADIUS certificate filename, and the password to be used in the profile.
             ssid = app_globals.cloudlet.ssid
             curr_device.send_data({'command': 'wifi-profile', 'ssid': ssid, 'server_cert_name': cert_file_name,
-                                   'password': device_keys.password})
+                                   'password': device_keys.auth_password})
 
         except Exception, e:
             return ajaxutils.show_and_return_error_dict("Error pairing with device: " + str(e))
@@ -165,4 +168,5 @@ class PairingController(BaseController):
 
         # Go to the pairing devices page to add it to the DB. Does not really return the ajax call in case of success.
         return h.redirect_to(controller='devices', action='authorize', did=device_internal_id,
-                             cid=curr_device.get_name(), password=device_keys.password)
+                             cid=curr_device.get_name(), auth_password=device_keys.auth_password,
+                             enc_password=device_keys.encryption_password)
