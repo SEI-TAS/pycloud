@@ -162,6 +162,16 @@ class DeviceCredentials(object):
         with open(self.encryption_password_file_path, 'w') as keyfile:
             keyfile.write(self.encryption_password)
 
+    ############################################################################################################
+    # Deletes the private key file and the encryption password file.
+    ############################################################################################################
+    def delete_key_files(self):
+        if os.path.exists(self.private_key_path):
+            os.remove(self.private_key_path)
+
+        if os.path.exists(self.encryption_password_file_path):
+            os.remove(self.encryption_password_file_path)
+
 ############################################################################################################
 #
 ############################################################################################################

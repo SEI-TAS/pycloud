@@ -156,6 +156,9 @@ class PairingController(BaseController):
             curr_device.send_data({'command': 'wifi-profile', 'ssid': ssid, 'server_cert_name': cert_file_name,
                                    'password': device_keys.auth_password})
 
+            # Remove the device private key and password files, for security cleanup.
+            device_keys.delete_key_files()
+
         except Exception, e:
             return ajaxutils.show_and_return_error_dict("Error pairing with device: " + str(e))
         finally:
