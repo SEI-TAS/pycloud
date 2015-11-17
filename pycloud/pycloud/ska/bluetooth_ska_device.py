@@ -37,6 +37,7 @@ import sys
 import subprocess
 import os
 import json
+import socket
 
 from ska_device_interface import ISKADevice
 from pycloud.pycloud.ska import ska_constants
@@ -230,63 +231,25 @@ class BluetoothSKADevice(ISKADevice):
     #
     ####################################################################################################################
     def get_data(self, data):
-        message = dict(data)
-        message['bt_command'] = 'send_data'
-        message_string = json.dumps(message)
-
-        result = self.send_command(message_string)
-
-        # Check error and log it.
-        json_data = json.loads(result)
-        if json_data[ska_constants.RESULT_KEY] != ska_constants.SUCCESS:
-            error_messge = 'Error processing command on device: ' + json_data[ska_constants.ERROR_MSG_KEY]
-            raise Exception(error_messge)
-
-        return json.loads(result)
+        result = self.__send_command('send_data', data)
+        return self.__parse_result(result)
 
     ####################################################################################################################
     #
     ####################################################################################################################
     def send_data(self, data):
-        message = dict(data)
-        message['bt_command'] = 'receive_data'
-        message_string = json.dumps(message)
-        result = self.send_command(message_string)
-
-        # Check error and log it.
-        json_data = json.loads(result)
-        if json_data[ska_constants.RESULT_KEY] != ska_constants.SUCCESS:
-            error_messge = 'Error processing command on device: ' + json_data[ska_constants.ERROR_MSG_KEY]
-            raise Exception(error_messge)
-
-
-    ####################################################################################################################
-    # Sends a short command.
-    ####################################################################################################################
-    def send_command(self, command):
-        if self.device_socket is None:
-            raise Exception("Not connected to a device.")
-
-        print 'Sending command message: ' + command
-        self.device_socket.send(command)
-
-        # Wait for reply, it should be small enough to fit in one chunk.
-        reply = self.device_socket.recv(CHUNK_SIZE)
-        print 'Reply: ' + reply
-        return reply
+        result = self.__send_command('receive_data', data)
+        return self.__parse_result(result)
 
     ####################################################################################################################
     # Sends a given file, ensuring the other side is ready to store it.
     ####################################################################################################################
     def send_file(self, file_path, file_id):
-        message = {'bt_command': 'receive_file', 'file_id': file_id}
-        message_string = json.dumps(message)
-
-        ack = self.send_command(message_string)
-        if ack == 'ack':
+        result = self.__send_command('receive_file', {'file_id': file_id})
+        if result == 'ack':
             # First send the file size in bytes.
             file_size = os.path.getsize(file_path)
-            ack = self.send_command(str(file_size))
+            ack = self.__send_string(str(file_size))
             if ack == 'ack':
                 # Open and send the file in chunks.
                 print 'Sending file.'
@@ -304,15 +267,53 @@ class BluetoothSKADevice(ISKADevice):
 
                 print 'Finished sending file. Waiting for result.'
 
-                # Wait for reply, it should be small enough to fit in one chunk.
+                # Wait for final result.
                 reply = self.device_socket.recv(CHUNK_SIZE)
                 print 'Reply: ' + reply
 
-                # Check error and log it.
-                json_data = json.loads(reply)
-                if json_data[ska_constants.RESULT_KEY] != ska_constants.SUCCESS:
-                    error_messge = 'Error processing command on device: ' + json_data[ska_constants.ERROR_MSG_KEY]
-                    raise Exception(error_messge)
+                # Check result.
+                return self.__parse_result(reply)
+
+    ####################################################################################################################
+    # Sends a command.
+    ####################################################################################################################
+    def __send_command(self, command, data):
+        # Prepare command.
+        message = dict(data)
+        message['bt_command'] = command
+        message['cloudlet_name'] = socket.gethostname()
+        message_string = json.dumps(message)
+
+        # Send command.
+        result = self.__send_string(message_string)
+        return result
+
+    ####################################################################################################################
+    # Checks the success of a result.
+    ####################################################################################################################
+    def __parse_result(self, result):
+        # Check error and log it.
+        json_data = json.loads(result)
+        if json_data[ska_constants.RESULT_KEY] != ska_constants.SUCCESS:
+            error_messge = 'Error processing command on device: ' + json_data[ska_constants.ERROR_MSG_KEY]
+            raise Exception(error_messge)
+
+        return json.loads(result)
+
+    ####################################################################################################################
+    # Sends a short string.
+    ####################################################################################################################
+    def __send_string(self, data_string):
+        if self.device_socket is None:
+            raise Exception("Not connected to a device.")
+
+        print 'Sending data: ' + data_string
+        self.device_socket.send(data_string)
+
+        # Wait for reply, it should be small enough to fit in one chunk.
+        reply = self.device_socket.recv(CHUNK_SIZE)
+        print 'Reply: ' + reply
+        return reply
 
 ######################################################################################################################
 # Test method

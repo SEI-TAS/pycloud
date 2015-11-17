@@ -34,6 +34,7 @@ A simple Python script to handle Secure Key Agreement communication through USB 
 import time
 import json
 import os.path
+import socket
 
 from adb.usb_exceptions import AdbCommandFailureException
 from adb.adb_commands import AdbCommands, M2CryptoSigner
@@ -253,6 +254,8 @@ class ADBSKADevice(ISKADevice):
     # DATA needs to be a dictionary of key-value pairs.
     ####################################################################################################################
     def send_data(self, data):
+        data['cloudlet_name'] = socket.gethostname()
+
         # Everything is called "in" since, from the point of view of the Service, it is getting data.
         print 'Starting data receiving service.'
         start_service(self.adb_daemon, IN_DATA_SERVICE, data)
@@ -268,8 +271,12 @@ class ADBSKADevice(ISKADevice):
         print 'Pushing file.'
         self.adb_daemon.Push(file_path, REMOTE_FOLDER + file_id)
 
+        data = {}
+        data['cloudlet_name'] = socket.gethostname()
+        data['file_id'] = file_id
+
         print 'Starting file receiver service.'
-        start_service(self.adb_daemon, IN_FILE_SERVICE, {'file_id': file_id})
+        start_service(self.adb_daemon, IN_FILE_SERVICE, data)
         print 'File sent.'
 
         print 'Checking result.'
