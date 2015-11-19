@@ -39,7 +39,7 @@ reqs = [str(ir.req) for ir in parse_requirements('requirements.txt', session=pip
 
 setup(
     name='pycloud',
-    version='0.2.0',
+    version='0.4.0',
     description='Cloudlet Server',
     author='Software Engineering Institute',
     author_email='Sebastian Echeverria <secheverria@sei.cmu.edu>',

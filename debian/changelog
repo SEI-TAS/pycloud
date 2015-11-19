@@ -1,3 +1,9 @@
+python-pycloud (0.4.0) unstable; urgency=medium
+
+  * Multiple security improvements.
+
+ -- Sebastian Echeverria <secheverria@sei.cmu.edu>  Fri, 19 Nov 2015 11:38:51 -0400
+
 python-pycloud (0.2.0) unstable; urgency=medium
 
   * Adds security support for the trusted identity work.
