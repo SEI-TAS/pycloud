@@ -140,9 +140,6 @@ class PairingController(BaseController):
             # Send the device's private key to the device.
             curr_device.send_file(device_keys.private_key_path, 'device.key')
 
-            # Send the device's encryption password to the device.
-            curr_device.send_file(device_keys.encryption_password_file_path, 'encryption_password.txt')
-
             # Send RADIUS certificate to the device.
             radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
                                                 app_globals.cloudlet.radius_certs_folder,

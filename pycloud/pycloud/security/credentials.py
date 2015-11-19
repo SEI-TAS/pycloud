@@ -153,14 +153,6 @@ class DeviceCredentials(object):
         # Build the full paths.
         self.keys_folder = os.path.join(root_folder, LOCAL_FOLDER)
         self.private_key_path = os.path.join(self.keys_folder, DEVICE_PRIVATE_KEY_FILE_NAME)
-        self.encryption_password_file_path = os.path.join(self.keys_folder, DEVICE_PASSWORD_FILE_NAME)
-
-    ############################################################################################################
-    #
-    ############################################################################################################
-    def store_encryption_password(self):
-        with open(self.encryption_password_file_path, 'w') as keyfile:
-            keyfile.write(self.encryption_password)
 
     ############################################################################################################
     # Deletes the private key file and the encryption password file.
@@ -168,9 +160,6 @@ class DeviceCredentials(object):
     def delete_key_files(self):
         if os.path.exists(self.private_key_path):
             os.remove(self.private_key_path)
-
-        if os.path.exists(self.encryption_password_file_path):
-            os.remove(self.encryption_password_file_path)
 
 ############################################################################################################
 #
@@ -181,15 +170,13 @@ class SKEDeviceCredentials(DeviceCredentials):
     ############################################################################################################
     def generate_and_save_to_file(self):
         self.private_key = self.server_private_key + self.id
-        self.auth_password = hashlib.sha256(self.private_key).hexdigest()
-        self.encryption_password = hashlib.sha256(self.private_key[::-1]).hexdigest()
+        self.auth_password = hashlib.sha256(self.private_key[::-1]).hexdigest()
+
+        self.encryption_password = hashlib.sha256(self.private_key).hexdigest()
 
         # Store the private key.
         with open(self.private_key_path, 'w') as keyfile:
             keyfile.write(self.private_key)
-
-        # Store the encryption password.
-        self.store_encryption_password()
 
 ############################################################################################################
 #
@@ -200,8 +187,18 @@ class IBEDeviceCredentials(DeviceCredentials):
     ############################################################################################################
     def generate_and_save_to_file(self):
         ibe = libibe.LibIBE()
-        # IBE generates and stores the private key.
-        self.private_key = ibe.extract(self.id, self.server_private_key_file_path, self.private_key_path)
+
+        # IBE generates and stores the private key. However, it is storing something different each time, so there
+        # seems to be an issue. We will store the key manually for now.
+        # TODO: Figure out what is being written to the file...
+        self.private_key = ibe.extract(self.id, self.server_private_key_file_path, self.private_key_path).replace(' ', '').lower()
+
+        # Store the private key.
+        with open(self.private_key_path, 'w') as keyfile:
+            keyfile.write(self.private_key)
+
+        # Derive the encryption password from the private key.
+        self.encryption_password = hashlib.sha256(self.private_key).hexdigest()
 
         # IBE generates but doesn't store the cert/password. We remove spaces and convert to lowercase to have a
         # more standardized password.
@@ -210,8 +207,3 @@ class IBEDeviceCredentials(DeviceCredentials):
         # Now truncate it since it is too big for RADIUS, by calculating the 256 SHA hash.
         self.auth_password = hashlib.sha256(ibe_password).hexdigest()
 
-        # Create the encryption password from the ibe password as well.
-        self.encryption_password = hashlib.sha256(ibe_password[::-1]).hexdigest()
-
-        # Store the encryption password.
-        self.store_encryption_password()
