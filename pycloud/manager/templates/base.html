@@ -31,6 +31,7 @@ http://jquery.org/license
 <%namespace file="navbar.html" import="navbar"/>
 
 <% import socket %>
+<% from pycloud.pycloud.cloudlet import get_cloudlet_instance %>
 <html>
     <head>
         <meta charset="utf-8">
@@ -94,11 +95,14 @@ http://jquery.org/license
         <footer class="footer" id="footer">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-7">
+                    <div class="col-md-5">
                         Software Engineering Institute of Carnegie Mellon University
                     </div>
+                    <div class="col-md-2">
+                        <p>Version: ${get_cloudlet_instance().version}</p>
+                    </div>
                     <div class="col-md-1">
-                        <p>Host : ${socket.gethostname()}</p>
+                        <p>Host: ${socket.gethostname()}</p>
                     </div>
                     <div class="col-md-4">
                         <input type="hidden" id="state_url" value="${h.url_for(controller='home', action='state')}"/>\

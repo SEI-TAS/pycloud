@@ -118,6 +118,13 @@ class Cloudlet(object):
         self.radius_certs_folder = config['pycloud.radius.certs_folder'] if 'pycloud.radius.certs_folder' in config else None
         self.radius_eap_conf_file = config['pycloud.radius.eap_conf_file'] if 'pycloud.radius.eap_conf_file' in config else None
 
+        # Load version information.
+        basse_folder = os.path.dirname(os.path.realpath(__file__))
+        self.version = ''
+        with open(os.path.join(basse_folder, '../../', 'VERSION')) as version_file:
+            self.version = version_file.readline()
+            print 'App version: {}'.format(self.version)
+
         print 'cloudlet created.'
 
     @staticmethod
