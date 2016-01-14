@@ -67,7 +67,7 @@ http://jquery.org/license
                 </div>
                 <div>
                     <hr>
-                    <h3>Devices</h3>
+                    <h3>Mobile Devices</h3>
                     <button type="button" class="btn btn-large btn-primary" onclick="window.location.href='${h.url_for(controller='pairing', action='available')}'"
                        ${'disabled' if page.deployment_auth_start == 'not set' else ''}>Pair New Device
                     </button>
@@ -95,6 +95,57 @@ http://jquery.org/license
                                 <td>${paired_device.auth_duration}</td>
                                 <td>${(paired_device.auth_start + datetime.timedelta(minutes=paired_device.auth_duration)).strftime('%Y-%m-%d %X')}</td>
                                 <td>${paired_device.auth_enabled}</td>
+                                <td>
+                                    <a class="btn btn-large btn-danger" href="${unpair_url}" \
+                                       data-toggle="tooltip" data-placement="top" title="Unpair">
+                                        <span class="glyphicon glyphicon-remove" style="color: white"></span>
+                                    </a>
+                                    % if paired_device.auth_enabled:
+                                        <a class="btn btn-large btn-danger" href="${revoke_url}" \
+                                           data-toggle="tooltip" data-placement="top" title="Revoke">
+                                            <span class="glyphicon glyphicon-ban-circle" style="color: white"></span>
+                                        </a>
+                                    % else:
+                                        <a class="btn btn-large btn-success" href="${reauthorize_url}" \
+                                           data-toggle="tooltip" data-placement="top" title="Reauthorize">
+                                            <span class="glyphicon glyphicon-ok-circle" style="color: white"></span>
+                                        </a>
+                                    % endif
+                                </td>
+                            </tr>
+                        % endfor
+                    </table>
+                </div>
+                <div>
+                    <hr>
+                    <h3>Cloudlets</h3>
+                    <button type="button" class="btn btn-large btn-primary" onclick="window.location.href='${h.url_for(controller='pairing', action='available')}'"
+                       ${'disabled' if page.deployment_auth_start == 'not set' else ''}>Pair New Cloudlet
+                    </button>
+                    <br><br>
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Cloudlet ID</th>
+                            <th>SSID</th>
+                            <th>Authorization Start</th>
+                            <th>Duration (mins)</th>
+                            <th>Authorization End</th>
+                            <th>Enabled</th>
+                            <th>Actions</th>
+                        </tr>
+                        % for paired_cloudlet in page.paired_cloudlets:
+                            <%
+                                unpair_url = h.url_for(controller='devices', action='unpair', id=paired_cloudlet.device_id)
+                                revoke_url = h.url_for(controller='devices', action='revoke', id=paired_cloudlet.device_id)
+                                reauthorize_url = h.url_for(controller='devices', action='reauthorize', id=paired_cloudlet.device_id)
+                            %>
+                            <tr>
+                                <td>${paired_cloudlet.device_id}</td>
+                                <td>${paired_device.connection_id}</td>
+                                <td>${paired_cloudlet.auth_start.strftime('%Y-%m-%d %X')}</td>
+                                <td>${paired_cloudlet.auth_duration}</td>
+                                <td>${(paired_cloudlet.auth_start + datetime.timedelta(minutes=paired_cloudlet.auth_duration)).strftime('%Y-%m-%d %X')}</td>
+                                <td>${paired_cloudlet.auth_enabled}</td>
                                 <td>
                                     <a class="btn btn-large btn-danger" href="${unpair_url}" \
                                        data-toggle="tooltip" data-placement="top" title="Unpair">

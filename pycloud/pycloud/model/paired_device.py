@@ -64,7 +64,7 @@ class PairedDevice(Model):
     # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
         collection = "paired_devices"
-        external = ['_id', 'device_id', 'connection_id', 'auth_start', 'auth_duration', 'auth_enabled', 'password']
+        external = ['_id', 'device_id', 'connection_id', 'auth_start', 'auth_duration', 'auth_enabled', 'password', 'type']
         mapping = {
         }
 
@@ -77,6 +77,7 @@ class PairedDevice(Model):
         self.auth_start = None
         self.auth_duration = 0
         self.auth_enabled = False
+        self.type = 'mobile'
         super(PairedDevice, self).__init__(*args, **kwargs)
 
     ################################################################################################################
@@ -117,6 +118,18 @@ class PairedDevice(Model):
         except:
             return None
         return device
+
+    ################################################################################################################
+    # Locate all devices of a certain type
+    ################################################################################################################
+    # noinspection PyBroadException
+    @staticmethod
+    def by_type(type='mobile'):
+        try:
+            devices = PairedDevice.find({'type': type})
+        except:
+            return []
+        return devices
 
     ################################################################################################################
     # Cleanly and safely gets a Device and removes it from the database

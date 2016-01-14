@@ -76,7 +76,10 @@ class DevicesController(BaseController):
             page.deployment_auth_end = (page.deployment.auth_start + datetime.timedelta(minutes=page.deployment.auth_duration)).strftime('%Y-%m-%d %X')
 
         # Get the paired devices.
-        page.paired_devices = PairedDevice.find()
+        page.paired_devices = PairedDevice.by_type('mobile')
+
+        # Get the paired cloudlets.
+        page.paired_cloudlets = PairedDevice.by_type('cloudlet')
 
         return page.render()
 
@@ -153,7 +156,8 @@ class DevicesController(BaseController):
     def GET_authorize(self, did):
         connection_id = request.params.get('cid', None)
         auth_password = request.params.get('auth_password', None)
-        enc_password = request.params.get('enc_password', None)
+        enc_password = request.params.get('enc_password', None) # Will be None for cloudlets.
+        type = request.params.get('type', 'mobile') # Defaults to mobile device.
 
         # Create a new paired device with the id info we just received.
         print 'Adding paired device to DB.'
@@ -161,6 +165,7 @@ class DevicesController(BaseController):
         paired_device.device_id = did
         paired_device.connection_id = connection_id
         paired_device.password = enc_password
+        paired_device.type = type
 
         # By default, authorization for a device will be the same as the deployment info.
         deployment = Deployment.find_one()
