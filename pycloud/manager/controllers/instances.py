@@ -47,7 +47,7 @@ from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import fileutils
 
 from pycloud.pycloud.utils import ajaxutils
-from pycloud.pycloud.wifi import wifi
+from pycloud.pycloud.network import wifi
 
 log = logging.getLogger(__name__)
 
@@ -62,7 +62,6 @@ class InstancesController(BaseController):
     def GET_index(self):
         # Mark the active tab.
         c.servicevms_active = 'active'
-        print request.environ['SCRIPT_NAME']
         svms = ServiceVM.find()
 
         # Setup the page to render.
