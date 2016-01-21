@@ -115,7 +115,7 @@ http://jquery.org/license
 		    <div class="modal-body">
 		        <div class="well">
 		            <form id="new-svm-form" class="form-horizontal" action="" method="post">
-		            	${text(id='targetCloudet', input_width=12, label=_('Target Cloudlet (FQDN)'), mandatory=True)}
+                        ${dropdown('targetCloudlet', options=page.available_cloudlets, id='targetCloudet', input_width=12, label=_('Target Cloudlet'), mandatory=True)}
                         ${hidden(id='migrateUrl')}
 		            </form>
 		        </div>

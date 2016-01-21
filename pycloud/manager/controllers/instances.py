@@ -47,7 +47,7 @@ from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import fileutils
 
 from pycloud.pycloud.utils import ajaxutils
-from pycloud.pycloud.network import wifi
+from pycloud.pycloud.network import wifi, finder
 
 log = logging.getLogger(__name__)
 
@@ -81,6 +81,11 @@ class InstancesController(BaseController):
             if paired_network.connection_id in available_networks:
                 paired_networks_in_range.append(paired_network.connection_id)
         instancesPage.available_networks = paired_networks_in_range
+
+        # Get a list of cloudlets in our current networks.
+        cloudlet_finder = finder.CloudletFinder()
+        cloudlets = cloudlet_finder.find_cloudlets()
+        instancesPage.available_cloudlets = cloudlets
 
         # Pass the grid and render the page.
         return instancesPage.render()
