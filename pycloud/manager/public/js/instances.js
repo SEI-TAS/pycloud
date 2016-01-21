@@ -69,7 +69,26 @@ function stopSVM(stopUrl)
     
     // Do the post to get data and load the modal.
     ajaxGet(stopUrl, "Stopping Service VM Instance", successHandler);        
-}    
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to connect to a Wifi network through Ajax.
+/////////////////////////////////////////////////////////////////////////////////////
+function wifiConnection()
+{
+    var successHandler = function(response) {
+        reloadPage();
+    };
+
+    // Add the target cloudlet.
+    var wifiConnectURL = $('#wifi_url').val();
+    var targetSSID = $('#ssid').val();
+    var fullURL = wifiConnectURL + '?target=' + targetSSID;
+
+    // Do the post to get data and load the modal.
+    ajaxGet(fullURL, "Connecting to Wi-FI Network", successHandler, $('#modal-wifi-connect'));
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Called when the document is loaded.

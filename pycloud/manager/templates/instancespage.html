@@ -45,8 +45,17 @@ http://jquery.org/license
                 <h2>Running Service VM Instances</h2>
             </div>
             <div class="panel-body">
+                <div>Current Wi-Fi network: ${page.network}</div>
+                <div>
+                    <button class="btn btn-info" onclick="$('#modal-wifi-connect').modal('show');"
+                            data-toggle="tooltip" data-placement="bottom"
+                            title="Connect to Wi-Fi Network">
+                                    <span class="glyphicon glyphicon-transfer" style="color: white">Connect to Wi-Fi Network</span>
+                    </button>
+                </div>
                 <table class="table table-striped">
                     <input type="hidden" id="svm_url" value="${h.url_for(controller='instances', action='svmList')}"/>
+                    <input type="hidden" id="wifi_url" value="${h.url_for(controller='instances', action='wifiConnect')}"/>
                     <tr>
                         <th>Svm ID</th>
                         <th>Service ID</th>
@@ -114,6 +123,29 @@ http://jquery.org/license
 		    <div class="modal-footer">
 		        <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
 		        <a href="#" class="btn btn-primary" onclick="migrateSVM()">Migrate</a>
+		    </div>
+	    </div>
+    </div>
+</div>
+
+<!-- Wifi connection modal. -->
+<div class="modal fade" id="modal-wifi-connect" role="dialog" data-backdrop="static">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		    <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal">x</button>
+		        <h3>Connect to Wi-Fi Network</h3>
+		    </div>
+		    <div class="modal-body">
+		        <div class="well">
+		            <form id="wifi-connection-form" class="form-horizontal" action="" method="post">
+		            	${dropdown('ssid', options=page.available_networks, input_width=12, label=_('Wi-Fi Networks'))}
+		            </form>
+		        </div>
+		    </div>
+		    <div class="modal-footer">
+		        <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+		        <a href="#" class="btn btn-primary" onclick="wifiConnection()">Connect</a>
 		    </div>
 	    </div>
     </div>

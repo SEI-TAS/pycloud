@@ -75,3 +75,4 @@ class WifiManager(object):
         response = nmcli('connection up id {}'.format(connection_id))
 
         # TODO: process result?
+        return True

@@ -41,13 +41,13 @@ from pylons import app_globals
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import InstancesPage
-from pycloud.pycloud.pylons.lib import helpers as h
 from pycloud.pycloud.model import Service, ServiceVM
 from pycloud.pycloud.pylons.lib.util import asjson
 
 from pycloud.pycloud.utils import fileutils
 
 from pycloud.pycloud.utils import ajaxutils
+from pycloud.pycloud.wifi import wifi
 
 log = logging.getLogger(__name__)
 
@@ -67,35 +67,16 @@ class InstancesController(BaseController):
 
         # Setup the page to render.
         instancesPage = InstancesPage()
-
         instancesPage.svms = svms
+
+        # Get the current connection.
+        wifi_manager = wifi.WifiManager()
+        wifi_manager.interface = 'wlan0'
+        instancesPage.current_network = wifi_manager.current_network()
+        instancesPage.available_networks = wifi_manager.list_networks()
 
         # Pass the grid and render the page.
         return instancesPage.render()
-
-    ############################################################################################################
-    # Opens a local VNC window to a running Service VM Instance.
-    ############################################################################################################
-    @asjson
-    def GET_openVNC(self, id):
-        try:            
-            # Get the instance associated with this id.
-            svm = ServiceVM.by_id(id)
-            
-            if not svm:
-                # If we didn't get a valid id, just return an error message.
-                msg = "Service VM id " + id + " was not found on the list of running instances."
-                return ajaxutils.show_and_return_error_dict(msg)
-            
-            # Try to start the VNC window (this will only work if done on the Cloudlet).
-            svm.open_vnc(wait=False)
-        except Exception as e:        
-            # If there was a problem connecting through VNC, return that there was an error.
-            msg = 'Error opening VNC window: ' + str(e)
-            return ajaxutils.show_and_return_error_dict(msg)
-
-        # Everything went well.
-        return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Starts a new SVM instance of the Service.
@@ -318,3 +299,23 @@ class InstancesController(BaseController):
             # If there was a problem stopping the instance, return that there was an error.
             msg = 'Error getting list of instance changes: ' + str(e)
             return ajaxutils.show_and_return_error_dict(msg)
+
+    ############################################################################################################
+    # Returns a list of running svms.
+    ############################################################################################################
+    @asjson
+    def GET_wifiConnect(self):
+        ssid = request.params.get('target')
+        wifi_manager = wifi.WifiManager()
+        wifi_manager.interface = 'wlan0'
+
+        try:
+            result = wifi_manager.connect_to_network(ssid)
+        except Exception as e:
+            msg = 'Error connecting to Wi-Fi network {}: {}'.format(ssid, str(e))
+            return ajaxutils.show_and_return_error_dict(msg)
+
+        if result:
+            return ajaxutils.JSON_OK
+        else:
+            return ajaxutils.show_and_return_error_dict('Could not connect to Wi-Fi network {}'.format(ssid))
