@@ -41,7 +41,7 @@ from pylons import app_globals
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import InstancesPage
-from pycloud.pycloud.model import Service, ServiceVM
+from pycloud.pycloud.model import Service, ServiceVM, PairedDevice
 from pycloud.pycloud.pylons.lib.util import asjson
 
 from pycloud.pycloud.utils import fileutils
@@ -73,7 +73,15 @@ class InstancesController(BaseController):
         wifi_manager = wifi.WifiManager()
         wifi_manager.interface = 'wlan0'
         instancesPage.current_network = wifi_manager.current_network()
-        instancesPage.available_networks = wifi_manager.list_networks()
+
+        # Get a list of paired cloudlet networks in range.
+        available_networks = wifi_manager.list_networks()
+        paired_networks = PairedDevice.by_type('cloudlet')
+        paired_networks_in_range = []
+        for paired_network in paired_networks:
+            if paired_network.connection_id in available_networks:
+                paired_networks_in_range.append(paired_network.connection_id)
+        instancesPage.available_networks = paired_networks_in_range
 
         # Pass the grid and render the page.
         return instancesPage.render()
