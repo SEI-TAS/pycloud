@@ -37,6 +37,8 @@ from pycloud.pycloud.utils import portmanager
 from pycloud.pycloud.vm.vmutils import destroy_all_vms
 import pycloud.pycloud.mongo.model as model
 import sys
+import socket
+import subprocess
 
 # Singleton object to maintain intra- and inter-app variables.
 _g_singletonCloudlet = None
@@ -119,13 +121,28 @@ class Cloudlet(object):
         self.radius_eap_conf_file = config['pycloud.radius.eap_conf_file'] if 'pycloud.radius.eap_conf_file' in config else None
 
         # Load version information.
-        basse_folder = os.path.dirname(os.path.realpath(__file__))
+        base_folder = os.path.dirname(os.path.realpath(__file__))
         self.version = ''
-        with open(os.path.join(basse_folder, '../../', 'VERSION')) as version_file:
+        with open(os.path.join(base_folder, '../../', 'VERSION')) as version_file:
             self.version = version_file.readline()
             print 'App version: {}'.format(self.version)
 
         print 'cloudlet created.'
+
+    ################################################################################################################
+    # Returns the cloudlet's hostname.
+    ################################################################################################################
+    @staticmethod
+    def get_hostname():
+        return socket.gethostname()
+
+    ################################################################################################################
+    # Returns the an ID for the cloudet. Currently implemented, it is the hostname with the hostid appended to it.
+    ################################################################################################################
+    @staticmethod
+    def get_id():
+        hostid = subprocess.Popen('hostid', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
+        return Cloudlet.get_hostname() + hostid
 
     @staticmethod
     def system_information():

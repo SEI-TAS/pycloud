@@ -28,7 +28,6 @@
 
 import logging
 import json
-import urllib2
 import os
 
 # External library for creating HTTP requests.
@@ -48,6 +47,7 @@ from pycloud.pycloud.utils import fileutils
 
 from pycloud.pycloud.utils import ajaxutils
 from pycloud.pycloud.network import wifi, finder
+from pycloud.pycloud.cloudlet import Cloudlet
 
 log = logging.getLogger(__name__)
 
@@ -80,12 +80,29 @@ class InstancesController(BaseController):
         for paired_network in paired_networks:
             if paired_network.connection_id in available_networks:
                 paired_networks_in_range.append(paired_network.connection_id)
+
+        # Filter out ourselves.
+        current_network = wifi_manager.current_network()
+        if current_network in paired_networks_in_range:
+            del paired_networks_in_range[current_network]
+
         instancesPage.available_networks = paired_networks_in_range
 
         # Get a list of cloudlets in our current networks.
         cloudlet_finder = finder.CloudletFinder()
         cloudlets = cloudlet_finder.find_cloudlets()
-        instancesPage.available_cloudlets = cloudlets
+
+        # Filter out ourselves from the list of cloudlets.
+        current_cloudlet = Cloudlet.get_hostname()
+        if current_cloudlet in cloudlets:
+            cloudlets.remove(current_cloudlet)
+
+        # Show only paired cloudlets.
+        paired_cloudlets = []
+        for paired_cloudlet in paired_networks:
+            if paired_cloudlet.device_id in cloudlets:
+                paired_cloudlets.append(paired_cloudlet)
+        instancesPage.available_cloudlets = paired_cloudlets
 
         # Pass the grid and render the page.
         return instancesPage.render()
