@@ -1,0 +1,19 @@
+//
+// Do any local configuration here
+//
+
+// Consider adding the 1918 zones here, if they are not used in your
+// organization
+//include "/etc/bind/zones.rfc1918";
+
+
+// TSIG Key
+key "svm.cloudlet.local." {
+     algorithm hmac-md5;
+     secret "BR2bSEH3E6bIm8V5KJFT1Q==";
+};
+zone "svm.cloudlet.local" {
+             type master;
+             file "/var/lib/bind/db.svm.cloudlet.local";
+             allow-update{ key "svm.cloudlet.local."; };
+        };

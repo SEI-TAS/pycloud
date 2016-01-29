@@ -3,7 +3,7 @@
 ;
 $TTL	604800
 @	IN	SOA	ns1.svm.cloudlet.local. admin.svm.cloudlet.local. (
-			      4		; Serial
+			      6		; Serial
 			 604800		; Refresh
 			  86400		; Retry
 			2419200		; Expire
@@ -16,6 +16,3 @@ ns1	IN	A	192.168.0.10
 
 ; cloudlet A record
 cloudlet	IN	A	192.168.0.10
-
-; svms dynamic records
-face	IN	CNAME	cloudlet
