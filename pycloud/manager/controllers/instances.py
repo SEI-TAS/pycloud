@@ -252,6 +252,10 @@ class InstancesController(BaseController):
         migrated_svm.ssh_port = json_svm['ssh_port']
         migrated_svm.vnc_address = json_svm['vnc_address']
         migrated_svm.service_id = json_svm['service_id']
+        migrated_svm.fqdn = json['fqdn']
+
+        # Update network data, especially needed in non-bridged mode.
+        migrated_svm.update_migrated_network()
 
         # Save to internal DB.
         migrated_svm.save()

@@ -90,7 +90,7 @@ class ServiceVM(Model):
     ################################################################################################################
     # Sets up the internal network parameters, based on the config.
     ################################################################################################################
-    def _setup_network(self):
+    def _setup_network(self, update_mac_if_needed=True):
         # Configure bridged mode if enabled
         c = get_cloudlet_instance()
         print 'Bridge enabled: ', c.network_bridge_enabled
@@ -99,9 +99,10 @@ class ServiceVM(Model):
             self.network_mode = "bridged"
             self.adapter = c.network_adapter
 
-            # In bridge mode we need a new MAC in case we are a clone.
-            self.mac_address = generate_random_mac()
-            print 'Generated new mac address: ' + self.mac_address
+            if update_mac_if_needed:
+                # In bridge mode we need a new MAC in case we are a clone.
+                self.mac_address = generate_random_mac()
+                print 'Generated new mac address: ' + self.mac_address
         else:
             self.network_mode = "user"
             self.adapter = c.network_adapter
@@ -309,8 +310,9 @@ class ServiceVM(Model):
         try:
             # Get the IP of the VM.
             if self.network_mode == 'bridged':
-                # We will attempt to indirectly get the IP from the virtual MAC of the VM.
-                self.ip_address = self._get_ip_from_mac()
+                if self.ip_address is None:
+                    # We will attempt to indirectly get the IP from the virtual MAC of the VM.
+                    self.ip_address = self._get_ip_from_mac()
             else:
                 # If we are not on bridged mode, the VM's IP address will be the same as the cloudlet's address.
                 self.ip_address = get_adapter_ip_address(self.adapter)
@@ -506,8 +508,19 @@ class ServiceVM(Model):
             remote_hypervisor = libvirt.open(remote_uri)
             vm.migrate(remote_hypervisor, flags, new_id, uri, bandwidth)
 
+            # Unregister from DNS server.
+            dns_server = cloudlet_dns.CloudletDNS()
+            dns_server.unregister_svm(self.fqdn)
+
             elapsed_time = time.time() - start_time
             print 'Migration finished successfully. It took ' + str(elapsed_time) + ' seconds.'
+
+    ################################################################################################################
+    # Set up network stuff, required after migration.
+    ################################################################################################################
+    def update_migrated_network(self):
+        self._setup_network(update_mac_if_needed=False)
+        self._network_checks()
 
     ################################################################################################################
     # Pauses a VM and stores its memory state to a disk file.
