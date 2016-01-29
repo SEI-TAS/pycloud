@@ -49,6 +49,8 @@ from pycloud.pycloud.vm.vmutils import get_hypervisor
 from pycloud.pycloud.utils import portmanager
 from pycloud.pycloud.cloudlet import get_cloudlet_instance
 
+from pycloud.pycloud.network import cloudlet_dns
+
 ################################################################################################################
 # Represents a runtime ServiceVM, independent on whether it has a cloned or original disk image.
 ################################################################################################################
@@ -56,7 +58,7 @@ class ServiceVM(Model):
     # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
         collection = "service_vms"
-        external = ['_id', 'service_id', 'running', 'port', 'ip_address', 'vnc_address', 'ssh_port']
+        external = ['_id', 'service_id', 'running', 'port', 'ip_address', 'vnc_address', 'ssh_port', 'fqdn']
         mapping = {
             'vm_image': VMImage
         }
@@ -82,6 +84,7 @@ class ServiceVM(Model):
         self.ip_address = None
         self.mac_address = None
         self.running = False
+        self.fqdn = None
         super(ServiceVM, self).__init__(*args, **kwargs)
 
     ################################################################################################################
@@ -102,6 +105,9 @@ class ServiceVM(Model):
         else:
             self.network_mode = "user"
             self.adapter = c.network_adapter
+
+        # Generate FQDN.
+        self._generate_fqdn()
 
     ################################################################################################################
     # Locate a servicevm by its ID
@@ -275,6 +281,12 @@ class ServiceVM(Model):
         return ip
 
     ################################################################################################################
+    # Generates a FQDN for the SVM.
+    ################################################################################################################
+    def _generate_fqdn(self):
+        self.fqdn = self.service_id + '.' + self._id
+
+    ################################################################################################################
     # Boots a VM using a defined disk image and a state XML.
     ################################################################################################################
     def _cold_boot(self, xml_descriptor):
@@ -321,6 +333,13 @@ class ServiceVM(Model):
         self.vnc_address = self.__get_vnc_address()
         self.vnc_port = self.__get_vnc_port()
         print "VNC available on {}".format(str(self.vnc_address))
+
+        # Register with DNS. If we are in bridged mode, we need to set up a specific record to the new IP address.
+        dns_server = cloudlet_dns.CloudletDNS()
+        if self.network_mode == 'bridged':
+            dns_server.register_svm(self.fqdn, self.ip_address)
+        else:
+            dns_server.register_svm(self.fqdn)
 
     ################################################################################################################
     # Create a new service VM from a given template, and start it.
@@ -435,6 +454,10 @@ class ServiceVM(Model):
         else:
             print 'VM with id %s not found while stopping it.' % self._id
         self.running = False
+
+        # Unregister with DNS.
+        dns_server = cloudlet_dns.CloudletDNS()
+        dns_server.unregister_svm(self.fqdn)
 
     ################################################################################################################
     # Pauses a VM.

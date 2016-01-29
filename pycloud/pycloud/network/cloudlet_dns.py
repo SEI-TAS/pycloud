@@ -1,0 +1,75 @@
+# KVM-based Discoverable Cloudlet (KD-Cloudlet)
+# Copyright (c) 2015 Carnegie Mellon University.
+# All Rights Reserved.
+#
+# THIS SOFTWARE IS PROVIDED "AS IS," WITH NO WARRANTIES WHATSOEVER. CARNEGIE MELLON UNIVERSITY EXPRESSLY DISCLAIMS TO THE FULLEST EXTENT PERMITTEDBY LAW ALL EXPRESS, IMPLIED, AND STATUTORY WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT OF PROPRIETARY RIGHTS.
+#
+# Released under a modified BSD license, please see license.txt for full terms.
+# DM-0002138
+#
+# KD-Cloudlet includes and/or makes use of the following Third-Party Software subject to their own licenses:
+# MiniMongo
+# Copyright (c) 2010-2014, Steve Lacy
+# All rights reserved. Released under BSD license.
+# https://github.com/MiniMongo/minimongo/blob/master/LICENSE
+#
+# Bootstrap
+# Copyright (c) 2011-2015 Twitter, Inc.
+# Released under the MIT License
+# https://github.com/twbs/bootstrap/blob/master/LICENSE
+#
+# jQuery JavaScript Library v1.11.0
+# http://jquery.com/
+# Includes Sizzle.js
+# http://sizzlejs.com/
+# Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
+# Released under the MIT license
+# http://jquery.org/license
+
+import dynamic_dns
+
+SVMS_ZONE_NAME = 'svm.cloudlet.local.'
+CLOUDLET_HOST_NAME = 'cloudlet'
+
+# TODO: define how to handle the file path.
+KEY_FILE_PATH = ''
+
+#################################################################################################################
+# Object used to manage the cloudlet DNS server.
+#################################################################################################################
+class CloudletDNS(object):
+
+    #################################################################################################################
+    # Constructor.
+    #################################################################################################################
+    def __init__(self):
+        self.key = self._load_key()
+
+    #################################################################################################################
+    # Loads the key value.
+    #################################################################################################################
+    def _load_key(self):
+        key_value = None
+        with open(KEY_FILE_PATH, "r") as key_file:
+            key_value = key_file.read()
+        return key_value
+
+    #################################################################################################################
+    # Registers an SVM.
+    #################################################################################################################
+    def register_svm(self, svm_fqdn, ip_address=None):
+        # Depending on networking mode, we will need to register an explicit A record with an IP, or a cname to cloudlet.
+        if ip_address:
+            record_value = ip_address
+            record_type = 'A'
+        else:
+            record_value = CLOUDLET_HOST_NAME
+            record_type = 'CNAME'
+
+        dynamic_dns.add_dns_record(SVMS_ZONE_NAME, self.key, svm_fqdn, record_value, record_type=record_type)
+
+    #################################################################################################################
+    # Unregisters an SVM.
+    #################################################################################################################
+    def unregister_svm(self, svm_fqdn):
+        dynamic_dns.remove_dns_record(SVMS_ZONE_NAME, self.key, svm_fqdn)
