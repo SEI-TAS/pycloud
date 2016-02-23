@@ -50,7 +50,6 @@ class WifiManager(object):
     def list_networks(self):
         # Will return a list of newline separated SSIDs.
         response = nmcli('device wifi list')
-        print response
 
         lines = response.splitlines()
         ssids = []
@@ -59,6 +58,7 @@ class WifiManager(object):
             if len(parts) > 1:
                 ssid = parts[1]
                 ssids.append(ssid)
+        print 'Available SSIDs: '
         print ssids
 
         return ssids
