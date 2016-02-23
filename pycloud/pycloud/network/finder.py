@@ -68,7 +68,7 @@ class CloudletFinder(object):
     def add_service(self, zeroconf, type, name):
         info = zeroconf.get_service_info(type, name)
         print("Service %s added, service info: %s" % (name, info))
-        self.services['name'] = info
+        self.services[info.server] = True
 
     ####################################################################################################################
     # Called when a service is removed, removes it from a list of services.
@@ -76,4 +76,4 @@ class CloudletFinder(object):
     def remove_service(self, zeroconf, type, name):
         info = zeroconf.get_service_info(type, name)
         print("Service %s removed, service info: %s" % (name, info))
-        del self.services['name']
+        del self.services[info.server]

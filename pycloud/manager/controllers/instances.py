@@ -99,11 +99,14 @@ class InstancesController(BaseController):
             cloudlets.remove(current_cloudlet)
 
         # Show only paired cloudlets.
-        paired_cloudlets = []
+        paired_cloudlets = {}
+        paired_networks = PairedDevice.by_type('cloudlet')
         for paired_cloudlet in paired_networks:
             if paired_cloudlet.device_id in cloudlets:
-                paired_cloudlets.append(paired_cloudlet)
+                paired_cloudlets[paired_cloudlet.device_id] = paired_cloudlet.device_id
         instancesPage.available_cloudlets = paired_cloudlets
+        print 'Paired and available cloudlets: '
+        print instancesPage.available_cloudlets
 
         # Pass the grid and render the page.
         return instancesPage.render()
