@@ -50,8 +50,9 @@ class CloudletDNS(object):
     #################################################################################################################
     def _load_key(self):
         key_value = None
-        with open(KEY_FILE_PATH, "r") as key_file:
-            key_value = key_file.read()
+        if KEY_FILE_PATH != '':
+            with open(KEY_FILE_PATH, "r") as key_file:
+                key_value = key_file.read()
         return key_value
 
     #################################################################################################################
@@ -66,10 +67,18 @@ class CloudletDNS(object):
             record_value = CLOUDLET_HOST_NAME
             record_type = 'CNAME'
 
+        if not self.key:
+            print "Can't register SVM: TSIG key not loaded."
+            return
+
         dynamic_dns.add_dns_record(SVMS_ZONE_NAME, self.key, svm_fqdn, record_value, record_type=record_type)
 
     #################################################################################################################
     # Unregisters an SVM.
     #################################################################################################################
     def unregister_svm(self, svm_fqdn):
+        if not self.key:
+            print "Can't unregister SVM: TSIG key not loaded."
+            return
+
         dynamic_dns.remove_dns_record(SVMS_ZONE_NAME, self.key, svm_fqdn)
