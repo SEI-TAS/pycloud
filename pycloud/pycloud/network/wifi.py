@@ -70,6 +70,7 @@ class WifiManager(object):
         network = None
         response = nmcli('connection status | grep {}'.format(self.interface))
 
+        # TODO: bug here... this does not support SSIDs with spaces in them.
         for line in response.splitlines():
             if len(line) > 0:
                 network = line.split()[0]
@@ -81,6 +82,7 @@ class WifiManager(object):
     # Connect to a stored network.
     ################################################################################################################
     def connect_to_network(self, connection_id):
+        # TODO: this does not currently work, as by default policy a non-root user is not allowed to connect to networks.
         response = nmcli('connection up id {}'.format(connection_id))
 
         # TODO: process result?

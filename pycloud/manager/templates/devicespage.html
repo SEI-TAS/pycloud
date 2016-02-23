@@ -141,7 +141,7 @@ http://jquery.org/license
                             %>
                             <tr>
                                 <td>${paired_cloudlet.device_id}</td>
-                                <td>${paired_device.connection_id}</td>
+                                <td>${paired_cloudlet.connection_id}</td>
                                 <td>${paired_cloudlet.auth_start.strftime('%Y-%m-%d %X')}</td>
                                 <td>${paired_cloudlet.auth_duration}</td>
                                 <td>${(paired_cloudlet.auth_start + datetime.timedelta(minutes=paired_cloudlet.auth_duration)).strftime('%Y-%m-%d %X')}</td>
@@ -151,7 +151,7 @@ http://jquery.org/license
                                        data-toggle="tooltip" data-placement="top" title="Unpair">
                                         <span class="glyphicon glyphicon-remove" style="color: white"></span>
                                     </a>
-                                    % if paired_device.auth_enabled:
+                                    % if paired_cloudlet.auth_enabled:
                                         <a class="btn btn-large btn-danger" href="${revoke_url}" \
                                            data-toggle="tooltip" data-placement="top" title="Revoke">
                                             <span class="glyphicon glyphicon-ban-circle" style="color: white"></span>

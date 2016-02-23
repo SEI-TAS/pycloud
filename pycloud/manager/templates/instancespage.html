@@ -46,13 +46,14 @@ http://jquery.org/license
                 <h2>Running Service VM Instances</h2>
             </div>
             <div class="panel-body">
-                <div>Current Wi-Fi network: ${page.network}</div>
                 <div>
+                    Current Wi-Fi network: ${page.network}
                     <button class="btn btn-info" onclick="$('#modal-wifi-connect').modal('show');"
                             data-toggle="tooltip" data-placement="bottom"
                             title="Connect to Wi-Fi Network">
-                                    <span class="glyphicon glyphicon-transfer" style="color: white">Connect to Wi-Fi Network</span>
+                            <span class="glyphicon glyphicon-transfer" style="color: white"></span> Connect to Wi-Fi Network
                     </button>
+                    <br/><br/>
                 </div>
                 <table class="table table-striped">
                     <input type="hidden" id="svm_url" value="${h.url_for(controller='instances', action='svmList')}"/>
