@@ -70,7 +70,7 @@ def make_map(config):
     connect('/service/saveNewSVM', controller='modify', action='saveNewSVM')
     connect('/service/openSVM/{id}', controller='modify', action='openSVM')
     connect('/service/edit/{id}', controller='modify', action='index')
-    connect('/service/saveSVM', controller='modify', action='saveInstanceToRoot')
+    connect('/service/saveSVM/', controller='modify', action='saveInstanceToRoot')
     connect('/service/getImageInfo', controller='modify', action='getImageInfo')
 
     connect('/apps', controller='apps', action='index')

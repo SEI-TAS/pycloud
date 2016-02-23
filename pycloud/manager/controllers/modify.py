@@ -83,7 +83,7 @@ class ModifyController(BaseController):
 
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
-        page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot', id=None)
+        page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot')
         page.stopInstanceURL = h.url_for(controller='instances', action='stopInstance', id='')
         page.startInstanceURL = h.url_for(controller='instances', action='startInstance', id='')
         page.chooseImageURL = h.url_for(controller='modify', action='getImageInfo', id=None)
@@ -94,7 +94,7 @@ class ModifyController(BaseController):
         else:
             # Look for the service with this id.
             service = Service.by_id(serviceID)
-            
+
             # We are editing an existing service.
             page.newService = False
             page.internalServiceId = service._id
@@ -244,8 +244,9 @@ class ModifyController(BaseController):
     # Stops and saves a Service VM that was edited to its permanent root VM image.
     ############################################################################################################
     @asjson
-    def GET_saveInstanceToRoot(self, id):
+    def GET_saveInstanceToRoot(self):
         try:
+            id = str(request.params.get('id'))
             if id is None:
                 msg = "No VM id was provided, VM can't be saved."
                 return ajaxutils.show_and_return_error_dict(msg)
