@@ -51,7 +51,7 @@ function migrateSVM()
 
     // Add the target cloudlet.
     var migrateUrl = $('#migrateUrl').val();
-    var targetCloudlet = $('#targetCloudet').val();
+    var targetCloudlet = $('#targetCloudlet').val();
     migrateUrl = migrateUrl + '?target=' + targetCloudlet;
 
     // Do the post to get data and load the modal.
