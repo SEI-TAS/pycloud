@@ -76,10 +76,10 @@ class InstancesController(BaseController):
         # Get a list of paired cloudlet networks in range.
         available_networks = wifi_manager.list_networks()
         paired_networks = PairedDevice.by_type('cloudlet')
-        paired_networks_in_range = []
+        paired_networks_in_range = {}
         for paired_network in paired_networks:
             if paired_network.connection_id in available_networks:
-                paired_networks_in_range.append(paired_network.connection_id)
+                paired_networks_in_range[paired_network.connection_id] = paired_network.connection_id
 
         # Filter out ourselves.
         current_network = wifi_manager.current_network()
@@ -87,6 +87,7 @@ class InstancesController(BaseController):
             del paired_networks_in_range[current_network]
 
         instancesPage.available_networks = paired_networks_in_range
+        instancesPage.network = current_network
 
         # Get a list of cloudlets in our current networks.
         cloudlet_finder = finder.CloudletFinder()

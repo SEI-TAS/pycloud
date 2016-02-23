@@ -29,6 +29,7 @@ http://jquery.org/license
 -->
 <%namespace file="form.html" import="text"/>
 <%namespace file="form.html" import="hidden"/>
+<%namespace file="form.html" import="dropdown"/>
 <%inherit file="base.html"/>
 
 <%block name="header">
@@ -115,7 +116,7 @@ http://jquery.org/license
 		    <div class="modal-body">
 		        <div class="well">
 		            <form id="new-svm-form" class="form-horizontal" action="" method="post">
-                        ${dropdown('targetCloudlet', options=page.available_cloudlets, id='targetCloudet', input_width=12, label=_('Target Cloudlet'), mandatory=True)}
+                        ${dropdown(id='targetCloudlet', options=page.available_cloudlets, input_width=12, label=_('Target Cloudlet'), mandatory=True)}
                         ${hidden(id='migrateUrl')}
 		            </form>
 		        </div>

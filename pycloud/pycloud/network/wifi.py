@@ -49,9 +49,18 @@ class WifiManager(object):
     ################################################################################################################
     def list_networks(self):
         # Will return a list of newline separated SSIDs.
-        response = nmcli('device -t -f SSID wifi list')
+        response = nmcli('device wifi list')
+        print response
 
-        ssids = response.splitlines()
+        lines = response.splitlines()
+        ssids = []
+        for line in lines:
+            parts = line.split("'")
+            if len(parts) > 1:
+                ssid = parts[1]
+                ssids.append(ssid)
+        print ssids
+
         return ssids
 
     ################################################################################################################

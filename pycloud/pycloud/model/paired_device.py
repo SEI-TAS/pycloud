@@ -28,7 +28,7 @@
 __author__ = 'Sebastian'
 
 from pycloud.pycloud.mongo import Model, ObjectID
-from pycloud.pycloud.model import ServiceVM
+from pycloud.pycloud.model.servicevm import ServiceVM
 
 ################################################################################################################
 # Destroys the running instance associated with the given device id.
