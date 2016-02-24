@@ -306,7 +306,7 @@ class ServiceVM(Model):
     # Perform several network checks: get the IP of the VM, ensure that the service is available, and get the VNC
     # address and port.
     ################################################################################################################
-    def _network_checks(self, check_service=True):
+    def _network_checks(self, check_service=True, load_vnc=True):
         try:
             # Get the IP of the VM.
             if self.network_mode == 'bridged':
@@ -332,9 +332,10 @@ class ServiceVM(Model):
                 print 'Service was not found running inside the SVM. Check if it is configured to start at boot time.'
 
         # Get VNC connection info.
-        self.vnc_address = self.__get_vnc_address()
-        self.vnc_port = self.__get_vnc_port()
-        print "VNC available on {}".format(str(self.vnc_address))
+        if load_vnc:
+            self.vnc_address = self.__get_vnc_address()
+            self.vnc_port = self.__get_vnc_port()
+            print "VNC available on {}".format(str(self.vnc_address))
 
         # Register with DNS. If we are in bridged mode, we need to set up a specific record to the new IP address.
         dns_server = cloudlet_dns.CloudletDNS()
@@ -520,7 +521,7 @@ class ServiceVM(Model):
     ################################################################################################################
     def update_migrated_network(self):
         self._setup_network(update_mac_if_needed=False)
-        self._network_checks()
+        self._network_checks(check_service=False, load_vnc=False)
 
     ################################################################################################################
     # Pauses a VM and stores its memory state to a disk file.

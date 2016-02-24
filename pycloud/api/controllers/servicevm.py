@@ -31,6 +31,7 @@ import logging
 # Pylon imports.
 from pylons import request
 from pylons.controllers.util import abort
+from pylons import app_globals
 
 # Controller to derive from.
 from pycloud.pycloud.model import Service, ServiceVM

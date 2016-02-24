@@ -95,7 +95,8 @@ class InstancesController(BaseController):
         paired_networks = PairedDevice.by_type('cloudlet')
         for paired_cloudlet in paired_networks:
             if paired_cloudlet.device_id in cloudlets:
-                paired_cloudlets[paired_cloudlet.device_id] = paired_cloudlet.device_id + ":" + str(cloudlets[paired_cloudlet.device_id].port)
+                host = paired_cloudlet.device_id + ":" + str(cloudlets[paired_cloudlet.device_id].port)
+                paired_cloudlets[host] = host
         instancesPage.available_cloudlets = paired_cloudlets
         print 'Paired and available cloudlets: '
         print instancesPage.available_cloudlets

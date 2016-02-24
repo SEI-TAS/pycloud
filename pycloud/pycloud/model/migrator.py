@@ -50,12 +50,13 @@ def migrate_svm(svm_id, remote_host):
 
     # Transfer the metadata.
     print 'Starting metadata file transfer...'
-    remote_url = '%s/servicevm/receiveMigratedSVMMetadata' % remote_http_host
+    remote_url = '%s/api/servicevm/receiveMigratedSVMMetadata' % remote_http_host
+    print remote_url
     payload = json.dumps(svm)
     headers = {'content-type': 'application/json'}
     result = requests.post(remote_url, data=payload, headers=headers)
     if result.status_code != requests.codes.ok:
-        raise Exception('Error transferring metadata.')
+        raise Exception('Error transferring metadata, code: {}'.format(result.status_code) )
     print 'Metadata was transferred: ' + str(result)
 
     # We pause the VM before transferring its disk and memory state.
@@ -71,7 +72,7 @@ def migrate_svm(svm_id, remote_host):
     # Transfer the disk image file.
     print 'Starting disk image file transfer...'
     disk_image_full_path = os.path.abspath(svm.vm_image.disk_image)
-    remote_url = '%s/servicevm/receiveMigratedSVMDiskFile' % remote_http_host
+    remote_url = '%s/api/servicevm/receiveMigratedSVMDiskFile' % remote_http_host
     payload = {'id': svm_id}
     files = {'disk_image_file': open(disk_image_full_path, 'rb')}
     result = requests.post(remote_url, data=payload, files=files)
@@ -86,7 +87,7 @@ def migrate_svm(svm_id, remote_host):
 
     # Notify remote cloudlet that migration finished.
     print 'Telling target cloudlet that migration has finished.'
-    remote_url = '%s/servicevm/resumeMigratedSVM' % remote_http_host
+    remote_url = '%s/api/servicevm/resumeMigratedSVM' % remote_http_host
     payload = {'id': svm_id}
     result = requests.post(remote_url, data=payload)
     if result.status_code != requests.codes.ok:
@@ -118,7 +119,7 @@ def receive_migrated_svm_metadata(svm_json_string):
     migrated_svm.ssh_port = json_svm['ssh_port']
     migrated_svm.vnc_address = json_svm['vnc_address']
     migrated_svm.service_id = json_svm['service_id']
-    migrated_svm.fqdn = json['fqdn']
+    migrated_svm.fqdn = json_svm['fqdn']
 
     # Update network data, especially needed in non-bridged mode.
     migrated_svm.update_migrated_network()
