@@ -59,9 +59,6 @@ def make_map(config):
     connect('/instances/stopInstance/{id}', controller='instances', action='stopInstance')
     connect('/instances/migrate/{id}', controller='instances', action='migrateInstance')
     connect('/instances/wifiConnect', controller='instances', action='wifiConnect')
-    connect('/instances/receiveMigratedSVMMetadata', controller='instances', action='receiveMigratedSVMMetadata')
-    connect('/instances/receiveMigratedSVMDiskFile', controller='instances', action='receiveMigratedSVMDiskFile')
-    connect('/instances/resumeMigratedSVM', controller='instances', action='resumeMigratedSVM')
     connect('/instances/getMigrationInfo/{id}', controller='instances', action='getMigrationInfo')
     connect('/instances/svmList', controller='instances', action='svmList')
 

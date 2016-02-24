@@ -39,6 +39,8 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 # Manager to handle running instances, and logging util.
 from pycloud.pycloud.utils import timelog
 from pycloud.pycloud.pylons.lib.util import asjson
+from pycloud.pycloud.utils import ajaxutils
+from pycloud.pycloud.model import migrator
 
 log = logging.getLogger(__name__)
 
@@ -124,3 +126,43 @@ class ServiceVMController(BaseController):
                     # If there was a problem stopping the instance, return that there was an error.
                     print 'Error stopping Service VM Instance: ' + str(e)
                     abort(500, '500 Internal Server Error - %s' % str(e))
+
+    ############################################################################################################
+    # Receives information about a migrated VM.
+    ############################################################################################################
+    @asjson
+    def POST_receiveMigratedSVMMetadata(self):
+        migrator.receive_migrated_svm_metadata(request.body)
+        return ajaxutils.JSON_OK
+
+    ############################################################################################################
+    # Receives the disk image file of a migrated SVM.
+    ############################################################################################################
+    @asjson
+    def POST_receiveMigratedSVMDiskFile(self):
+        svm_id = request.params.get('id')
+        disk_image_object = request.params.get('disk_image_file').file
+        result = migrator.receive_migrated_svm_disk_file(svm_id, disk_image_object, app_globals.cloudlet.svmInstancesFolder)
+
+        if result == 'no svm':
+            abort(404, '404 Not Found - SVM with id %s not found' % svm_id)
+        elif result == 'no backing file':
+            # Migration will be unsuccessful since we won't have the backing file.
+            print 'Service not found in local cloudlet.'
+            abort(500, '500 Server Error - Service is not installed on target cloudlet.')
+        else:
+            return ajaxutils.JSON_OK
+
+    ############################################################################################################
+    # Receives information about a migrated VM.
+    ############################################################################################################
+    @asjson
+    def POST_resumeMigratedSVM(self):
+        # Find the SVM.
+        svm_id = request.params.get('id')
+        result = migrator.resume_migrated_svm(svm_id)
+        if not result:
+            print 'SVM with id %s not found.' % svm_id
+            abort(404, '404 Not Found - SVM with id %s not found' % svm_id)
+
+        return ajaxutils.JSON_OK

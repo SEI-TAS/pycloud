@@ -55,6 +55,11 @@ def make_map(config):
         connect('startvm', '/servicevm/start', controller='servicevm', action='start')
         connect('stopvm', '/servicevm/stop', controller='servicevm', action='stop')
 
+        # Migration commands.
+        connect('/servicevm/receiveMigratedSVMMetadata', controller='servicevm', action='receiveMigratedSVMMetadata')
+        connect('/servicevm/receiveMigratedSVMDiskFile', controller='servicevm', action='receiveMigratedSVMDiskFile')
+        connect('/servicevm/resumeMigratedSVM', controller='servicevm', action='resumeMigratedSVM')
+
         # Appcommands.
         connect('getAppList', '/apps', controller='apppush', action='getList')
         connect('getApp', '/apps/get', controller='apppush', action='getApp')
