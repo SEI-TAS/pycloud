@@ -35,6 +35,13 @@ import requests
 from pycloud.pycloud.model import ServiceVM, Service
 from pycloud.pycloud.utils import fileutils
 
+############################################################################################################
+# Creates the appropriate URL for an API command.
+############################################################################################################
+def __create_command_URL(host, command):
+    remote_url = 'http://{0}/api/{1}'.format(host, command)
+    return remote_url
+
 
 ############################################################################################################
 # Command to migrate a machine.
@@ -46,11 +53,10 @@ def migrate_svm(svm_id, remote_host):
 
     # Target has host and port.
     print 'Migrating to remote cloudlet: ' + remote_host
-    remote_http_host = 'http://%s' % remote_host
 
     # Transfer the metadata.
     print 'Starting metadata file transfer...'
-    remote_url = '%s/api/servicevm/receiveMigratedSVMMetadata' % remote_http_host
+    remote_url = __create_command_URL(remote_host, 'servicevm/receiveMigratedSVMMetadata')
     print remote_url
     payload = json.dumps(svm)
     headers = {'content-type': 'application/json'}
@@ -72,7 +78,7 @@ def migrate_svm(svm_id, remote_host):
     # Transfer the disk image file.
     print 'Starting disk image file transfer...'
     disk_image_full_path = os.path.abspath(svm.vm_image.disk_image)
-    remote_url = '%s/api/servicevm/receiveMigratedSVMDiskFile' % remote_http_host
+    remote_url = __create_command_URL(remote_host, 'servicevm/receiveMigratedSVMDiskFile')
     payload = {'id': svm_id}
     files = {'disk_image_file': open(disk_image_full_path, 'rb')}
     result = requests.post(remote_url, data=payload, files=files)
@@ -88,7 +94,7 @@ def migrate_svm(svm_id, remote_host):
 
     # Notify remote cloudlet that migration finished.
     print 'Telling target cloudlet that migration has finished.'
-    remote_url = '%s/api/servicevm/resumeMigratedSVM' % remote_http_host
+    remote_url = __create_command_URL(remote_host, 'servicevm/resumeMigratedSVM')
     payload = {'id': svm_id}
     result = requests.post(remote_url, data=payload)
     if result.status_code != requests.codes.ok:
