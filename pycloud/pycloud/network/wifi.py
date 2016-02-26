@@ -73,7 +73,14 @@ class WifiManager(object):
         # TODO: bug here... this does not support SSIDs with spaces in them.
         for line in response.splitlines():
             if len(line) > 0:
-                network = line.split()[0]
+                # SSID should be first item in line, but if it contains spaces it will be a bit harder to parse.
+                parts = line.split()
+                num_fields = 6
+                network = parts[0]
+                if len(parts) > num_fields:
+                    for i in range(1, len(parts) - num_fields + 1):
+                        network += ' ' + parts[i]
+
                 break
 
         return network
