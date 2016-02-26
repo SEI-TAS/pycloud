@@ -106,8 +106,8 @@ class Cloudlet(object):
         self.network_bridge_enabled = config['pycloud.network.bridge_enabled'].upper() in ['T', 'TRUE', 'Y', 'YES']
         self.network_adapter = config['pycloud.network.adapter']
 
-        # API port of remote APIs, needed for migration.
-        self.api_port = config['pycloud.remote_api.port'] if 'pycloud.remote_api.port' in config else 0
+        # Wi-Fi adapter to use to connect to other cloudlets.
+        self.wifi_adapter = config['pycloud.network.wifi_adapter'] if 'pycloud.network.wifi_adapter' in config else ''
 
         # Auth and pairing.
         self.auth_enabled = config['pycloud.auth.enabled'] if 'pycloud.auth.enabled' in config else 'false'

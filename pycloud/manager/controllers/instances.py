@@ -30,6 +30,7 @@ import logging
 
 from pylons import request
 from pylons import response, session, tmpl_context as c
+from pylons import app_globals
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import InstancesPage
@@ -62,7 +63,7 @@ class InstancesController(BaseController):
 
         # Get the current connection.
         wifi_manager = wifi.WifiManager()
-        wifi_manager.interface = 'wlan0'
+        wifi_manager.interface = app_globals.cloudlet.wifi_adapter
         current_network = wifi_manager.current_network()
         instancesPage.current_network = wifi_manager.current_network()
 
