@@ -34,6 +34,8 @@ import requests
 
 from pycloud.pycloud.model import ServiceVM, Service
 from pycloud.pycloud.utils import fileutils
+from pycloud.pycloud.cloudlet import Cloudlet
+from pycloud.pycloud.security import encryption
 
 
 ############################################################################################################
@@ -44,8 +46,9 @@ def __create_command_url(host, command, encrypted):
     if not encrypted:
         remote_url = 'http://{0}/api/{1}'.format(host, command)
     else:
-        # TODO: actually encrypt command..
-        encrypted_command = command
+        # TODO: user proper password to encrypt command.
+        password = '' # load_password_from_file()
+        encrypted_command = encryption.encrypt_message(command, password)
         remote_url = 'http://{0}/api/command?command={1}'.format(host, command)
 
     return remote_url
@@ -65,8 +68,8 @@ def migrate_svm(svm_id, remote_host, encrypted):
     # Set base headers.
     base_headers = {}
     if encrypted:
-        # TODO: what is this device id???
-        base_headers['X-Device-ID'] = 'cloudlet id'
+        # TODO: id is only hostname for now. We will evaluate if we want to add hostid to it.
+        base_headers['X-Device-ID'] = Cloudlet.get_hostname()
 
     # Transfer the metadata.
     print 'Starting metadata file transfer...'
