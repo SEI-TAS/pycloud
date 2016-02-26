@@ -70,6 +70,12 @@ class CloudletFinder(object):
         print("Service %s added, service info: %s" % (name, info))
         self.services[info.server] = info
 
+        # Move encryption state to speific property for easier access.
+        encryption = ''
+        if 'encryption' in info.properties:
+            encryption = info.properties['encryption']
+        self.services[info.server].encryption = encryption
+
     ####################################################################################################################
     # Called when a service is removed, removes it from a list of services.
     ####################################################################################################################

@@ -35,18 +35,26 @@ import requests
 from pycloud.pycloud.model import ServiceVM, Service
 from pycloud.pycloud.utils import fileutils
 
+
 ############################################################################################################
 # Creates the appropriate URL for an API command.
 ############################################################################################################
-def __create_command_URL(host, command):
-    remote_url = 'http://{0}/api/{1}'.format(host, command)
+def __create_command_url(host, command, encrypted):
+
+    if not encrypted:
+        remote_url = 'http://{0}/api/{1}'.format(host, command)
+    else:
+        # TODO: actually encrypt command..
+        encrypted_command = command
+        remote_url = 'http://{0}/api/command?command={1}'.format(host, command)
+
     return remote_url
 
 
 ############################################################################################################
 # Command to migrate a machine.
 ############################################################################################################
-def migrate_svm(svm_id, remote_host):
+def migrate_svm(svm_id, remote_host, encrypted):
     # Find the SVM.
     svm = ServiceVM.by_id(svm_id)
     print 'VM found: ' + str(svm)
@@ -54,12 +62,18 @@ def migrate_svm(svm_id, remote_host):
     # Target has host and port.
     print 'Migrating to remote cloudlet: ' + remote_host
 
+    # Set base headers.
+    base_headers = {}
+    if encrypted:
+        # TODO: what is this device id???
+        base_headers['X-Device-ID'] = 'cloudlet id'
+
     # Transfer the metadata.
     print 'Starting metadata file transfer...'
-    remote_url = __create_command_URL(remote_host, 'servicevm/receiveMigratedSVMMetadata')
+    remote_url = __create_command_url(remote_host, 'servicevm/receiveMigratedSVMMetadata', encrypted)
     print remote_url
     payload = json.dumps(svm)
-    headers = {'content-type': 'application/json'}
+    headers = base_headers.copy().update({'content-type': 'application/json'})
     result = requests.post(remote_url, data=payload, headers=headers)
     if result.status_code != requests.codes.ok:
         raise Exception('Error transferring metadata, code: {}'.format(result.status_code) )
@@ -78,10 +92,10 @@ def migrate_svm(svm_id, remote_host):
     # Transfer the disk image file.
     print 'Starting disk image file transfer...'
     disk_image_full_path = os.path.abspath(svm.vm_image.disk_image)
-    remote_url = __create_command_URL(remote_host, 'servicevm/receiveMigratedSVMDiskFile')
+    remote_url = __create_command_url(remote_host, 'servicevm/receiveMigratedSVMDiskFile', encrypted)
     payload = {'id': svm_id}
     files = {'disk_image_file': open(disk_image_full_path, 'rb')}
-    result = requests.post(remote_url, data=payload, files=files)
+    result = requests.post(remote_url, data=payload, files=files, headers=base_headers)
     if result.status_code != requests.codes.ok:
         raise Exception('Error transferring disk image file.')
     print 'Disk image file was transferred: ' + str(result)
@@ -94,9 +108,9 @@ def migrate_svm(svm_id, remote_host):
 
     # Notify remote cloudlet that migration finished.
     print 'Telling target cloudlet that migration has finished.'
-    remote_url = __create_command_URL(remote_host, 'servicevm/resumeMigratedSVM')
+    remote_url = __create_command_url(remote_host, 'servicevm/resumeMigratedSVM', encrypted)
     payload = {'id': svm_id}
-    result = requests.post(remote_url, data=payload)
+    result = requests.post(remote_url, data=payload, headers=base_headers)
     if result.status_code != requests.codes.ok:
         raise Exception('Error notifying migration end.')
     print 'Cloudlet notified: ' + str(result)

@@ -95,7 +95,8 @@ class InstancesController(BaseController):
         paired_networks = PairedDevice.by_type('cloudlet')
         for paired_cloudlet in paired_networks:
             if paired_cloudlet.device_id in cloudlets:
-                host = paired_cloudlet.device_id + ":" + str(cloudlets[paired_cloudlet.device_id].port)
+                cloudlet_info = cloudlets[paired_cloudlet.device_id]
+                host = paired_cloudlet.device_id + ":" + str(cloudlet_info.port) + ":encryption-" + cloudlet_info.encryption
                 paired_cloudlets[host] = host
         instancesPage.available_cloudlets = paired_cloudlets
         print 'Paired and available cloudlets: '
@@ -154,8 +155,10 @@ class InstancesController(BaseController):
     @asjson
     def GET_migrateInstance(self, id):
         try:
-            remote_host = request.params.get('target', None)
-            migrator.migrate_svm(id, remote_host)
+            remote_host_info = request.params.get('target', None).split(':')
+            remote_host = remote_host_info[0] + ':' + remote_host_info[1]
+            encrypted = True if remote_host_info[2] == 'encryption-enabled' else False
+            migrator.migrate_svm(id, remote_host, encrypted)
         except Exception, e:
             msg = 'Error migrating: ' + str(e)
             import traceback
