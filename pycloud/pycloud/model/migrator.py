@@ -43,10 +43,9 @@ from pycloud.pycloud.security import encryption
 ############################################################################################################
 def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
     # Set headers.
-    headers_to_send = headers.copy()
     if encrypted:
         # TODO: id is only hostname for now. We will evaluate if we want to add hostid to it.
-        headers_to_send['X-Device-ID'] = Cloudlet.get_hostname()
+        headers['X-Device-ID'] = Cloudlet.get_hostname()
 
     if not encrypted:
         remote_url = 'http://{0}/api/{1}'.format(host, command)
@@ -59,7 +58,7 @@ def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
         payload['command'] = encrypted_command
 
     print remote_url
-    result = requests.post(remote_url, data=payload, headers=headers_to_send, files=files)
+    result = requests.post(remote_url, data=payload, headers=headers, files=files)
 
     return result
 
@@ -90,9 +89,6 @@ def migrate_svm(svm_id, remote_host, encrypted):
     if result == -1:
         raise Exception("Cannot pause VM: %s", str(svm_id))
     print 'VM paused.'
-
-    # Ensure we own the image file to migrate.
-    fileutils.chown_to_current_user(svm.vm_image.disk_image)
 
     # Transfer the disk image file.
     print 'Starting disk image file transfer...'
