@@ -81,8 +81,9 @@ def migrate_svm(svm_id, remote_host):
     print 'Disk image file was transferred: ' + str(result)
 
     # Do the memory state migration.
-    print 'Migrating through libvirt to ' + remote_host
-    svm.migrate(remote_host, p2p=False)
+    remote_host_name = remote_host.split(':')[0]
+    print 'Migrating through libvirt to ' + remote_host_name
+    svm.migrate(remote_host_name, p2p=False)
     # TODO: if migration fails, ask remote to remove svm.
 
     # Notify remote cloudlet that migration finished.
