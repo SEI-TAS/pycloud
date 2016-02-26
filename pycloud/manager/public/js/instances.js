@@ -31,10 +31,24 @@ http://jquery.org/license
 // Functions used when managing the instance list.
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-function showMigrationModal(migrateUrl)
+function showMigrationModal(availableCloudeletsUrl, migrateUrl)
 {
     // Store the migration URL in the modal.
     $('#migrateUrl').val(migrateUrl);
+
+    // Get the list of currently available cloudlets through ajax.
+    var successHandler = function(availableCloudlets) {
+        // Add the cloudelts we found to the list.
+        var migrateForm = $('#migrate-svm-form');
+        var cloudletsSelect = migrateForm.find('#targetCloudlet');
+        cloudletsSelect.empty();
+        $.each(availableCloudlets, function(value, key) {
+            cloudletsSelect.append($('<option></option>').attr('value', value).text(key));
+        });
+    };
+
+    // Do the post to get data and load the modal.
+    ajaxGet(availableCloudeletsUrl, "Finding cloudlets...", successHandler, $('#modal-migrate'));
 
     // Show the modal.
     $('#modal-migrate').modal('show');

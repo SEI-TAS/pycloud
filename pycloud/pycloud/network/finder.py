@@ -45,13 +45,12 @@ class CloudletFinder(object):
     ####################################################################################################################
     # Finds cloudlets and returns a list.
     ####################################################################################################################
-    def find_cloudlets(self):
+    def find_cloudlets(self, seconds_to_wait=3):
         self.services = {}
         zeroconf = Zeroconf()
         browser = ServiceBrowser(zeroconf, CloudletFinder.CLOUDLET_SERVICE_DNS, listener=self)
 
         # Wait to find cloudlets.
-        seconds_to_wait = 3
         time.sleep(seconds_to_wait)
 
         # Stop looking for cloudlets.

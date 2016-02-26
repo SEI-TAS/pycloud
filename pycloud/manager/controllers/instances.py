@@ -63,6 +63,7 @@ class InstancesController(BaseController):
         # Get the current connection.
         wifi_manager = wifi.WifiManager()
         wifi_manager.interface = 'wlan0'
+        current_network = wifi_manager.current_network()
         instancesPage.current_network = wifi_manager.current_network()
 
         # Get a list of paired cloudlet networks in range.
@@ -74,16 +75,22 @@ class InstancesController(BaseController):
                 paired_networks_in_range[paired_network.connection_id] = paired_network.connection_id
 
         # Filter out ourselves.
-        current_network = wifi_manager.current_network()
         if current_network in paired_networks_in_range:
             del paired_networks_in_range[current_network]
 
         instancesPage.available_networks = paired_networks_in_range
-        instancesPage.network = current_network
 
-        # Get a list of cloudlets in our current networks.
+        # Pass the grid and render the page.
+        return instancesPage.render()
+
+    ############################################################################################################
+    # Returns a list of cloudlets available in our current network (or networks).
+    ############################################################################################################
+    @asjson
+    def GET_get_available_cloudlets(self):
+        # Get a list of cloudlets in our current network.
         cloudlet_finder = finder.CloudletFinder()
-        cloudlets = cloudlet_finder.find_cloudlets()
+        cloudlets = cloudlet_finder.find_cloudlets(seconds_to_wait=2)
 
         # Filter out ourselves from the list of cloudlets.
         current_cloudlet = Cloudlet.get_hostname()
@@ -96,14 +103,13 @@ class InstancesController(BaseController):
         for paired_cloudlet in paired_networks:
             if paired_cloudlet.device_id in cloudlets:
                 cloudlet_info = cloudlets[paired_cloudlet.device_id]
-                host = paired_cloudlet.device_id + ":" + str(cloudlet_info.port) + ":encryption-" + cloudlet_info.encryption
-                paired_cloudlets[host] = host
-        instancesPage.available_cloudlets = paired_cloudlets
-        print 'Paired and available cloudlets: '
-        print instancesPage.available_cloudlets
+                encoded_cloudlet_info = paired_cloudlet.device_id + ":" + str(cloudlet_info.port) + ":encryption-" + cloudlet_info.encryption
+                paired_cloudlets[encoded_cloudlet_info] = encoded_cloudlet_info
 
-        # Pass the grid and render the page.
-        return instancesPage.render()
+        print 'Paired and available cloudlets: '
+        print paired_cloudlets
+
+        return paired_cloudlets
 
     ############################################################################################################
     # Starts a new SVM instance of the Service.

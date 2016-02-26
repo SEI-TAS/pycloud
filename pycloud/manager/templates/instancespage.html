@@ -47,7 +47,7 @@ http://jquery.org/license
             </div>
             <div class="panel-body">
                 <div>
-                    Current Wi-Fi network: ${page.network}
+                    Current Wi-Fi network: ${page.current_network}
                     <button class="btn btn-info" onclick="$('#modal-wifi-connect').modal('show');"
                             data-toggle="tooltip" data-placement="bottom"
                             title="Connect to Wi-Fi Network">
@@ -77,7 +77,8 @@ http://jquery.org/license
                             stop_click    = "stopSVM('"+ stop_url +"');"
 
                             migrate_url   = h.url_for(controller='instances', action='migrateInstance', id=svm._id)
-                            migrate_click = "showMigrationModal('" + migrate_url + "');"
+                            find_cloudlets_url = h.url_for(controller='instances', action='get_available_cloudlets')
+                            migrate_click = "showMigrationModal('" + find_cloudlets_url + "', '" + migrate_url + "');"
                         %>
                         <tr>
                             <td class="svm_id">${svm._id}</td>
@@ -116,8 +117,8 @@ http://jquery.org/license
 		    </div>
 		    <div class="modal-body">
 		        <div class="well">
-		            <form id="new-svm-form" class="form-horizontal" action="" method="post">
-                        ${dropdown(id='targetCloudlet', options=page.available_cloudlets, input_width=12, label=_('Target Cloudlet'), mandatory=True)}
+		            <form id="migrate-svm-form" class="form-horizontal" action="" method="post">
+                        ${dropdown(id='targetCloudlet', options={}, input_width=12, label=_('Target Cloudlet'), mandatory=True)}
                         ${hidden(id='migrateUrl')}
 		            </form>
 		        </div>
