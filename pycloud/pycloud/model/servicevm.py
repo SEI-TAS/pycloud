@@ -338,7 +338,7 @@ class ServiceVM(Model):
             print "VNC available on {}".format(str(self.vnc_address))
 
         # Register with DNS. If we are in bridged mode, we need to set up a specific record to the new IP address.
-        dns_server = cloudlet_dns.CloudletDNS()
+        dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
         if self.network_mode == 'bridged':
             dns_server.register_svm(self.fqdn, self.ip_address)
         else:
@@ -459,7 +459,7 @@ class ServiceVM(Model):
         self.running = False
 
         # Unregister with DNS.
-        dns_server = cloudlet_dns.CloudletDNS()
+        dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
         dns_server.unregister_svm(self.fqdn)
 
     ################################################################################################################
@@ -510,7 +510,7 @@ class ServiceVM(Model):
             vm.migrate(remote_hypervisor, flags, new_id, uri, bandwidth)
 
             # Unregister from DNS server.
-            dns_server = cloudlet_dns.CloudletDNS()
+            dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
             dns_server.unregister_svm(self.fqdn)
 
             elapsed_time = time.time() - start_time

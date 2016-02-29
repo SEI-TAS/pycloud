@@ -27,12 +27,13 @@
 # http://jquery.org/license
 
 import dynamic_dns
+import os
 
 SVMS_ZONE_NAME = 'svm.cloudlet.local.'
 CLOUDLET_HOST_NAME = 'cloudlet'
 
-# TODO: define how to handle the file path.
-KEY_FILE_PATH = ''
+# Internal file path, relative to data folder.
+KEY_FILE_PATH = 'dns/Ksvm.cloudlet.local.private'
 
 #################################################################################################################
 # Object used to manage the cloudlet DNS server.
@@ -42,17 +43,25 @@ class CloudletDNS(object):
     #################################################################################################################
     # Constructor.
     #################################################################################################################
-    def __init__(self):
-        self.key = self._load_key()
+    def __init__(self, root_data_folder):
+        self.key = self._load_key(root_data_folder)
 
     #################################################################################################################
     # Loads the key value.
     #################################################################################################################
-    def _load_key(self):
+    def _load_key(self, root_data_folder):
         key_value = None
-        if KEY_FILE_PATH != '':
-            with open(KEY_FILE_PATH, "r") as key_file:
-                key_value = key_file.read()
+        full_path = os.path.join(os.path.abspath(root_data_folder), KEY_FILE_PATH)
+        with open(full_path, "r") as key_file:
+            # Find the key in the formatted key file, it is the text after a line starting with "Key: "
+            data = key_file.read()
+            lines = data.splitlines()
+            for line in lines:
+                parts = line.split(': ')
+                if len(parts) > 1 and parts[0] == 'Key':
+                    key_value = parts[1]
+                    break
+
         return key_value
 
     #################################################################################################################
