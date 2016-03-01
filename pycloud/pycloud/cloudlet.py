@@ -34,7 +34,6 @@ import psutil
 import os
 import shutil
 from pycloud.pycloud.utils import portmanager
-from pycloud.pycloud.vm.vmutils import destroy_all_vms
 import pycloud.pycloud.mongo.model as model
 import sys
 import socket
@@ -42,6 +41,7 @@ import subprocess
 
 # Singleton object to maintain intra- and inter-app variables.
 _g_singletonCloudlet = None
+
 
 ################################################################################################################
 # Creates the Cloudlet singleton, or gets an instance of it if it had been already created.
@@ -54,6 +54,7 @@ def get_cloudlet_instance(config=None):
         _g_singletonCloudlet = Cloudlet(config)
 
     return _g_singletonCloudlet
+
 
 ################################################################################################################
 # Singleton that will contain common resources: config values, db connections, common managers.
@@ -149,17 +150,17 @@ class Cloudlet(object):
         return Cloudlet_Metadata()
 
     def cleanup_system(self):
-        destroy_all_vms()
-        self._clean_temp_folder(self.svmInstancesFolder)
-        self._clean_temp_folder(self.newVmFolder)
-        self._remove_service_vms()
+        Cloudlet._remove_service_vms()
+        Cloudlet._clean_temp_folder(self.svmInstancesFolder)
+        Cloudlet._clean_temp_folder(self.newVmFolder)
         portmanager.PortManager.clearPorts()
         if not os.path.exists(self.export_path):
             os.makedirs(self.export_path)
         if not os.path.exists(self.appFolder):
             os.makedirs(self.appFolder)
 
-    def _clean_temp_folder(self, folder):
+    @staticmethod
+    def _clean_temp_folder(folder):
         print 'Cleaning up \'%s\'' % folder
         if os.path.exists(folder):
             print '\tDeleting all files in \'%s\'' % folder
@@ -169,9 +170,10 @@ class Cloudlet(object):
             os.makedirs(folder)
         print 'Done cleaning up \'%s\'' % folder
 
-    def _remove_service_vms(self):
+    @staticmethod
+    def _remove_service_vms():
         from pycloud.pycloud.model import ServiceVM
-        ServiceVM._collection.drop()
+        ServiceVM.clear_all_svms()
 
 
 class Cpu_Info(model.AttrDict):

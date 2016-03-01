@@ -450,7 +450,7 @@ class ServiceVM(Model):
                 except Exception, e:
                     print "Warning getting VM: " + str(e)
 
-                # Destroy the VM if it exists, anr mark it as not running.
+                # Destroy the VM if it exists, and mark it as not running.
                 if vm and self.running:
                     print "Stopping Service VM with instance id %s" % self._id
                     vm.destroy()
@@ -557,3 +557,15 @@ class ServiceVM(Model):
                 print "Memory state successfully saved."
         except libvirt.libvirtError, e:
             raise VirtualMachineException(str(e))
+
+    ################################################################################################################
+    # Stops and clears all registered SVMs.
+    ################################################################################################################
+    @staticmethod
+    def clear_all_svms():
+        print 'Shutting down all running virtual machines'
+        svm_list = ServiceVM.find()
+        for svm in svm_list:
+            svm.stop()
+
+        print 'All machines shutdown'
