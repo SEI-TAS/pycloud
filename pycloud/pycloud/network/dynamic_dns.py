@@ -55,6 +55,7 @@ def add_dns_record(zone, key, host, value, record_type='CNAME'):
     update_command.add(host, 300, record_type, value)
 
     # Send the update command to the local DNS server.
+    print 'Adding SVM to DNS server: ' + host
     _send_dynamic_update(update_command)
 
 #######################################################################################################################
@@ -73,4 +74,5 @@ def remove_dns_record(zone, key, host):
     update_command.delete(host)
 
     # Send the update command to the local DNS server.
+    print 'Removing SVM from DNS server: ' + host
     _send_dynamic_update(update_command)

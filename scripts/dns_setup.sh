@@ -1,14 +1,14 @@
 #!/bin/sh
 
-# Needs to be called with sudo.
+# Stop bind, in case it has any journals pending.
+echo 'Stopping bind, removing journals.'
+sudo service bind9 stop
+sudo rm -f /var/lib/bind/db.svm.cloudlet.local.jnl
 
 echo 'Copying templates.'
 
 # Copy zone file template.
 sudo cp ../dns/db.svm.cloudlet.local /var/lib/bind/
-
-# Copy config file template.
-sudo cp ../dns/named.conf.local /etc/bind/
 
 # TODO: Get the cloudlet's public IP.
 CLOUDLET_PUBLIC_IP=192.168.0.112
@@ -16,6 +16,12 @@ CLOUDLET_PUBLIC_IP=192.168.0.112
 # Set IP in zone file.
 echo 'Setting IP in zone file.'
 sudo sed -i -e "s:CLOUDLET_PUBLIC_IP:$CLOUDLET_PUBLIC_IP:g" /var/lib/bind/db.svm.cloudlet.local
+
+# Create a backup of the zone file.
+sudo cp /var/lib/bind/db.svm.cloudlet.local /var/lib/bind/db.svm.cloudlet.local.backup
+
+# Copy config file template.
+sudo cp ../dns/named.conf.local /etc/bind/
 
 # Generate and load TSIG key.
 echo 'Generating TSIG key.'
@@ -38,4 +44,4 @@ sudo service network-manager restart
 
 # Restart bind.
 echo 'Restarting bind.'
-sudo service bind9 restart
+sudo service bind9 start

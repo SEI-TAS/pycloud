@@ -285,7 +285,8 @@ class ServiceVM(Model):
     # Generates a FQDN for the SVM.
     ################################################################################################################
     def _generate_fqdn(self):
-        self.fqdn = self.service_id + '.' + self._id
+        hostname = self.service_id + '.' + self._id
+        self.fqdn = cloudlet_dns.CloudletDNS.generate_fqdn(hostname)
 
     ################################################################################################################
     # Boots a VM using a defined disk image and a state XML.
