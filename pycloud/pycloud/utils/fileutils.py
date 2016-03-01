@@ -90,6 +90,7 @@ def make_read_write_all(file_path):
 
 ################################################################################################################
 # Changes ownership of the given file to the user running the script.
+# NOTE: needs sudo permissions.
 ################################################################################################################
 def chown_to_current_user(file_path):
     curr_user = os.geteuid()

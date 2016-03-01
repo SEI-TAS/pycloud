@@ -104,7 +104,8 @@ class Cloudlet(object):
         self.export_path = os.path.join(self.data_folder, 'temp/export')
 
         # Network params.
-        self.network_bridge_enabled = config['pycloud.network.bridge_enabled'].upper() in ['T', 'TRUE', 'Y', 'YES']
+        # NOTE: bridge is always disabled for now, as it is not needed with the DNS method, and it won't work with the qemu/session that is currently enabled in vm_utils.py.
+        self.network_bridge_enabled = False #config['pycloud.network.bridge_enabled'].upper() in ['T', 'TRUE', 'Y', 'YES']
         self.network_adapter = config['pycloud.network.adapter']
 
         # Wi-Fi adapter to use to connect to other cloudlets.

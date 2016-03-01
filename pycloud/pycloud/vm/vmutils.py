@@ -39,7 +39,7 @@ _hypervisor = None
 ################################################################################################################
 # Returns the hypervisor connection and will auto connect if the connection is null
 ################################################################################################################
-def get_hypervisor(system=True):
+def get_hypervisor(system=False):
     global _hypervisor
     if _hypervisor is None:
         if system:
