@@ -119,7 +119,7 @@ class ServiceVMController(BaseController):
                 abort(404, '404 Not Found - service vm for %s not found' % svm_id)
             else:
                 try:
-                    svm.destroy()
+                    svm.stop()
                     timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
                     timelog.TimeLog.writeToFile()
                     return {}

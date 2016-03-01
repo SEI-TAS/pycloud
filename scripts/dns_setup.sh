@@ -33,6 +33,9 @@ TSIG_PASSWORD=`python ../pycloud/pycloud/network/tsig.py ./Ksvm.cloudlet.local.p
 mkdir ../data/dns
 mv ./Ksvm.cloudlet.local.private ../data/dns/
 
+# Remove extra key file.
+sudo rm -f ./Ksvm.cloudlet.local.*
+
 # Update the config with the newly created TSIG key.
 echo 'Setting TSIG key in config file.'
 sudo sed -i -e "s:TSIG_PASSWORD:$TSIG_PASSWORD:g" /etc/bind/named.conf.local

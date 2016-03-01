@@ -26,6 +26,7 @@
 # Released under the MIT license
 # http://jquery.org/license
 
+import dns
 import dns.update
 import dns.query
 import dns.tsigkeyring
@@ -36,7 +37,7 @@ import dns.tsigkeyring
 def _send_dynamic_update(command):
     # Send the update command to the local DNS server.
     response = dns.query.tcp(command, '127.0.0.1', timeout=10)
-    print response
+    print "Result of DNS operation: {}".format(dns.rcode.to_text(response.rcode()))
 
 #######################################################################################################################
 # Adds a DNS record dynamically.

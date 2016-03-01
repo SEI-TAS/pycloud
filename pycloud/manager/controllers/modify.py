@@ -253,8 +253,8 @@ class ModifyController(BaseController):
 
             # Save the VM state.
             print "Saving machine state for SVM with id " + str(id)
-            svm = ServiceVM.find_and_remove(id)
-            svm.stop(foce_save_state=True)
+            svm = ServiceVM.by_id(id)
+            svm.stop(foce_save_state=True, cleanup_files=False)
             print "Service VM stopped, and machine state saved."
 
             print 'Editing? ' + str(request.params.get('editing'))

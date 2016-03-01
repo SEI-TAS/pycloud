@@ -146,8 +146,8 @@ class InstancesController(BaseController):
     def GET_stopInstance(self, id):
         try:    
             # Stop an existing instance with the given ID.
-            svm = ServiceVM.find_and_remove(id)
-            svm.destroy()
+            svm = ServiceVM.by_id(id)
+            svm.stop()
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
             msg = 'Error stopping Service VM Instance: ' + str(e)

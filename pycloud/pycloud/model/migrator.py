@@ -115,8 +115,8 @@ def migrate_svm(svm_id, remote_host, encrypted):
     print 'Cloudlet notified: ' + str(result)
 
     # Remove the local VM.
-    svm = ServiceVM.find_and_remove(svm_id)
-    svm.destroy()
+    svm = ServiceVM.by_id(svm_id)
+    svm.stop()
 
 
 ############################################################################################################

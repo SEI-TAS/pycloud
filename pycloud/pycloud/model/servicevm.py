@@ -300,7 +300,7 @@ class ServiceVM(Model):
             self.running = True
         except:
             # Ensure we destroy the VM if there was some problem after creating it.
-            self.destroy()
+            self.stop()
             raise
 
     ################################################################################################################
@@ -432,36 +432,48 @@ class ServiceVM(Model):
         return get_adapter_ip_address(self.adapter) + ":" + self.__get_vnc_port()
 
     ################################################################################################################
-    # Stop this service VM
+    # Stop this service VM, removing its files, database records, and other related records.
     ################################################################################################################
-    def stop(self, foce_save_state=False):
+    def stop(self, foce_save_state=False, cleanup_files=True):
         # Check if this instance is actually running
-        if not self.running:
-            return
+        if self.running:
+            try:
+                vm = None
+                try:
+                    # Get the VM
+                    vm = ServiceVM._get_virtual_machine(self._id)
 
-        vm = None
-        try:
-            # Get the VM
-            vm = ServiceVM._get_virtual_machine(self._id)
+                    # Save the state, if our image is not cloned.
+                    if not self.vm_image.cloned or foce_save_state:
+                        self._save_state()
+                        self.running = False
+                except Exception, e:
+                    print "Warning getting VM: " + str(e)
 
-            # Save the state, if our image is not cloned.
-            if not self.vm_image.cloned or foce_save_state:
-                self._save_state()
+                # Destroy the VM if it exists, anr mark it as not running.
+                if vm and self.running:
+                    print "Stopping Service VM with instance id %s" % self._id
+                    vm.destroy()
+                else:
+                    print 'VM with id %s not found while stopping it.' % self._id
                 self.running = False
+            except Exception, e:
+                print "Warning: error while cleaning up VM: " + str(e)
+
+        # Unregister from DNS.
+        try:
+            dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
+            dns_server.unregister_svm(self.fqdn)
         except Exception, e:
-            print "Warning getting VM: " + str(e)
+            print "Warning: error while setting up DNS record: " + str(e)
 
-        # Destroy the VM if it exists, anr mark it as not running.
-        if vm and self.running:
-            print "Stopping Service VM with instance id %s" % self._id
-            vm.destroy()
-        else:
-            print 'VM with id %s not found while stopping it.' % self._id
-        self.running = False
+        # Remove it from the database of running VMs.
+        ServiceVM.find_and_remove(self._id)
 
-        # Unregister with DNS.
-        dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
-        dns_server.unregister_svm(self.fqdn)
+        if cleanup_files:
+            # Remove VM files
+            self.vm_image.cleanup()
+
 
     ################################################################################################################
     # Pauses a VM.
@@ -545,17 +557,3 @@ class ServiceVM(Model):
                 print "Memory state successfully saved."
         except libvirt.libvirtError, e:
             raise VirtualMachineException(str(e))
-
-    ################################################################################################################
-    # Will delete this VM (and stop it if it is currently running)
-    ################################################################################################################
-    def destroy(self):
-        if self.running:
-            try:
-                self.stop()
-            except Exception, e:
-                print "Warning: error while cleaning up VM: " + str(e)
-
-        # Remove VM files, and remove it from the database of running VMs.
-        self.vm_image.cleanup()
-        ServiceVM.find_and_remove(self._id)

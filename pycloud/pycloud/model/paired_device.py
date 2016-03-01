@@ -45,13 +45,13 @@ def stop_associated_instance(device_id):
         # No instance was associated with the device info, we can ignore this call.
         return
 
-    svm = ServiceVM.find_and_remove(device_info.instance)
+    svm = ServiceVM.by_id(device_info.instance)
     if not svm:
         print 'Deployment timeout: Instance to be stopped could not be found (id: ' + str(device_info.instance) + ')'
         return
 
     try:
-        svm.destroy()
+        svm.stop()
         print 'Deployment timeout: instance stopped for device ' + device_id
     except Exception as e:
         print 'Deployment timeout: Error stopping Service VM Instance: ' + str(e)
