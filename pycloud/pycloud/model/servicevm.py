@@ -307,7 +307,7 @@ class ServiceVM(Model):
     # Perform several network checks: get the IP of the VM, ensure that the service is available, and get the VNC
     # address and port.
     ################################################################################################################
-    def _network_checks(self, check_service=True, load_vnc=True):
+    def _network_checks(self, load_vnc=True):
         try:
             # Get the IP of the VM.
             if self.network_mode == 'bridged':
@@ -325,13 +325,6 @@ class ServiceVM(Model):
             check_service = False
         print "SSH available on {}:{}".format(str(self.ip_address), str(self.ssh_port))
 
-        if check_service:
-            # Wait until the service is running inside the VM.
-            service_available = self._wait_for_service()
-            if not service_available:
-                # TODO: throw exception.
-                print 'Service was not found running inside the SVM. Check if it is configured to start at boot time.'
-
         # Get VNC connection info.
         if load_vnc:
             self.vnc_address = self.__get_vnc_address()
@@ -344,6 +337,16 @@ class ServiceVM(Model):
             dns_server.register_svm(self.fqdn, self.ip_address)
         else:
             dns_server.register_svm(self.fqdn)
+
+    ################################################################################################################
+    # Checks if the service is running inside the VM.
+    ################################################################################################################
+    def _check_service(self):
+        # Wait until the service is running inside the VM.
+        service_available = self._wait_for_service()
+        if not service_available:
+            # TODO: throw exception.
+            print 'Service was not found running inside the SVM. Check if it is configured to start at boot time.'
 
     ################################################################################################################
     # Create a new service VM from a given template, and start it.
@@ -364,7 +367,7 @@ class ServiceVM(Model):
         self._cold_boot(updated_xml_descriptor)
 
         # Ensure network is working and load network data.
-        self._network_checks(check_service=False)
+        self._network_checks()
 
         return self
 
@@ -413,6 +416,7 @@ class ServiceVM(Model):
 
         # Ensure network is working and load network data.
         self._network_checks()
+        self._check_service()
 
         return self
 
@@ -534,7 +538,7 @@ class ServiceVM(Model):
     ################################################################################################################
     def update_migrated_network(self):
         self._setup_network(update_mac_if_needed=False)
-        self._network_checks(check_service=False, load_vnc=False)
+        self._network_checks(load_vnc=False)
 
     ################################################################################################################
     # Pauses a VM and stores its memory state to a disk file.
