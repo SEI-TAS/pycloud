@@ -11,8 +11,8 @@ $TTL	604800
 ;
 
 ; name servers, NS and A records
-ns1	IN	A	192.168.0.10
+ns1	IN	A	CLOUDLET_PUBLIC_IP
 @	IN	NS	ns1
 
 ; cloudlet A record
-cloudlet	IN	A	192.168.0.10
+cloudlet	IN	A	CLOUDLET_PUBLIC_IP

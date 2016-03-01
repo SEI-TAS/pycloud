@@ -10,7 +10,7 @@
 // TSIG Key
 key "svm.cloudlet.local." {
      algorithm hmac-md5;
-     secret "BR2bSEH3E6bIm8V5KJFT1Q==";
+     secret "TSIG_PASSWORD";
 };
 zone "svm.cloudlet.local" {
              type master;

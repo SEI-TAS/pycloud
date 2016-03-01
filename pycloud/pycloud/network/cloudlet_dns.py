@@ -28,12 +28,30 @@
 
 import dynamic_dns
 import os
+import sys
 
 SVMS_ZONE_NAME = 'svm.cloudlet.local.'
 CLOUDLET_HOST_NAME = 'cloudlet'
 
 # Internal file path, relative to data folder.
 KEY_FILE_PATH = 'dns/Ksvm.cloudlet.local.private'
+
+#################################################################################################################
+# Loads the key value from a TSIG privat key file.
+#################################################################################################################
+def load_tsig_key(key_path):
+    key_value = None
+    with open(key_path, "r") as key_file:
+        # Find the key in the formatted key file, it is the text after a line starting with "Key: "
+        data = key_file.read()
+        lines = data.splitlines()
+        for line in lines:
+            parts = line.split(': ')
+            if len(parts) > 1 and parts[0] == 'Key':
+                key_value = parts[1]
+                break
+
+    return key_value
 
 #################################################################################################################
 # Object used to manage the cloudlet DNS server.
@@ -44,25 +62,8 @@ class CloudletDNS(object):
     # Constructor.
     #################################################################################################################
     def __init__(self, root_data_folder):
-        self.key = self._load_key(root_data_folder)
-
-    #################################################################################################################
-    # Loads the key value.
-    #################################################################################################################
-    def _load_key(self, root_data_folder):
-        key_value = None
         full_path = os.path.join(os.path.abspath(root_data_folder), KEY_FILE_PATH)
-        with open(full_path, "r") as key_file:
-            # Find the key in the formatted key file, it is the text after a line starting with "Key: "
-            data = key_file.read()
-            lines = data.splitlines()
-            for line in lines:
-                parts = line.split(': ')
-                if len(parts) > 1 and parts[0] == 'Key':
-                    key_value = parts[1]
-                    break
-
-        return key_value
+        self.key = load_tsig_key(full_path)
 
     #################################################################################################################
     # Registers an SVM.
@@ -91,3 +92,10 @@ class CloudletDNS(object):
             return
 
         dynamic_dns.remove_dns_record(SVMS_ZONE_NAME, self.key, svm_fqdn)
+
+#################################################################################################################
+# Main behavior is to load a TSIG file and print its contents.
+#################################################################################################################
+if __name__ == '__main__':
+    key = load_tsig_key(sys.argv[1])
+    print key
