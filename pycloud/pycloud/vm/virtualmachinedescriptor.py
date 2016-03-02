@@ -146,6 +146,15 @@ class VirtualMachineDescriptor(object):
             vnc_address.set("address", "0.0.0.0")
 
     ################################################################################################################
+    # Removes the security label.
+    ################################################################################################################
+    def removeSecLabel(self):
+        sec_label = self.xmlRoot.find('seclabel')
+        if sec_label is not None:
+            print 'Removing security label.'
+            self.xmlRoot.remove(sec_label)
+
+    ################################################################################################################
     # Sets the path to the main disk image.
     ################################################################################################################
     def setDiskImage(self, newDiskImagePath, newDiskType):
