@@ -11,7 +11,7 @@ echo 'Copying templates.'
 sudo cp ../dns/db.svm.cloudlet.local /var/lib/bind/
 
 # TODO: Get the cloudlet's public IP.
-CLOUDLET_PUBLIC_IP=192.168.0.112
+CLOUDLET_PUBLIC_IP=192.168.1.12
 
 # Set IP in zone file.
 echo 'Setting IP in zone file.'
