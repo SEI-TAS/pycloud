@@ -38,9 +38,7 @@ from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
 from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 from pycloud.pycloud.pylons.lib import helpers as h
 
-from pycloud.pycloud.model.paired_device import PairedDevice
-from pycloud.pycloud.security import radius
-from pycloud.pycloud.security import credentials
+from pycloud.pycloud.model.deployment import Deployment
 
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import ajaxutils
@@ -97,7 +95,6 @@ class PairingController(BaseController):
         if connection is None:
             connection = 'bt'
 
-        curr_device = None
         try:
             # Create a device depending on the type.
             if connection == 'bt':
@@ -107,66 +104,9 @@ class PairingController(BaseController):
             else:
                 curr_device = ADBSKADevice(id)
 
-            # Now the pairing process will be followed, generating all required credentials.
-            # The first step is to connect to the device.
-            successful_connection = curr_device.connect()
-            if not successful_connection:
-                return ajaxutils.show_and_return_error_dict("Could not connect to device with id {}.".format(id))
-
-            # Get the device id.
-            id_data = curr_device.get_data({'device_id': 'none'})
-            device_internal_id = id_data['device_id']
-            print 'Device id: ' + device_internal_id
-
-            # Check if the device was already paired, and if so, abort.
-            previously_paired_device = PairedDevice.by_id(device_internal_id)
-            if previously_paired_device:
-                return ajaxutils.show_and_return_error_dict("Device with id {} is already paired.".format(device_internal_id))
-
-            # Prepare the server and device credential objects.
-            server_keys = credentials.ServerCredentials.create_object(app_globals.cloudlet.credentials_type,
-                                                                      app_globals.cloudlet.data_folder)
-            device_keys = credentials.DeviceCredentials.create_object(app_globals.cloudlet.credentials_type,
-                                                                      app_globals.cloudlet.data_folder,
-                                                                      device_internal_id,
-                                                                      server_keys.private_key_path)
-
-            # Create the device's private key and the device's passwords.
-            device_keys.generate_and_save_to_file()
-
-            # Send the server's public key.
-            curr_device.send_file(server_keys.public_key_path, 'server_public.key')
-
-            # Send the device's private key to the device.
-            curr_device.send_file(device_keys.private_key_path, 'device.key')
-
-            # Send RADIUS certificate to the device.
-            radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
-                                                app_globals.cloudlet.radius_certs_folder,
-                                                app_globals.cloudlet.radius_eap_conf_file)
-            cert_file_name = radius.RADIUS_CERT_FILE_NAME
-            curr_device.send_file(radius_server.cert_file_path, cert_file_name)
-
-            # Send a command to create a Wi-Fi profile on the device. The message has to contain three key pairs:
-            # ssid, the RADIUS certificate filename, and the password to be used in the profile.
-            ssid = app_globals.cloudlet.ssid
-            curr_device.send_data({'command': 'wifi-profile', 'ssid': ssid, 'server_cert_name': cert_file_name,
-                                   'password': device_keys.auth_password})
-
-            # Remove the device private key and password files, for security cleanup.
-            device_keys.delete_key_files()
-
+            deployment = Deployment.get_instance()
+            deployment.pair_device(curr_device)
         except Exception, e:
-            return ajaxutils.show_and_return_error_dict("Error pairing with device: " + str(e))
-        finally:
-            if curr_device is not None:
-                try:
-                    print 'Closing connection.'
-                    curr_device.disconnect()
-                except Exception, e:
-                    return ajaxutils.show_and_return_error_dict("Error closing connection with device: " + str(e))
+            return ajaxutils.show_and_return_error_dict(e.message)
 
-        # Go to the pairing devices page to add it to the DB. Does not really return the ajax call in case of success.
-        return h.redirect_to(controller='devices', action='authorize', did=device_internal_id,
-                             cid=curr_device.get_name(), auth_password=device_keys.auth_password,
-                             enc_password=device_keys.encryption_password)
+        return ajaxutils.JSON_OK

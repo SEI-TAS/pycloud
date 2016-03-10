@@ -45,7 +45,8 @@ from pycloud.api.controllers.apppush import AppPushController
 from pycloud.api.controllers.cloudlet import CloudletController
 
 from pycloud.pycloud.security import encryption
-from pycloud.pycloud.model.paired_device import PairedDevice, stop_associated_instance
+from pycloud.pycloud.model.paired_device import PairedDevice
+
 
 ################################################################################################################
 # Class that handles all encrypted commands.
@@ -60,11 +61,12 @@ class EncryptedController(BaseController):
         pass
 
     #################################################################################################################
-    # Helper function to abort with an encrypted reply.
+    # Helper function to abort.
     #################################################################################################################
-    def encrypted_abort(self, code, message, password):
+    def send_abort_response(self, code, message, password):
         print message
-        encrypted_message = message #encryption.encrypt_message(message, password)
+        encrypted_message = message
+        #encrypted_message = encryption.encrypt_message(message, password)
         abort(code, encrypted_message)
 
     #################################################################################################################
@@ -89,10 +91,10 @@ class EncryptedController(BaseController):
         # Check if device is authorized to send messages, and permission has not expired.
         if not device_info.auth_enabled:
             error = '#Authorization has been revoked for device with id %s' % device_id
-            self.encrypted_abort(403, error, password)
+            self.send_abort_response(403, error, password)
         if device_info.auth_start + datetime.timedelta(minutes=device_info.auth_duration) < datetime.datetime.now():
             error = '#Authorization has expired for device with id %s' % device_id
-            self.encrypted_abort(403, error, password)
+            self.send_abort_response(403, error, password)
 
         # Decrypt the request.
         encrypted_request = request.params['command']
@@ -101,82 +103,66 @@ class EncryptedController(BaseController):
         print 'Decrypted request: ' + decrypted_request
 
         # Parse the request.
+        controller_name = None
+        action_name = ''
         parts = decrypted_request.split("&")
         command = parts[0]
+        print 'Received command: ' + command
+        command_parts = command.split("/")
+        if len(command_parts) > 1:
+            controller_name = command_parts[1]
+        if len(command_parts) > 2:
+            action_name = command_parts[2]
+
+        # Parse params, if any.
+        params_dict = {}
         if len(parts) > 1:
             params = parts[1:]
-            params_dict = {}
             for param in params:
                 key = param.split("=")[0]
                 value = param.split("=")[1]
                 params_dict[key] = value
 
-        # Then redirect to the appropriate controller.
-        print 'Received command: ' + command
-        reply = ''
-        reply_format = 'json'
-        if command == '/services':
+        # Find the appropriate controller.
+        controller = None
+        if controller_name == 'services':
             controller = ServicesController()
-            request.environ['pylons.routes_dict']['action'] = 'list'
-            request.method = 'GET'
-            reply = controller(self.environ, self.dummy_start_response)
-        elif command == '/services/get':
-            request.GET['serviceId'] = params_dict['serviceId']
-            controller = ServicesController()
-            request.environ['pylons.routes_dict']['action'] = 'find'
-            request.method = 'GET'
-            reply = controller(self.environ, self.dummy_start_response)
-        elif command == '/servicevm/start':
-            request.GET['serviceId'] = params_dict['serviceId']
+        elif controller_name == 'servicevm':
             controller = ServiceVMController()
-            request.environ['pylons.routes_dict']['action'] = 'start'
-            request.method = 'GET'
-            reply = controller(self.environ, self.dummy_start_response)
-
-            # Hack to store SVM id in DB along with paired device info to stop it when mission ends.
-            associate_instance_to_device(device_info, reply[0])
-        elif command == '/servicevm/stop':
-            request.GET['instanceId'] = params_dict['instanceId']
-            controller = ServiceVMController()
-            request.environ['pylons.routes_dict']['action'] = 'stop'
-            request.method = 'GET'
-            reply = controller(self.environ, self.dummy_start_response)
-        elif command == '/apps':
-            for param in params_dict:
-                request.GET[param] = params_dict[param]
+        elif controller_name == 'apps':
             controller = AppPushController()
-            request.environ['pylons.routes_dict']['action'] = 'getList'
-            request.method = 'GET'
-            reply = controller(self.environ, self.dummy_start_response)
-        elif command == '/apps/get':
-            request.GET['appId'] = params_dict['appId']
-            controller = AppPushController()
-            request.environ['pylons.routes_dict']['action'] = 'getApp'
-            request.method = 'GET'
-            reply = controller(self.environ, self.dummy_start_response)
-            reply_format = 'binary'
-        elif command == '/system':
+        elif controller_name == 'system':
             controller = CloudletController()
-            request.environ['pylons.routes_dict']['action'] = 'metadata'
-            request.method = 'GET'
-            reply = controller(self.environ, self.dummy_start_response)
-        else:
-            self.encrypted_abort(404, '404 Not Found - command %s not found' % command, password)
 
-        text_repy = reply[0]
+        is_invalid_command = controller is None or action_name not in controller.API_ACTIONS_MAP
+        if is_invalid_command:
+            self.send_abort_response(404, '#Command %s not found' % command, password)
+
+        # Prepare the unencrypted request we are redirecting to, and execute it.
+        reply_format = 'json'
+        request.method = 'GET'
+        for param in params_dict:
+            request.GET[param] = params_dict[param]
+        request.environ['pylons.routes_dict']['action'] = controller.API_ACTIONS_MAP[action_name]['action']
+        internal_response = controller(self.environ, self.dummy_start_response)
+        raw_response = internal_response[0]
+
+        # TODO: find a way to make this hack cleaner....
+        # Hack to store SVM id in DB along with paired device info to stop it when mission ends.
+        if controller_name == 'servicevm' and action_name == 'start':
+            associate_instance_to_device(device_info, raw_response)
 
         # Check if the reply is an error.
         if reply_format == 'json':
             try:
-                json_object = json.loads(text_repy)
-            except ValueError, e:
-                print 'Error in repy: not a json object, assuming internal error. Will return a 500 error.'
-                self.encrypted_abort(500, text_repy, password)
+                json.loads(raw_response)
+            except ValueError:
+                print 'Error in reply: not a json object, assuming internal error. Will return a 500 error.'
+                self.send_abort_response(500, raw_response, password)
 
         # Encrypt the reply.
-        # print 'Reply: ' + str(reply)
-        encrypted_reply = encryption.encrypt_message(text_repy, password)
-        print 'Encrypted reply' #: ' + encrypted_reply
+        encrypted_reply = encryption.encrypt_message(raw_response, password)
+        print 'Encrypted reply'
 
         # Reset the response body that each controller may have added, and set the content length to the length of the
         # encrypted reply.
@@ -187,28 +173,29 @@ class EncryptedController(BaseController):
         print 'Sending encrypted reply.'
         return encrypted_reply
 
+
 ################################################################################################################
-# Stores the instance id of a running Service VM instance associtaed with a paired device.
+# Stores the instance id of a running Service VM instance associated with a paired device.
 ################################################################################################################
 def associate_instance_to_device(device_info, reply):
     try:
         json_object = json.loads(reply)
-    except ValueError, e:
+        instance_id = json_object['_id']
+
+        # Store the instance info in the DB.
+        device_info.instance = instance_id
+        device_info.save()
+    except ValueError:
         print 'VM not started, will not be stored to be stopped later.'
         return
-
-    # Store the instance info in the DB.
-    instance_id = json_object['_id']
-    device_info.instance = instance_id
-    device_info.save()
 
     # Start a timer to stop the instance when the mission time ends.
     time_to_wait = ((device_info.auth_start + datetime.timedelta(minutes=device_info.auth_duration)) - datetime.datetime.now()).seconds
     if time_to_wait > 0:
         print 'Setting up timer to stop Service VM once deployment time runs out (time to wait: ' + str(time_to_wait) + ' seconds)'
-        timer_thread = threading.Timer(time_to_wait, stop_associated_instance, [device_info.device_id])
+        timer_thread = threading.Timer(time_to_wait, device_info.stop_associated_instance, [device_info.device_id])
         timer_thread.start()
     else:
         # If we are already past end time, stop VM right away.
         print 'Stopping service VM right away since deployment has already timed out.'
-        stop_associated_instance(device_info)
+        device_info.stop_associated_instance()

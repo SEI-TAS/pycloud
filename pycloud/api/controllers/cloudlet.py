@@ -38,6 +38,9 @@ from pycloud.pycloud.model import Service, App
 
 class CloudletController(BaseController):
 
+    # Maps API URL words to actual functions in the controller.
+    API_ACTIONS_MAP = {'': {'action': 'metadata', 'reply_type': 'json'}}
+
     @asjson
     def GET_metadata(self):
         timelog.TimeLog.reset()

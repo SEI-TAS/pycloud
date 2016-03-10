@@ -51,6 +51,10 @@ log = logging.getLogger(__name__)
 ################################################################################################################
 class ServiceVMController(BaseController):
 
+    # Maps API URL words to actual functions in the controller.
+    API_ACTIONS_MAP = {'start': {'action': 'start', 'reply_type': 'json'},
+                       'stop': {'action': 'stop', 'reply_type': 'json'}}
+
     ################################################################################################################    
     # Cleans up any open resources.
     ################################################################################################################ 

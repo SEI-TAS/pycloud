@@ -51,6 +51,10 @@ log = logging.getLogger(__name__)
 ################################################################################################################
 class AppPushController(BaseController):
 
+    # Maps API URL words to actual functions in the controller.
+    API_ACTIONS_MAP = {'': {'action': 'getList', 'reply_type': 'json'},
+                       'get': {'action': 'getApp', 'reply_type': 'binary'}}
+
     ################################################################################################################
     # Called to get a list of apps available at the server.
     ################################################################################################################
