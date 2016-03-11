@@ -81,9 +81,7 @@ class EncryptedController(BaseController):
         device_info = PairedDevice.by_id(device_id)
         if not device_info:
             # We can't encrypt the reply since we got an invalid device id.
-            error = '#Device with id %s is not paired to this cloudlet' % device_id
-            print error
-            abort(401, error)
+            self.send_abort_response(401, '#Device with id %s is not paired to this cloudlet' % device_id, None)
 
         # Get the device password.
         password = device_info.password

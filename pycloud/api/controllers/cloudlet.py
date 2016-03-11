@@ -28,19 +28,28 @@
 
 __author__ = 'jdroot'
 
-from pycloud.pycloud.pylons.lib.base import BaseController, bool_param
 from pylons import request
+from pylons.controllers.util import abort
+
+from pycloud.pycloud.pylons.lib.base import BaseController, bool_param
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import timelog
 from pycloud.pycloud.cloudlet import Cloudlet
 from pycloud.pycloud.model import Service, App
 
+from pycloud.pycloud.model.paired_device import PairedDevice
+from pycloud.pycloud.model.device_command import DeviceCommand
+
 
 class CloudletController(BaseController):
 
     # Maps API URL words to actual functions in the controller.
-    API_ACTIONS_MAP = {'': {'action': 'metadata', 'reply_type': 'json'}}
+    API_ACTIONS_MAP = {'': {'action': 'metadata', 'reply_type': 'json'},
+                       'get_command': {'action': 'get_command', 'reply_type': 'json'}}
 
+    ################################################################################################################
+    #
+    ################################################################################################################
     @asjson
     def GET_metadata(self):
         timelog.TimeLog.reset()
@@ -55,3 +64,26 @@ class CloudletController(BaseController):
 
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
         return ret
+
+    ################################################################################################################
+    # Only valid if the device has been paired, otherwise it will have no mailbox for commands.
+    ################################################################################################################
+    @asjson
+    def GET_get_command(self):
+        device_id = request.headers['X-Device-ID']
+        if not device_id or not PairedDevice.by_id(device_id):
+            error = '#Device is not paired to this cloudlet'
+            print error
+            abort(401, error)
+
+        commands = DeviceCommand.by_device_id(device_id)
+        reply = {}
+        reply['num_commands'] = len(commands)
+        reply['commands'] = commands
+
+        # Mark all commands as read, to avoid getting them again in a future call.
+        for command in commands:
+            command.read = True
+            command.save()
+
+        return reply
