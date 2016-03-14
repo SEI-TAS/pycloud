@@ -29,5 +29,6 @@ Depends: ${python:Depends},
          swig,
          freeradius,
          libgmp-dev,
-         bind9
+         bind9,
+         hostapd
 Description: Pycloud is the Cloudlet Server component of KD-Cloudlet.
