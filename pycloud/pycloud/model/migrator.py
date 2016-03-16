@@ -71,7 +71,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
     svm = ServiceVM.by_id(svm_id)
     print 'VM found: ' + str(svm)
 
-    # Target has host and port.
+    # remote_host has host and port.
     print 'Migrating to remote cloudlet: ' + remote_host
 
     # Transfer the metadata.
@@ -99,6 +99,11 @@ def migrate_svm(svm_id, remote_host, encrypted):
     if result.status_code != requests.codes.ok:
         raise Exception('Error transferring disk image file.')
     print 'Disk image file was transferred: ' + str(result)
+
+    # If needed, ask the remote cloudlet for credentials for the devices associated to the SVM.
+    # if encrypted:
+    #    payload = {'id': svm_id}
+    #    result = __send_api_command(remote_host, 'servicevm/resumeMigratedSVM', encrypted, payload)
 
     # Do the memory state migration.
     remote_host_name = remote_host.split(':')[0]
