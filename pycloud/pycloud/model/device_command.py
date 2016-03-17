@@ -46,7 +46,7 @@ class DeviceCommand(Model):
         self.device_id = None
         self.service_id = None
         self.command = None
-        self.params = TrustedCloudletCredentials()
+        self.params = {}
         self.datetime = None
         self.read = False
         super(DeviceCommand, self).__init__(*args, **kwargs)
@@ -87,30 +87,6 @@ class DeviceCommand(Model):
     def find_and_remove(item_id):
         # Find the right app and remove it. find_and_modify will only return the document with matching id.
         return DeviceCommand.find_and_modify(query={'_id': item_id}, remove=True)
-
-################################################################################################################
-#
-################################################################################################################
-class TrustedCloudletCredentials(object):
-
-    ################################################################################################################
-    # Constructor.
-    ################################################################################################################
-    def __init__(self, *args, **kwargs):
-        self.ssid = None
-        self.auth_password = None
-        self.files = {}
-        self.files['server_radius_cert'] = None
-        self.files['server_public_key'] = None
-        self.files['device_private_key'] = None
-
-    ################################################################################################################
-    # Loads a file.
-    ################################################################################################################
-    def load_file(self, file_type, file_path):
-        with open(file_path, 'r') as input_file:
-            self.files[file_type] = input_file.read()
-
 
 ################################################################################################################
 # Particular command used to notify a device that it has to create a certain wifi profile and store credentials.

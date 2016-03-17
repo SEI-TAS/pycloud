@@ -34,6 +34,7 @@ from pycloud.pycloud.cloudlet import get_cloudlet_instance
 from pycloud.pycloud.security import radius
 from pycloud.pycloud.security import credentials
 from pycloud.pycloud.model.paired_device import PairedDevice
+from pycloud.pycloud.model.device_credentials import CredentialsBundle
 
 # ###############################################################################################################
 # Represents a deployment of authorization on the cloudlet.
@@ -54,6 +55,7 @@ class Deployment(Model):
         self.auth_duration = 0
         self.cloudlet = None
         self.radius_server = None
+        self.server_keys = None
         super(Deployment, self).__init__(*args, **kwargs)
 
     ################################################################################################################
@@ -130,6 +132,23 @@ class Deployment(Model):
         self.save()
 
     ################################################################################################################
+    # Generates the needed credentials for a device being paired.
+    ################################################################################################################
+    def generate_device_credentials(self, device_id):
+        # Prepare the server and device credential objects.
+        self.server_keys = credentials.ServerCredentials.create_object(self.cloudlet.credentials_type,
+                                                                  self.cloudlet.data_folder)
+        device_keys = credentials.DeviceCredentials.create_object(self.cloudlet.credentials_type,
+                                                                  self.cloudlet.data_folder,
+                                                                  device_id,
+                                                                  self.server_keys.private_key_path)
+
+        # Create the device's private key and the device's passwords.
+        device_keys.generate_and_save_to_file()
+
+        return device_keys
+
+    ################################################################################################################
     # Pairs a connected device to this deployment.
     ################################################################################################################
     def pair_device(self, curr_device):
@@ -151,19 +170,10 @@ class Deployment(Model):
             if previously_paired_device:
                 raise Exception("Device with id {} is already paired.".format(device_internal_id))
 
-            # Prepare the server and device credential objects.
-            server_keys = credentials.ServerCredentials.create_object(self.cloudlet.credentials_type,
-                                                                      self.cloudlet.data_folder)
-            device_keys = credentials.DeviceCredentials.create_object(self.cloudlet.credentials_type,
-                                                                      self.cloudlet.data_folder,
-                                                                      device_internal_id,
-                                                                      server_keys.private_key_path)
-
-            # Create the device's private key and the device's passwords.
-            device_keys.generate_and_save_to_file()
+            device_keys = self.generate_device_credentials(device_internal_id)
 
             # Send the server's public key.
-            curr_device.send_file(server_keys.public_key_path, 'server_public.key')
+            curr_device.send_file(self.server_keys.public_key_path, 'server_public.key')
 
             # Send the device's private key to the device.
             curr_device.send_file(device_keys.private_key_path, 'device.key')

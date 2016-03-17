@@ -53,7 +53,11 @@ class ServiceVMController(BaseController):
 
     # Maps API URL words to actual functions in the controller.
     API_ACTIONS_MAP = {'start': {'action': 'start', 'reply_type': 'json'},
-                       'stop': {'action': 'stop', 'reply_type': 'json'}}
+                       'stop': {'action': 'stop', 'reply_type': 'json'},
+                       'migration_svm_metadata': {'action': 'migration_svm_metadata', 'reply_type': 'json'},
+                       'migration_svm_disk_file': {'action': 'migration_svm_disk_file', 'reply_type': 'json'},
+                       'migration_generate_credentials': {'action': 'migration_generate_credentials', 'reply_type': 'json'},
+                       'migration_svm_resume': {'action': 'migration_svm_resume', 'reply_type': 'json'}}
 
     ################################################################################################################    
     # Cleans up any open resources.
@@ -74,7 +78,7 @@ class ServiceVMController(BaseController):
         sid = request.params.get('serviceId', None)
         if not sid:
             # If we didnt get a valid one, just return an error message.
-            abort(400, '400 Bad Request - must provide service id')
+            abort(400, 'Must provide service id')
         else:
             timelog.TimeLog.stamp("Request received: start VM with service id " + sid)
 
@@ -99,9 +103,9 @@ class ServiceVMController(BaseController):
                 except Exception as e:
                     # If there was a problem starting the instance, return that there was an error.
                     print 'Error starting Service VM Instance: ' + str(e)
-                    abort(500, '500 Internal Server Error - %s' % str(e))
+                    abort(500, '%s' % str(e))
             else:
-                abort(400, '404 Not Found - service vm for %s not found' % sid)
+                abort(400, 'Service vm for %s not found' % sid)
 
     ################################################################################################################
     # Called to stop a running instance of a Service VM.
@@ -111,7 +115,7 @@ class ServiceVMController(BaseController):
         svm_id = request.params.get('instanceId', None)
         if not svm_id:
             # If we didnt get a valid one, just return an error message.
-            abort(400, '400 Bad Request - must provide instance id')
+            abort(400, 'Must provide instance id')
         else:
             print '\n*************************************************************************************************'
             timelog.TimeLog.reset()
@@ -120,7 +124,7 @@ class ServiceVMController(BaseController):
             # Stop the Service VM.
             svm = ServiceVM.find_and_remove(svm_id)
             if not svm:
-                abort(404, '404 Not Found - service vm for %s not found' % svm_id)
+                abort(404, 'Service vm for %s not found' % svm_id)
             else:
                 try:
                     svm.stop()
@@ -130,13 +134,13 @@ class ServiceVMController(BaseController):
                 except Exception as e:
                     # If there was a problem stopping the instance, return that there was an error.
                     print 'Error stopping Service VM Instance: ' + str(e)
-                    abort(500, '500 Internal Server Error - %s' % str(e))
+                    abort(500, '%s' % str(e))
 
     ############################################################################################################
     # Receives information about a migrated VM.
     ############################################################################################################
     @asjson
-    def POST_receiveMigratedSVMMetadata(self):
+    def POST_migration_svm_metadata(self):
         migrator.receive_migrated_svm_metadata(request.body)
         return ajaxutils.JSON_OK
 
@@ -144,30 +148,44 @@ class ServiceVMController(BaseController):
     # Receives the disk image file of a migrated SVM.
     ############################################################################################################
     @asjson
-    def POST_receiveMigratedSVMDiskFile(self):
+    def POST_migration_svm_disk_file(self):
         svm_id = request.params.get('id')
         disk_image_object = request.params.get('disk_image_file').file
         result = migrator.receive_migrated_svm_disk_file(svm_id, disk_image_object, app_globals.cloudlet.svmInstancesFolder)
 
         if result == 'no svm':
-            abort(404, '404 Not Found - SVM with id %s not found' % svm_id)
+            abort(404, 'SVM with id %s not found' % svm_id)
         elif result == 'no backing file':
             # Migration will be unsuccessful since we won't have the backing file.
             print 'Service not found in local cloudlet.'
-            abort(500, '500 Server Error - Service is not installed on target cloudlet.')
+            abort(500, 'Service is not installed on target cloudlet.')
         else:
             return ajaxutils.JSON_OK
+
+    ############################################################################################################
+    # Generates and returns credentials for a device to be migrated with an svm.
+    ############################################################################################################
+    @asjson
+    def POST_migration_generate_credentials(self):
+        device_id = request.params.get('id')
+
+        try:
+            credentials = migrator.generate_migration_device_credentials(device_id)
+            return credentials
+        except migrator.MigrationException as e:
+            if e.message == 'no device':
+                abort(404, 'Device with id %s not found' % device_id)
 
     ############################################################################################################
     # Receives information about a migrated VM.
     ############################################################################################################
     @asjson
-    def POST_resumeMigratedSVM(self):
+    def POST_migration_svm_resume(self):
         # Find the SVM.
         svm_id = request.params.get('id')
         result = migrator.resume_migrated_svm(svm_id)
         if not result:
             print 'SVM with id %s not found.' % svm_id
-            abort(404, '404 Not Found - SVM with id %s not found' % svm_id)
+            abort(404, 'SVM with id %s not found' % svm_id)
 
         return ajaxutils.JSON_OK

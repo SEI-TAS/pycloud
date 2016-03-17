@@ -33,10 +33,20 @@ import os
 import requests
 
 from pycloud.pycloud.model import ServiceVM, Service
-from pycloud.pycloud.utils import fileutils
 from pycloud.pycloud.cloudlet import Cloudlet
-from pycloud.pycloud.security import encryption
 
+from pycloud.pycloud.security import encryption
+from pycloud.pycloud.model import PairedDevice
+from pycloud.pycloud.model.deployment import Deployment
+from pycloud.pycloud.model.paired_device_credentials import PairedDeviceDataBundle
+
+################################################################################################################
+# Exception type used in this module.
+################################################################################################################
+class MigrationException(Exception):
+    def __init__(self, message):
+        super(MigrationException, self).__init__(message)
+        self.message = message
 
 ############################################################################################################
 # Creates the appropriate URL for an API command.
@@ -52,7 +62,7 @@ def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
     else:
         remote_url = 'http://{0}/api'.format(host)
 
-        # TODO: user proper password to encrypt command.
+        # TODO: use proper password to encrypt command.
         password = '' # load_password_from_file()
         encrypted_command = encryption.encrypt_message(command, password)
         payload['command'] = encrypted_command
@@ -78,7 +88,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
     print 'Starting metadata file transfer...'
     payload = json.dumps(svm)
     headers = {'content-type': 'application/json'}
-    result = __send_api_command(remote_host, 'servicevm/receiveMigratedSVMMetadata', encrypted, payload, headers=headers)
+    result = __send_api_command(remote_host, 'servicevm/migration_svm_metadata', encrypted, payload, headers=headers)
     if result.status_code != requests.codes.ok:
         raise Exception('Error transferring metadata, code: {}'.format(result.status_code) )
     print 'Metadata was transferred: ' + str(result)
@@ -95,15 +105,15 @@ def migrate_svm(svm_id, remote_host, encrypted):
     payload = {'id': svm_id}
     disk_image_full_path = os.path.abspath(svm.vm_image.disk_image)
     files = {'disk_image_file': open(disk_image_full_path, 'rb')}
-    result = __send_api_command(remote_host, 'servicevm/receiveMigratedSVMDiskFile', encrypted, payload, files=files)
+    result = __send_api_command(remote_host, 'servicevm/migration_svm_disk_file', encrypted, payload, files=files)
     if result.status_code != requests.codes.ok:
         raise Exception('Error transferring disk image file.')
     print 'Disk image file was transferred: ' + str(result)
 
     # If needed, ask the remote cloudlet for credentials for the devices associated to the SVM.
-    # if encrypted:
-    #    payload = {'id': svm_id}
-    #    result = __send_api_command(remote_host, 'servicevm/resumeMigratedSVM', encrypted, payload)
+    if encrypted:
+        payload = {'id': svm_id}
+        result = __send_api_command(remote_host, 'servicevm/migration_generate_cretendials', encrypted, payload)
 
     # Do the memory state migration.
     remote_host_name = remote_host.split(':')[0]
@@ -114,7 +124,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
     # Notify remote cloudlet that migration finished.
     print 'Telling target cloudlet that migration has finished.'
     payload = {'id': svm_id}
-    result = __send_api_command(remote_host, 'servicevm/resumeMigratedSVM', encrypted, payload)
+    result = __send_api_command(remote_host, 'servicevm/migration_svm_resume', encrypted, payload)
     if result.status_code != requests.codes.ok:
         raise Exception('Error notifying migration end.')
     print 'Cloudlet notified: ' + str(result)
@@ -182,6 +192,30 @@ def receive_migrated_svm_disk_file(svm_id, disk_image_object, svm_instances_fold
     migrated_svm.save()
 
     return 'ok'
+
+
+############################################################################################################
+# Generates and returns credentials for the given device.
+############################################################################################################
+def generate_migration_device_credentials(device_id):
+    # Get the device info.
+    device = PairedDevice.by_id(device_id)
+    if not device:
+        raise MigrationException('no device')
+
+    # Get the new credentials for the device on the current deployment.
+    deployment = Deployment.get_instance()
+    device_keys = deployment.generate_device_credentials(device_id)
+
+    # Bundle the credentials and info needed for a newly paired device.
+    device_credentials = PairedDeviceDataBundle()
+    device_credentials.ssid = deployment.cloudlet.ssid
+    device_credentials.auth_password = device_keys.auth_password
+    device_credentials.server_public_key = device_keys.server_private_key
+    device_credentials.device_private_key = device_keys.private_key
+    device_credentials.load_certificate(deployment.radius_server.cert_file_path)
+
+    return device_credentials
 
 
 ############################################################################################################
