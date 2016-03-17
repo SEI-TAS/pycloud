@@ -33,7 +33,7 @@ from pylons import request, response, session, tmpl_context as c
 from pylons import app_globals
 
 from pycloud.pycloud.pylons.lib.base import BaseController
-from pycloud.manager.lib.pages import PairingPage
+from pycloud.manager.lib.pages import DevicesPairingPage
 from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
 from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 from pycloud.pycloud.pylons.lib import helpers as h
@@ -48,7 +48,7 @@ log = logging.getLogger(__name__)
 ################################################################################################################
 # Controller for the Pairing page.
 ################################################################################################################
-class PairingController(BaseController):
+class DevicesPairingController(BaseController):
 
     ############################################################################################################
     # Entry point.
@@ -60,7 +60,7 @@ class PairingController(BaseController):
     # Lists the connected devices, and lets the system pair to one of them.
     ############################################################################################################
     def GET_available(self):
-        page = PairingPage()
+        page = DevicesPairingPage()
         page.devices = []
         page.bt_selected = ''
         page.usb_selected = ''

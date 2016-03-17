@@ -44,7 +44,7 @@ http://jquery.org/license
                 <h2>Available Devices</h2>
             </div>
             <div class="panel-body">
-                <form id="connection_form" method="get" action="${h.url_for(controller='pairing', action='available')}">
+                <form id="connection_form" method="get" action="${h.url_for(controller='devicespairing', action='available')}">
                     Connection type:
                     <select name="connection">
                         <option value="usb" ${page.usb_selected}>USB</option>
