@@ -93,10 +93,10 @@ class CloudletPairingController(BaseController):
     ############################################################################################################
     # Displays the discover page for cloudlet pairing.
     ############################################################################################################
-    @asjson
     def GET_discover(self):
         page = CloudletPairingPage()
 
+        page.secret = "thunder-5A34C9"
         # connection = request.params.get('connection', None)
         # if connection is None:
         #     connection = 'bt'
