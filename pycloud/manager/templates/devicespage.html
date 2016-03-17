@@ -119,10 +119,10 @@ http://jquery.org/license
                 <div>
                     <hr>
                     <h3>Cloudlets</h3>
-                    <button type="button" class="btn btn-large btn-primary" onclick="window.location.href='${h.url_for(controller='devicespairing', action='available')}'"
+                    <button type="button" class="btn btn-large btn-primary" onclick="window.location.href='${h.url_for(controller='cloudletpairing', action='pair')}'"
                        ${'disabled' if page.deployment_auth_start == 'not set' else ''}>Pair To Cloudlet
                     </button>
-                    <button type="button" class="btn btn-large btn-primary" onclick="window.location.href='${h.url_for(controller='devicespairing', action='available')}'"
+                    <button type="button" class="btn btn-large btn-primary" onclick="window.location.href='${h.url_for(controller='cloudletpairing', action='discover')}'"
                             ${'disabled' if page.deployment_auth_start == 'not set' else ''}>Make Cloudlet Discoverable
                     </button>
                     <br><br>

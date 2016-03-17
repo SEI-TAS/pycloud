@@ -52,6 +52,7 @@ def load_controllers():
     from pycloud.manager.controllers.export import ExportController
     from pycloud.manager.controllers.importsvm import ImportController
     from pycloud.manager.controllers.devicespairing import DevicesPairingController
+    from pycloud.manager.controllers.cloudletpairing import CloudletPairingController
     from pycloud.manager.controllers.devices import DevicesController
     from pycloud.manager.controllers.auth import AuthController
 
