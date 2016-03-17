@@ -57,56 +57,78 @@ class CloudletPairingController(BaseController):
         return self.GET_available()
 
     ############################################################################################################
-    # Lists the connected devices, and lets the system pair to one of them.
+    # Displays the
     ############################################################################################################
-    def GET_available(self):
+    def GET_pair(self):
         page = CloudletPairingPage()
-        page.devices = []
-        page.bt_selected = ''
-        page.usb_selected = ''
 
-        # Ensure the device types are initialized.
-        BluetoothSKADevice.initialize(app_globals.cloudlet.data_folder)
-        ADBSKADevice.initialize(app_globals.cloudlet.data_folder)
+        # Generate secret to display
+        page.secret = "Hi I\'m a secret!"
 
-        page.connection = request.params.get('connection', None)
-        if page.connection is None:
-            page.connection = 'usb'
-
-        try:
-            if page.connection == 'bt':
-                page.bt_selected = 'selected'
-                page.devices = BluetoothSKADevice.list_devices()
-            else:
-                page.usb_selected = 'selected'
-                page.devices = ADBSKADevice.list_devices()
-        except Exception, e:
-            print e
-            h.flash('Error looking for devices: ' + str(e))
+        # page.devices = []
+        # page.bt_selected = ''
+        # page.usb_selected = ''
+        #
+        # # Ensure the device types are initialized.
+        # BluetoothSKADevice.initialize(app_globals.cloudlet.data_folder)
+        # ADBSKADevice.initialize(app_globals.cloudlet.data_folder)
+        #
+        # page.connection = request.params.get('connection', None)
+        # if page.connection is None:
+        #     page.connection = 'usb'
+        #
+        # try:
+        #     if page.connection == 'bt':
+        #         page.bt_selected = 'selected'
+        #         page.devices = BluetoothSKADevice.list_devices()
+        #     else:
+        #         page.usb_selected = 'selected'
+        #         page.devices = ADBSKADevice.list_devices()
+        # except Exception, e:
+        #     print e
+        #     h.flash('Error looking for devices: ' + str(e))
 
         return page.render()
 
     ############################################################################################################
-    # Pairs with a device.
+    # Displays the discover page for cloudlet pairing.
     ############################################################################################################
     @asjson
-    def GET_pair(self, id):
-        connection = request.params.get('connection', None)
-        if connection is None:
-            connection = 'bt'
+    def GET_discover(self):
+        page = CloudletPairingPage()
 
-        try:
-            # Create a device depending on the type.
-            if connection == 'bt':
-                port = request.params.get('port', None)
-                name = request.params.get('name', None)
-                curr_device = BluetoothSKADevice({'host': id, 'port': int(port), 'name': name})
-            else:
-                curr_device = ADBSKADevice(id)
+        # connection = request.params.get('connection', None)
+        # if connection is None:
+        #     connection = 'bt'
+        #
+        # try:
+        #     # Create a device depending on the type.
+        #     if connection == 'bt':
+        #         port = request.params.get('port', None)
+        #         name = request.params.get('name', None)
+        #         curr_device = BluetoothSKADevice({'host': id, 'port': int(port), 'name': name})
+        #     else:
+        #         curr_device = ADBSKADevice(id)
+        #
+        #     deployment = Deployment.get_instance()
+        #     deployment.pair_device(curr_device)
+        # except Exception, e:
+        #     return ajaxutils.show_and_return_error_dict(e.message)
+        #
+        # return ajaxutils.JSON_OK
 
-            deployment = Deployment.get_instance()
-            deployment.pair_device(curr_device)
-        except Exception, e:
-            return ajaxutils.show_and_return_error_dict(e.message)
+        return page.render()
 
-        return ajaxutils.JSON_OK
+    ############################################################################################################
+    # Connects to another cloudlet's nic.
+    ############################################################################################################
+    def GET_left_side_connect(self, ssid, psk):
+        return None
+
+    ############################################################################################################
+    # Generates a's credentials and sends it to cloudlet a.
+    ############################################################################################################
+    def GET_right_side_connect(self, secret):
+        return None
+
+

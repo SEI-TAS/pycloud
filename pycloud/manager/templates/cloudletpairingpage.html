@@ -41,7 +41,7 @@ http://jquery.org/license
     <div class="col-sm-12">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h2>Available Cloudlets</h2>
+                <h2>Pair to Cloudlet</h2>
             </div>
             <div class="panel-body">
                 <form id="connection_form" method="get" action="${h.url_for(controller='devicespairing', action='available')}">
@@ -53,6 +53,7 @@ http://jquery.org/license
                     <button class="btn btn-large btn-success" onclick="$(this).prop('disabled', true); $('#connection_form').submit();">Refresh</button>
                 </form>
                 <br><br>
+                ${page.secret}
                 <table class="table table-striped">
                     <tr>
                         <th>Name</th>
@@ -77,6 +78,48 @@ http://jquery.org/license
                                 </button>
                             </td>
                         </tr>
+                    % endfor
+                </table>
+            </div>
+
+            <div class="panel-heading">
+                <h2>Make Cloudlet Discoverable</h2>
+            </div>
+            <div class="panel-body">
+                <form id="connection_form" method="get" action="${h.url_for(controller='devicespairing', action='available')}">
+                    Connection type:
+                    <select name="connection">
+                        <option value="usb" ${page.usb_selected}>USB</option>
+                        <option value="bt" ${page.bt_selected}>Bluetooth</option>
+                    </select>
+                    <button class="btn btn-large btn-success" onclick="$(this).prop('disabled', true); $('#connection_form').submit();">Refresh</button>
+                </form>
+                <br><br>
+                ${page.secret}
+                <table class="table table-striped">
+                    <tr>
+                        <th>Name</th>
+                        <th>Actions</th>
+                    </tr>
+                    % for device in page.devices:
+                    <%
+                    pair_url = h.url_for(controller='pairing', action='pair', id=device.get_name(),
+                    port=device.get_port(), name=device.get_friendly_name(),
+                    connection=page.connection)
+                    redirectUrl = h.url_for(controller='devices', action='list')
+                    pair_click = "pair('" + pair_url + "', '" + redirectUrl + "');"
+                    %>
+                    <tr>
+                        <td>${device.get_name()}</td>
+                        <td>
+                            <button class="btn btn-success" onclick="${pair_click}"
+                                    data-toggle="tooltip" data-placement="bottom"
+                                    title="Pair">
+                                <span class="glyphicon glyphicon-plus" style="color: white"></span>
+                                <span class="glyphicon glyphicon-transfery" style="color: white"></span>
+                            </button>
+                        </td>
+                    </tr>
                     % endfor
                 </table>
             </div>
