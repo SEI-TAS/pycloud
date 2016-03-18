@@ -38,7 +38,7 @@ from pycloud.pycloud.cloudlet import Cloudlet
 from pycloud.pycloud.security import encryption
 from pycloud.pycloud.model import PairedDevice
 from pycloud.pycloud.model.deployment import Deployment
-from pycloud.pycloud.model.paired_device_credentials import PairedDeviceDataBundle
+from pycloud.pycloud.model.paired_device_data_bundle import PairedDeviceDataBundle
 
 ################################################################################################################
 # Exception type used in this module.
@@ -111,9 +111,15 @@ def migrate_svm(svm_id, remote_host, encrypted):
     print 'Disk image file was transferred: ' + str(result)
 
     # If needed, ask the remote cloudlet for credentials for the devices associated to the SVM.
-    if encrypted:
-        payload = {'id': svm_id}
-        result = __send_api_command(remote_host, 'servicevm/migration_generate_cretendials', encrypted, payload)
+    devices = PairedDevice.by_instance(svm_id)
+    for device in devices:
+        payload = {'id': device.device_id}
+        result = __send_api_command(remote_host, 'servicevm/migration_generate_credentials', encrypted, payload)
+        if result.status_code != requests.codes.ok:
+            raise Exception('Error requesting new credentials generation, problem: {} - {}'.format(result.status_code, result.reason) )
+
+        # TODO: Store the new credentials so that a device asking for them will get them.
+        print result.text
 
     # Do the memory state migration.
     remote_host_name = remote_host.split(':')[0]
@@ -198,16 +204,13 @@ def receive_migrated_svm_disk_file(svm_id, disk_image_object, svm_instances_fold
 # Generates and returns credentials for the given device.
 ############################################################################################################
 def generate_migration_device_credentials(device_id):
-    # Get the device info.
-    device = PairedDevice.by_id(device_id)
-    if not device:
-        raise MigrationException('no device')
-
     # Get the new credentials for the device on the current deployment.
+    print 'Generating credentials for device that will migrate to our cloudlet.'
     deployment = Deployment.get_instance()
     device_keys = deployment.generate_device_credentials(device_id)
 
     # Bundle the credentials and info needed for a newly paired device.
+    print 'Bundling credentials for device.'
     device_credentials = PairedDeviceDataBundle()
     device_credentials.ssid = deployment.cloudlet.ssid
     device_credentials.auth_password = device_keys.auth_password
@@ -215,6 +218,7 @@ def generate_migration_device_credentials(device_id):
     device_credentials.device_private_key = device_keys.private_key
     device_credentials.load_certificate(deployment.radius_server.cert_file_path)
 
+    print 'Returning credentials.'
     return device_credentials
 
 

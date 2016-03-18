@@ -143,8 +143,8 @@ class Cloudlet(object):
     ################################################################################################################
     @staticmethod
     def get_id():
-        hostid = subprocess.Popen('hostid', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
-        return Cloudlet.get_hostname() + hostid
+        #hostid = subprocess.Popen('hostid', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
+        return Cloudlet.get_hostname() #+ hostid
 
     @staticmethod
     def system_information():

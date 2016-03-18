@@ -171,7 +171,8 @@ class ServiceVMController(BaseController):
 
         try:
             credentials = migrator.generate_migration_device_credentials(device_id)
-            return credentials
+            credentials_dict = credentials.__dict__
+            return credentials_dict
         except migrator.MigrationException as e:
             if e.message == 'no device':
                 abort(404, 'Device with id %s not found' % device_id)

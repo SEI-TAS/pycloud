@@ -29,12 +29,11 @@ __author__ = 'Sebastian'
 
 import datetime
 
-from pycloud.pycloud.mongo import Model, ObjectID
+from pycloud.pycloud.mongo import Model
 from pycloud.pycloud.cloudlet import get_cloudlet_instance
 from pycloud.pycloud.security import radius
 from pycloud.pycloud.security import credentials
 from pycloud.pycloud.model.paired_device import PairedDevice
-from pycloud.pycloud.model.device_credentials import CredentialsBundle
 
 # ###############################################################################################################
 # Represents a deployment of authorization on the cloudlet.
@@ -137,7 +136,7 @@ class Deployment(Model):
     def generate_device_credentials(self, device_id):
         # Prepare the server and device credential objects.
         self.server_keys = credentials.ServerCredentials.create_object(self.cloudlet.credentials_type,
-                                                                  self.cloudlet.data_folder)
+                                                                       self.cloudlet.data_folder)
         device_keys = credentials.DeviceCredentials.create_object(self.cloudlet.credentials_type,
                                                                   self.cloudlet.data_folder,
                                                                   device_id,
