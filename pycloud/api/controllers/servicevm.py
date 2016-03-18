@@ -170,9 +170,9 @@ class ServiceVMController(BaseController):
         device_id = request.params.get('id')
 
         try:
-            credentials = migrator.generate_migration_device_credentials(device_id)
-            credentials_dict = credentials.__dict__
-            return credentials_dict
+            connection_id = app_globals.cloudlet.get_id()
+            credentials = migrator.generate_migration_device_credentials(device_id, connection_id)
+            return credentials
         except migrator.MigrationException as e:
             if e.message == 'no device':
                 abort(404, 'Device with id %s not found' % device_id)

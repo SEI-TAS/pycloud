@@ -91,10 +91,13 @@ class PairingController(BaseController):
     ############################################################################################################
     @asjson
     def GET_pair(self, id):
+        device_type = 'mobile'
+
         connection = request.params.get('connection', None)
         if connection is None:
             connection = 'bt'
 
+        curr_device = None
         try:
             # Create a device depending on the type.
             if connection == 'bt':
@@ -104,9 +107,31 @@ class PairingController(BaseController):
             else:
                 curr_device = ADBSKADevice(id)
 
+            # Now the pairing process will be followed, generating all required credentials.
+            # The first step is to connect to the device.
+            successful_connection = curr_device.connect()
+            if not successful_connection:
+                raise Exception("Could not connect to device with id {}.".format(id))
+
+            # Get the device id.
+            id_data = curr_device.get_data({'device_id': 'none'})
+            device_internal_id = id_data['device_id']
+            print 'Device id: ' + device_internal_id
+
+            # Pair the device, send the credentials, and clear their local files.
             deployment = Deployment.get_instance()
-            deployment.pair_device(curr_device)
+            device_keys = deployment.pair_device(device_internal_id, curr_device.get_name(), device_type)
+            deployment.send_paired_credentials(curr_device, device_keys)
+            deployment.clear_device_keys(device_keys)
         except Exception, e:
             return ajaxutils.show_and_return_error_dict(e.message)
+        finally:
+            if curr_device is not None:
+                try:
+                    print 'Closing connection.'
+                    curr_device.disconnect()
+                except Exception, e:
+                    error = "Error closing connection with device: " + str(e)
+                    return ajaxutils.show_and_return_error_dict(error)
 
         return ajaxutils.JSON_OK

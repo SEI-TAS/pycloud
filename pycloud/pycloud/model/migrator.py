@@ -125,7 +125,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
     remote_host_name = remote_host.split(':')[0]
     print 'Migrating through libvirt to ' + remote_host_name
     svm.migrate(remote_host_name, p2p=False)
-    # TODO: if migration fails, ask remote to remove svm.
+    # TODO: if migration fails, ask remote to remove svm, and unpair devices.
 
     # Notify remote cloudlet that migration finished.
     print 'Telling target cloudlet that migration has finished.'
@@ -203,11 +203,12 @@ def receive_migrated_svm_disk_file(svm_id, disk_image_object, svm_instances_fold
 ############################################################################################################
 # Generates and returns credentials for the given device.
 ############################################################################################################
-def generate_migration_device_credentials(device_id):
+def generate_migration_device_credentials(device_id, connection_id):
     # Get the new credentials for the device on the current deployment.
     print 'Generating credentials for device that will migrate to our cloudlet.'
+    device_type = 'mobile'
     deployment = Deployment.get_instance()
-    device_keys = deployment.generate_device_credentials(device_id)
+    device_keys = deployment.pair_device(device_id, connection_id, device_type)
 
     # Bundle the credentials and info needed for a newly paired device.
     print 'Bundling credentials for device.'
@@ -219,7 +220,7 @@ def generate_migration_device_credentials(device_id):
     device_credentials.load_certificate(deployment.radius_server.cert_file_path)
 
     print 'Returning credentials.'
-    return device_credentials
+    return device_credentials.__dict__
 
 
 ############################################################################################################

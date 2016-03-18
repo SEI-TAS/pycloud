@@ -65,6 +65,8 @@ class Deployment(Model):
         self.radius_server = radius.RadiusServer(self.cloudlet.radius_users_file,
                                                  self.cloudlet.radius_certs_folder,
                                                  self.cloudlet.radius_eap_conf_file)
+        self.server_keys = credentials.ServerCredentials.create_object(self.cloudlet.credentials_type,
+                                                                       self.cloudlet.data_folder)
 
     ################################################################################################################
     # Overrides the save method to remove keys we don't want to store temporarily.
@@ -72,6 +74,7 @@ class Deployment(Model):
     def save(self, *args, **kwargs):
         self.cloudlet = None
         self.radius_server = None
+        self.server_keys = None
         super(Deployment, self).save(*args, **kwargs)
 
         self.config_setup()
@@ -131,12 +134,29 @@ class Deployment(Model):
         self.save()
 
     ################################################################################################################
+    # Pairs a connected device to this deployment.
+    ################################################################################################################
+    def pair_device(self, device_internal_id, connection_id, device_type):
+        try:
+            # Check if the device was already paired, and if so, abort.
+            previously_paired_device = PairedDevice.by_id(device_internal_id)
+            if previously_paired_device:
+                raise Exception("Device with id {} is already paired.".format(device_internal_id))
+
+            # Generate credentials, register the device, and return them.
+            device_keys = self.__generate_device_credentials(device_internal_id)
+            self.__register_device(device_internal_id, connection_id, device_keys.auth_password,
+                                   device_keys.encryption_password, device_type)
+
+            return device_keys
+        except Exception, e:
+            raise Exception("Error pairing with device: " + str(e))
+
+    ################################################################################################################
     # Generates the needed credentials for a device being paired.
     ################################################################################################################
-    def generate_device_credentials(self, device_id):
+    def __generate_device_credentials(self, device_id):
         # Prepare the server and device credential objects.
-        self.server_keys = credentials.ServerCredentials.create_object(self.cloudlet.credentials_type,
-                                                                       self.cloudlet.data_folder)
         device_keys = credentials.DeviceCredentials.create_object(self.cloudlet.credentials_type,
                                                                   self.cloudlet.data_folder,
                                                                   device_id,
@@ -144,75 +164,19 @@ class Deployment(Model):
 
         # Create the device's private key and the device's passwords.
         device_keys.generate_and_save_to_file()
-
         return device_keys
-
-    ################################################################################################################
-    # Pairs a connected device to this deployment.
-    ################################################################################################################
-    def pair_device(self, curr_device):
-        type = 'mobile'
-        try:
-            # Now the pairing process will be followed, generating all required credentials.
-            # The first step is to connect to the device.
-            successful_connection = curr_device.connect()
-            if not successful_connection:
-                raise Exception("Could not connect to device with id {}.".format(id))
-
-            # Get the device id.
-            id_data = curr_device.get_data({'device_id': 'none'})
-            device_internal_id = id_data['device_id']
-            print 'Device id: ' + device_internal_id
-
-            # Check if the device was already paired, and if so, abort.
-            previously_paired_device = PairedDevice.by_id(device_internal_id)
-            if previously_paired_device:
-                raise Exception("Device with id {} is already paired.".format(device_internal_id))
-
-            device_keys = self.generate_device_credentials(device_internal_id)
-
-            # Send the server's public key.
-            curr_device.send_file(self.server_keys.public_key_path, 'server_public.key')
-
-            # Send the device's private key to the device.
-            curr_device.send_file(device_keys.private_key_path, 'device.key')
-
-            # Send RADIUS certificate to the device.
-            cert_file_name = radius.RADIUS_CERT_FILE_NAME
-            curr_device.send_file(self.radius_server.cert_file_path, cert_file_name)
-
-            # Send a command to create a Wi-Fi profile on the device. The message has to contain three key pairs:
-            # ssid, the RADIUS certificate filename, and the password to be used in the profile.
-            ssid = self.cloudlet.ssid
-            curr_device.send_data({'command': 'wifi-profile', 'ssid': ssid, 'server_cert_name': cert_file_name,
-                                   'password': device_keys.auth_password})
-
-            # Remove the device private key and password files, for security cleanup.
-            device_keys.delete_key_files()
-
-            # Register the device as authorized in the DBses.
-            self.__register_device(device_internal_id, curr_device.get_name(), device_keys.auth_password, device_keys.encryption_password, type)
-        except Exception, e:
-            raise Exception("Error pairing with device: " + str(e))
-        finally:
-            if curr_device is not None:
-                try:
-                    print 'Closing connection.'
-                    curr_device.disconnect()
-                except Exception, e:
-                    raise Exception("Error closing connection with device: " + str(e))
 
     ############################################################################################################
     # Register a device after pairing it.
     ############################################################################################################
-    def __register_device(self, device_id, connection_id, auth_password, enc_password, type):
+    def __register_device(self, device_id, connection_id, auth_password, enc_password, device_type):
         # Create a new paired device with the id info we just received.
         print 'Adding paired device to DB.'
         paired_device = PairedDevice()
         paired_device.device_id = device_id
         paired_device.connection_id = connection_id
         paired_device.password = enc_password
-        paired_device.type = type
+        paired_device.type = device_type
 
         # By default, authorization for a device will be the same as the deployment info.
         paired_device.auth_start = self.auth_start
@@ -227,6 +191,34 @@ class Deployment(Model):
 
         # Go to the main page.
         print 'Device added to DB.'
+
+    ############################################################################################################
+    #
+    ############################################################################################################
+    def send_paired_credentials(self, curr_device, device_keys):
+        # Send the server's public key.
+        curr_device.send_file(self.server_keys.public_key_path, 'server_public.key')
+
+        # Send the device's private key to the device.
+        curr_device.send_file(device_keys.private_key_path, 'device.key')
+
+        # Send RADIUS certificate to the device.
+        cert_file_name = radius.RADIUS_CERT_FILE_NAME
+        curr_device.send_file(self.radius_server.cert_file_path, cert_file_name)
+
+        # Send a command to create a Wi-Fi profile on the device. The message has to contain three key pairs:
+        # ssid, the RADIUS certificate filename, and the password to be used in the profile.
+        ssid = self.cloudlet.ssid
+        curr_device.send_data({'command': 'wifi-profile', 'ssid': ssid, 'server_cert_name': cert_file_name,
+                               'password': device_keys.auth_password})
+
+    ############################################################################################################
+    #
+    ############################################################################################################
+    def clear_device_keys(self, device_keys):
+        # Remove the device private key and password files, for security cleanup.
+        if device_keys:
+            device_keys.delete_key_files()
 
     ############################################################################################################
     #
