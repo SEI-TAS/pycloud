@@ -60,10 +60,10 @@ http://jquery.org/license
                     </tr>
                     % for device in page.devices:
                         <%
-                            pair_url = h.url_for(controller='pairing', action='pair', id=device.get_name(),
+                            pair_url = h.url_for(controller='devicespairing', action='pair', id=device.get_name(),
                                                  port=device.get_port(), name=device.get_friendly_name(),
                                                  connection=page.connection)
-                            redirectUrl = h.url_for(controller='devices', action='list')
+                            redirectUrl = h.url_for(controller='devicespairing', action='list')
                             pair_click = "pair('" + pair_url + "', '" + redirectUrl + "');"
                         %>
                         <tr>

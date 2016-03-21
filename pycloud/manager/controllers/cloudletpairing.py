@@ -34,6 +34,7 @@ from pylons import app_globals
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import CloudletPairingPage
+from pycloud.manager.lib.pages import CloudletDiscoveryPage
 from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
 from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 from pycloud.pycloud.pylons.lib import helpers as h
@@ -59,7 +60,7 @@ class CloudletPairingController(BaseController):
     ############################################################################################################
     # Displays the
     ############################################################################################################
-    def GET_pair(self):
+    def GET_pair_display(self):
         page = CloudletPairingPage()
 
         # Generate secret to display
@@ -93,10 +94,11 @@ class CloudletPairingController(BaseController):
     ############################################################################################################
     # Displays the discover page for cloudlet pairing.
     ############################################################################################################
-    def GET_discover(self):
-        page = CloudletPairingPage()
+    def GET_discover_display(self):
+        page = CloudletDiscoveryPage()
 
-        page.secret = "thunder-5A34C9"
+        page.ssid = "thunder-5A34C9"
+        page.psk = "1234"
         # connection = request.params.get('connection', None)
         # if connection is None:
         #     connection = 'bt'
@@ -122,13 +124,13 @@ class CloudletPairingController(BaseController):
     ############################################################################################################
     # Connects to another cloudlet's nic.
     ############################################################################################################
-    def GET_left_side_connect(self, ssid, psk):
+    def GET_pair(self, ssid, psk):
         return None
 
     ############################################################################################################
     # Generates a's credentials and sends it to cloudlet a.
     ############################################################################################################
-    def GET_right_side_connect(self, secret):
+    def GET_discover(self, secret):
         return None
 
 
