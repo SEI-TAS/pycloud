@@ -150,20 +150,10 @@ def receive_migrated_svm_metadata(svm_json_string):
     # Get information about the SVM.
     print 'Obtaining metadata of SVM to be received.'
     migrated_svm = ServiceVM()
-    migrated_svm._id = json_svm['_id']
-    migrated_svm.vm_image = json_svm['vm_image']
-    migrated_svm.port_mappings = json_svm['port_mappings']
-    migrated_svm.service_port = json_svm['service_port']
-    migrated_svm.port = json_svm['port']
-    migrated_svm.ip_address = json_svm['ip_address']
-    migrated_svm.mac_address = json_svm['mac_address']
-    migrated_svm.ssh_port = json_svm['ssh_port']
-    migrated_svm.vnc_address = json_svm['vnc_address']
-    migrated_svm.service_id = json_svm['service_id']
-    migrated_svm.fqdn = json_svm['fqdn']
+    migrated_svm.fill_from_dict(json_svm)
 
     # Update network data, especially needed in non-bridged mode.
-    migrated_svm.update_migrated_network()
+    migrated_svm.setup_network(update_mac_if_needed=False)
 
     # Save to internal DB.
     migrated_svm.save()
@@ -232,9 +222,11 @@ def resume_migrated_svm(svm_id):
     if not migrated_svm:
         return False
 
-    # Restart the VM.
+    # Restart the VM, and load network data since it might be in a new network.
     print 'Unpausing VM...'
-    result = migrated_svm.unpause()
+    migrated_svm.unpause()
+    migrated_svm.load_network_data()
+    migrated_svm.register_with_dns()
     print 'VM running'
 
     # Save to internal DB.

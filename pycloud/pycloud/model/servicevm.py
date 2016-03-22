@@ -88,9 +88,16 @@ class ServiceVM(Model):
         super(ServiceVM, self).__init__(*args, **kwargs)
 
     ################################################################################################################
+    # Sets up the internal attributes from a dictionary.
+    ################################################################################################################
+    def fill_from_dict(self, values_dict):
+        for key in values_dict:
+            setattr(self, key, values_dict[key])
+
+    ################################################################################################################
     # Sets up the internal network parameters, based on the config.
     ################################################################################################################
-    def _setup_network(self, update_mac_if_needed=True):
+    def setup_network(self, update_mac_if_needed=True):
         # Configure bridged mode if enabled
         c = get_cloudlet_instance()
         print 'Bridge enabled: ', c.network_bridge_enabled
@@ -307,10 +314,9 @@ class ServiceVM(Model):
             raise
 
     ################################################################################################################
-    # Perform several network checks: get the IP of the VM, ensure that the service is available, and get the VNC
-    # address and port.
+    # Loads network data: get the IP of the VM.
     ################################################################################################################
-    def _network_checks(self, load_vnc=True):
+    def _load_ip_address(self):
         try:
             # Get the IP of the VM.
             if self.network_mode == 'bridged':
@@ -325,15 +331,21 @@ class ServiceVM(Model):
             traceback.print_exc()
             # TODO: throw exception.
             print "Error getting IP of new SVM: " + str(e)
-            check_service = False
+
         print "SSH available on {}:{}".format(str(self.ip_address), str(self.ssh_port))
 
-        # Get VNC connection info.
-        if load_vnc:
-            self.vnc_address = self.__get_vnc_address()
-            self.vnc_port = self.__get_vnc_port()
-            print "VNC available on {}".format(str(self.vnc_address))
+    ###############################################################################################################
+    # Get the VNC address and port, loading it from the running VM.
+    ###############################################################################################################
+    def _load_vnc_address_from_running_instance(self):
+        self.vnc_port = self.__get_vnc_port()
+        self.vnc_address = get_adapter_ip_address(self.adapter) + ":" + self.vnc_port
+        print "VNC available on {}".format(str(self.vnc_address))
 
+    ################################################################################################################
+    # Register with DNS server.
+    ################################################################################################################
+    def register_with_dns(self):
         # Register with DNS. If we are in bridged mode, we need to set up a specific record to the new IP address.
         dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
         if self.network_mode == 'bridged':
@@ -360,7 +372,7 @@ class ServiceVM(Model):
             raise VirtualMachineException("VM description file %s for VM creation does not exist." % vm_xml_template_file)
 
         # Setup network params.
-        self._setup_network()
+        self.setup_network()
 
         # Load the XML template and update it with this VM's information.
         template_xml_descriptor = open(vm_xml_template_file, "r").read()
@@ -370,7 +382,8 @@ class ServiceVM(Model):
         self._cold_boot(updated_xml_descriptor)
 
         # Ensure network is working and load network data.
-        self._network_checks()
+        self.load_network_data()
+        self.register_with_dns()
 
         return self
 
@@ -383,7 +396,7 @@ class ServiceVM(Model):
             return self
 
         # Setup network params.
-        self._setup_network()
+        self.setup_network()
 
         # Make sure libvirt can write to our files (since the disk image will be modified by the VM).
         self.vm_image.unprotect()
@@ -418,7 +431,10 @@ class ServiceVM(Model):
             self._cold_boot(updated_xml_descriptor)
 
         # Ensure network is working and load network data.
-        self._network_checks()
+        self.load_network_data()
+        self.register_with_dns()
+
+        # Check if the service is available, wait for it for a bit.
         self._check_service()
 
         return self
@@ -539,9 +555,9 @@ class ServiceVM(Model):
     ################################################################################################################
     # Set up network stuff, required after migration.
     ################################################################################################################
-    def update_migrated_network(self):
-        self._setup_network(update_mac_if_needed=False)
-        self._network_checks(load_vnc=False)
+    def load_network_data(self):
+        self._load_ip_address()
+        self._load_vnc_address_from_running_instance()
 
     ################################################################################################################
     # Pauses a VM and stores its memory state to a disk file.
