@@ -58,6 +58,7 @@ def make_map(config):
         # Migration commands.
         connect('/servicevm/migration_svm_metadata', controller='servicevm', action='migration_svm_metadata')
         connect('/servicevm/migration_svm_disk_file', controller='servicevm', action='migration_svm_disk_file')
+        connect('/servicevm/abort_migration', controller='servicevm', action='abort_migration')
         connect('/servicevm/migration_generate_credentials', controller='servicevm', action='migration_generate_credentials')
         connect('/servicevm/migration_svm_resume', controller='servicevm', action='migration_svm_resume')
 

@@ -39,6 +39,7 @@ from pycloud.pycloud.security import encryption
 from pycloud.pycloud.model import PairedDevice
 from pycloud.pycloud.model.deployment import Deployment
 from pycloud.pycloud.model.paired_device_data_bundle import PairedDeviceDataBundle
+from pycloud.pycloud.model.servicevm import SVMNotFoundException
 
 ################################################################################################################
 # Exception type used in this module.
@@ -47,6 +48,7 @@ class MigrationException(Exception):
     def __init__(self, message):
         super(MigrationException, self).__init__(message)
         self.message = message
+
 
 ############################################################################################################
 # Creates the appropriate URL for an API command.
@@ -70,6 +72,9 @@ def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
     print remote_url
     result = requests.post(remote_url, data=payload, headers=headers, files=files)
 
+    if result.status_code != requests.codes.ok:
+        raise Exception('Error sending request {}: {} - {}'.format(command, result.status_code, result.reason))
+
     return result
 
 
@@ -89,8 +94,6 @@ def migrate_svm(svm_id, remote_host, encrypted):
     payload = json.dumps(svm)
     headers = {'content-type': 'application/json'}
     result = __send_api_command(remote_host, 'servicevm/migration_svm_metadata', encrypted, payload, headers=headers)
-    if result.status_code != requests.codes.ok:
-        raise Exception('Error transferring metadata, code: {}'.format(result.status_code) )
     print 'Metadata was transferred: ' + str(result)
 
     # We pause the VM before transferring its disk and memory state.
@@ -100,39 +103,43 @@ def migrate_svm(svm_id, remote_host, encrypted):
         raise Exception("Cannot pause VM: %s", str(svm_id))
     print 'VM paused.'
 
-    # Transfer the disk image file.
-    print 'Starting disk image file transfer...'
-    payload = {'id': svm_id}
-    disk_image_full_path = os.path.abspath(svm.vm_image.disk_image)
-    files = {'disk_image_file': open(disk_image_full_path, 'rb')}
-    result = __send_api_command(remote_host, 'servicevm/migration_svm_disk_file', encrypted, payload, files=files)
-    if result.status_code != requests.codes.ok:
-        raise Exception('Error transferring disk image file.')
-    print 'Disk image file was transferred: ' + str(result)
+    try:
+        # Transfer the disk image file.
+        print 'Starting disk image file transfer...'
+        payload = {'id': svm_id}
+        disk_image_full_path = os.path.abspath(svm.vm_image.disk_image)
+        files = {'disk_image_file': open(disk_image_full_path, 'rb')}
+        result = __send_api_command(remote_host, 'servicevm/migration_svm_disk_file', encrypted, payload, files=files)
+        print 'Disk image file was transferred: ' + str(result)
 
-    # If needed, ask the remote cloudlet for credentials for the devices associated to the SVM.
-    devices = PairedDevice.by_instance(svm_id)
-    for device in devices:
-        payload = {'id': device.device_id}
-        result = __send_api_command(remote_host, 'servicevm/migration_generate_credentials', encrypted, payload)
-        if result.status_code != requests.codes.ok:
-            raise Exception('Error requesting new credentials generation, problem: {} - {}'.format(result.status_code, result.reason) )
+        # If needed, ask the remote cloudlet for credentials for the devices associated to the SVM.
+        devices = PairedDevice.by_instance(svm_id)
+        for device in devices:
+            payload = {'id': device.device_id}
+            result = __send_api_command(remote_host, 'servicevm/migration_generate_credentials', encrypted, payload)
 
-        # TODO: Store the new credentials so that a device asking for them will get them.
-        print result.text
+            # TODO: Store the new credentials so that a device asking for them will get them.
+            print result.text
 
-    # Do the memory state migration.
-    remote_host_name = remote_host.split(':')[0]
-    print 'Migrating through libvirt to ' + remote_host_name
-    svm.migrate(remote_host_name, p2p=False)
-    # TODO: if migration fails, ask remote to remove svm, and unpair devices.
+        # Do the memory state migration.
+        remote_host_name = remote_host.split(':')[0]
+        print 'Migrating through libvirt to ' + remote_host_name
+        svm.migrate(remote_host_name, p2p=False)
+    except Exception as e:
+        # If migration fails, ask remote to remove svm.
+        print 'Error migrating: {}'.format(e.message)
+        print 'Requesting migration abort for cleanup...'
+        payload = {'svm_id': svm_id}
+        result = __send_api_command(remote_host, 'servicevm/abort_migration', encrypted, payload)
+        print 'Migration aborted: ' + str(result)
+
+        # Rethrow exception.
+        raise e
 
     # Notify remote cloudlet that migration finished.
     print 'Telling target cloudlet that migration has finished.'
     payload = {'id': svm_id}
     result = __send_api_command(remote_host, 'servicevm/migration_svm_resume', encrypted, payload)
-    if result.status_code != requests.codes.ok:
-        raise Exception('Error notifying migration end.')
     print 'Cloudlet notified: ' + str(result)
 
     # Remove the local VM.
@@ -167,7 +174,7 @@ def receive_migrated_svm_disk_file(svm_id, disk_image_object, svm_instances_fold
     # Get the id and load the metadata for this SVM.
     migrated_svm = ServiceVM.by_id(svm_id)
     if not migrated_svm:
-        return 'no svm'
+        raise SVMNotFoundException("No SVM found with the given id: {}".format(svm_id))
 
     # Receive the transferred file and update its path.
     print 'Storing disk image file of SVM in migration.'
@@ -182,12 +189,24 @@ def receive_migrated_svm_disk_file(svm_id, disk_image_object, svm_instances_fold
         backing_disk_file = service.vm_image.disk_image
         migrated_svm.vm_image.rebase_disk_image(backing_disk_file)
     else:
-        return 'no backing file'
+        raise MigrationException("No backing file found for service {}".format(migrated_svm.service_id))
 
     # Save to internal DB.
     migrated_svm.save()
 
-    return 'ok'
+
+############################################################################################################
+# Aborts a migration by removing already created SVM data.
+############################################################################################################
+def abort_migration(svm_id):
+    # Get the id and load the metadata for this SVM.
+    migrated_svm = ServiceVM.by_id(svm_id)
+    if not migrated_svm:
+        raise SVMNotFoundException("No SVM found with the given id {}".format(svm_id))
+
+    print 'Aborting migration, cleaning up...'
+    migrated_svm.stop()
+    print 'Cleanup finished.'
 
 
 ############################################################################################################
@@ -220,7 +239,7 @@ def resume_migrated_svm(svm_id):
     # Find the SVM.
     migrated_svm = ServiceVM.by_id(svm_id)
     if not migrated_svm:
-        return False
+        raise SVMNotFoundException("No SVM found with the given id: {}".format(svm_id))
 
     # Restart the VM, and load network data since it might be in a new network.
     print 'Unpausing VM...'

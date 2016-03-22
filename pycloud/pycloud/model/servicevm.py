@@ -51,6 +51,16 @@ from pycloud.pycloud.cloudlet import get_cloudlet_instance
 
 from pycloud.pycloud.network import cloudlet_dns
 
+
+################################################################################################################
+#
+################################################################################################################
+class SVMNotFoundException(Exception):
+    def __init__(self, message):
+        super(SVMNotFoundException, self).__init__(message)
+        self.message = message
+
+
 ################################################################################################################
 # Represents a runtime ServiceVM, independent on whether it has a cloned or original disk image.
 ################################################################################################################
@@ -488,7 +498,7 @@ class ServiceVM(Model):
             dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
             dns_server.unregister_svm(self.fqdn)
         except Exception, e:
-            print "Warning: error while setting up DNS record: " + str(e)
+            print "Warning: error while removing DNS record: " + str(e)
 
         # Remove it from the database of running VMs.
         ServiceVM.find_and_remove(self._id)

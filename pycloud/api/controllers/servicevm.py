@@ -42,6 +42,8 @@ from pycloud.pycloud.utils import timelog
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import ajaxutils
 from pycloud.pycloud.model import migrator
+from pycloud.pycloud.model.migrator import MigrationException
+from pycloud.pycloud.model.servicevm import SVMNotFoundException
 
 log = logging.getLogger(__name__)
 
@@ -56,6 +58,7 @@ class ServiceVMController(BaseController):
                        'stop': {'action': 'stop', 'reply_type': 'json'},
                        'migration_svm_metadata': {'action': 'migration_svm_metadata', 'reply_type': 'json'},
                        'migration_svm_disk_file': {'action': 'migration_svm_disk_file', 'reply_type': 'json'},
+                       'abort_migration': {'action': 'abort_migration', 'reply_type': 'json'},
                        'migration_generate_credentials': {'action': 'migration_generate_credentials', 'reply_type': 'json'},
                        'migration_svm_resume': {'action': 'migration_svm_resume', 'reply_type': 'json'}}
 
@@ -151,16 +154,33 @@ class ServiceVMController(BaseController):
     def POST_migration_svm_disk_file(self):
         svm_id = request.params.get('id')
         disk_image_object = request.params.get('disk_image_file').file
-        result = migrator.receive_migrated_svm_disk_file(svm_id, disk_image_object, app_globals.cloudlet.svmInstancesFolder)
 
-        if result == 'no svm':
-            abort(404, 'SVM with id %s not found' % svm_id)
-        elif result == 'no backing file':
-            # Migration will be unsuccessful since we won't have the backing file.
-            print 'Service not found in local cloudlet.'
-            abort(500, 'Service is not installed on target cloudlet.')
+        try:
+            migrator.receive_migrated_svm_disk_file(svm_id, disk_image_object, app_globals.cloudlet.svmInstancesFolder)
+        except SVMNotFoundException as e:
+            print e.message
+            abort(404, e.message)
+        except MigrationException as e:
+            print e.message
+            abort(500, e.message)
         else:
             return ajaxutils.JSON_OK
+
+
+    ############################################################################################################
+    # Aborts a migration.
+    ############################################################################################################
+    @asjson
+    def POST_abort_migration(self):
+        svm_id = request.params.get('svm_id')
+
+        try:
+            migrator.abort_migration(svm_id)
+        except SVMNotFoundException as e:
+            print e.message
+            abort(404, e.message)
+
+        return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Generates and returns credentials for a device to be migrated with an svm.
@@ -169,13 +189,9 @@ class ServiceVMController(BaseController):
     def POST_migration_generate_credentials(self):
         device_id = request.params.get('id')
 
-        try:
-            connection_id = app_globals.cloudlet.get_id()
-            credentials = migrator.generate_migration_device_credentials(device_id, connection_id)
-            return credentials
-        except migrator.MigrationException as e:
-            if e.message == 'no device':
-                abort(404, 'Device with id %s not found' % device_id)
+        connection_id = app_globals.cloudlet.get_id()
+        credentials = migrator.generate_migration_device_credentials(device_id, connection_id)
+        return credentials
 
     ############################################################################################################
     # Receives information about a migrated VM.
@@ -184,9 +200,11 @@ class ServiceVMController(BaseController):
     def POST_migration_svm_resume(self):
         # Find the SVM.
         svm_id = request.params.get('id')
-        result = migrator.resume_migrated_svm(svm_id)
-        if not result:
-            print 'SVM with id %s not found.' % svm_id
-            abort(404, 'SVM with id %s not found' % svm_id)
+
+        try:
+            migrator.resume_migrated_svm(svm_id)
+        except SVMNotFoundException as e:
+            print e.message
+            abort(404, e.message)
 
         return ajaxutils.JSON_OK
