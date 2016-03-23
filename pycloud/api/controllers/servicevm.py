@@ -187,10 +187,10 @@ class ServiceVMController(BaseController):
     ############################################################################################################
     @asjson
     def POST_migration_generate_credentials(self):
-        device_id = request.params.get('id')
-
-        connection_id = app_globals.cloudlet.get_id()
-        credentials = migrator.generate_migration_device_credentials(device_id, connection_id)
+        device_id = request.params.get('device_id')
+        connection_id = request.params.get('connection_id')
+        svm_id = request.params.get('svm_id')
+        credentials = migrator.generate_migration_device_credentials(device_id, connection_id, svm_id)
         return credentials
 
     ############################################################################################################

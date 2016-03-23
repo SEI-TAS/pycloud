@@ -39,6 +39,7 @@ from pycloud.pycloud.security import encryption
 from pycloud.pycloud.model import PairedDevice
 from pycloud.pycloud.model.deployment import Deployment
 from pycloud.pycloud.model.paired_device_data_bundle import PairedDeviceDataBundle
+from pycloud.pycloud.model.device_command import AddTrustedCloudletDeviceCommand
 from pycloud.pycloud.model.servicevm import SVMNotFoundException
 
 ################################################################################################################
@@ -73,7 +74,7 @@ def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
     result = requests.post(remote_url, data=payload, headers=headers, files=files)
 
     if result.status_code != requests.codes.ok:
-        raise Exception('Error sending request {}: {} - {}'.format(command, result.status_code, result.reason))
+        raise Exception('Error sending request {}: {} - {}'.format(command, result.status_code, result.text))
 
     return result
 
@@ -115,11 +116,21 @@ def migrate_svm(svm_id, remote_host, encrypted):
         # If needed, ask the remote cloudlet for credentials for the devices associated to the SVM.
         devices = PairedDevice.by_instance(svm_id)
         for device in devices:
-            payload = {'id': device.device_id}
+            # TODO: check what an appropriate connection id would be for devices paired through another cloudlet.
+            deployment = Deployment.get_instance()
+            connection_id = deployment.cloudlet.get_id() + "-" + device.device_id
+            payload = {'device_id': device.device_id, 'connection_id': connection_id, 'svm_id': svm_id}
             result = __send_api_command(remote_host, 'servicevm/migration_generate_credentials', encrypted, payload)
 
             # TODO: Store the new credentials so that a device asking for them will get them.
             print result.text
+            # Create a PairedDeviceDataBundle from json object
+            # Store it inside a DeviceCommand, and save it to DB.
+            paired_device_data_bundle = PairedDeviceDataBundle()
+            paired_device_data_bundle.fill_from_dict(json.loads(result.text))
+            device_command = AddTrustedCloudletDeviceCommand(paired_device_data_bundle)
+            device_command.device_id = device.device_id
+            device_command.save()
 
         # Do the memory state migration.
         remote_host_name = remote_host.split(':')[0]
@@ -131,6 +142,11 @@ def migrate_svm(svm_id, remote_host, encrypted):
         print 'Requesting migration abort for cleanup...'
         payload = {'svm_id': svm_id}
         result = __send_api_command(remote_host, 'servicevm/abort_migration', encrypted, payload)
+
+        devices = PairedDevice.by_instance(svm_id)
+        for device in devices:
+            AddTrustedCloudletDeviceCommand.clear_commands(device.device_id)
+
         print 'Migration aborted: ' + str(result)
 
         # Rethrow exception.
@@ -153,6 +169,8 @@ def migrate_svm(svm_id, remote_host, encrypted):
 def receive_migrated_svm_metadata(svm_json_string):
     # Parse the body of the request as JSON into a python object.
     json_svm = json.loads(svm_json_string)
+    if json_svm is None:
+        raise MigrationException("No SVM metadata was received")
 
     # Get information about the SVM.
     print 'Obtaining metadata of SVM to be received.'
@@ -206,25 +224,35 @@ def abort_migration(svm_id):
 
     print 'Aborting migration, cleaning up...'
     migrated_svm.stop()
+
+    deployment = Deployment.get_instance()
+    paired_devices = PairedDevice.by_instance(svm_id)
+    for paired_device in paired_devices:
+        deployment.unpair_device(paired_device.device_id)
     print 'Cleanup finished.'
 
 
 ############################################################################################################
 # Generates and returns credentials for the given device.
 ############################################################################################################
-def generate_migration_device_credentials(device_id, connection_id):
+def generate_migration_device_credentials(device_id, connection_id, svm_id):
     # Get the new credentials for the device on the current deployment.
     print 'Generating credentials for device that will migrate to our cloudlet.'
     device_type = 'mobile'
     deployment = Deployment.get_instance()
     device_keys = deployment.pair_device(device_id, connection_id, device_type)
 
+    # Configure the associated instance.
+    paired_device = PairedDevice.by_id(device_id)
+    paired_device.instance = svm_id
+    paired_device.save()
+
     # Bundle the credentials and info needed for a newly paired device.
     print 'Bundling credentials for device.'
     device_credentials = PairedDeviceDataBundle()
     device_credentials.ssid = deployment.cloudlet.ssid
     device_credentials.auth_password = device_keys.auth_password
-    device_credentials.server_public_key = device_keys.server_private_key
+    device_credentials.server_public_key = device_keys.server_public_key
     device_credentials.device_private_key = device_keys.private_key
     device_credentials.load_certificate(deployment.radius_server.cert_file_path)
 

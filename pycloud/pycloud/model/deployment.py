@@ -160,7 +160,8 @@ class Deployment(Model):
         device_keys = credentials.DeviceCredentials.create_object(self.cloudlet.credentials_type,
                                                                   self.cloudlet.data_folder,
                                                                   device_id,
-                                                                  self.server_keys.private_key_path)
+                                                                  self.server_keys.private_key_path,
+                                                                  self.server_keys.public_key_path,)
 
         # Create the device's private key and the device's passwords.
         device_keys.generate_and_save_to_file()

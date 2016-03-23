@@ -26,6 +26,8 @@
 # Released under the MIT license
 # http://jquery.org/license
 
+import datetime
+
 from pycloud.pycloud.mongo import Model, ObjectID
 
 ################################################################################################################
@@ -47,7 +49,7 @@ class DeviceCommand(Model):
         self.service_id = None
         self.command = None
         self.params = {}
-        self.datetime = None
+        self.datetime = datetime.datetime.now()
         self.read = False
         super(DeviceCommand, self).__init__(*args, **kwargs)
 
@@ -73,7 +75,7 @@ class DeviceCommand(Model):
     def by_device_id(did=None):
         commands = []
         try:
-            command_cursor = DeviceCommand.find({'device_id': did, 'read': True})
+            command_cursor = DeviceCommand.find({'device_id': did})
             for command in command_cursor:
                 commands.append(command)
         except:
@@ -93,9 +95,23 @@ class DeviceCommand(Model):
 ################################################################################################################
 class AddTrustedCloudletDeviceCommand(DeviceCommand):
 
+    COMMAND = 'add-trusted-cloudlet'
+
     ################################################################################################################
     # Constructor.
     ################################################################################################################
-    def __init__(self, *args, **kwargs):
+    def __init__(self, paired_device_data_bundle, *args, **kwargs):
         super(AddTrustedCloudletDeviceCommand, self).__init__(*args, **kwargs)
-        self.command = 'add-trusted-cloudlet'
+        self.command = self.COMMAND
+        self.params = paired_device_data_bundle.__dict__
+
+
+    ################################################################################################################
+    #
+    ################################################################################################################
+    # noinspection PyBroadException
+    @staticmethod
+    def clear_commands(did=None):
+        commands = AddTrustedCloudletDeviceCommand.find({'device_id': did, 'command': AddTrustedCloudletDeviceCommand.COMMAND})
+        for command in commands:
+            AddTrustedCloudletDeviceCommand.find_and_remove(command._id)

@@ -98,13 +98,6 @@ class ServiceVM(Model):
         super(ServiceVM, self).__init__(*args, **kwargs)
 
     ################################################################################################################
-    # Sets up the internal attributes from a dictionary.
-    ################################################################################################################
-    def fill_from_dict(self, values_dict):
-        for key in values_dict:
-            setattr(self, key, values_dict[key])
-
-    ################################################################################################################
     # Sets up the internal network parameters, based on the config.
     ################################################################################################################
     def setup_network(self, update_mac_if_needed=True):
