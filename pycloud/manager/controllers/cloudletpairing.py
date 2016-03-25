@@ -66,6 +66,8 @@ class CloudletPairingController(BaseController):
         # Generate secret to display
         page.secret = "Hi I\'m a secret!"
 
+        page.ssid = request.params.get('ssid', None)
+        print page.ssid
         # page.devices = []
         # page.bt_selected = ''
         # page.usb_selected = ''
@@ -124,7 +126,7 @@ class CloudletPairingController(BaseController):
     ############################################################################################################
     # Connects to another cloudlet's nic.
     ############################################################################################################
-    def GET_pair(self, ssid, psk):
+    def GET_pair(self, secret):
         return None
 
     ############################################################################################################
