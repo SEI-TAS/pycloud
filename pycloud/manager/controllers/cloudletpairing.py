@@ -55,7 +55,7 @@ class CloudletPairingController(BaseController):
     # Entry point.
     ############################################################################################################
     def GET_index(self):
-        return self.GET_available()
+        return self.GET_pair_display()
 
     ############################################################################################################
     # Displays the
