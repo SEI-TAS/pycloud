@@ -56,15 +56,15 @@ class CloudletPairingController(BaseController):
     # Entry point.
     ############################################################################################################
     def GET_index(self):
-        return self.GET_pair_display()
+        return self.GET_pair()
 
     ############################################################################################################
     # Displays the connection to cloudlet page
     ############################################################################################################
-    def GET_pair_display(self):
+    def GET_pair(self):
         page = CloudletPairingPage()
 
-        # Generate secret to display
+        # TODO: Generate secret to display
         page.secret = "18Y90A" #secret should be alphanumeric and 6 symbols long
 
         return page.render()
@@ -72,28 +72,34 @@ class CloudletPairingController(BaseController):
     ############################################################################################################
     # Does the work after data is entered
     ############################################################################################################
-    def POST_pair_display(self):
+    def POST_pair(self):
 
         # Generate secret to display
         secret = request.params.get('secret', None)
         ssid = request.params.get('ssid', None)
         psk = request.params.get('psk', None)
 
-        time.sleep(5)
         if ssid is not None and psk is not None:
             print "The secret = %s" % secret
             print "The ssid = %s" % ssid
             print "The psk = %s" % psk
+            # TODO: Connect to the other cloudlet
+            # TODO: Send device name
+            # TODO: Wait for encrypted credentials
+            # TODO: Decode encrypted credentials with "<device name>-<secret>" as the key
+            # TODO: Add the cloudlet to the database
+
+        time.sleep(5) # For testing purposes
 
         return h.redirect_to(controller='devices', action='list')
 
     ############################################################################################################
     # Displays the discover page for cloudlet pairing.
     ############################################################################################################
-    def GET_discover_display(self):
+    def GET_discover(self):
         page = CloudletDiscoveryPage()
 
-        # Generate ssid and random psk here
+        # TODO: Generate ssid and random psk here
         page.ssid = "thunder-5A34C9" #ssid should be "<cloudlet machine name>-<alphanumeric and 6 symbols long>"
         page.psk = "12AE34" #psk should be alphanumeric and 6 symbols long
 
@@ -102,18 +108,25 @@ class CloudletPairingController(BaseController):
     ############################################################################################################
     # Does the wrk after data is entered
     ############################################################################################################
-    def POST_discover_display(self):
+    def POST_discover(self):
 
         # Generate secret to display
         secret = request.params.get('secret', None)
         ssid = request.params.get('ssid', None)
         psk = request.params.get('psk', None)
 
-        time.sleep(5)
-        if ssid is not None and psk is not None:
+        if secret is not None:
             print "The secret = %s" % secret
             print "The ssid = %s" % ssid
             print "The psk = %s" % psk
+            # TODO: Start new wifi profile
+            # TODO: wait for other device to connect and send machine name
+            # TODO: Create credentials for machine name
+            # TODO: Encrypt credentials with "<device name>-<secret>"
+            # TODO: Send credentials to the other cloudlet
+            # TODO: Terminate wifi profile
+
+        time.sleep(5) # For testing purposes
 
         return h.redirect_to(controller='devices', action='list')
 
