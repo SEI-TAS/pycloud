@@ -86,8 +86,6 @@ def make_map(config):
     connect('bootstrap', '/devices/bootstrap', controller='devices', action='bootstrap')
     connect('pair_cloudlet_display', '/devices/cloudlet/pair', controller='cloudletpairing', action='pair_display')
     connect('discover_cloudlets_display', '/devices/cloudlet/discover', controller='cloudletpairing', action='discover_display')
-    connect('pair_cloudlet', '/devices/cloudlet/pair/{secret}', controller='cloudletpairing', action='pair')
-    connect('discover_cloudlets', '/devices/cloudlet/discover/{secret}', controller='cloudletpairing', action='discover')
     connect('available_devices', '/devices/available', controller='devicespairing', action='available')
     connect('pair_device', '/devices/pair/{id}', controller='devicespairing', action='pair')
     connect('authorize_device', '/devices/authorize/{did}', controller='devices', action='authorize')

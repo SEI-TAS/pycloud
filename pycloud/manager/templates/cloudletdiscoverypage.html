@@ -45,10 +45,14 @@ http://jquery.org/license
             </div>
 
             <div class="panel-body">
-                Please communicate the following ssid and psk to the cloudlet you are pairing to: ${page.ssid}, ${page.psk}
-                <form id="discover_form" method="get" action="${h.url_for(controller='cloudletpairing', action='discover', secret=2)}">
-                    Secret: <input type="text" name="secret"><br>
-                    <button class="btn btn-large btn-success" onclick="$(this).prop('disabled', true); $('#discover_form').submit();">Make Discoverable</button>
+                Please communicate the following to the admin for the cloudlet you are pairing to: 
+                <h4>SSID: <b>${page.ssid}</b> <br> PSK: <b>${page.psk}</b></h4>
+
+                <form id="discover_form" method="post">
+                    <input type="hidden" name="ssid" value="${page.ssid}">
+                    <input type="hidden" name="psk" value="${page.psk}">
+                    Secret: <input type="password" name="secret"><br><br>
+                    <button class="btn btn-large btn-success" onclick="$(this).prop('disabled', true); $('#discover_form').submit(); pairCloudlet()">Make Discoverable</button>
                 </form>
                 <br><br>
             </div>

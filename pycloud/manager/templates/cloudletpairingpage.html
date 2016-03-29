@@ -44,13 +44,15 @@ http://jquery.org/license
                 <h2>Pair to Cloudlet</h2>
             </div>
             <div class="panel-body">
-                Please communicate the following secret to the cloudlet you are pairing to: <b>${page.secret}</b>
-                <br><br>
+                Please communicate the following to the admin for the cloudlet you are pairing to: 
+                <h4>Secret: <b>${page.secret}</b></h4>
                 The cloudlet you are pairing to will provide you with the following:
-                <form id="pairing_form" method="get" action="${h.url_for(controller='cloudletpairing', action='pair', secret=2)}">
+
+                <form id="pairing_form" method="post">
+                    <input type="hidden" name="secret" value="${page.secret}">
                     SSID: <input type="text" name="ssid"><br>
-                    PSK: <input type="password" name="psk" style="margin-left:5px;"><br>
-                    <button class="btn btn-large btn-success" onclick="$(this).prop('disabled', true); $('#pairing_form').submit();">Pair</button>
+                    PSK: <input type="password" name="psk" style="margin-left:5px;"><br><br>
+                    <button class="btn btn-large btn-success" onclick="$(this).prop('disabled', true); $('#pairing_form').submit(); pairCloudlet()">Pair</button>
                 </form>
             </div>
         </div>

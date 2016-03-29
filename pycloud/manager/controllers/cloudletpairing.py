@@ -25,9 +25,10 @@
 # Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
 # Released under the MIT license
 # http://jquery.org/license
-__author__ = 'Sebastian'
+__author__ = 'Keegan'
 
 import logging
+import time
 
 from pylons import request, response, session, tmpl_context as c
 from pylons import app_globals
@@ -58,40 +59,33 @@ class CloudletPairingController(BaseController):
         return self.GET_pair_display()
 
     ############################################################################################################
-    # Displays the
+    # Displays the connection to cloudlet page
     ############################################################################################################
     def GET_pair_display(self):
         page = CloudletPairingPage()
 
         # Generate secret to display
-        page.secret = "Hi I\'m a secret!"
-
-        page.ssid = request.params.get('ssid', None)
-        print page.ssid
-        # page.devices = []
-        # page.bt_selected = ''
-        # page.usb_selected = ''
-        #
-        # # Ensure the device types are initialized.
-        # BluetoothSKADevice.initialize(app_globals.cloudlet.data_folder)
-        # ADBSKADevice.initialize(app_globals.cloudlet.data_folder)
-        #
-        # page.connection = request.params.get('connection', None)
-        # if page.connection is None:
-        #     page.connection = 'usb'
-        #
-        # try:
-        #     if page.connection == 'bt':
-        #         page.bt_selected = 'selected'
-        #         page.devices = BluetoothSKADevice.list_devices()
-        #     else:
-        #         page.usb_selected = 'selected'
-        #         page.devices = ADBSKADevice.list_devices()
-        # except Exception, e:
-        #     print e
-        #     h.flash('Error looking for devices: ' + str(e))
+        page.secret = "18Y90A" #secret should be alphanumeric and 6 symbols long
 
         return page.render()
+
+    ############################################################################################################
+    # Does the work after data is entered
+    ############################################################################################################
+    def POST_pair_display(self):
+
+        # Generate secret to display
+        secret = request.params.get('secret', None)
+        ssid = request.params.get('ssid', None)
+        psk = request.params.get('psk', None)
+
+        time.sleep(5)
+        if ssid is not None and psk is not None:
+            print "The secret = %s" % secret
+            print "The ssid = %s" % ssid
+            print "The psk = %s" % psk
+
+        return h.redirect_to(controller='devices', action='list')
 
     ############################################################################################################
     # Displays the discover page for cloudlet pairing.
@@ -99,40 +93,27 @@ class CloudletPairingController(BaseController):
     def GET_discover_display(self):
         page = CloudletDiscoveryPage()
 
-        page.ssid = "thunder-5A34C9"
-        page.psk = "1234"
-        # connection = request.params.get('connection', None)
-        # if connection is None:
-        #     connection = 'bt'
-        #
-        # try:
-        #     # Create a device depending on the type.
-        #     if connection == 'bt':
-        #         port = request.params.get('port', None)
-        #         name = request.params.get('name', None)
-        #         curr_device = BluetoothSKADevice({'host': id, 'port': int(port), 'name': name})
-        #     else:
-        #         curr_device = ADBSKADevice(id)
-        #
-        #     deployment = Deployment.get_instance()
-        #     deployment.pair_device(curr_device)
-        # except Exception, e:
-        #     return ajaxutils.show_and_return_error_dict(e.message)
-        #
-        # return ajaxutils.JSON_OK
+        # Generate ssid and random psk here
+        page.ssid = "thunder-5A34C9" #ssid should be "<cloudlet machine name>-<alphanumeric and 6 symbols long>"
+        page.psk = "12AE34" #psk should be alphanumeric and 6 symbols long
 
         return page.render()
 
     ############################################################################################################
-    # Connects to another cloudlet's nic.
+    # Does the wrk after data is entered
     ############################################################################################################
-    def GET_pair(self, secret):
-        return None
+    def POST_discover_display(self):
 
-    ############################################################################################################
-    # Generates a's credentials and sends it to cloudlet a.
-    ############################################################################################################
-    def GET_discover(self, secret):
-        return None
+        # Generate secret to display
+        secret = request.params.get('secret', None)
+        ssid = request.params.get('ssid', None)
+        psk = request.params.get('psk', None)
 
+        time.sleep(5)
+        if ssid is not None and psk is not None:
+            print "The secret = %s" % secret
+            print "The ssid = %s" % ssid
+            print "The psk = %s" % psk
+
+        return h.redirect_to(controller='devices', action='list')
 
