@@ -80,7 +80,7 @@ class WifiManager(object):
     # Connect to a stored network.
     ################################################################################################################
     def connect_to_network(self, connection_id):
-        # TODO: this does not currently work, as by default policy a non-root user is not allowed to connect to networks.
+        # NOTE: only works if called from root user or user at console.
         response = nmcli('connection up id {}'.format(connection_id))
 
         # TODO: process result?

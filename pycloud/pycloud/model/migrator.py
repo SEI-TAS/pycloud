@@ -39,7 +39,7 @@ from pycloud.pycloud.security import encryption
 from pycloud.pycloud.model import PairedDevice
 from pycloud.pycloud.model.deployment import Deployment
 from pycloud.pycloud.model.paired_device_data_bundle import PairedDeviceDataBundle
-from pycloud.pycloud.model.device_command import AddTrustedCloudletDeviceCommand
+from pycloud.pycloud.model.message import AddTrustedCloudletDeviceMessage
 from pycloud.pycloud.model.servicevm import SVMNotFoundException
 
 ################################################################################################################
@@ -122,13 +122,11 @@ def migrate_svm(svm_id, remote_host, encrypted):
             payload = {'device_id': device.device_id, 'connection_id': connection_id, 'svm_id': svm_id}
             result = __send_api_command(remote_host, 'servicevm/migration_generate_credentials', encrypted, payload)
 
-            # TODO: Store the new credentials so that a device asking for them will get them.
+            # Store the new credentials so that a device asking for them will get them.
             print result.text
-            # Create a PairedDeviceDataBundle from json object
-            # Store it inside a DeviceCommand, and save it to DB.
             paired_device_data_bundle = PairedDeviceDataBundle()
             paired_device_data_bundle.fill_from_dict(json.loads(result.text))
-            device_command = AddTrustedCloudletDeviceCommand(paired_device_data_bundle)
+            device_command = AddTrustedCloudletDeviceMessage(paired_device_data_bundle)
             device_command.device_id = device.device_id
             device_command.save()
 
@@ -145,7 +143,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
 
         devices = PairedDevice.by_instance(svm_id)
         for device in devices:
-            AddTrustedCloudletDeviceCommand.clear_commands(device.device_id)
+            AddTrustedCloudletDeviceMessage.clear_messages(device.device_id)
 
         print 'Migration aborted: ' + str(result)
 

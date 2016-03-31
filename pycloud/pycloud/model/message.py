@@ -31,13 +31,13 @@ import datetime
 from pycloud.pycloud.mongo import Model, ObjectID
 
 ################################################################################################################
-# Represents a mailbox where commands to devices can be put.
+# Represents a mailbox where messages to devices can be put.
 ################################################################################################################
-class DeviceCommand(Model):
+class DeviceMessage(Model):
     # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
-        collection = "commands"
-        external = ['_id', 'device_id', 'service_id', 'command', 'params', 'datetime']
+        collection = "messages"
+        external = ['_id', 'device_id', 'service_id', 'message', 'params', 'datetime']
         mapping = {
         }
 
@@ -47,11 +47,11 @@ class DeviceCommand(Model):
     def __init__(self, *args, **kwargs):
         self.device_id = None
         self.service_id = None
-        self.command = None
+        self.message = None
         self.params = {}
         self.datetime = datetime.datetime.now()
         self.read = False
-        super(DeviceCommand, self).__init__(*args, **kwargs)
+        super(DeviceMessage, self).__init__(*args, **kwargs)
 
     ################################################################################################################
     # Locate a CommandMailbox by its ID.
@@ -65,7 +65,7 @@ class DeviceCommand(Model):
                 record_id = ObjectID(record_id)
             except:
                 return None
-        return DeviceCommand.find_one({'_id': record_id})
+        return DeviceMessage.find_one({'_id': record_id})
 
     ################################################################################################################
     # Locate a device by its pubilc device ID
@@ -73,14 +73,29 @@ class DeviceCommand(Model):
     # noinspection PyBroadException
     @staticmethod
     def by_device_id(did=None):
-        commands = []
+        messages = []
         try:
-            command_cursor = DeviceCommand.find({'device_id': did})
-            for command in command_cursor:
-                commands.append(command)
+            message_cursor = DeviceMessage.find({'device_id': did})
+            for message in message_cursor:
+                messages.append(message)
         except:
             pass
-        return commands
+        return messages
+
+    ################################################################################################################
+    # Locate a device by its pubilc device ID
+    ################################################################################################################
+    # noinspection PyBroadException
+    @staticmethod
+    def unread_by_device_id(did=None):
+        messages = []
+        try:
+            message_cursor = DeviceMessage.find({'device_id': did, 'read': False})
+            for message in message_cursor:
+                messages.append(message)
+        except:
+            pass
+        return messages
 
     ################################################################################################################
     # Cleanly and safely gets a CommandMailbox and removes it from the database.
@@ -88,21 +103,21 @@ class DeviceCommand(Model):
     @staticmethod
     def find_and_remove(item_id):
         # Find the right app and remove it. find_and_modify will only return the document with matching id.
-        return DeviceCommand.find_and_modify(query={'_id': item_id}, remove=True)
+        return DeviceMessage.find_and_modify(query={'_id': item_id}, remove=True)
 
 ################################################################################################################
-# Particular command used to notify a device that it has to create a certain wifi profile and store credentials.
+# Particular message used to notify a device that it has to create a certain wifi profile and store credentials.
 ################################################################################################################
-class AddTrustedCloudletDeviceCommand(DeviceCommand):
+class AddTrustedCloudletDeviceMessage(DeviceMessage):
 
-    COMMAND = 'add-trusted-cloudlet'
+    MESSAGE = 'add-trusted-cloudlet'
 
     ################################################################################################################
     # Constructor.
     ################################################################################################################
     def __init__(self, paired_device_data_bundle, *args, **kwargs):
-        super(AddTrustedCloudletDeviceCommand, self).__init__(*args, **kwargs)
-        self.command = self.COMMAND
+        super(AddTrustedCloudletDeviceMessage, self).__init__(*args, **kwargs)
+        self.message = self.MESSAGE
         self.params = paired_device_data_bundle.__dict__
 
 
@@ -111,7 +126,7 @@ class AddTrustedCloudletDeviceCommand(DeviceCommand):
     ################################################################################################################
     # noinspection PyBroadException
     @staticmethod
-    def clear_commands(did=None):
-        commands = AddTrustedCloudletDeviceCommand.find({'device_id': did, 'command': AddTrustedCloudletDeviceCommand.COMMAND})
-        for command in commands:
-            AddTrustedCloudletDeviceCommand.find_and_remove(command._id)
+    def clear_messages(did=None):
+        messages = AddTrustedCloudletDeviceMessage.find({'device_id': did, 'message': AddTrustedCloudletDeviceMessage.COMMAND})
+        for message in messages:
+            AddTrustedCloudletDeviceMessage.find_and_remove(message._id)

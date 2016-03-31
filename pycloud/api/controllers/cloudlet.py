@@ -38,14 +38,14 @@ from pycloud.pycloud.cloudlet import Cloudlet
 from pycloud.pycloud.model import Service, App
 
 from pycloud.pycloud.model.paired_device import PairedDevice
-from pycloud.pycloud.model.device_command import DeviceCommand
+from pycloud.pycloud.model.message import DeviceMessage
 
 
 class CloudletController(BaseController):
 
     # Maps API URL words to actual functions in the controller.
     API_ACTIONS_MAP = {'': {'action': 'metadata', 'reply_type': 'json'},
-                       'get_command': {'action': 'get_command', 'reply_type': 'json'}}
+                       'get_command': {'action': 'get_commands', 'reply_type': 'json'}}
 
     ################################################################################################################
     #
@@ -69,21 +69,20 @@ class CloudletController(BaseController):
     # Only valid if the device has been paired, otherwise it will have no mailbox for commands.
     ################################################################################################################
     @asjson
-    def GET_get_command(self):
+    def GET_get_messages(self):
         device_id = request.headers['X-Device-ID']
         if not device_id or not PairedDevice.by_id(device_id):
             error = '#Device is not paired to this cloudlet'
             print error
             abort(401, error)
 
-        commands = DeviceCommand.by_device_id(device_id)
+        messages = DeviceMessage.unread_by_device_id(device_id)
         reply = {}
-        reply['num_commands'] = len(commands)
-        reply['commands'] = commands
+        reply['messages'] = messages
 
         # Mark all commands as read, to avoid getting them again in a future call.
-        for command in commands:
-            command.read = True
-            command.save()
+        for message in messages:
+            message.read = True
+            message.save()
 
         return reply
