@@ -37,7 +37,7 @@ class DeviceMessage(Model):
     # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
         collection = "messages"
-        external = ['_id', 'device_id', 'service_id', 'message', 'params', 'datetime']
+        external = ['device_id', 'service_id', 'message', 'params']
         mapping = {
         }
 
@@ -92,7 +92,28 @@ class DeviceMessage(Model):
         try:
             message_cursor = DeviceMessage.find({'device_id': did, 'read': False})
             for message in message_cursor:
-                messages.append(message)
+                return_message = {}
+                return_message['device_id'] = message['device_id']
+                return_message['service_id'] = message['service_id']
+                return_message['message'] = message['message']
+                return_message['params'] = message['params']
+                messages.append(return_message)
+        except:
+            pass
+        return messages
+
+    ################################################################################################################
+    #
+    ################################################################################################################
+    # noinspection PyBroadException
+    @staticmethod
+    def mark_all_as_read(did=None):
+        messages = []
+        try:
+            message_cursor = DeviceMessage.find({'device_id': did, 'read': False})
+            for message in message_cursor:
+                message['read'] = True
+                message.save()
         except:
             pass
         return messages

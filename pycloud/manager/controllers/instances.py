@@ -92,15 +92,16 @@ class InstancesController(BaseController):
         cloudlets = cloudlet_finder.find_cloudlets(seconds_to_wait=2)
 
         # Filter out ourselves from the list of cloudlets.
-        current_cloudlet = Cloudlet.get_hostname()
+        current_cloudlet = Cloudlet.get_fqdn()
+        print 'Current cloudlet: ' + current_cloudlet
         if current_cloudlet in cloudlets:
-            cloudlets.remove(current_cloudlet)
+            del cloudlets[current_cloudlet]
 
         # Encode name, port and encryption info into string to be shown to user.
-        cloudlet_info_dict = []
+        cloudlet_info_dict = {}
         for cloudlet_name in cloudlets:
             cloudlet_info = cloudlets[cloudlet_name]
-            encoded_cloudlet_info =cloudlet_name + ":" + str(cloudlet_info.port) + ":encryption-" + cloudlet_info.encryption
+            encoded_cloudlet_info = cloudlet_name + ":" + str(cloudlet_info.port) + ":encryption-" + cloudlet_info.encryption
             cloudlet_info_dict[encoded_cloudlet_info] = encoded_cloudlet_info
 
         print 'Available cloudlets: '

@@ -139,6 +139,13 @@ class Cloudlet(object):
         return socket.gethostname()
 
     ################################################################################################################
+    # Returns the cloudlet's hostname.
+    ################################################################################################################
+    @staticmethod
+    def get_fqdn():
+        return Cloudlet.get_hostname() + ".local."
+
+    ################################################################################################################
     # Returns the an ID for the cloudet. Currently implemented, it is the hostname with the hostid appended to it.
     ################################################################################################################
     @staticmethod

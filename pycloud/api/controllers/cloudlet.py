@@ -45,7 +45,7 @@ class CloudletController(BaseController):
 
     # Maps API URL words to actual functions in the controller.
     API_ACTIONS_MAP = {'': {'action': 'metadata', 'reply_type': 'json'},
-                       'get_command': {'action': 'get_commands', 'reply_type': 'json'}}
+                       'get_messages': {'action': 'get_messages', 'reply_type': 'json'}}
 
     ################################################################################################################
     #
@@ -81,8 +81,8 @@ class CloudletController(BaseController):
         reply['messages'] = messages
 
         # Mark all commands as read, to avoid getting them again in a future call.
-        for message in messages:
-            message.read = True
-            message.save()
+        DeviceMessage.mark_all_as_read(device_id)
 
+        print 'Messages: '
+        print reply
         return reply

@@ -50,7 +50,7 @@ http://jquery.org/license
                     <p>Current Wi-Fi network: <b>${page.current_network}</b></p>
                     <p>
                         <button class="btn btn-info" onclick="$('#modal-wifi-connect').modal('show');">
-                                <span class="glyphicon glyphicon-transfer" style="color: white"></span> Available Paired Wi-Fi Cloudlet Networks
+                                <span class="glyphicon glyphicon-transfer" style="color: white"></span> Available Wi-Fi Cloudlet Networks
                         </button>
                     </p>
                 </div>
@@ -136,12 +136,12 @@ http://jquery.org/license
 		<div class="modal-content">
 		    <div class="modal-header">
 		        <button type="button" class="close" data-dismiss="modal">x</button>
-		        <h3>Available Paired Wi-Fi Cloudlet Networks</h3>
+		        <h3>Available Wi-Fi Cloudlet Networks</h3>
 		    </div>
 		    <div class="modal-body">
 		        <div class="well">
 		            <form id="wifi-connection-form" class="form-horizontal" action="" method="post">
-		            	${dropdown('ssid', options=page.available_networks, input_width=12, label=_('Available Paired Networks'))}
+		            	${dropdown('ssid', options=page.available_networks, input_width=12, label=_('Available Wi-Fi Cloudlet Networks'))}
 		            </form>
 		        </div>
 		    </div>
