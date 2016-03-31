@@ -67,19 +67,17 @@ class InstancesController(BaseController):
         current_network = wifi_manager.current_network()
         instancesPage.current_network = wifi_manager.current_network()
 
-        # Get a list of paired cloudlet networks in range.
-        available_networks = wifi_manager.list_networks()
-        paired_networks = PairedDevice.by_type('cloudlet')
-        paired_networks_in_range = {}
-        for paired_network in paired_networks:
-            if paired_network.connection_id in available_networks:
-                paired_networks_in_range[paired_network.connection_id] = paired_network.connection_id
+        # Get a list of cloudlet networks in range, and pass them to dict format.
+        available_networks_array = wifi_manager.list_networks()
+        available_networks = {}
+        for network_id in available_networks_array:
+            available_networks[network_id] = network_id
 
         # Filter out ourselves.
-        if current_network in paired_networks_in_range:
-            del paired_networks_in_range[current_network]
+        if current_network in available_networks:
+            del available_networks[current_network]
 
-        instancesPage.available_networks = paired_networks_in_range
+        instancesPage.available_networks = available_networks
 
         # Pass the grid and render the page.
         return instancesPage.render()
@@ -98,19 +96,17 @@ class InstancesController(BaseController):
         if current_cloudlet in cloudlets:
             cloudlets.remove(current_cloudlet)
 
-        # Show only paired cloudlets.
-        paired_cloudlets = {}
-        paired_networks = PairedDevice.by_type('cloudlet')
-        for paired_cloudlet in paired_networks:
-            if paired_cloudlet.device_id in cloudlets:
-                cloudlet_info = cloudlets[paired_cloudlet.device_id]
-                encoded_cloudlet_info = paired_cloudlet.device_id + ":" + str(cloudlet_info.port) + ":encryption-" + cloudlet_info.encryption
-                paired_cloudlets[encoded_cloudlet_info] = encoded_cloudlet_info
+        # Encode name, port and encryption info into string to be shown to user.
+        cloudlet_info_dict = []
+        for cloudlet_name in cloudlets:
+            cloudlet_info = cloudlets[cloudlet_name]
+            encoded_cloudlet_info =cloudlet_name + ":" + str(cloudlet_info.port) + ":encryption-" + cloudlet_info.encryption
+            cloudlet_info_dict[encoded_cloudlet_info] = encoded_cloudlet_info
 
-        print 'Paired and available cloudlets: '
-        print paired_cloudlets
+        print 'Available cloudlets: '
+        print cloudlet_info_dict
 
-        return paired_cloudlets
+        return cloudlet_info_dict
 
     ############################################################################################################
     # Starts a new SVM instance of the Service.
