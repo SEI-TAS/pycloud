@@ -168,7 +168,7 @@ class EncryptedController(BaseController):
         response.content_length = len(encrypted_reply)
 
         # If there was no error, respond with OK and the encrypted reply.
-        print 'Sending encrypted reply.'
+        print 'Sending encrypted reply, length: {}'.format(len(encrypted_reply))
         return encrypted_reply
 
 

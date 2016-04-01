@@ -36,6 +36,7 @@ class PairedDeviceDataBundle(object):
     # Constructor.
     ################################################################################################################
     def __init__(self, *args, **kwargs):
+        self.cloudlet_name = None
         self.ssid = None
         self.auth_password = None
         self.server_radius_cert = None
