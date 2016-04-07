@@ -128,6 +128,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
             paired_device_data_bundle.fill_from_dict(json.loads(result.text))
             device_command = AddTrustedCloudletDeviceMessage(paired_device_data_bundle)
             device_command.device_id = device.device_id
+            device_command.service_id = svm.service_id
             device_command.save()
 
         # Do the memory state migration.
@@ -141,9 +142,10 @@ def migrate_svm(svm_id, remote_host, encrypted):
         payload = {'svm_id': svm_id}
         result = __send_api_command(remote_host, 'servicevm/abort_migration', encrypted, payload)
 
+        # TODO: re-enabled message cleanup, it was commented out for easier testing.
         devices = PairedDevice.by_instance(svm_id)
-        for device in devices:
-            AddTrustedCloudletDeviceMessage.clear_messages(device.device_id)
+        #for device in devices:
+        #    AddTrustedCloudletDeviceMessage.clear_messages(device.device_id)
 
         print 'Migration aborted: ' + str(result)
 
@@ -248,6 +250,7 @@ def generate_migration_device_credentials(device_id, connection_id, svm_id):
     # Bundle the credentials and info needed for a newly paired device.
     print 'Bundling credentials for device.'
     device_credentials = PairedDeviceDataBundle()
+    device_credentials.cloudlet_name = Cloudlet.get_hostname()
     device_credentials.ssid = deployment.cloudlet.ssid
     device_credentials.auth_password = device_keys.auth_password
     device_credentials.server_public_key = device_keys.server_public_key

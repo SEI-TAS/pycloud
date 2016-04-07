@@ -35,6 +35,9 @@ cd ../../scripts
 cd ../libusb
 bash setup.sh
 
+# Set up DNS server.
+bash dns_setup.sh
+
 # Adds the current user to the appropriate group to get correct permissions.
 # NOTE: this is done manually in a production set up, as it has to be done to the user that will be running
 # system, not the current user.

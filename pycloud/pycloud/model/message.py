@@ -87,10 +87,10 @@ class DeviceMessage(Model):
     ################################################################################################################
     # noinspection PyBroadException
     @staticmethod
-    def unread_by_device_id(did=None):
+    def unread_by_device_id(device_id, service_id):
         messages = []
         try:
-            message_cursor = DeviceMessage.find({'device_id': did, 'read': False})
+            message_cursor = DeviceMessage.find({'device_id': device_id, 'service_id': service_id, 'read': False})
             for message in message_cursor:
                 return_message = {}
                 return_message['device_id'] = message['device_id']
@@ -107,10 +107,10 @@ class DeviceMessage(Model):
     ################################################################################################################
     # noinspection PyBroadException
     @staticmethod
-    def mark_all_as_read(did=None):
+    def mark_all_as_read(device_id, service_id):
         messages = []
         try:
-            message_cursor = DeviceMessage.find({'device_id': did, 'read': False})
+            message_cursor = DeviceMessage.find({'device_id': device_id, 'service_id': service_id, 'read': False})
             for message in message_cursor:
                 message['read'] = True
                 message.save()
@@ -141,13 +141,13 @@ class AddTrustedCloudletDeviceMessage(DeviceMessage):
         self.message = self.MESSAGE
         self.params = paired_device_data_bundle.__dict__
 
-
     ################################################################################################################
     #
     ################################################################################################################
     # noinspection PyBroadException
     @staticmethod
-    def clear_messages(did=None):
-        messages = AddTrustedCloudletDeviceMessage.find({'device_id': did, 'message': AddTrustedCloudletDeviceMessage.COMMAND})
+    def clear_messages(device_id):
+        messages = AddTrustedCloudletDeviceMessage.find({'device_id': device_id,
+                                                         'message': AddTrustedCloudletDeviceMessage.MESSAGE})
         for message in messages:
             AddTrustedCloudletDeviceMessage.find_and_remove(message._id)

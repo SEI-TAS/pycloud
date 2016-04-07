@@ -71,17 +71,14 @@ class CloudletController(BaseController):
     @asjson
     def GET_get_messages(self):
         device_id = request.headers['X-Device-ID']
-        if not device_id or not PairedDevice.by_id(device_id):
-            error = '#Device is not paired to this cloudlet'
-            print error
-            abort(401, error)
+        service_id = request.params.get('serviceId', None)
 
-        messages = DeviceMessage.unread_by_device_id(device_id)
+        messages = DeviceMessage.unread_by_device_id(device_id, service_id)
         reply = {}
         reply['messages'] = messages
 
         # Mark all commands as read, to avoid getting them again in a future call.
-        DeviceMessage.mark_all_as_read(device_id)
+        DeviceMessage.mark_all_as_read(device_id, service_id)
 
         print 'Messages: '
         print reply
