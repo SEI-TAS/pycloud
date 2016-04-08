@@ -37,7 +37,6 @@ from pycloud.pycloud.utils import timelog
 from pycloud.pycloud.cloudlet import Cloudlet
 from pycloud.pycloud.model import Service, App
 
-from pycloud.pycloud.model.paired_device import PairedDevice
 from pycloud.pycloud.model.message import DeviceMessage
 
 

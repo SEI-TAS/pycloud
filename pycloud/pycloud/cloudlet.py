@@ -116,6 +116,7 @@ class Cloudlet(object):
         self.auth_controller = config['pycloud.auth_controller'] if 'pycloud.auth_controller' in config else None
         self.credentials_type = config['pycloud.credentials_type'] if 'pycloud.credentials_type' in config else ''
         self.ssid = config['pycloud.pairing.ssid'] if 'pycloud.pairing.ssid' in config else ''
+        self.api_encrypted = config['pycloud.api.encrypted'] if 'pycloud.api.encrypted' in config else False
 
         # RADIUS.
         self.radius_users_file = config['pycloud.radius.users_file'] if 'pycloud.radius.users_file' in config else None

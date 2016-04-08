@@ -33,7 +33,7 @@ import os
 import requests
 
 from pycloud.pycloud.model import ServiceVM, Service
-from pycloud.pycloud.cloudlet import Cloudlet
+from pycloud.pycloud.cloudlet import Cloudlet, get_cloudlet_instance
 
 from pycloud.pycloud.security import encryption
 from pycloud.pycloud.model import PairedDevice
@@ -249,8 +249,13 @@ def generate_migration_device_credentials(device_id, connection_id, svm_id):
 
     # Bundle the credentials and info needed for a newly paired device.
     print 'Bundling credentials for device.'
+    cloudlet = get_cloudlet_instance()
     device_credentials = PairedDeviceDataBundle()
     device_credentials.cloudlet_name = Cloudlet.get_hostname()
+    device_credentials.cloudlet_fqdn = Cloudlet.get_fqdn()
+    device_credentials.cloudlet_port = 9998                 # TODO: find a way to get the port we are listening to
+    device_credentials.cloudlet_encryption_enabled = cloudlet.api_encrypted
+
     device_credentials.ssid = deployment.cloudlet.ssid
     device_credentials.auth_password = device_keys.auth_password
     device_credentials.server_public_key = device_keys.server_public_key
