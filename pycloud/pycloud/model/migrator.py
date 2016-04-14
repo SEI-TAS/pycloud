@@ -142,10 +142,9 @@ def migrate_svm(svm_id, remote_host, encrypted):
         payload = {'svm_id': svm_id}
         result = __send_api_command(remote_host, 'servicevm/abort_migration', encrypted, payload)
 
-        # TODO: re-enabled message cleanup, it was commented out for easier testing.
         devices = PairedDevice.by_instance(svm_id)
-        #for device in devices:
-        #    AddTrustedCloudletDeviceMessage.clear_messages(device.device_id)
+        for device in devices:
+            AddTrustedCloudletDeviceMessage.clear_messages(device.device_id)
 
         print 'Migration aborted: ' + str(result)
 

@@ -160,7 +160,7 @@ class EncryptedController(BaseController):
 
         # Encrypt the reply.
         encrypted_reply = encryption.encrypt_message(raw_response, password)
-        print 'Encrypted reply'
+        print 'Encrypted reply ' #+ encrypted_reply
 
         # Reset the response body that each controller may have added, and set the content length to the length of the
         # encrypted reply.
