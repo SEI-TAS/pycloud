@@ -231,9 +231,9 @@ class ServiceVM(Model):
             # Create a new port if we do not have an external port already.
             print 'Setting up port forwarding'
             if not self.port:
-                self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.service_port)
+                self.add_port_mapping(portmanager.PortManager.generate_random_available_port(), self.service_port)
             if not self.ssh_port:
-                self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.SSH_INTERNAL_PORT)
+                self.add_port_mapping(portmanager.PortManager.generate_random_available_port(), self.SSH_INTERNAL_PORT)
             xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
 
         # Remove seclabel item.
@@ -330,10 +330,8 @@ class ServiceVM(Model):
                 # If we are not on bridged mode, the VM's IP address will be the same as the cloudlet's address.
                 self.ip_address = get_adapter_ip_address(self.adapter)
         except Exception as e:
-            import traceback
-            traceback.print_exc()
-            # TODO: throw exception.
-            print "Error getting IP of new SVM: " + str(e)
+            message = "Error getting IP of new SVM: " + str(e)
+            raise Exception(message)
 
         print "SSH available on {}:{}".format(str(self.ip_address), str(self.ssh_port))
 
@@ -341,9 +339,12 @@ class ServiceVM(Model):
     # Get the VNC address and port, loading it from the running VM.
     ###############################################################################################################
     def _load_vnc_address_from_running_instance(self):
-        self.vnc_port = self.__get_vnc_port()
-        self.vnc_address = get_adapter_ip_address(self.adapter) + ":" + self.vnc_port
-        print "VNC available on {}".format(str(self.vnc_address))
+        try:
+            self.vnc_port = self.__get_vnc_port()
+            self.vnc_address = get_adapter_ip_address(self.adapter) + ":" + self.vnc_port
+            print "VNC available on {}".format(str(self.vnc_address))
+        except Exception, e:
+            print 'Could not load VNC address: ' + str(e)
 
     ################################################################################################################
     # Register with DNS server.

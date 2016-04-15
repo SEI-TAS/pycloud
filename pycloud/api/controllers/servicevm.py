@@ -104,7 +104,8 @@ class ServiceVMController(BaseController):
                         timelog.TimeLog.writeToFile()
                     return svm
                 except Exception as e:
-                    # If there was a problem starting the instance, return that there was an error.
+                    # If there was a problem starting the instance, stop it.
+                    svm.stop()
                     print 'Error starting Service VM Instance: ' + str(e)
                     abort(500, '%s' % str(e))
             else:

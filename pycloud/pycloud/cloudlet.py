@@ -163,7 +163,6 @@ class Cloudlet(object):
         Cloudlet._remove_service_vms()
         Cloudlet._clean_temp_folder(self.svmInstancesFolder)
         Cloudlet._clean_temp_folder(self.newVmFolder)
-        portmanager.PortManager.clearPorts()
         if not os.path.exists(self.export_path):
             os.makedirs(self.export_path)
         if not os.path.exists(self.appFolder):

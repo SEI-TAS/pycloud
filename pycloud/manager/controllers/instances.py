@@ -130,6 +130,7 @@ class InstancesController(BaseController):
                 return svm
             except Exception as e:
                 # If there was a problem starting the instance, return that there was an error.
+                svm.stop()
                 msg = 'Error starting Service VM Instance: ' + str(e)
                 return ajaxutils.show_and_return_error_dict(msg)
         else:
