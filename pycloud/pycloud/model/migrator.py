@@ -55,10 +55,9 @@ class MigrationException(Exception):
 # Creates the appropriate URL for an API command.
 ############################################################################################################
 def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
-    # Set headers.
     if encrypted:
-        # TODO: id is only hostname for now. We will evaluate if we want to add hostid to it.
-        headers['X-Device-ID'] = Cloudlet.get_hostname()
+        # We need to send our id so that the remote API will be able to decrypt our requests properly.
+        headers['X-Device-ID'] = Cloudlet.get_id()
 
     if not encrypted:
         remote_url = 'http://{0}/api/{1}'.format(host, command)
@@ -116,7 +115,9 @@ def migrate_svm(svm_id, remote_host, encrypted):
         # If needed, ask the remote cloudlet for credentials for the devices associated to the SVM.
         devices = PairedDevice.by_instance(svm_id)
         for device in devices:
-            # TODO: check what an appropriate connection id would be for devices paired through another cloudlet.
+            # So that the paired device has a connection id on the remote cloudlet, we set it as this cloudlet's id
+            # plus the device id. Connection id is commonly used with USB or Bluetooth pairing as a way to identify
+            # the ID of the physical connection used when pairing. This gives similar auditing possibilities.
             deployment = Deployment.get_instance()
             connection_id = deployment.cloudlet.get_id() + "-" + device.device_id
             payload = {'device_id': device.device_id, 'connection_id': connection_id, 'svm_id': svm_id}
@@ -252,7 +253,7 @@ def generate_migration_device_credentials(device_id, connection_id, svm_id):
     device_credentials = PairedDeviceDataBundle()
     device_credentials.cloudlet_name = Cloudlet.get_hostname()
     device_credentials.cloudlet_fqdn = Cloudlet.get_fqdn()
-    device_credentials.cloudlet_port = 9998                 # TODO: find a way to get the port we are listening to
+    device_credentials.cloudlet_port = 9999                 # TODO: find a way to get the port we (API) are listening to
     device_credentials.cloudlet_encryption_enabled = cloudlet.api_encrypted
 
     device_credentials.ssid = deployment.cloudlet.ssid

@@ -151,6 +151,7 @@ class Cloudlet(object):
     ################################################################################################################
     @staticmethod
     def get_id():
+        # TODO: id is only hostname for now. We will evaluate if we want to add hostid to it.
         #hostid = subprocess.Popen('hostid', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
         return Cloudlet.get_hostname() #+ hostid
 
