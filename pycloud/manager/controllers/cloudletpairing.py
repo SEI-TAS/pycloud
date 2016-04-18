@@ -66,7 +66,25 @@ class CloudletPairingController(BaseController):
 
         # TODO: Generate secret to display
         page.secret = "18Y90A" #secret should be alphanumeric and 6 symbols long
+        connection = request.params.get('connection', None)
+        if connection is None:
+            connection = 'wifi'
 
+        try:
+            # Create a device depending on the type.
+            if connection == 'wifi':
+                port = request.params.get('port', None)
+                name = request.params.get('name', None)
+                curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name})
+            else:
+                pass
+
+            deployment = Deployment.get_instance()
+            deployment.pair_cloudlet(curr_device)
+        except Exception, e:
+            return ajaxutils.show_and_return_error_dict(e.message)
+
+        return ajaxutils.JSON_OK
         return page.render()
 
     ############################################################################################################
