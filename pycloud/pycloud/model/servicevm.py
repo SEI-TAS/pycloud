@@ -48,6 +48,7 @@ from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineException
 from pycloud.pycloud.vm.vmutils import get_hypervisor
 from pycloud.pycloud.utils import portmanager
 from pycloud.pycloud.cloudlet import get_cloudlet_instance
+from pycloud.pycloud.vm import vmutils
 
 from pycloud.pycloud.network import cloudlet_dns
 
@@ -544,8 +545,8 @@ class ServiceVM(Model):
             else:
                 uri = None
 
-            # Migrate the state and memory.
-            remote_uri = 'qemu://%s/system' % remote_host
+            # Migrate the state and memory (note that have to connect to the system-level libvirtd on the remote host).
+            remote_uri = vmutils.get_qemu_libvirt_connection_uri(isSystemLevel=True, host_name=remote_host)
             remote_hypervisor = libvirt.open(remote_uri)
             vm.migrate(remote_hypervisor, flags, new_id, uri, bandwidth)
 

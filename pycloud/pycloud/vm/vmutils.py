@@ -30,22 +30,33 @@ __author__ = 'jdroot'
 
 import libvirt
 
-HYPERVISOR_SYSTEM_URI = "qemu:///system"
-HYPERVISOR_SESSION_URI = "qemu:///session"
+QEMU_URI_PREFIX = "qemu://"
+SYSTEM_LIBVIRT_DAEMON_SUFFIX = "/system"
+SESSION_LIBVIRT_DAEMON_SUFFIX = "/session"
 
+# Global connection object, only open connection to local hypervisor used by app.
 _hypervisor = None
 
+################################################################################################################
+# Builds a libvir URI for a QEMU connection.
+################################################################################################################
+def get_qemu_libvirt_connection_uri(isSystemLevel=False, host_name=''):
+    uri = QEMU_URI_PREFIX + host_name
+    if isSystemLevel:
+        uri += SYSTEM_LIBVIRT_DAEMON_SUFFIX
+    else:
+        uri += SESSION_LIBVIRT_DAEMON_SUFFIX
+    return uri
+
 
 ################################################################################################################
-# Returns the hypervisor connection and will auto connect if the connection is null
+# Returns the hypervisor connection and will auto connect if the connection is null.
 ################################################################################################################
-def get_hypervisor(system=False):
+def get_hypervisor(isSystemLevel=False):
     global _hypervisor
     if _hypervisor is None:
-        if system:
-            _hypervisor = libvirt.open(HYPERVISOR_SYSTEM_URI)
-        else:
-            _hypervisor = libvirt.open(HYPERVISOR_SESSION_URI)
+        uri = get_qemu_libvirt_connection_uri(isSystemLevel, host_name='')
+        _hypervisor = libvirt.open(uri)
     return _hypervisor
 
 
