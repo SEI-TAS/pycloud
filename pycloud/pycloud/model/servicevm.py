@@ -525,7 +525,7 @@ class ServiceVM(Model):
     ################################################################################################################
     # Migrates a vm.
     ################################################################################################################
-    def migrate(self, remote_host, p2p=False):
+    def migrate(self, remote_host, p2p=True):
             vm = ServiceVM._get_virtual_machine(self._id)
 
             # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
@@ -539,10 +539,10 @@ class ServiceVM(Model):
             print 'Starting memory and state migration...'
             start_time = time.time()
             if p2p:
-                flags = flags | libvirt.VIR_MIGRATE_PEER2PEER
-                #uri = 'tcp://%s' % remote_host
+                flags = flags | libvirt.VIR_MIGRATE_PEER2PEER | libvirt.VIR_MIGRATE_TUNNELLED
                 uri = None
             else:
+                #uri = 'tcp://%s' % remote_host
                 uri = None
 
             # Migrate the state and memory (note that have to connect to the system-level libvirtd on the remote host).

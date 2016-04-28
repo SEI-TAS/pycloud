@@ -135,7 +135,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
         # Do the memory state migration.
         remote_host_name = remote_host.split(':')[0]
         print 'Migrating through libvirt to ' + remote_host_name
-        svm.migrate(remote_host_name, p2p=False)
+        svm.migrate(remote_host_name, p2p=True)
     except Exception as e:
         # If migration fails, ask remote to remove svm.
         print 'Error migrating: {}'.format(e.message)
