@@ -20,6 +20,9 @@ bash install_pip_packages.sh
 # Create the egg metadata files, needed so that Paste can actually serve pycloud apps.
 bash egg_setup.sh
 
+# Setup libvirtd and qemu.
+bash qemu_setup.sh
+
 # Setup Avahi Discovery Service.
 sudo bash avahi_setup.sh
 
