@@ -52,7 +52,7 @@ def get_qemu_libvirt_connection_uri(isSystemLevel=False, host_name=''):
 ################################################################################################################
 # Returns the hypervisor connection and will auto connect if the connection is null.
 ################################################################################################################
-def get_hypervisor(isSystemLevel=False):
+def get_hypervisor(isSystemLevel=True):
     global _hypervisor
     if _hypervisor is None:
         uri = get_qemu_libvirt_connection_uri(isSystemLevel, host_name='')
