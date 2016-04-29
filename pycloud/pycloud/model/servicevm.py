@@ -518,9 +518,10 @@ class ServiceVM(Model):
     def unpause(self):
         vm = ServiceVM._get_virtual_machine(self._id)
         result = vm.resume()
-        if result == 0:
+        was_resume_successful = result == 0
+        if was_resume_successful:
             self.running = True
-        return result
+        return was_resume_successful
 
     ################################################################################################################
     # Migrates a vm.
