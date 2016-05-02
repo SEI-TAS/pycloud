@@ -41,6 +41,8 @@ from pycloud.pycloud.model.deployment import Deployment
 from pycloud.pycloud.model.paired_device_data_bundle import PairedDeviceDataBundle
 from pycloud.pycloud.model.message import AddTrustedCloudletDeviceMessage
 from pycloud.pycloud.model.servicevm import SVMNotFoundException
+from pycloud.pycloud.model.cloudlet_credential import CloudletCredential
+
 
 ################################################################################################################
 # Exception type used in this module.
@@ -64,9 +66,14 @@ def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
     else:
         remote_url = 'http://{0}/api'.format(host)
 
-        # TODO: use proper password to encrypt command.
-        password = '' # load_password_from_file()
-        encrypted_command = encryption.encrypt_message(command, password)
+        # Get the appropriate encryption password for this host.
+        cloudlet_id = host.split(':')[0]
+        credentials = CloudletCredential.by_cloudlet_id(cloudlet_id)
+        if not credentials:
+            raise Exception('Credentials to encrypt communication to cloudlet with id {} are not stored in the DB'.format(cloudlet_id))
+
+        # Encrypt the command.
+        encrypted_command = encryption.encrypt_message(command, credentials.encryption_password)
         payload['command'] = encrypted_command
 
     print remote_url
