@@ -44,10 +44,11 @@ from pycloud.pycloud.model.servicevm import SVMNotFoundException
 from pycloud.pycloud.model.cloudlet_credential import CloudletCredential
 
 # API migration commands
-MIGRATE_METADATA_CMD = 'servicevm/migration_svm_metadata'
-MIGRATE_DISK_CMD = 'servicevm/migration_svm_disk_file'
-MIGRATE_CREDENTIALS_CMD = 'servicevm/migration_generate_credentials'
-MIGRATE_RESUME_CMD = 'servicevm/migration_svm_resume'
+MIGRATE_METADATA_CMD = '/servicevm/migration_svm_metadata'
+MIGRATE_DISK_CMD = '/servicevm/migration_svm_disk_file'
+MIGRATE_CREDENTIALS_CMD = '/servicevm/migration_generate_credentials'
+MIGRATE_RESUME_CMD = '/servicevm/migration_svm_resume'
+MIGRATE_ABORT_CMD = '/servicevm/abort_migration'
 
 
 ################################################################################################################
@@ -110,7 +111,11 @@ def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
     if response.status_code != requests.codes.ok:
         raise Exception('Error sending request {}: {} - {}'.format(command, response.status_code, response.text))
 
-    return response
+    response_text = response.text
+    if encrypted and response.text and response.text != '':
+        response_text = encryption.decrypt_message(response.text, credentials.encryption_password)
+
+    return response, response_text
 
 
 ############################################################################################################
@@ -127,7 +132,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
     # Transfer the metadata.
     print 'Starting metadata file transfer...'
     payload = {'svm_json_string': json.dumps(svm)}
-    result = __send_api_command(remote_host, MIGRATE_METADATA_CMD, encrypted, payload)
+    result, response_text = __send_api_command(remote_host, MIGRATE_METADATA_CMD, encrypted, payload)
     print 'Metadata was transferred: ' + str(result)
 
     # We pause the VM before transferring its disk and memory state.
@@ -143,7 +148,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
         payload = {'id': svm_id}
         disk_image_full_path = os.path.abspath(svm.vm_image.disk_image)
         files = {'disk_image_file': open(disk_image_full_path, 'rb')}
-        result = __send_api_command(remote_host, MIGRATE_DISK_CMD, encrypted, payload, files=files)
+        result, response_text = __send_api_command(remote_host, MIGRATE_DISK_CMD, encrypted, payload, files=files)
         print 'Disk image file was transferred: ' + str(result)
 
         # If needed, ask the remote cloudlet for credentials for the devices associated to the SVM.
@@ -156,13 +161,13 @@ def migrate_svm(svm_id, remote_host, encrypted):
             deployment = Deployment.get_instance()
             connection_id = deployment.cloudlet.get_id() + "-" + device.device_id
             payload = {'device_id': device.device_id, 'connection_id': connection_id, 'svm_id': svm_id}
-            result = __send_api_command(remote_host, MIGRATE_CREDENTIALS_CMD, encrypted, payload)
+            result, response_text = __send_api_command(remote_host, MIGRATE_CREDENTIALS_CMD, encrypted, payload)
             print 'Remote credentials were generated: ' + str(result)
 
             # Store the new credentials so that a device asking for them will get them.
-            print result.text
+            print response_text
             paired_device_data_bundle = PairedDeviceDataBundle()
-            paired_device_data_bundle.fill_from_dict(json.loads(result.text))
+            paired_device_data_bundle.fill_from_dict(json.loads(response_text))
             device_command = AddTrustedCloudletDeviceMessage(paired_device_data_bundle)
             device_command.device_id = device.device_id
             device_command.service_id = svm.service_id
@@ -177,7 +182,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
         print 'Error migrating: {}'.format(e.message)
         print 'Requesting migration abort for cleanup...'
         payload = {'svm_id': svm_id}
-        result = __send_api_command(remote_host, 'servicevm/abort_migration', encrypted, payload)
+        result, response_text = __send_api_command(remote_host, MIGRATE_ABORT_CMD, encrypted, payload)
 
         # Remove pending migration messages.
         # TODO: undo comment.
@@ -194,7 +199,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
     # Notify remote cloudlet that migration finished.
     print 'Telling target cloudlet that migration has finished.'
     payload = {'id': svm_id}
-    result = __send_api_command(remote_host, MIGRATE_RESUME_CMD, encrypted, payload)
+    result, response_text = __send_api_command(remote_host, MIGRATE_RESUME_CMD, encrypted, payload)
     print 'Cloudlet notified: ' + str(result)
 
     # Remove the local VM.

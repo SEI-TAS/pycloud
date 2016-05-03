@@ -107,10 +107,10 @@ class EncryptedController(BaseController):
         command = parts[0]
         print 'Received command: ' + command
         command_parts = command.split("/")
-        if len(command_parts) > 0:
-            controller_name = command_parts[0]
         if len(command_parts) > 1:
-            action_name = command_parts[1]
+            controller_name = command_parts[1]
+        if len(command_parts) > 2:
+            action_name = command_parts[2]
 
         # Parse params, if any.
         params_dict = {}
