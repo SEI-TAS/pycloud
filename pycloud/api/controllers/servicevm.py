@@ -56,11 +56,11 @@ class ServiceVMController(BaseController):
     # Maps API URL words to actual functions in the controller.
     API_ACTIONS_MAP = {'start': {'action': 'start', 'reply_type': 'json'},
                        'stop': {'action': 'stop', 'reply_type': 'json'},
-                       'migration_svm_metadata': {'action': 'migration_svm_metadata', 'reply_type': 'json'},
-                       'migration_svm_disk_file': {'action': 'migration_svm_disk_file', 'reply_type': 'json'},
-                       'abort_migration': {'action': 'abort_migration', 'reply_type': 'json'},
-                       'migration_generate_credentials': {'action': 'migration_generate_credentials', 'reply_type': 'json'},
-                       'migration_svm_resume': {'action': 'migration_svm_resume', 'reply_type': 'json'}}
+                       'migration_svm_metadata': {'action': 'migration_svm_metadata', 'reply_type': 'json', 'method': 'POST'},
+                       'migration_svm_disk_file': {'action': 'migration_svm_disk_file', 'reply_type': 'json', 'method': 'POST'},
+                       'abort_migration': {'action': 'abort_migration', 'reply_type': 'json', 'method': 'POST'},
+                       'migration_generate_credentials': {'action': 'migration_generate_credentials', 'reply_type': 'json', 'method': 'POST'},
+                       'migration_svm_resume': {'action': 'migration_svm_resume', 'reply_type': 'json', 'method': 'POST'}}
 
     ################################################################################################################    
     # Cleans up any open resources.
@@ -145,7 +145,7 @@ class ServiceVMController(BaseController):
     ############################################################################################################
     @asjson
     def POST_migration_svm_metadata(self):
-        migrator.receive_migrated_svm_metadata(request.body)
+        migrator.receive_migrated_svm_metadata(request.params['svm_json_string'])
         return ajaxutils.JSON_OK
 
     ############################################################################################################

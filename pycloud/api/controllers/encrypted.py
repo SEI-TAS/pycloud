@@ -107,10 +107,10 @@ class EncryptedController(BaseController):
         command = parts[0]
         print 'Received command: ' + command
         command_parts = command.split("/")
+        if len(command_parts) > 0:
+            controller_name = command_parts[0]
         if len(command_parts) > 1:
-            controller_name = command_parts[1]
-        if len(command_parts) > 2:
-            action_name = command_parts[2]
+            action_name = command_parts[1]
 
         # Parse params, if any.
         params_dict = {}
@@ -134,13 +134,20 @@ class EncryptedController(BaseController):
 
         is_invalid_command = controller is None or action_name not in controller.API_ACTIONS_MAP
         if is_invalid_command:
-            self.send_abort_response(404, '#Command %s not found' % command, password)
+            self.send_abort_response(404, "#Command {} not found (controller: {}, action: {})".format(command, controller_name, action_name), password)
 
-        # Prepare the unencrypted request we are redirecting to, and execute it.
-        reply_format = 'json'
+        # Prepare the reply format and method.
+        reply_format = controller.API_ACTIONS_MAP[action_name]['reply_type']
         request.method = 'GET'
+        if 'method' in controller.API_ACTIONS_MAP[action_name]:
+            request.method = controller.API_ACTIONS_MAP[action_name]['method']
+
+        # Prepare the received params in the request object.
+        print params_dict
         for param in params_dict:
             request.GET[param] = params_dict[param]
+
+        # Execute the request we are redirecting to, and get its response.
         request.environ['pylons.routes_dict']['action'] = controller.API_ACTIONS_MAP[action_name]['action']
         internal_response = controller(self.environ, self.dummy_start_response)
         raw_response = internal_response[0]

@@ -36,7 +36,7 @@ class CloudletCredential(Model):
     # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
         collection = "cloudlet_credentials"
-        external = ['_id', 'cloudlet_id', 'encryption_password']
+        external = ['_id', 'cloudlet_fqdn', 'encryption_password']
         mapping = {
         }
 
@@ -44,7 +44,7 @@ class CloudletCredential(Model):
     # Constructor.
     ################################################################################################################
     def __init__(self, *args, **kwargs):
-        self.cloudlet_id = None
+        self.cloudlet_fqdn = None
         self.encryption_password = None
         super(CloudletCredential, self).__init__(*args, **kwargs)
 
@@ -64,13 +64,13 @@ class CloudletCredential(Model):
         return CloudletCredential.find_one({'_id': rid})
 
     ################################################################################################################
-    # Locate cloudlet credentials by the id of the cloudlet
+    # Locate cloudlet credentials by the FQDN of the cloudlet
     ################################################################################################################
     # noinspection PyBroadException
     @staticmethod
-    def by_cloudlet_id(cloudlet_id):
+    def by_cloudlet_fqdn(cloudlet_fqdn):
         try:
-            credential = CloudletCredential.find_one({'cloudlet_id': cloudlet_id})
+            credential = CloudletCredential.find_one({'cloudlet_fqdn': cloudlet_fqdn})
         except:
             return None
         return credential

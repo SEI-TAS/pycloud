@@ -68,6 +68,6 @@ def make_map(config):
 
         # Metadata commands.
         connect('metadata', '/system', controller='cloudlet', action='metadata')
-        connect('get_messages', '/system', controller='cloudlet', action='get_messages')
+        connect('get_messages', '/system/get_messages', controller='cloudlet', action='get_messages')
 
     return mapper
