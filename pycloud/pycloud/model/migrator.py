@@ -151,13 +151,19 @@ def migrate_svm(svm_id, remote_host, encrypted):
         result, response_text = __send_api_command(remote_host, MIGRATE_DISK_CMD, encrypted, payload, files=files)
         print 'Disk image file was transferred: ' + str(result)
 
+        # Do the memory state migration.
+        remote_host_name = remote_host.split(':')[0]
+        print 'Migrating through libvirtd to ' + remote_host_name
+        svm.migrate(remote_host_name, p2p=True)
+        print 'Memory migration through libvirtd completed'
+
         # If needed, ask the remote cloudlet for credentials for the devices associated to the SVM.
         devices = PairedDevice.by_instance(svm_id)
         for device in devices:
             # So that the paired device has a connection id on the remote cloudlet, we set it as this cloudlet's id
             # plus the device id. Connection id is commonly used with USB or Bluetooth pairing as a way to identify
             # the ID of the physical connection used when pairing. This gives similar auditing possibilities.
-            print 'Starting remote credentials generation...'
+            print 'Starting remote credentials generation for device {}...'.format(device.device_id)
             deployment = Deployment.get_instance()
             connection_id = deployment.cloudlet.get_id() + "-" + device.device_id
             payload = {'device_id': device.device_id, 'connection_id': connection_id, 'svm_id': svm_id}
@@ -172,11 +178,6 @@ def migrate_svm(svm_id, remote_host, encrypted):
             device_command.device_id = device.device_id
             device_command.service_id = svm.service_id
             device_command.save()
-
-        # Do the memory state migration.
-        remote_host_name = remote_host.split(':')[0]
-        print 'Migrating through libvirt to ' + remote_host_name
-        svm.migrate(remote_host_name, p2p=True)
     except Exception as e:
         # If migration fails, ask remote to remove svm.
         print 'Error migrating: {}'.format(e.message)
@@ -185,19 +186,15 @@ def migrate_svm(svm_id, remote_host, encrypted):
         result, response_text = __send_api_command(remote_host, MIGRATE_ABORT_CMD, encrypted, payload)
 
         # Remove pending migration messages.
-        # TODO: undo comment.
         devices = PairedDevice.by_instance(svm_id)
         for device in devices:
-            #AddTrustedCloudletDeviceMessage.clear_messages(device.device_id)
-            pass
+            AddTrustedCloudletDeviceMessage.clear_messages(device.device_id)
 
         print 'Migration aborted: ' + str(result)
-
-        # Rethrow exception.
         raise e
 
     # Notify remote cloudlet that migration finished.
-    print 'Telling target cloudlet that migration has finished.'
+    print 'Asking remote cloudlet to resume migrated VM.'
     payload = {'id': svm_id}
     result, response_text = __send_api_command(remote_host, MIGRATE_RESUME_CMD, encrypted, payload)
     print 'Cloudlet notified: ' + str(result)
