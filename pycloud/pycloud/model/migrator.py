@@ -217,6 +217,7 @@ def receive_migrated_svm_metadata(svm_json_string):
     print 'Obtaining metadata of SVM to be received.'
     migrated_svm = ServiceVM()
     migrated_svm.fill_from_dict(json_svm)
+    migrated_svm.ready = False
 
     # Update network data, especially needed in non-bridged mode.
     migrated_svm.setup_network(update_mac_if_needed=False)
@@ -231,7 +232,7 @@ def receive_migrated_svm_metadata(svm_json_string):
 ############################################################################################################
 def receive_migrated_svm_disk_file(svm_id, disk_image_object, svm_instances_folder):
     # Get the id and load the metadata for this SVM.
-    migrated_svm = ServiceVM.by_id(svm_id)
+    migrated_svm = ServiceVM.by_id(svm_id, onlyFindReadyOnes=False)
     if not migrated_svm:
         raise SVMNotFoundException("No SVM found with the given id: {}".format(svm_id))
 
@@ -259,7 +260,7 @@ def receive_migrated_svm_disk_file(svm_id, disk_image_object, svm_instances_fold
 ############################################################################################################
 def abort_migration(svm_id):
     # Get the id and load the metadata for this SVM.
-    migrated_svm = ServiceVM.by_id(svm_id)
+    migrated_svm = ServiceVM.by_id(svm_id, onlyFindReadyOnes=False)
     if not migrated_svm:
         raise SVMNotFoundException("No SVM found with the given id {}".format(svm_id))
 
@@ -312,7 +313,7 @@ def generate_migration_device_credentials(device_id, connection_id, svm_id):
 ############################################################################################################
 def resume_migrated_svm(svm_id):
     # Find the SVM.
-    migrated_svm = ServiceVM.by_id(svm_id)
+    migrated_svm = ServiceVM.by_id(svm_id, onlyFindReadyOnes=False)
     if not migrated_svm:
         raise SVMNotFoundException("No SVM found with the given id: {}".format(svm_id))
 

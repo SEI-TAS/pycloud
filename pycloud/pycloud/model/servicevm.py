@@ -95,6 +95,7 @@ class ServiceVM(Model):
         self.ip_address = None
         self.mac_address = None
         self.running = False
+        self.ready = False
         self.fqdn = None
         super(ServiceVM, self).__init__(*args, **kwargs)
 
@@ -122,19 +123,22 @@ class ServiceVM(Model):
         self._generate_fqdn()
 
     ################################################################################################################
-    # Locate a servicevm by its ID
+    # Locate a ServiceVM by its ID
     ################################################################################################################
     # noinspection PyBroadException
     @staticmethod
-    def by_id(svm_id=None):
+    def by_id(svm_id=None, onlyFindReadyOnes=True):
         try:
-            service_vm = ServiceVM.find_one({'_id': svm_id})
+            search_dict = {'_id': svm_id}
+            if onlyFindReadyOnes:
+                search_dict['ready'] = True
+            service_vm = ServiceVM.find_one(search_dict)
         except:
             return None
         return service_vm        
 
     ################################################################################################################
-    # Generates a random ID, valid as a VM id.
+    #
     ################################################################################################################
     @staticmethod
     def by_service(service_id):
@@ -312,6 +316,7 @@ class ServiceVM(Model):
             get_hypervisor().createXML(xml_descriptor, 0)
             print "VM object successfully created, VM started."
             self.running = True
+            self.ready = True
         except:
             # Ensure we destroy the VM if there was some problem after creating it.
             self.stop()
@@ -427,6 +432,7 @@ class ServiceVM(Model):
             get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
             print "Resumed from VM image."
             self.running = True
+            self.ready = True
         except libvirt.libvirtError as e:
             # If we could not resume the VM, discard the memory state and try to boot the VM from scratch.
             print "Error resuming VM: %s for VM; error is: %s" % (str(self._id), str(e))
@@ -485,6 +491,7 @@ class ServiceVM(Model):
                 else:
                     print 'VM with id %s not found while stopping it.' % self._id
                 self.running = False
+                self.ready = False
             except Exception, e:
                 print "Warning: error while cleaning up VM: " + str(e)
 
@@ -521,6 +528,7 @@ class ServiceVM(Model):
         was_resume_successful = result == 0
         if was_resume_successful:
             self.running = True
+            self.ready = True
         return was_resume_successful
 
     ################################################################################################################
