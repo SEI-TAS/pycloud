@@ -34,6 +34,8 @@ import os.path
 
 # Used to modify UUID of a saved VM.
 import vmnetx
+
+import vmutils
         
 ################################################################################################################
 # Represents a saved image of a VM state, including a memory image.
@@ -87,14 +89,14 @@ class VMSavedState(object):
     ################################################################################################################
     # Returns the XMl description of the VM from a saved state file.
     ################################################################################################################       
-    def getStoredVmDescription(self, hypervisor):
-        xmlDescription = hypervisor.saveImageGetXMLDesc(self.savedStateFilename, 0)
+    def getStoredVmDescription(self):
+        xmlDescription = vmutils.get_stored_vm_xml_string(self.savedStateFilename)
         return xmlDescription
     
     ################################################################################################################
     # Returns the XMl description of the VM from a saved state file, raw format.
     ################################################################################################################       
-    def getRawStoredVmDescription(self, hypervisor):
+    def getRawStoredVmDescription(self):
         with open(self.savedStateFilename, 'r') as savedStateFileStream:
             hdr = vmnetx.LibvirtQemuMemoryHeader(savedStateFileStream)
             return hdr.xml
@@ -112,4 +114,3 @@ class VMSavedState(object):
             #print('\nNew:' + newXmlDescriptorString + '\n')
             hdr.xml = newXmlDescriptorString
             hdr.write(savedStateFileStream)
-            

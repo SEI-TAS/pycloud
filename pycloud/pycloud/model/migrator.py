@@ -154,7 +154,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
         # Do the memory state migration.
         remote_host_name = remote_host.split(':')[0]
         print 'Migrating through libvirtd to ' + remote_host_name
-        svm.migrate(remote_host_name, p2p=True)
+        svm.migrate(remote_host_name)
         print 'Memory migration through libvirtd completed'
 
         # If needed, ask the remote cloudlet for credentials for the devices associated to the SVM.
@@ -232,7 +232,7 @@ def receive_migrated_svm_metadata(svm_json_string):
 ############################################################################################################
 def receive_migrated_svm_disk_file(svm_id, disk_image_object, svm_instances_folder):
     # Get the id and load the metadata for this SVM.
-    migrated_svm = ServiceVM.by_id(svm_id, onlyFindReadyOnes=False)
+    migrated_svm = ServiceVM.by_id(svm_id, only_find_ready_ones=False)
     if not migrated_svm:
         raise SVMNotFoundException("No SVM found with the given id: {}".format(svm_id))
 
@@ -260,7 +260,7 @@ def receive_migrated_svm_disk_file(svm_id, disk_image_object, svm_instances_fold
 ############################################################################################################
 def abort_migration(svm_id):
     # Get the id and load the metadata for this SVM.
-    migrated_svm = ServiceVM.by_id(svm_id, onlyFindReadyOnes=False)
+    migrated_svm = ServiceVM.by_id(svm_id, only_find_ready_ones=False)
     if not migrated_svm:
         raise SVMNotFoundException("No SVM found with the given id {}".format(svm_id))
 
@@ -313,7 +313,7 @@ def generate_migration_device_credentials(device_id, connection_id, svm_id):
 ############################################################################################################
 def resume_migrated_svm(svm_id):
     # Find the SVM.
-    migrated_svm = ServiceVM.by_id(svm_id, onlyFindReadyOnes=False)
+    migrated_svm = ServiceVM.by_id(svm_id, only_find_ready_ones=False)
     if not migrated_svm:
         raise SVMNotFoundException("No SVM found with the given id: {}".format(svm_id))
 

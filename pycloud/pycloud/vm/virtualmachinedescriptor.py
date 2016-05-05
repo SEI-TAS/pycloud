@@ -29,15 +29,11 @@
 # Used to parse the XML for the VirtualMachineDescriptor.
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
-import os
+from vmutils import VirtualMachineException
 
-################################################################################################################
-# Exception type used in our system.
-################################################################################################################
-class VirtualMachineException(Exception):
-    def __init__(self, message):
-        super(VirtualMachineException, self).__init__(message)
-        self.message = message
+import os
+import re
+
 
 ################################################################################################################
 # Represents an XML description of a VM.
@@ -55,6 +51,16 @@ class VirtualMachineDescriptor(object):
     def __init__(self, xmlDescriptorString):
         # Load the XML root element from the XML descriptor string.
         self.xmlRoot = ElementTree.fromstring(xmlDescriptorString)
+
+    ################################################################################################################
+    # Updates the name and id of an xml by simply replacing the text, without parsing, to ensure the result will
+    # have exactly the same length as before.
+    ################################################################################################################
+    @staticmethod
+    def update_raw_name_and_id(saved_xml_string, uuid, name):
+        updated_xml = re.sub(r"<uuid>[\w\-]+</uuid>", "<uuid>%s</uuid>" % uuid, saved_xml_string)
+        updated_xml = re.sub(r"<name>[\w\-]+</name>", "<name>%s</name>" % name, updated_xml)
+        return updated_xml
 
     ################################################################################################################
     # Returns an XML string with the contents of this VMDescriptor
