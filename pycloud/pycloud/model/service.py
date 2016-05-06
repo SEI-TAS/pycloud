@@ -100,19 +100,32 @@ class Service(Model):
     # Returns a new or existing Service VM instance associated to this service.
     ################################################################################################################
     def get_vm_instance(self, join=False, clone_full_image=False):
-        if self.num_users == 0 and join:
-            svms = ServiceVM.by_service(self.service_id)
-            # Return the first ServiceVM we found
-            # If no ServiceVM is found, this will fall through to launching a new one
-            for svm in svms:
+        service_supports_sharing = (self.num_users > 0)
+        print 'Sharing supported: ' + str(service_supports_sharing)
+        print 'Share requested: ' + str(join)
+        if service_supports_sharing and join:
+            # Return the first ServiceVM we find.
+            print 'Looking for available SVMs...'
+            service_vms = ServiceVM.by_service(self.service_id)
+            if len(service_vms) > 0:
+                svm = service_vms[0]
+                print 'Returning SVM with id {}'.format(svm._id)
                 return svm
 
-        # If no ServiceVMs for that ID were found, or join=False, create a new one.
+        # If no ServiceVMs for that ID were found, or service is not shared, or join=False, create a new one.
+        print 'No SVM was available, starting a new instance.'
         svm = ServiceVM()
         svm.generate_random_id()
         svm.service_id = self.service_id
         svm.service_port = self.port
-        svm.vm_image = self.vm_image.clone(os.path.join(app_globals.cloudlet.svmInstancesFolder, svm['_id']), clone_full_image=clone_full_image)
+
+        # Set up the new SVM's image files based on the service's template.
+        new_svm_folder = os.path.join(app_globals.cloudlet.svmInstancesFolder, svm['_id'])
+        svm.vm_image = self.vm_image.clone(new_svm_folder, clone_full_image=clone_full_image)
+
+        # Start the SVM.
+        svm.start()
+        svm.save()
         return svm
 
     ################################################################################################################

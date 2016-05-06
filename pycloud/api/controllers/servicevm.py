@@ -82,34 +82,36 @@ class ServiceVMController(BaseController):
         if not sid:
             # If we didnt get a valid one, just return an error message.
             abort(400, 'Must provide service id')
-        else:
-            timelog.TimeLog.stamp("Request received: start VM with service id " + sid)
 
-            # Check the flags that indicates whether we could join an existing instance.
-            join = request.params.get('join', False)
-            if not isinstance(join, bool):
-                join = join.upper() in ['T', 'TRUE', 'Y', 'YES']
+        timelog.TimeLog.stamp("Request received: start VM with service id " + sid)
+        service = Service.by_id(sid)
+        if not service:
+            abort(400, 'Service vm for %s not found' % sid)
 
-            service = Service.by_id(sid)
-            if service:
-                # Get a ServiceVM instance
-                svm = service.get_vm_instance(join=join)
-                try:
-                    # Start the instance, if it works, save it and return the svm
-                    if not svm.running:
-                        svm.start()
-                        svm.save()
-                        # Send the response.
-                        timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
-                        timelog.TimeLog.writeToFile()
-                    return svm
-                except Exception as e:
-                    # If there was a problem starting the instance, stop it.
-                    svm.stop()
-                    print 'Error starting Service VM Instance: ' + str(e)
-                    abort(500, '%s' % str(e))
-            else:
-                abort(400, 'Service vm for %s not found' % sid)
+        # Check the flags that indicates whether we could join an existing instance.
+        join = request.params.get('join', False)
+        if not isinstance(join, bool):
+            join = join.upper() in ['T', 'TRUE', 'Y', 'YES']
+
+        # Get a ServiceVM instance
+        svm = None
+        try:
+            svm = service.get_vm_instance(join=join)
+
+            # Update the amount of users on this SVM, and save that change.
+            svm.num_current_users += 1
+            svm.save()
+
+            # Send the response.
+            timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
+            timelog.TimeLog.writeToFile()
+            return svm
+        except Exception as e:
+            if svm:
+                # If there was a problem starting the instance, stop it.
+                svm.stop()
+            print 'Error starting Service VM Instance: ' + str(e)
+            abort(500, '%s' % str(e))
 
     ################################################################################################################
     # Called to stop a running instance of a Service VM.
@@ -120,25 +122,32 @@ class ServiceVMController(BaseController):
         if not svm_id:
             # If we didnt get a valid one, just return an error message.
             abort(400, 'Must provide instance id')
-        else:
-            print '\n*************************************************************************************************'
-            timelog.TimeLog.reset()
-            timelog.TimeLog.stamp("Request received: stop VM with instance id " + svm_id)
 
-            # Stop the Service VM.
-            svm = ServiceVM.find_and_remove(svm_id)
-            if not svm:
-                abort(404, 'Service vm for %s not found' % svm_id)
+        print '\n*************************************************************************************************'
+        timelog.TimeLog.reset()
+        timelog.TimeLog.stamp("Request received: stop VM with instance id " + svm_id)
+
+        # Stop the Service VM.
+        svm = ServiceVM.by_id(svm_id)
+        if not svm:
+            abort(404, 'Service vm for %s not found' % svm_id)
+
+        try:
+            # Check if there are other users using the SVM, and if so, decrement counter; otherwise, stop it and delete it.
+            if svm.num_current_users > 1:
+                svm.num_current_users -= 1
+                svm.save()
             else:
-                try:
-                    svm.stop()
-                    timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
-                    timelog.TimeLog.writeToFile()
-                    return {}
-                except Exception as e:
-                    # If there was a problem stopping the instance, return that there was an error.
-                    print 'Error stopping Service VM Instance: ' + str(e)
-                    abort(500, '%s' % str(e))
+                svm.stop()
+                ServiceVM.find_and_remove(svm_id)
+
+            timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
+            timelog.TimeLog.writeToFile()
+            return {}
+        except Exception as e:
+            # If there was a problem stopping the instance, return that there was an error.
+            print 'Error stopping Service VM Instance: ' + str(e)
+            abort(500, '%s' % str(e))
 
     ############################################################################################################
     # Receives information about a migrated VM.

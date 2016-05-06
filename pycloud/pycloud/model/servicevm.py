@@ -93,6 +93,7 @@ class ServiceVM(Model):
         self.fqdn = None
         self.network_mode = None
         self.adapter = None
+        self.num_current_users = 0
         super(ServiceVM, self).__init__(*args, **kwargs)
 
     ################################################################################################################
@@ -118,10 +119,13 @@ class ServiceVM(Model):
     ################################################################################################################
     @staticmethod
     def by_service(service_id):
-        service_vm = ServiceVM.find({'service_id': service_id})
-        service_vm.vm = VirtualMachine()
-        service_vm.vm.connect_to_virtual_machine(service_vm._id)
-        return service_vm
+        service_vms_array = []
+        service_vms = ServiceVM.find({'service_id': service_id})
+        for service_vm in service_vms:
+            service_vm.vm = VirtualMachine()
+            service_vm.vm.connect_to_virtual_machine(service_vm._id)
+            service_vms_array.append(service_vm)
+        return service_vms_array
 
     ################################################################################################################
     # Cleanly and safely gets a ServiceVM and removes it from the database.
@@ -301,7 +305,7 @@ class ServiceVM(Model):
             self.ssh_port = host_port
 
         # Add the actual mapping. Keys need to be stored as string so that MongoDB will accept and store them.
-        self.port_mappings[str(host_port)] = guest_port
+        self.port_mappings[str(host_port)] = int(guest_port)
         print('Setting up port forwarding from host port ' + str(host_port) + ' to guest port ' + str(guest_port))
 
     ################################################################################################################
@@ -541,6 +545,8 @@ class ServiceVM(Model):
         print 'Shutting down all running virtual machines'
         svm_list = ServiceVM.find()
         for svm in svm_list:
+            svm.vm = VirtualMachine()
+            svm.vm.connect_to_virtual_machine(svm._id)
             svm.stop()
 
         print 'All machines shutdown'

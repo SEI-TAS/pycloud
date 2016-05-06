@@ -121,16 +121,15 @@ class InstancesController(BaseController):
             if request.params.get('clone_full_image'):
                 clone_full_image = True
 
-            # Get a ServiceVM instance
-            svm = service.get_vm_instance(clone_full_image=clone_full_image)
+            svm = None
             try:
-                # Start the instance, if it works, save it and return ok
-                svm.start()
-                svm.save()
+                # Get a ServiceVM instance
+                svm = service.get_vm_instance(clone_full_image=clone_full_image)
                 return svm
             except Exception as e:
-                # If there was a problem starting the instance, return that there was an error.
-                svm.stop()
+                if svm:
+                    # If there was a problem starting the instance, return that there was an error.
+                    svm.stop()
                 msg = 'Error starting Service VM Instance: ' + str(e)
                 return ajaxutils.show_and_return_error_dict(msg)
         else:
