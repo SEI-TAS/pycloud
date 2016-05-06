@@ -42,6 +42,7 @@ from pycloud.pycloud.model.paired_device_data_bundle import PairedDeviceDataBund
 from pycloud.pycloud.model.message import AddTrustedCloudletDeviceMessage
 from pycloud.pycloud.model.servicevm import SVMNotFoundException
 from pycloud.pycloud.model.cloudlet_credential import CloudletCredential
+from pycloud.pycloud.vm.vmutils import VirtualMachineException
 
 # API migration commands
 MIGRATE_METADATA_CMD = '/servicevm/migration_svm_metadata'
@@ -94,7 +95,7 @@ def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
         # Add all payload elements.
         command_string = command
         for param in payload:
-            command_string += "&" + param + "=" + str(payload[param]);
+            command_string += "&" + param + "=" + str(payload[param])
 
         # Encrypt the command and add it as a param.
         encrypted_command = encryption.encrypt_message(command_string, credentials.encryption_password)
@@ -232,7 +233,13 @@ def receive_migrated_svm_metadata(svm_json_string):
 ############################################################################################################
 def receive_migrated_svm_disk_file(svm_id, disk_image_object, svm_instances_folder):
     # Get the id and load the metadata for this SVM.
-    migrated_svm = ServiceVM.by_id(svm_id, only_find_ready_ones=False)
+    migrated_svm = None
+    try:
+        migrated_svm = ServiceVM.by_id(svm_id, only_find_ready_ones=False)
+    except VirtualMachineException:
+        # Ignore, we know we won't be able to connect to a VM since the VM is not yet migrated here.
+        pass
+
     if not migrated_svm:
         raise SVMNotFoundException("No SVM found with the given id: {}".format(svm_id))
 
