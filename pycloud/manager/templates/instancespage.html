@@ -47,10 +47,12 @@ http://jquery.org/license
             </div>
             <div class="panel-body">
                 <div>
-                    <p>Current Wi-Fi network: <b>${page.current_network}</b></p>
                     <p>
-                        <button class="btn btn-info" onclick="$('#modal-wifi-connect').modal('show');">
-                                <span class="glyphicon glyphicon-transfer" style="color: white"></span> Available Wi-Fi Cloudlet Networks
+                        <%
+                            availableNetworksUrl = h.url_for(controller='instances', action='get_available_networks')
+                        %>
+                        <button class="btn btn-info" onclick="showWifiNetworksModal('${availableNetworksUrl}');">
+                            <span class="glyphicon glyphicon-transfer" style="color: white"></span> Wi-Fi Networks
                         </button>
                     </p>
                 </div>
@@ -139,9 +141,10 @@ http://jquery.org/license
 		        <h3>Available Wi-Fi Cloudlet Networks</h3>
 		    </div>
 		    <div class="modal-body">
+                <p>Current Wi-Fi network on Wireless adapter: <b>${page.current_network}</b></p>
 		        <div class="well">
 		            <form id="wifi-connection-form" class="form-horizontal" action="" method="post">
-		            	${dropdown('ssid', options=page.available_networks, input_width=12, label=_('Available Wi-Fi Cloudlet Networks'))}
+		            	${dropdown(id='ssid', options={}, input_width=12, label=_('Available Wi-Fi Networks'))}
 		            </form>
 		        </div>
 		    </div>

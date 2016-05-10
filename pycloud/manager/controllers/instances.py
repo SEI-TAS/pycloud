@@ -39,6 +39,7 @@ from pycloud.pycloud.pylons.lib.util import asjson
 
 from pycloud.pycloud.utils import ajaxutils
 from pycloud.pycloud.network import wifi, finder
+from pycloud.pycloud.network.wifi import WifiManager
 from pycloud.pycloud.cloudlet import Cloudlet
 from pycloud.pycloud.model import migrator
 
@@ -62,25 +63,33 @@ class InstancesController(BaseController):
         instancesPage.svms = svms
 
         # Get the current connection.
-        wifi_manager = wifi.WifiManager()
-        wifi_manager.interface = app_globals.cloudlet.wifi_adapter
-        current_network = wifi_manager.current_network()
-        instancesPage.current_network = wifi_manager.current_network()
+        current_network = WifiManager.current_network(interface=app_globals.cloudlet.wifi_adapter)
+        instancesPage.current_network = current_network
 
+        # Pass the grid and render the page.
+        return instancesPage.render()
+
+
+    ############################################################################################################
+    # Returns a list of available wifi networks.
+    ############################################################################################################
+    @asjson
+    def GET_get_available_networks(self):
         # Get a list of cloudlet networks in range, and pass them to dict format.
-        available_networks_array = wifi_manager.list_networks()
+        available_networks_array = WifiManager.list_networks()
         available_networks = {}
         for network_id in available_networks_array:
             available_networks[network_id] = network_id
 
         # Filter out ourselves.
+        current_network = WifiManager.current_network(interface=app_globals.cloudlet.wifi_adapter)
         if current_network in available_networks:
             del available_networks[current_network]
 
-        instancesPage.available_networks = available_networks
+        print 'Available networks: '
+        print available_networks
 
-        # Pass the grid and render the page.
-        return instancesPage.render()
+        return available_networks
 
     ############################################################################################################
     # Returns a list of cloudlets available in our current network (or networks).
@@ -187,16 +196,14 @@ class InstancesController(BaseController):
             return ajaxutils.show_and_return_error_dict(msg)
 
     ############################################################################################################
-    # Returns a list of running svms.
+    #
     ############################################################################################################
     @asjson
     def GET_wifiConnect(self):
         ssid = request.params.get('target')
-        wifi_manager = wifi.WifiManager()
-        wifi_manager.interface = 'wlan0'
 
         try:
-            result = wifi_manager.connect_to_network(ssid)
+            result = WifiManager.connect_to_network(ssid)
         except Exception as e:
             msg = 'Error connecting to Wi-Fi network {}: {}'.format(ssid, str(e))
             return ajaxutils.show_and_return_error_dict(msg)

@@ -28,26 +28,25 @@
 
 import subprocess
 
+
 ###################################################################################################################
 # Helper to call nmcli commands.
 ###################################################################################################################
 def nmcli(cmd):
     return subprocess.Popen('nmcli ' + cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
 
-def save_network():
-    pass
 
 ###################################################################################################################
 # Wifi manager class.
 ###################################################################################################################
 class WifiManager(object):
-    interface = None
 
     ################################################################################################################
     # Return a list of SSIDs currently in range.
     # TODO: needs refreshing? how up-to-date is this info?
     ################################################################################################################
-    def list_networks(self):
+    @staticmethod
+    def list_networks():
         # Will return a list of newline separated SSIDs.
         response = nmcli('-t -f SSID device wifi list')
 
@@ -56,19 +55,19 @@ class WifiManager(object):
         for line in lines:
             ssid = line.strip("'")
             ssids.append(ssid)
-        print 'Available SSIDs: '
-        print ssids
+        #print 'Available SSIDs: '
+        #print ssids
 
         return ssids
 
     ################################################################################################################
     # Return the current network SSID we are connected to using our configured interface, if any, or None.
     ################################################################################################################
-    def current_network(self):
+    @staticmethod
+    def current_network(interface):
         ssid = None
-        response = nmcli('-t -f NAME,DEVICES connection status | grep {}'.format(self.interface))
+        response = nmcli('-t -f NAME,DEVICES connection status | grep {}'.format(interface))
 
-        # TODO: bug here... this does not support SSIDs with spaces in them.
         for line in response.splitlines():
             if len(line) > 0:
                 ssid = line.split(':')[0]
@@ -79,9 +78,10 @@ class WifiManager(object):
     ################################################################################################################
     # Connect to a stored network.
     ################################################################################################################
-    def connect_to_network(self, connection_id):
+    @staticmethod
+    def connect_to_network(connection_id):
         # NOTE: only works if called from root user or user at console.
-        response = nmcli('connection up id {}'.format(connection_id))
+        response = nmcli('connection up id "{}"'.format(connection_id))
 
         # TODO: process result?
         return True

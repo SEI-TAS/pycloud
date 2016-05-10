@@ -56,6 +56,7 @@ def make_map(config):
     
     connect('/instances', controller='instances', action='index')
     connect('/instances/findCloudlets', controller='instances', action='get_available_cloudlets')
+    connect('/instances/findNetworks', controller='instances', action='get_available_networks')
     connect('/instances/startInstance/{id}', controller='instances', action='startInstance')
     connect('/instances/stopInstance/{id}', controller='instances', action='stopInstance')
     connect('/instances/migrate/{id}', controller='instances', action='migrateInstance')

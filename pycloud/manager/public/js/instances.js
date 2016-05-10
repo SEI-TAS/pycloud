@@ -87,6 +87,28 @@ function stopSVM(stopUrl)
 
 
 /////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////
+function showWifiNetworksModal(availableNetworksUrl)
+{
+    // Get the list of currently available cloudlets through ajax.
+    var successHandler = function(availableNetworks) {
+        // Add the networks we found to the list.
+        var wifiForm = $('#wifi-connection-form');
+        var networksSelect = wifiForm.find('#ssid');
+        networksSelect.empty();
+        $.each(availableNetworks, function(value, key) {
+            networksSelect.append($('<option></option>').attr('value', value).text(key));
+        });
+    };
+
+    // Do the post to get data and load the modal.
+    ajaxGet(availableNetworksUrl, "Finding networks...", successHandler, $('#modal-wifi-connect'));
+
+    $('#modal-wifi-connect').modal('show');
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
 // Function to connect to a Wifi network through Ajax.
 /////////////////////////////////////////////////////////////////////////////////////
 function wifiConnection()
