@@ -43,7 +43,6 @@ class WifiManager(object):
 
     ################################################################################################################
     # Return a list of SSIDs currently in range.
-    # TODO: needs refreshing? how up-to-date is this info?
     ################################################################################################################
     @staticmethod
     def list_networks():
@@ -55,8 +54,6 @@ class WifiManager(object):
         for line in lines:
             ssid = line.strip("'")
             ssids.append(ssid)
-        #print 'Available SSIDs: '
-        #print ssids
 
         return ssids
 
@@ -83,5 +80,5 @@ class WifiManager(object):
         # NOTE: only works if called from root user or user at console.
         response = nmcli('connection up id "{}"'.format(connection_id))
 
-        # TODO: process result?
-        return True
+        if response is not None and response.strip() != '':
+            raise Exception(response)

@@ -203,12 +203,8 @@ class InstancesController(BaseController):
         ssid = request.params.get('target')
 
         try:
-            result = WifiManager.connect_to_network(ssid)
+            WifiManager.connect_to_network(ssid)
+            return ajaxutils.JSON_OK
         except Exception as e:
             msg = 'Error connecting to Wi-Fi network {}: {}'.format(ssid, str(e))
             return ajaxutils.show_and_return_error_dict(msg)
-
-        if result:
-            return ajaxutils.JSON_OK
-        else:
-            return ajaxutils.show_and_return_error_dict('Could not connect to Wi-Fi network {}'.format(ssid))
