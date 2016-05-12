@@ -97,8 +97,11 @@ function showWifiNetworksModal(availableNetworksUrl)
         var wifiForm = $('#wifi-connection-form');
         var networksSelect = wifiForm.find('#ssid');
         networksSelect.empty();
-        $.each(availableNetworks, function(value, key) {
-            networksSelect.append($('<option></option>').attr('value', value).text(key));
+        $.each(availableNetworks, function(ssid, isConnected) {
+            if(isConnected)
+                $("#currentNetwork").text(ssid);
+            else
+                networksSelect.append($('<option></option>').attr('value', ssid).text(ssid));
         });
     };
 
@@ -126,9 +129,29 @@ function wifiConnection()
     ajaxGet(fullURL, "Connecting to Wi-FI Network", successHandler, $('#modal-wifi-connect'));
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to disconnect from a Wifi network through Ajax.
+/////////////////////////////////////////////////////////////////////////////////////
+function disconnectFromWifiNetwork()
+{
+    var successHandler = function(response) {
+        reloadPage();
+    };
+
+    // Do the post to get data and load the modal.
+    var fullURL = $("#disconnectButton").attr("href");
+    console.log(fullURL);
+    ajaxGet(fullURL, "Disconnecting from Wi-FI Network", successHandler, $('#modal-wifi-connect'));
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Called when the document is loaded.
 /////////////////////////////////////////////////////////////////////////////////////////////////
 $(document).ready( function () {
-
+    $("#disconnectButton").click(function (event) {
+        event.preventDefault();
+        disconnectFromWifiNetwork();
+    })
 });

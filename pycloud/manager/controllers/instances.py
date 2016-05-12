@@ -79,12 +79,12 @@ class InstancesController(BaseController):
         available_networks_array = WifiManager.list_networks()
         available_networks = {}
         for network_id in available_networks_array:
-            available_networks[network_id] = network_id
+            available_networks[network_id] = False
 
-        # Filter out ourselves.
+        # Mark our current network as connected.
         current_network = WifiManager.current_network(interface=app_globals.cloudlet.wifi_adapter)
         if current_network in available_networks:
-            del available_networks[current_network]
+            available_networks[current_network] = True
 
         print 'Available networks: '
         print available_networks
@@ -207,4 +207,17 @@ class InstancesController(BaseController):
             return ajaxutils.JSON_OK
         except Exception as e:
             msg = 'Error connecting to Wi-Fi network {}: {}'.format(ssid, str(e))
+            return ajaxutils.show_and_return_error_dict(msg)
+
+
+    ############################################################################################################
+    #
+    ############################################################################################################
+    @asjson
+    def GET_wifiDisconnect(self):
+        try:
+            WifiManager.disconnect_from_network()
+            return ajaxutils.JSON_OK
+        except Exception as e:
+            msg = 'Error disconnecting from Wi-Fi network {}: {}'.format(ssid, str(e))
             return ajaxutils.show_and_return_error_dict(msg)

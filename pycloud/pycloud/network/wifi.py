@@ -27,6 +27,7 @@
 # http://jquery.org/license
 
 import subprocess
+import time
 
 
 ###################################################################################################################
@@ -46,6 +47,12 @@ class WifiManager(object):
     ################################################################################################################
     @staticmethod
     def list_networks():
+        # Turn on wifi just in case, and wait for a couple of seconds it turns on.
+        response = nmcli('nm wifi on')
+        if response is not None and response.strip() != '':
+            raise Exception(response)
+        time.sleep(5)
+
         # Will return a list of newline separated SSIDs.
         response = nmcli('-t -f SSID device wifi list')
 
@@ -79,6 +86,16 @@ class WifiManager(object):
     def connect_to_network(connection_id):
         # NOTE: only works if called from root user or user at console.
         response = nmcli('connection up id "{}"'.format(connection_id))
+        if response is not None and response.strip() != '':
+            raise Exception(response)
+
+    ################################################################################################################
+    # Connect to a stored network.
+    ################################################################################################################
+    @staticmethod
+    def disconnect_from_network():
+        # NOTE: only works if called from root user or user at console.
+        response = nmcli('nm wifi off')
 
         if response is not None and response.strip() != '':
             raise Exception(response)

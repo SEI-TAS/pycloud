@@ -141,7 +141,10 @@ http://jquery.org/license
 		        <h3>Available Wi-Fi Cloudlet Networks</h3>
 		    </div>
 		    <div class="modal-body">
-                <p>Current Wi-Fi network on Wireless adapter: <b>${page.current_network}</b></p>
+                <p>Current Wi-Fi network on Wireless adapter: <b><span id="currentNetwork">${page.current_network}</span></b>
+                    <a href="${ h.url_for(controller='instances', action='wifiDisconnect')}" id="disconnectButton"
+                       class="btn btn-danger btn-xs">Disconnect</a>
+                </p>
 		        <div class="well">
 		            <form id="wifi-connection-form" class="form-horizontal" action="" method="post">
 		            	${dropdown(id='ssid', options={}, input_width=12, label=_('Available Wi-Fi Networks'))}

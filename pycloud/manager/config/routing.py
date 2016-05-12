@@ -61,6 +61,7 @@ def make_map(config):
     connect('/instances/stopInstance/{id}', controller='instances', action='stopInstance')
     connect('/instances/migrate/{id}', controller='instances', action='migrateInstance')
     connect('/instances/wifiConnect', controller='instances', action='wifiConnect')
+    connect('/instances/wifiDisconnect', controller='instances', action='wifiDisconnect')
     connect('/instances/getMigrationInfo/{id}', controller='instances', action='getMigrationInfo')
     connect('/instances/svmList', controller='instances', action='svmList')
 
