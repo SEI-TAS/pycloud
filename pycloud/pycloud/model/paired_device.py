@@ -113,7 +113,8 @@ class PairedDevice(Model):
     def by_instance(instance_id):
         try:
             devices = PairedDevice.find({'instance': instance_id})
-        except:
+        except Exception as e:
+            print 'Error finding devices for instance id {}: {}'.format(instance_id, e.message)
             return []
         return devices
 
