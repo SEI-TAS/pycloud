@@ -110,8 +110,10 @@ class ServiceVM(Model):
         except:
             return None
 
-        service_vm.vm = VirtualMachine()
-        service_vm.vm.connect_to_virtual_machine(service_vm._id)
+        if service_vm:
+            service_vm.vm = VirtualMachine()
+            service_vm.vm.connect_to_virtual_machine(service_vm._id)
+
         return service_vm
 
     ################################################################################################################
