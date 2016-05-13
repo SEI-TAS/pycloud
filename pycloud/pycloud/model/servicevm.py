@@ -566,7 +566,7 @@ class ServiceVM(Model):
                 svm.vm.connect_to_virtual_machine(svm._id)
             except VirtualMachineException as e:
                 print 'Problem shutting down vm with id {}: {}'.format(svm._id, e.message)
-                
+
             svm.stop()
 
         print 'All machines shutdown.'
