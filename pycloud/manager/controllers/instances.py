@@ -43,6 +43,8 @@ from pycloud.pycloud.network.wifi import WifiManager
 from pycloud.pycloud.cloudlet import Cloudlet
 from pycloud.pycloud.model import migrator
 
+CLOUDLET_NETWORK_PREFIX = 'cloudlet'
+
 log = logging.getLogger(__name__)
 
 ################################################################################################################
@@ -78,13 +80,16 @@ class InstancesController(BaseController):
         # Get a list of cloudlet networks in range, and pass them to dict format.
         available_networks_array = WifiManager.list_networks()
         available_networks = {}
+        is_connected = False
         for network_id in available_networks_array:
-            available_networks[network_id] = False
+            if network_id.startswith(CLOUDLET_NETWORK_PREFIX):
+                available_networks[network_id] = is_connected
 
         # Mark our current network as connected.
         current_network = WifiManager.current_network(interface=app_globals.cloudlet.wifi_adapter)
         if current_network in available_networks:
-            available_networks[current_network] = True
+            is_connected = True
+            available_networks[current_network] = is_connected
 
         print 'Available networks: '
         print available_networks
