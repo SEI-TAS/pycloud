@@ -28,6 +28,7 @@
 
 import time
 import os
+import json
 
 # Used to generate unique IDs for the VMs.
 from uuid import uuid4
@@ -145,6 +146,16 @@ class ServiceVM(Model):
         self.vm = None
         super(ServiceVM, self).save(*args, **kwargs)
         self.vm = vm
+
+    ################################################################################################################
+    # Serializes the object safely into a json string.
+    ################################################################################################################
+    def to_json_string(self):
+        vm = self.vm
+        self.vm = None
+        json_string = json.dumps(self)
+        self.vm = vm
+        return json_string
 
     ################################################################################################################
     #

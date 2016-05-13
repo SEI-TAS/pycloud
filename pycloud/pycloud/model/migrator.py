@@ -132,7 +132,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
 
     # Transfer the metadata.
     print 'Starting metadata file transfer...'
-    payload = {'svm_json_string': json.dumps(svm)}
+    payload = {'svm_json_string': svm.to_json_string()}
     result, response_text = __send_api_command(remote_host, MIGRATE_METADATA_CMD, encrypted, payload)
     print 'Metadata was transferred: ' + str(result)
 
