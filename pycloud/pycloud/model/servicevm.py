@@ -113,7 +113,11 @@ class ServiceVM(Model):
 
         if service_vm:
             service_vm.vm = VirtualMachine()
-            service_vm.vm.connect_to_virtual_machine(service_vm._id)
+            try:
+                service_vm.vm.connect_to_virtual_machine(service_vm._id)
+            except VirtualMachineException as e:
+                print 'Error connecting to VM with id {}: {}'.format(svm_id, e.message)
+                service_vm.vm = None
 
         return service_vm
 
@@ -559,11 +563,7 @@ class ServiceVM(Model):
         svm_list = ServiceVM.find()
         for svm in svm_list:
             svm.vm = VirtualMachine()
-            try:
-                svm.vm.connect_to_virtual_machine(svm._id)
-            except VirtualMachineException as e:
-                print 'Problem shutting down vm with id {}: {}'.format(svm._id, e.message)
-
+            svm.vm.connect_to_virtual_machine(svm._id)
             svm.stop()
 
         print 'All machines shutdown.'

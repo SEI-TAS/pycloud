@@ -210,14 +210,14 @@ def migrate_svm(svm_id, remote_host, encrypted):
 ############################################################################################################
 def receive_migrated_svm_metadata(svm_json_string):
     # Parse the body of the request as JSON into a python object.
-    json_svm = json.loads(svm_json_string)
-    if json_svm is None:
+    json_svm_dict = json.loads(svm_json_string)
+    if json_svm_dict is None:
         raise MigrationException("No SVM metadata was received")
 
     # Get information about the SVM.
-    print 'Obtaining metadata of SVM to be received.'
+    print 'Obtaining metadata of SVM to be received (json string: {}).'.format(svm_json_string)
     migrated_svm = ServiceVM()
-    migrated_svm.fill_from_dict(json_svm)
+    migrated_svm.fill_from_dict(json_svm_dict)
     migrated_svm.ready = False
 
     # Update network data, especially needed in non-bridged mode.
@@ -225,7 +225,7 @@ def receive_migrated_svm_metadata(svm_json_string):
 
     # Save to internal DB.
     migrated_svm.save()
-    print 'SVM metadata stored.'
+    print 'SVM metadata stored for SVM with id {}'.format(migrate_svm._id)
 
 
 ############################################################################################################
@@ -233,13 +233,7 @@ def receive_migrated_svm_metadata(svm_json_string):
 ############################################################################################################
 def receive_migrated_svm_disk_file(svm_id, disk_image_object, svm_instances_folder):
     # Get the id and load the metadata for this SVM.
-    migrated_svm = None
-    try:
-        migrated_svm = ServiceVM.by_id(svm_id, only_find_ready_ones=False)
-    except VirtualMachineException:
-        # Ignore, we know we won't be able to connect to a VM since the VM is not yet migrated here.
-        pass
-
+    migrated_svm = ServiceVM.by_id(svm_id, only_find_ready_ones=False)
     if not migrated_svm:
         raise SVMNotFoundException("No SVM found with the given id: {}".format(svm_id))
 
