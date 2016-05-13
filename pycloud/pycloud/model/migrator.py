@@ -225,7 +225,7 @@ def receive_migrated_svm_metadata(svm_json_string):
 
     # Save to internal DB.
     migrated_svm.save()
-    print 'SVM metadata stored for SVM with id {}'.format(migrate_svm._id)
+    print 'SVM metadata stored for SVM with id {}'.format(migrated_svm._id)
 
 
 ############################################################################################################
