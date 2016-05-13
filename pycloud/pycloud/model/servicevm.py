@@ -562,8 +562,11 @@ class ServiceVM(Model):
         print 'Shutting down all running virtual machines'
         svm_list = ServiceVM.find()
         for svm in svm_list:
-            svm.vm = VirtualMachine()
-            svm.vm.connect_to_virtual_machine(svm._id)
+            try:
+                svm.vm.connect_to_virtual_machine(svm._id)
+            except VirtualMachineException as e:
+                print 'Problem shutting down vm with id {}: {}'.format(svm._id, e.message)
+                
             svm.stop()
 
         print 'All machines shutdown.'
