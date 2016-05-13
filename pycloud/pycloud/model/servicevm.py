@@ -563,7 +563,8 @@ class ServiceVM(Model):
         svm_list = ServiceVM.find()
         for svm in svm_list:
             try:
-                svm.vm.connect_to_virtual_machine(svm._id)
+                if svm.vm:
+                    svm.vm.connect_to_virtual_machine(svm._id)
             except VirtualMachineException as e:
                 print 'Problem shutting down vm with id {}: {}'.format(svm._id, e.message)
 
