@@ -33,8 +33,16 @@ import time
 ###################################################################################################################
 # Helper to call nmcli commands.
 ###################################################################################################################
-def nmcli(cmd):
-    return subprocess.Popen('nmcli ' + cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
+def nmcli(cmd, response_should_be_empty=False):
+    full_command = 'nmcli ' + cmd
+    print 'Executing nmcli command: ' + full_command
+    response = subprocess.Popen(full_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
+    print 'Response: ' + response
+    if response_should_be_empty:
+        if response is not None and response.strip() != '':
+            raise Exception(response)
+
+    return response
 
 
 ###################################################################################################################
@@ -42,16 +50,47 @@ def nmcli(cmd):
 ###################################################################################################################
 class WifiManager(object):
 
+    CLOUDLET_NETWORK_PREFIX = 'cloudlet'
+
+    ################################################################################################################
+    #
+    ################################################################################################################
+    @staticmethod
+    def is_wifi_enabled():
+        response = nmcli('nm wifi')
+        lines = response.splitlines()
+        STATUS_LINE_ROW = 1
+        if len(lines) > STATUS_LINE_ROW:
+            status_line = lines[STATUS_LINE_ROW].strip()
+            is_enabled = (status_line == 'enabled')
+            return is_enabled
+        else:
+            raise Exception("No wifi adapter found!")
+
+    ################################################################################################################
+    # Turn on wifi, and wait for a couple of seconds it turns on.
+    # NOTE: only works if called from root user or user at console, not from SSH with a regular user.
+    ################################################################################################################
+    @staticmethod
+    def turn_wifi_on():
+        nmcli('nm wifi on', response_should_be_empty=True)
+        time.sleep(5)
+
+    ################################################################################################################
+    # Turn on wifi, and wait for a couple of seconds it turns on.
+    # NOTE: only works if called from root user or user at console, not from SSH with a regular user.
+    ################################################################################################################
+    @staticmethod
+    def turn_wifi_off():
+        nmcli('nm wifi off', response_should_be_empty=True)
+
     ################################################################################################################
     # Return a list of SSIDs currently in range.
     ################################################################################################################
     @staticmethod
-    def list_networks():
-        # Turn on wifi just in case, and wait for a couple of seconds it turns on.
-        response = nmcli('nm wifi on')
-        if response is not None and response.strip() != '':
-            raise Exception(response)
-        time.sleep(5)
+    def list_available_networks():
+        if not WifiManager.is_wifi_enabled():
+            WifiManager.turn_wifi_on()
 
         # Will return a list of newline separated SSIDs.
         response = nmcli('-t -f SSID device wifi list')
@@ -60,9 +99,50 @@ class WifiManager(object):
         ssids = []
         for line in lines:
             ssid = line.strip("'")
-            ssids.append(ssid)
+            if ssid.startswith(WifiManager.CLOUDLET_NETWORK_PREFIX):
+                ssids.append(ssid)
 
         return ssids
+
+    ################################################################################################################
+    # Return a list of stored network profiles.
+    ################################################################################################################
+    @staticmethod
+    def list_known_networks():
+        # Spaces may make it hard to get the profile name, unless we filter only the name.
+        # However, by getting only the name we will also get non wifi profiles, so we will do a cross-match between
+        # these two lists.
+        all_networks = nmcli('-t -f NAME con list')
+        wifi_networks = nmcli('con list | grep 802-11-wireless')
+
+        all_network_lines = all_networks.splitlines()
+        wifi_networks_lines = wifi_networks.splitlines()
+        wifi_network_list = []
+        for line in all_network_lines:
+            network_name = line.strip("'")
+
+            # Check that this network name is in the list of wifi networks.
+            for wifi_line in wifi_networks_lines:
+                if wifi_line.startswith(network_name):
+                    if network_name.startswith(WifiManager.CLOUDLET_NETWORK_PREFIX):
+                        wifi_network_list.append(network_name)
+                        break
+
+        return wifi_network_list
+
+    ################################################################################################################
+    # Returns a list of known networks that are currently available.
+    ################################################################################################################
+    @staticmethod
+    def list_available_known_networks():
+        available_known_networks = []
+        known_networks = WifiManager.list_known_networks()
+        available_networks = WifiManager.list_available_networks()
+        for network in known_networks:
+            if network in available_networks:
+                available_known_networks.append(network)
+
+        return available_known_networks
 
     ################################################################################################################
     # Return the current network SSID we are connected to using our configured interface, if any, or None.
@@ -75,27 +155,27 @@ class WifiManager(object):
         for line in response.splitlines():
             if len(line) > 0:
                 ssid = line.split(':')[0]
+                if ssid == '** (process':
+                    # This means there was an error getting the current network, most likely because wifi is off.
+                    ssid = 'disconnected'
                 break
 
         return ssid
 
     ################################################################################################################
     # Connect to a stored network.
+    # NOTE: only works if called from root user or user at console, not from SSH with a regular user.
     ################################################################################################################
     @staticmethod
     def connect_to_network(connection_id):
-        # NOTE: only works if called from root user or user at console.
-        response = nmcli('connection up id "{}"'.format(connection_id))
-        if response is not None and response.strip() != '':
-            raise Exception(response)
+        if not WifiManager.is_wifi_enabled():
+            WifiManager.turn_wifi_on()
+
+        nmcli('connection up id "{}"'.format(connection_id), response_should_be_empty=True)
 
     ################################################################################################################
-    # Connect to a stored network.
+    # Disconnect from current wifi network, only way to force it not to reconnect is to disable wifi.
     ################################################################################################################
     @staticmethod
     def disconnect_from_network():
-        # NOTE: only works if called from root user or user at console.
-        response = nmcli('nm wifi off')
-
-        if response is not None and response.strip() != '':
-            raise Exception(response)
+        WifiManager.turn_wifi_off()

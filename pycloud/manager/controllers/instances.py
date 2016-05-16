@@ -78,7 +78,7 @@ class InstancesController(BaseController):
     @asjson
     def GET_get_available_networks(self):
         # Get a list of cloudlet networks in range, and pass them to dict format.
-        available_networks_array = WifiManager.list_networks()
+        available_networks_array = WifiManager.list_available_known_networks()
         available_networks = {}
         is_connected = False
         for network_id in available_networks_array:
@@ -94,7 +94,8 @@ class InstancesController(BaseController):
         print 'Available networks: '
         print available_networks
 
-        return available_networks
+        return_info = {'current': current_network, 'available': available_networks}
+        return return_info
 
     ############################################################################################################
     # Returns a list of cloudlets available in our current network (or networks).
@@ -224,5 +225,5 @@ class InstancesController(BaseController):
             WifiManager.disconnect_from_network()
             return ajaxutils.JSON_OK
         except Exception as e:
-            msg = 'Error disconnecting from Wi-Fi network {}: {}'.format(ssid, str(e))
+            msg = 'Error disconnecting from Wi-Fi networks: {}'.format(str(e))
             return ajaxutils.show_and_return_error_dict(msg)

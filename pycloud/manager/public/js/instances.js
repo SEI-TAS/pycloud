@@ -92,15 +92,17 @@ function stopSVM(stopUrl)
 function showWifiNetworksModal(availableNetworksUrl)
 {
     // Get the list of currently available cloudlets through ajax.
-    var successHandler = function(availableNetworks) {
+    var successHandler = function(return_info) {
         // Add the networks we found to the list.
         var wifiForm = $('#wifi-connection-form');
         var networksSelect = wifiForm.find('#ssid');
         networksSelect.empty();
+
+        $("#currentNetwork").text(return_info['current']);
+
+        var availableNetworks = return_info['available'];
         $.each(availableNetworks, function(ssid, isConnected) {
-            if(isConnected)
-                $("#currentNetwork").text(ssid);
-            else
+            if(!isConnected)
                 networksSelect.append($('<option></option>').attr('value', ssid).text(ssid));
         });
     };

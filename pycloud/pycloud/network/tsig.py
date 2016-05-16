@@ -29,7 +29,7 @@
 import sys
 
 #################################################################################################################
-# Loads the key value from a TSIG privat key file.
+# Loads the key value from a TSIG private key file.
 #################################################################################################################
 def load_tsig_key(key_path):
     key_value = None
