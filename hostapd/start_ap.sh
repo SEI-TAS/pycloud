@@ -11,7 +11,7 @@ sudo stop libvirt-bin
 sudo service bind9 stop
 
 # Start dnsmasq to act as DHCP server
-sudo dnsmasq --dhcp-authoritative --interface=wlan0 --dhcp-range=192.168.2.20,192.168.2.100,255.255.255.0,4h
+sudo dnsmasq -z --dhcp-authoritative --interface=wlan0 --dhcp-range=192.168.2.20,192.168.2.100,255.255.255.0,4h
 
 # Start hostapd
 sudo hostapd -B ./hostapd.conf

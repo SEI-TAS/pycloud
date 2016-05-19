@@ -41,5 +41,7 @@ class ModifyPage(BasePage): pass
 class ImportPage(BasePage): pass
 class AppsPage(BasePage): pass
 class DevicesPage(BasePage): pass
-class PairingPage(BasePage): pass
+class DevicesPairingPage(BasePage): pass
+class CloudletPairingPage(BasePage): pass
+class CloudletDiscoveryPage(BasePage): pass
 class SigninPage(BasePage): pass
