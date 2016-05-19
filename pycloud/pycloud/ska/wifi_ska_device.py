@@ -27,13 +27,6 @@
 # http://jquery.org/license
 __author__ = 'Dan'
 
-"""
-A simple Python script to send messages to a server over Bluetooth
-using PyBluez (with Python 2).
-"""
-
-import bluetooth
-import sys
 import subprocess
 import os
 import json
@@ -41,9 +34,6 @@ import socket
 
 from ska_device_interface import ISKADevice
 from pycloud.pycloud.ska import ska_constants
-
-# Id of the service on a mobile device that is waiting for a pairing process.
-#SKA_PAIRING_UUID = "fa87c0d0-afac-11de-8a39-0800200c9a66"
 
 # Size of a chunk when transmitting through TCP .
 CHUNK_SIZE = 4096
@@ -69,60 +59,17 @@ def get_adapter_address():
     return internal_address
 
 ######################################################################################################################
-#
-######################################################################################################################
-def find_bluetooth_devices():
-    print('Finding bluetooth devices')
-    devices = bluetooth.discover_devices(duration=3, lookup_names=True)
-    print 'Devices found: ' + str(devices)
-    return devices
-
-######################################################################################################################
-#
-######################################################################################################################
-def find_ska_service(device_address=None):
-    print('Searching for devices with the SKA secure service')
-    service_matches = bluetooth.find_service(uuid=SKA_PAIRING_UUID, address=device_address)
-    print 'Services found: ' + str(service_matches)
-
-    if len(service_matches) == 0:
-        print("couldn't find the SKA service =(")
-
-    return service_matches
-
-######################################################################################################################
-# Pairs to a device, trying to force numeric comparison.
-######################################################################################################################
-def pair_through_numeric_comparison(device_info):
-    pass
-    # Register an agent to handle pairing.
-    # TODO: is this really needed on Ubuntu? Don't we have an agent already? How to set up its capabilities?
-    #bus = dbus.SystemBus()
-    #obj = bus.get_object('org.bluez', '/org/bluez')
-    #manager = dbus.Interface(obj, "org.bluez.AgentManager1")
-    #manager.RegisterAgent(path, 'DisplayYesNo')
-
-    #
-    #import bluezutils
-    #device = bluezutils.find_device(device_info['host'], 'hci0')
-    #device.Pair(reply_handler=pair_reply, error_handler=pair_error, timeout=60000)
-
-
-######################################################################################################################
-# Connects to a Bluetooth device given the bluetooth device info dict, and returns a socket.
+# Connects to a device given the device info dict, and returns a socket.
 ######################################################################################################################
 def connect_to_device(host, port, name):
     print("Connecting to \"%s\" on %s" % (name, host))
 
-    # TODO: test pairing manually through d-bus here, before opening socket through Pybluez.
-    # Seems to be only way to configure agent capabilities.
-
-    socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socket.connect((host, port))
+    new_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    new_socket.connect((host, port))
 
     print("Connected to \"%s\" on %s" % (name, host))
 
-    return socket
+    return new_socket
 
 ######################################################################################################################
 #
@@ -190,17 +137,18 @@ class WiFiSKADevice(ISKADevice):
         pass
 
     ####################################################################################################################
-    # Returns a list of BluetoothSKADevices that have the SKA Pairing service available.
+    # Returns a list of devices available.
     ####################################################################################################################
     @staticmethod
     def list_devices():
-        # Check that there is a Bluetooth adapter available.
+        # Check that there is an adapter available.
         adapter_address = get_adapter_address()
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
 
         # Find a device that has the service we want to use.
-        devices = find_ska_service()
+        # TODO: not implemented
+        devices = []
 
         ska_devices = []
         for device in devices:
@@ -209,10 +157,10 @@ class WiFiSKADevice(ISKADevice):
         return ska_devices
 
     ####################################################################################################################
-    # Makes a TCP connection over Bluetooth to this device.
+    # Makes a TCP connection to this device.
     ####################################################################################################################
     def connect(self):
-        # Check that there is a Bluetooth adapter available.
+        # Check that there is an adapter available.
         adapter_address = get_adapter_address()
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
@@ -317,18 +265,3 @@ class WiFiSKADevice(ISKADevice):
         reply = self.device_socket.recv(CHUNK_SIZE)
         print 'Reply: ' + reply
         return reply
-
-######################################################################################################################
-# Test method
-######################################################################################################################
-def test():
-    devices = WiFiSKADevice.list_devices()
-
-    if len(devices) < 0:
-        sys.exit(0)
-
-    device = devices[0]
-
-    device.connect()
-    device.get_id()
-    device.disconnect()

@@ -36,13 +36,11 @@ from pylons import app_globals
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import CloudletPairingPage
 from pycloud.manager.lib.pages import CloudletDiscoveryPage
-from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
-from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
+from pycloud.pycloud.ska.wifi_ska_device import WiFiSKADevice
 from pycloud.pycloud.pylons.lib import helpers as h
 
 from pycloud.pycloud.model.deployment import Deployment
 
-from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import ajaxutils
 
 log = logging.getLogger(__name__)
@@ -72,6 +70,7 @@ class CloudletPairingController(BaseController):
 
         try:
             # Create a device depending on the type.
+            curr_device = None
             if connection == 'wifi':
                 port = request.params.get('port', None)
                 name = request.params.get('name', None)
@@ -82,9 +81,8 @@ class CloudletPairingController(BaseController):
             deployment = Deployment.get_instance()
             deployment.pair_cloudlet(curr_device)
         except Exception, e:
-            return ajaxutils.show_and_return_error_dict(e.message)
+            print str(e)
 
-        return ajaxutils.JSON_OK
         return page.render()
 
     ############################################################################################################
