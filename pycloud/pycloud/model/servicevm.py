@@ -531,16 +531,16 @@ class ServiceVM(Model):
     # Pauses a VM.
     ################################################################################################################
     def pause(self):
-        result = self.vm.pause()
-        self.running = False
-        return result
+        was_pause_successful = self.vm.pause()
+        if was_pause_successful:
+            self.running = False
+        return was_pause_successful
 
     ################################################################################################################
     # Unpauses a VM.
     ################################################################################################################
     def unpause(self):
-        result = self.vm.unpause()
-        was_resume_successful = result == 0
+        was_resume_successful = self.vm.unpause()
         if was_resume_successful:
             self.running = True
             self.ready = True

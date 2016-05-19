@@ -160,7 +160,9 @@ class VirtualMachine(object):
     ################################################################################################################
     def pause(self):
         try:
-            self.vm.suspend()
+            result = self.vm.suspend()
+            was_suspend_successful = result == 0
+            return was_suspend_successful
         except libvirt.libvirtError, e:
             raise VirtualMachineException(str(e))
 
@@ -169,7 +171,9 @@ class VirtualMachine(object):
     ################################################################################################################
     def unpause(self):
         try:
-            self.vm.resume()
+            result = self.vm.resume()
+            was_resume_successful = result == 0
+            return was_resume_successful
         except libvirt.libvirtError, e:
             raise VirtualMachineException(str(e))
 

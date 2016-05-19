@@ -138,8 +138,8 @@ def migrate_svm(svm_id, remote_host, encrypted):
 
     # We pause the VM before transferring its disk and memory state.
     print 'Pausing VM...'
-    result = svm.pause()
-    if result == -1:
+    was_pause_successful = svm.pause()
+    if not was_pause_successful:
         raise Exception("Cannot pause VM: %s", str(svm_id))
     print 'VM paused.'
 
