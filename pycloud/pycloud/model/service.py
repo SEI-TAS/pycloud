@@ -124,8 +124,13 @@ class Service(Model):
         svm.vm_image = self.vm_image.clone(new_svm_folder, clone_full_image=clone_full_image)
 
         # Start the SVM.
-        svm.start()
-        svm.save()
+        try:
+            svm.start()
+            svm.save()
+        except Exception as e:
+            svm.stop()
+            raise e
+
         return svm
 
     ################################################################################################################

@@ -148,7 +148,7 @@ class WifiManager(object):
     # Return the current network SSID we are connected to using our configured interface, if any, or None.
     ################################################################################################################
     @staticmethod
-    def current_network(interface):
+    def get_current_network(interface):
         ssid = None
         response = nmcli('-t -f NAME,DEVICES connection status | grep {}'.format(interface))
 
@@ -161,6 +161,15 @@ class WifiManager(object):
                 break
 
         return ssid
+
+    ################################################################################################################
+    #
+    ################################################################################################################
+    @staticmethod
+    def is_connected_to_cloudlet_network():
+        current_network = WifiManager.get_current_network()
+        is_connected_to_cloudlet_net = current_network.startswith(WifiManager.CLOUDLET_NETWORK_PREFIX)
+        return is_connected_to_cloudlet_net
 
     ################################################################################################################
     # Connect to a stored network.

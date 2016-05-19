@@ -98,6 +98,16 @@ class ServiceVM(Model):
         super(ServiceVM, self).__init__(*args, **kwargs)
 
     ################################################################################################################
+    # Finds all SVMs given some search criteria.
+    ################################################################################################################
+    @staticmethod
+    def find_all(search_dict={}, only_find_ready_ones=True):
+        if only_find_ready_ones:
+            search_dict['ready'] = True
+        svm_list = ServiceVM.find(search_dict)
+        return svm_list
+
+    ################################################################################################################
     # Locate a ServiceVM by its ID
     ################################################################################################################
     # noinspection PyBroadException
@@ -127,7 +137,7 @@ class ServiceVM(Model):
     @staticmethod
     def by_service(service_id):
         service_vms_array = []
-        service_vms = ServiceVM.find({'service_id': service_id})
+        service_vms = ServiceVM.find_all({'service_id': service_id})
         for service_vm in service_vms:
             service_vm.vm = VirtualMachine()
             service_vm.vm.connect_to_virtual_machine(service_vm._id)
@@ -560,7 +570,7 @@ class ServiceVM(Model):
     @staticmethod
     def clear_all_svms():
         print 'Shutting down all running virtual machines'
-        svm_list = ServiceVM.find()
+        svm_list = ServiceVM.find_all(only_find_ready_ones=False)
         for svm in svm_list:
             try:
                 if svm.vm:

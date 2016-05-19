@@ -58,14 +58,14 @@ class InstancesController(BaseController):
     def GET_index(self):
         # Mark the active tab.
         c.servicevms_active = 'active'
-        svms = ServiceVM.find()
+        svms = ServiceVM.find_all()
 
         # Setup the page to render.
         instancesPage = InstancesPage()
         instancesPage.svms = svms
 
         # Get the current connection.
-        current_network = WifiManager.current_network(interface=app_globals.cloudlet.wifi_adapter)
+        current_network = WifiManager.get_current_network(interface=app_globals.cloudlet.wifi_adapter)
         instancesPage.current_network = current_network
 
         # Pass the grid and render the page.
@@ -86,7 +86,7 @@ class InstancesController(BaseController):
                 available_networks[network_id] = is_connected
 
         # Mark our current network as connected.
-        current_network = WifiManager.current_network(interface=app_globals.cloudlet.wifi_adapter)
+        current_network = WifiManager.get_current_network(interface=app_globals.cloudlet.wifi_adapter)
         if current_network in available_networks:
             is_connected = True
             available_networks[current_network] = is_connected
@@ -159,6 +159,9 @@ class InstancesController(BaseController):
         try:    
             # Stop an existing instance with the given ID.
             svm = ServiceVM.by_id(id)
+            if not svm:
+                raise Exception("No ready SVM with id {} was found.".format(id))
+
             svm.stop()
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
@@ -178,6 +181,10 @@ class InstancesController(BaseController):
             remote_host = remote_host_info[0] + ':' + remote_host_info[1]
             encrypted = True if remote_host_info[2] == 'encryption-enabled' else False
             migrator.migrate_svm(id, remote_host, encrypted)
+
+            if WifiManager.is_connected_to_cloudlet_network():
+                print 'Disconnecting from cloudlet Wi-Fi network.'
+                WifiManager.disconnect_from_network()
         except Exception, e:
             msg = 'Error migrating: ' + str(e)
             import traceback
@@ -194,7 +201,7 @@ class InstancesController(BaseController):
     def GET_svmList(self):
         try:    
             # Get the list of running instances.
-            svm_list = ServiceVM.find()
+            svm_list = ServiceVM.find_all()
             return svm_list
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
