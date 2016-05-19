@@ -184,7 +184,7 @@ class InstancesController(BaseController):
 
             if WifiManager.is_connected_to_cloudlet_network(interface=app_globals.cloudlet.wifi_adapter):
                 print 'Disconnecting from cloudlet Wi-Fi network.'
-                WifiManager.disconnect_from_network()
+                WifiManager.disconnect_from_network(interface=app_globals.cloudlet.wifi_adapter)
         except Exception, e:
             msg = 'Error migrating: ' + str(e)
             import traceback
@@ -229,7 +229,7 @@ class InstancesController(BaseController):
     @asjson
     def GET_wifiDisconnect(self):
         try:
-            WifiManager.disconnect_from_network()
+            WifiManager.disconnect_from_network(interface=app_globals.cloudlet.wifi_adapter)
             return ajaxutils.JSON_OK
         except Exception as e:
             msg = 'Error disconnecting from Wi-Fi networks: {}'.format(str(e))

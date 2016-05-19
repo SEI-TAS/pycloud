@@ -186,5 +186,7 @@ class WifiManager(object):
     # Disconnect from current wifi network, only way to force it not to reconnect is to disable wifi.
     ################################################################################################################
     @staticmethod
-    def disconnect_from_network():
-        WifiManager.turn_wifi_off()
+    def disconnect_from_network(interface):
+        if WifiManager.is_wifi_enabled():
+            current_network = WifiManager.get_current_network(interface)
+            nmcli('connection down id "{}"'.format(current_network), response_should_be_empty=True)
