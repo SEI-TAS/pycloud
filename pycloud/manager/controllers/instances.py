@@ -182,7 +182,7 @@ class InstancesController(BaseController):
             encrypted = True if remote_host_info[2] == 'encryption-enabled' else False
             migrator.migrate_svm(id, remote_host, encrypted)
 
-            if WifiManager.is_connected_to_cloudlet_network():
+            if WifiManager.is_connected_to_cloudlet_network(interface=app_globals.cloudlet.wifi_adapter):
                 print 'Disconnecting from cloudlet Wi-Fi network.'
                 WifiManager.disconnect_from_network()
         except Exception, e:

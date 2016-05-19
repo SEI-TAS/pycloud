@@ -166,8 +166,8 @@ class WifiManager(object):
     #
     ################################################################################################################
     @staticmethod
-    def is_connected_to_cloudlet_network():
-        current_network = WifiManager.get_current_network()
+    def is_connected_to_cloudlet_network(interface):
+        current_network = WifiManager.get_current_network(interface)
         is_connected_to_cloudlet_net = current_network.startswith(WifiManager.CLOUDLET_NETWORK_PREFIX)
         return is_connected_to_cloudlet_net
 
