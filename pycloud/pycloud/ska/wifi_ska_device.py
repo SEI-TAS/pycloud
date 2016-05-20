@@ -31,7 +31,7 @@ import subprocess
 import os
 import json
 import socket
-import thread
+import sys
 
 from ska_device_interface import ISKADevice
 from pycloud.pycloud.ska import ska_constants
@@ -182,8 +182,10 @@ class WiFiSKADevice(ISKADevice):
         self.device_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.device_socket.bind(self.device_info['host'],self.device_info['port'])
         self.device_socket.listen()
-        while conn, addr = self.device_socket.accept():
-            thread.start_new_thread(process_incoming, (self, conn, addr))
+        conn, addr = self.device_socket.accept()
+        while True:
+            ret = self.handle_incoming(self, conn, addr)
+            if ret == 'transfer_complete': break
 
 
     ####################################################################################################################
@@ -295,12 +297,12 @@ class WiFiSKADevice(ISKADevice):
     ####################################################################################################################
     def handle_incoming(self, conn, addr):
         data = conn.recv(4096)
-        if not data: break
+        if not data: return
         message = self.__receive_command(self, data)
         if message['wifi_command'] == "receive_file":
             self.file_path = message['file_id']
             conn.sendall('ack')
-            file_to_receive = open(file_path, 'wb')
+            file_to_receive = open(self.file_path, 'wb')
 
             # Send until there is no more data in the file.
             while True:
@@ -314,9 +316,10 @@ class WiFiSKADevice(ISKADevice):
             file_to_receive.close()
         elif message['wifi_command'] == "receive_data":
             return json.loads(message)
+        elif message['wifi_command'] == "transfer_complete":
+            return "transfer_complete"
         else:
-            self.device_socket.close()
-            break
+            pass
 
 ######################################################################################################################
 # Test method
