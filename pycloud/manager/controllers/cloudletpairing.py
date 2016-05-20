@@ -46,6 +46,8 @@ from pycloud.pycloud.model.deployment import Deployment
 
 from pycloud.pycloud.utils import ajaxutils
 
+import subprocess
+
 log = logging.getLogger(__name__)
 
 ################################################################################################################
@@ -68,9 +70,6 @@ class CloudletPairingController(BaseController):
         # TODO: Generate secret to display
         temp = random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", 1, 2, 3, 4, 5, 6, 7, 8, 9, 0], 6)
         page.secret = temp #secret should be alphanumeric and 6 symbols long
-
-        except Exception, e:
-            print str(e)
 
         return page.render()
 
@@ -103,7 +102,8 @@ class CloudletPairingController(BaseController):
                 curr_device.listen()
             else:
                 pass
-
+        except Exception, e:
+            print str(e)
 
         time.sleep(5) # For testing purposes
 
@@ -143,6 +143,7 @@ class CloudletPairingController(BaseController):
 
         try:
             # Create a device depending on the type.
+            curr_device = None
             if connection == 'wifi':
                 #port = request.params.get('port', None)
                 #name = request.params.get('name', None)
@@ -157,8 +158,6 @@ class CloudletPairingController(BaseController):
             deployment.pair_cloudlet(curr_device)
         except Exception, e:
             return ajaxutils.show_and_return_error_dict(e.message)
-
-        return ajaxutils.JSON_OK
 
         time.sleep(5) # For testing purposes
 
