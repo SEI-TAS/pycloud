@@ -45,7 +45,7 @@ CHUNK_SIZE = 4096
 def get_adapter_address():
     internal_address = None
 
-    cmd = subprocess.Popen('./start_ap.sh', shell=True, stdout=None)
+    cmd = subprocess.Popen('hostapd/start_ap.sh', shell=True, stdout=None)
 
     cmd = subprocess.Popen('iw dev', shell=True, stdout=subprocess.PIPE)
     for line in cmd.stdout:
