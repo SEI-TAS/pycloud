@@ -29,6 +29,9 @@ __author__ = 'Keegan'
 
 import logging
 import time
+import random
+import os
+
 
 from pylons import request, response, session, tmpl_context as c
 from pylons import app_globals
@@ -63,23 +66,9 @@ class CloudletPairingController(BaseController):
         page = CloudletPairingPage()
 
         # TODO: Generate secret to display
-        page.secret = "18Y90A" #secret should be alphanumeric and 6 symbols long
-        connection = request.params.get('connection', None)
-        if connection is None:
-            connection = 'wifi'
+        temp = random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", 1, 2, 3, 4, 5, 6, 7, 8, 9, 0], 6)
+        page.secret = temp #secret should be alphanumeric and 6 symbols long
 
-        try:
-            # Create a device depending on the type.
-            curr_device = None
-            if connection == 'wifi':
-                port = request.params.get('port', None)
-                name = request.params.get('name', None)
-                curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name})
-            else:
-                pass
-
-            deployment = Deployment.get_instance()
-            deployment.pair_cloudlet(curr_device)
         except Exception, e:
             print str(e)
 
@@ -94,16 +83,27 @@ class CloudletPairingController(BaseController):
         secret = request.params.get('secret', None)
         ssid = request.params.get('ssid', None)
         psk = request.params.get('psk', None)
+        command = "wpa_passphrase " + ssid + " " + psk + ">wpa.conf"
+        cmd = subprocess.Popen(command, shell=True, stdout=None)
+        command = "wpa_supplicant -Dwext -iwlan0 -swpa.conf"
+        cmd = subprocess.Popen(command, shell=True, stdout=None)
+        connection = request.params.get('connection', None)
+        if connection is None:
+            connection = 'wifi'
 
-        if ssid is not None and psk is not None:
-            print "The secret = %s" % secret
-            print "The ssid = %s" % ssid
-            print "The psk = %s" % psk
-            # TODO: Connect to the other cloudlet
-            # TODO: Send device name
-            # TODO: Wait for encrypted credentials
-            # TODO: Decode encrypted credentials with "<device name>-<secret>" as the key
-            # TODO: Add the cloudlet to the database
+        try:
+            # Create a device depending on the type.
+            if connection == 'wifi':
+                #port = request.params.get('port', None)
+                #name = request.params.get('name', None)
+                id = "10.10.10.10"
+                port = "1723"
+                name = "WiFi1"
+                curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name})
+                curr_device.listen()
+            else:
+                pass
+
 
         time.sleep(5) # For testing purposes
 
@@ -116,8 +116,15 @@ class CloudletPairingController(BaseController):
         page = CloudletDiscoveryPage()
 
         # TODO: Generate ssid and random psk here
-        page.ssid = "thunder-5A34C9" #ssid should be "<cloudlet machine name>-<alphanumeric and 6 symbols long>"
-        page.psk = "12AE34" #psk should be alphanumeric and 6 symbols long
+        temp = random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", 1, 2, 3, 4, 5, 6, 7, 8, 9, 0], 6)
+        host = os.uname()[1]
+        page.ssid = host + "-" + temp #ssid should be "<cloudlet machine name>-<alphanumeric and 6 symbols long>"
+        psk = random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", 1, 2, 3, 4, 5, 6, 7, 8, 9, 0], 6)
+        page.psk = psk #psk should be alphanumeric and 6 symbols long
+        command = "sed -ie \"s/xxxxxx/" + page.ssid + "/g\" hostapd-nic.conf"
+        cmd = subprocess.Popen(command, shell=True, stdout=None)
+        command = "sed -ie \"s/yyyyyy/" + page.psk + "/g\" hostapd-nic.conf"
+        cmd = subprocess.Popen(command, shell=True, stdout=None)
 
         return page.render()
 
@@ -130,17 +137,28 @@ class CloudletPairingController(BaseController):
         secret = request.params.get('secret', None)
         ssid = request.params.get('ssid', None)
         psk = request.params.get('psk', None)
+        connection = request.params.get('connection', None)
+        if connection is None:
+            connection = 'wifi'
 
-        if secret is not None:
-            print "The secret = %s" % secret
-            print "The ssid = %s" % ssid
-            print "The psk = %s" % psk
-            # TODO: Start new wifi profile
-            # TODO: wait for other device to connect and send machine name
-            # TODO: Create credentials for machine name
-            # TODO: Encrypt credentials with "<device name>-<secret>"
-            # TODO: Send credentials to the other cloudlet
-            # TODO: Terminate wifi profile
+        try:
+            # Create a device depending on the type.
+            if connection == 'wifi':
+                #port = request.params.get('port', None)
+                #name = request.params.get('name', None)
+                id = "10.10.10.1"
+                port = "1723"
+                name = "WiFi1"
+                curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name})
+            else:
+                pass
+
+            deployment = Deployment.get_instance()
+            deployment.pair_cloudlet(curr_device)
+        except Exception, e:
+            return ajaxutils.show_and_return_error_dict(e.message)
+
+        return ajaxutils.JSON_OK
 
         time.sleep(5) # For testing purposes
 
