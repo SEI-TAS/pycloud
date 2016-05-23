@@ -45,8 +45,6 @@ CHUNK_SIZE = 4096
 def get_adapter_address():
     internal_address = None
 
-    cmd = subprocess.Popen('hostapd/start_ap.sh', shell=True, stdout=None)
-
     cmd = subprocess.Popen('iw dev', shell=True, stdout=subprocess.PIPE)
     for line in cmd.stdout:
         if "Interface" in line:
@@ -166,6 +164,7 @@ class WiFiSKADevice(ISKADevice):
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
         # Connect to the device.
+        cmd = subprocess.Popen('hostapd/start_ap.sh', shell=True, stdout=None)
         self.device_socket = connect_to_device(self.device_info['host'], self.device_info['port'], self.device_info['name'])
         if self.device_socket is None:
             return False
