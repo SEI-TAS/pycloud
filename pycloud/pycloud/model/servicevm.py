@@ -172,10 +172,21 @@ class ServiceVM(Model):
         return json_string
 
     ################################################################################################################
-    #
+    # Sets the name based on the space in the XML string.
     ################################################################################################################
-    def get_name(self):
-        return self.VM_NAME_PREFIX + '-' + self._id
+    def set_default_name(self, xml_string=None):
+        self.name = None
+        default_new_name = self.VM_NAME_PREFIX + '-' + self._id
+
+        if not xml_string:
+            self.name = default_new_name
+        elif xml_string and VirtualMachineDescriptor.does_name_fit(xml_string, default_new_name):
+            self.name = default_new_name
+        elif xml_string:
+            self.name = VirtualMachineDescriptor.get_raw_name(xml_string)
+
+        if not self.name:
+            self.name = ''
 
     ################################################################################################################
     # Generates a random ID, valid as a VM id.
@@ -196,6 +207,7 @@ class ServiceVM(Model):
 
         # Load the XML template and update it with this VM's information.
         template_xml_descriptor = open(vm_xml_template_file, "r").read()
+        self.set_default_name()
         updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)
 
         # Create a VM ("domain") through the hypervisor.
@@ -226,10 +238,11 @@ class ServiceVM(Model):
 
         # Update the state image with the updated descriptor.
         # NOTE: this is only needed since libvirt wont allow us to change the ID of a VM being restored through its API. 
-        # Instead, we trick it by manually changing the ID of the saved state file, so the API won't know we changed it. 
+        # Instead, we trick it by manually changing the ID of the saved state file, so the API won't know we changed it.
         raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription()
+        self.set_default_name(raw_saved_xml_descriptor)
         updated_xml_descriptor_id_only = VirtualMachineDescriptor.update_raw_name_and_id(raw_saved_xml_descriptor,
-                                                                                         self._id, self.get_name())
+                                                                                         self._id, self.name)
         saved_state.updateStoredVmDescription(updated_xml_descriptor_id_only)
 
         # Get the descriptor and update it to include the current disk image path, port mappings, etc.
@@ -271,7 +284,7 @@ class ServiceVM(Model):
 
         # Change the ID and Name (note: not currently that useful since they are changed in the saved state file).
         xml_descriptor.setUuid(self._id)
-        xml_descriptor.setName(self.get_name())
+        xml_descriptor.setName(self.name)
 
         # Set the disk image in the description of the VM.
         xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')

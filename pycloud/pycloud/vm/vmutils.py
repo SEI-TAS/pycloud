@@ -202,6 +202,7 @@ class VirtualMachine(object):
             uri = None
         else:
             uri = None
+            #uri = VirtualMachine._get_qemu_libvirt_connection_uri(is_system_level=True, host_name=remote_host)
 
         try:
             # Migrate the state and memory (note that have to connect to the system-level libvirtd on the remote host).
