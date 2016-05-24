@@ -85,6 +85,23 @@ class ServiceVM(Model):
         super(ServiceVM, self).__init__(*args, **kwargs)
 
     ################################################################################################################
+    # Sets the name based on the space in the XML string.
+    ################################################################################################################
+    def set_default_name(self, xml_string=None):
+        self.name = None
+        default_new_name = self.prefix + '-' + self._id
+
+        if not xml_string:
+            self.name = default_new_name
+        elif xml_string and VirtualMachineDescriptor.does_name_fit(xml_string, default_new_name):
+            self.name = default_new_name
+        elif xml_string:
+            self.name = VirtualMachineDescriptor.get_raw_name(xml_string)
+
+        if not self.name:
+            self.name = ''
+
+    ################################################################################################################
     # Sets up the internal network parameters, based on the config.
     ################################################################################################################
     def _setup_network(self):
@@ -181,7 +198,7 @@ class ServiceVM(Model):
 
         # Change the ID and Name (note: not currently that useful since they are changed in the saved state file).
         xml_descriptor.setUuid(self._id)
-        xml_descriptor.setName(self.prefix + '-' + self._id)
+        xml_descriptor.setName(self.name)
 
         # Set the disk image in the description of the VM.
         xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')
@@ -229,7 +246,7 @@ class ServiceVM(Model):
     ################################################################################################################    
     def _update_raw_name_and_id(self, saved_xml_string):
         updated_xml = re.sub(r"<uuid>[\w\-]+</uuid>", "<uuid>%s</uuid>" % self._id, saved_xml_string)
-        updated_xml = re.sub(r"<name>[\w\-]+</name>", "<name>%s</name>" % (self.prefix + '-' + self._id), updated_xml)
+        updated_xml = re.sub(r"<name>[\w\-]+</name>", "<name>%s</name>" % (self.name), updated_xml)
         return updated_xml
 
     ################################################################################################################
@@ -335,6 +352,7 @@ class ServiceVM(Model):
 
         # Load the XML template and update it with this VM's information.
         template_xml_descriptor = open(vm_xml_template_file, "r").read()
+        self.set_default_name()
         updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)
 
         # Create a VM ("domain") through the hypervisor.
@@ -366,6 +384,7 @@ class ServiceVM(Model):
         # NOTE: this is only needed since libvirt wont allow us to change the ID of a VM being restored through its API. 
         # Instead, we trick it by manually changing the ID of the saved state file, so the API won't know we changed it. 
         raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription(get_hypervisor())
+        self.set_default_name(raw_saved_xml_descriptor)
         updated_xml_descriptor_id_only = self._update_raw_name_and_id(raw_saved_xml_descriptor)
         saved_state.updateStoredVmDescription(updated_xml_descriptor_id_only)
 

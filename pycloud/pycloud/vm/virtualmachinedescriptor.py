@@ -30,6 +30,7 @@
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 import os
+import re
 
 ################################################################################################################
 # Exception type used in our system.
@@ -55,6 +56,32 @@ class VirtualMachineDescriptor(object):
     def __init__(self, xmlDescriptorString):
         # Load the XML root element from the XML descriptor string.
         self.xmlRoot = ElementTree.fromstring(xmlDescriptorString)
+
+    ################################################################################################################
+    #
+    ################################################################################################################
+    @staticmethod
+    def does_name_fit(xml_string, new_name):
+        # Any new data must not be bigger than the previous one, or it won't fit in the raw header.
+        new_name_will_fit = False
+        original_name = VirtualMachineDescriptor.get_raw_name(xml_string)
+        if original_name:
+            print 'Original VM Name: {}'.format(original_name)
+            print 'New VM Name: {}'.format(new_name)
+            new_name_will_fit = len(new_name) <= len(original_name)
+
+        return new_name_will_fit
+
+    ################################################################################################################
+    # Gets the name from a raw xml descriptor string.
+    ################################################################################################################
+    @staticmethod
+    def get_raw_name(xml_string):
+        name = None
+        matches = re.search(r"<name>([\w\-]+)</name>", xml_string)
+        if matches:
+            name = matches.group(1)
+        return name
 
     ################################################################################################################
     # Returns an XML string with the contents of this VMDescriptor
