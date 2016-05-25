@@ -180,13 +180,22 @@ class ServiceVM(Model):
 
         if not xml_string:
             self.name = default_new_name
-        elif xml_string and VirtualMachineDescriptor.does_name_fit(xml_string, default_new_name):
-            self.name = default_new_name
-        elif xml_string:
-            self.name = VirtualMachineDescriptor.get_raw_name(xml_string)
+        else:
+            original_name = VirtualMachineDescriptor.get_raw_name(xml_string)
+            if VirtualMachineDescriptor.does_name_fit(xml_string, default_new_name):
+                new_name = default_new_name
+            else:
+                print 'Truncating new VM name.'
+                new_name = default_new_name[:len(original_name)]
+
+            self.name = new_name
+
+            print 'Original VM Name: {}'.format(original_name)
+            print 'New VM Name: {}'.format(self.name)
 
         if not self.name:
             self.name = ''
+
 
     ################################################################################################################
     # Generates a random ID, valid as a VM id.
