@@ -66,8 +66,6 @@ class VirtualMachineDescriptor(object):
         new_name_will_fit = False
         original_name = VirtualMachineDescriptor.get_raw_name(xml_string)
         if original_name:
-            print 'Original VM Name: {}'.format(original_name)
-            print 'New VM Name: {}'.format(new_name)
             new_name_will_fit = len(new_name) <= len(original_name)
 
         return new_name_will_fit
