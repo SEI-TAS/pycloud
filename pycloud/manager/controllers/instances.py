@@ -201,7 +201,7 @@ class InstancesController(BaseController):
     def GET_svmList(self):
         try:    
             # Get the list of running instances.
-            svm_list = ServiceVM.find_all()
+            svm_list = ServiceVM.find_all(connect_to_vm=False)
             return svm_list
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.

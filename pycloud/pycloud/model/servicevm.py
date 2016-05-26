@@ -101,11 +101,18 @@ class ServiceVM(Model):
     # Finds all SVMs given some search criteria.
     ################################################################################################################
     @staticmethod
-    def find_all(search_dict={}, only_find_ready_ones=True):
+    def find_all(search_dict={}, only_find_ready_ones=True, connect_to_vm=True):
+        service_vms_array = []
         if only_find_ready_ones:
             search_dict['ready'] = True
         svm_list = ServiceVM.find(search_dict)
-        return svm_list
+        for service_vm in svm_list:
+            if connect_to_vm:
+                service_vm.connect_to_vm()
+            else:
+                service_vm.vm = None
+            service_vms_array.append(service_vm)
+        return service_vms_array
 
     ################################################################################################################
     # Locate a ServiceVM by its ID
@@ -122,27 +129,28 @@ class ServiceVM(Model):
             return None
 
         if service_vm:
-            service_vm.vm = VirtualMachine()
-            try:
-                service_vm.vm.connect_to_virtual_machine(service_vm._id)
-            except VirtualMachineException as e:
-                print 'Error connecting to VM with id {}: {}'.format(svm_id, e.message)
-                service_vm.vm = None
+            service_vm.connect_to_vm()
 
         return service_vm
+
+    ################################################################################################################
+    # Connects to a libvirt vm.
+    ################################################################################################################
+    def connect_to_vm(self):
+        self.vm = VirtualMachine()
+        try:
+            self.vm.connect_to_virtual_machine(self._id)
+        except VirtualMachineException as e:
+            print 'Error connecting to VM with id {}: {}'.format(self._id, e.message)
+            self.vm = None
 
     ################################################################################################################
     #
     ################################################################################################################
     @staticmethod
     def by_service(service_id):
-        service_vms_array = []
         service_vms = ServiceVM.find_all({'service_id': service_id})
-        for service_vm in service_vms:
-            service_vm.vm = VirtualMachine()
-            service_vm.vm.connect_to_virtual_machine(service_vm._id)
-            service_vms_array.append(service_vm)
-        return service_vms_array
+        return service_vms
 
     ################################################################################################################
     # Cleanly and safely gets a ServiceVM and removes it from the database.
@@ -517,7 +525,7 @@ class ServiceVM(Model):
                     self.running = False
 
                 # Destroy the VM if it exists, and mark it as not running.
-                if self.vm and self.running:
+                if self.vm:
                     print "Stopping Service VM with instance id %s" % self._id
                     self.vm.destroy()
                 else:
@@ -595,11 +603,8 @@ class ServiceVM(Model):
         svm_list = ServiceVM.find_all(only_find_ready_ones=False)
         for svm in svm_list:
             try:
-                if svm.vm:
-                    svm.vm.connect_to_virtual_machine(svm._id)
+                svm.stop()
             except VirtualMachineException as e:
                 print 'Problem shutting down vm with id {}: {}'.format(svm._id, e.message)
-
-            svm.stop()
 
         print 'All machines shutdown.'
