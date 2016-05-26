@@ -343,9 +343,12 @@ class ServiceVM(Model):
                 print 'Service was not found running inside the SVM. Check if it is configured to start at boot time.'
 
         # Get VNC connection info.
-        self.vnc_address = self.__get_vnc_address()
-        self.vnc_port = self.__get_vnc_port()
-        print "VNC available on {}".format(str(self.vnc_address))
+        try:
+            self.vnc_address = self.__get_vnc_address()
+            self.vnc_port = self.__get_vnc_port()
+            print "VNC available on {}".format(str(self.vnc_address))
+        except Exception as e:
+            print "VNC not available on VM: {}".format(e.message)
 
     ################################################################################################################
     # Create a new service VM from a given template, and start it.

@@ -92,8 +92,12 @@ class VirtualMachineDescriptor(object):
     # Returns the port the VNC server is listening on, if any.
     ################################################################################################################
     def getVNCPort(self):
-        vncPort = self.xmlRoot.find("devices/graphics[@type='vnc']").get("port")
-        return vncPort
+        vnc_node = self.xmlRoot.find("devices/graphics[@type='vnc']")
+        if vnc_node is not None:
+            vnc_port = vnc_node.get("port")
+            return vnc_port
+        else:
+            raise VirtualMachineException("VNC not set up for this VM.")
 
     ################################################################################################################
     # Sets the realtek network driver instead of the default virtio one. Needed for Windows-based VMs that do
