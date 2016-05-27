@@ -105,7 +105,7 @@ def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
     req = requests.Request('POST', remote_url, data=payload, headers=headers, files=files)
     prepared = req.prepare()
     print remote_url
-    #__print_request(prepared)
+
     session = requests.Session()
     response = session.send(prepared)
 
@@ -168,17 +168,20 @@ def migrate_svm(svm_id, remote_host, encrypted):
             deployment = Deployment.get_instance()
             connection_id = deployment.cloudlet.get_id() + "-" + device.device_id
             payload = {'device_id': device.device_id, 'connection_id': connection_id, 'svm_id': svm_id}
-            result, response_text = __send_api_command(remote_host, MIGRATE_CREDENTIALS_CMD, encrypted, payload)
-            print 'Remote credentials were generated: ' + str(result)
+            response, serialized_credentials = __send_api_command(remote_host, MIGRATE_CREDENTIALS_CMD, encrypted, payload)
+            print 'Remote credentials were generated: ' + str(response)
 
-            # Store the new credentials so that a device asking for them will get them.
-            print response_text
-            paired_device_data_bundle = PairedDeviceDataBundle()
-            paired_device_data_bundle.fill_from_dict(json.loads(response_text))
-            device_command = AddTrustedCloudletDeviceMessage(paired_device_data_bundle)
-            device_command.device_id = device.device_id
-            device_command.service_id = svm.service_id
-            device_command.save()
+            if serialized_credentials == '':
+                print 'No credentials were generated; device must be already paired to remote cloudlet.'
+            else:
+                # Store the new credentials so that a device asking for them will get them.
+                print serialized_credentials
+                paired_device_data_bundle = PairedDeviceDataBundle()
+                paired_device_data_bundle.fill_from_dict(json.loads(serialized_credentials))
+                device_command = AddTrustedCloudletDeviceMessage(paired_device_data_bundle)
+                device_command.device_id = device.device_id
+                device_command.service_id = svm.service_id
+                device_command.save()
     except Exception as e:
         # If migration fails, ask remote to remove svm.
         print 'Error migrating: {}'.format(e.message)
@@ -268,6 +271,7 @@ def abort_migration(svm_id):
     print 'Aborting migration, cleaning up...'
     migrated_svm.stop()
 
+    # Unpairing all paired devices that were using this VM.
     deployment = Deployment.get_instance()
     paired_devices = PairedDevice.by_instance(svm_id)
     for paired_device in paired_devices:

@@ -478,6 +478,9 @@ class ServiceVM(Model):
 
     ################################################################################################################
     # Waits for the service to boot up.
+    # TODO: this method does not work as intended in non-bridged mode. It properly checks that the external,
+    # TODO: port-fowarding port is open, but if there is no forwarded internal port open, it succeeds as well (the
+    # TODO: connection is just closed right away, but that is not checked here).
     ################################################################################################################
     def _wait_for_service(self, retries=5):
         if retries == 0:
