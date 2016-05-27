@@ -44,7 +44,6 @@ from pycloud.pycloud.utils import ajaxutils
 from pycloud.pycloud.model import migrator
 from pycloud.pycloud.model.migrator import MigrationException
 from pycloud.pycloud.model.servicevm import SVMNotFoundException
-from pycloud.pycloud.model.deployment import DeviceAlreadyPairedException
 
 log = logging.getLogger(__name__)
 
@@ -205,8 +204,6 @@ class ServiceVMController(BaseController):
         credentials = ''
         try:
             credentials = migrator.generate_migration_device_credentials(device_id, connection_id, svm_id)
-        except DeviceAlreadyPairedException as e:
-            print 'Credentials not generated: ' + e.message
         except Exception as e:
             print 'Error generating credentials: ' + e.message
             abort(404, e.message)
