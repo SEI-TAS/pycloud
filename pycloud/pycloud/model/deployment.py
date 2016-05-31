@@ -159,7 +159,9 @@ class Deployment(Model):
                                    device_keys.encryption_password, device_type)
 
             return device_keys
-        except Exception, e:
+        except DeviceAlreadyPairedException as e:
+            raise e
+        except Exception as e:
             raise Exception("Error pairing with device: " + str(e))
 
     ################################################################################################################
