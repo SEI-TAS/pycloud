@@ -186,8 +186,7 @@ class ModifyController(BaseController):
         return h.redirect_to(controller='services')
 
     ############################################################################################################
-    # Creates a new Service VM and opens it in a VNC window for editing.
-    # NOTE: The VNC window will only open on the computer running the server.
+    # Creates a new Service VM.
     ############################################################################################################
     @asjson
     def POST_createSVM(self):
@@ -269,11 +268,6 @@ class ModifyController(BaseController):
             # Permanently store the VM.
             print 'Moving Service VM Image to cache, from folder {} to folder {}.'.format(os.path.dirname(svm.vm_image.disk_image), vm_image_folder)
             svm.vm_image.move(vm_image_folder)
-
-            # Ensure we own the new image files.
-            # NOTE: this should not be needed if we are using qemu/session as a libvirtd connection in vm_utils.py.
-            #fileutils.chown_to_current_user(svm.vm_image.disk_image)
-            #fileutils.chown_to_current_user(svm.vm_image.state_image)
 
             # Make the VM image read only.
             print 'Making VM Image read-only.'

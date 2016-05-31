@@ -288,7 +288,9 @@ class ServiceVM(Model):
         self.register_with_dns()
 
         # Check if the service is available, wait for it for a bit.
-        self._check_service()
+        # CURRENT IMPLEMENTATION ONLY WORKS IN BRIDGED MODE.
+        if self.network_mode == "bridged":
+            self._check_service()
 
         return self
 

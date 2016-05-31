@@ -126,7 +126,6 @@ function import_svm(url, file_path)
             dialog.hide();
             if (resp.hasOwnProperty('error'))
             {
-                alert("Error insert service: " + resp.error);
                 showAndLogErrorMessage('There was a problem importing the service: ' + resp.error);
             }
             else
