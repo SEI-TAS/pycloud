@@ -86,13 +86,14 @@ def make_map(config):
     connect('list_devices', '/devices', controller='devices', action='list')
     connect('clear', '/devices/clear', controller='devices', action='clear')
     connect('bootstrap', '/devices/bootstrap', controller='devices', action='bootstrap')
-    connect('pair_cloudlet_display', '/devices/cloudlet/pair', controller='cloudletpairing', action='pair')
-    connect('discover_cloudlets_display', '/devices/cloudlet/discover', controller='cloudletpairing', action='discover')
     connect('available_devices', '/devices/available', controller='devicespairing', action='available')
     connect('pair_device', '/devices/pair/{id}', controller='devicespairing', action='pair')
     connect('authorize_device', '/devices/authorize/{did}', controller='devices', action='authorize')
     connect('unpair_device', '/devices/unpair/{id}', controller='devices', action='unpair')
     connect('revoke_auth', '/devices/revoke/{id}', controller='devices', action='revoke')
     connect('reauthorize', '/devices/reauthorize/{id}', controller='devices', action='reauthorize')
+    
+    connect('pair_cloudlet_display', '/devices/cloudlet/pair', controller='cloudletpairing', action='pair')
+    connect('discover_cloudlets_display', '/devices/cloudlet/discover', controller='cloudletpairing', action='discover')
 
     return mapper
