@@ -92,7 +92,7 @@ def make_map(config):
     connect('unpair_device', '/devices/unpair/{id}', controller='devices', action='unpair')
     connect('revoke_auth', '/devices/revoke/{id}', controller='devices', action='revoke')
     connect('reauthorize', '/devices/reauthorize/{id}', controller='devices', action='reauthorize')
-    
+
     connect('pair_cloudlet_display', '/devices/cloudlet/pair', controller='cloudletpairing', action='pair')
     connect('discover_cloudlets_display', '/devices/cloudlet/discover', controller='cloudletpairing', action='discover')
 
