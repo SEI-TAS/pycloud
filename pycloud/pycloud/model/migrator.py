@@ -125,9 +125,11 @@ def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
 def migrate_svm(svm_id, remote_host, encrypted):
     # Find the SVM.
     svm = ServiceVM.by_id(svm_id)
-    print 'VM found: ' + str(svm)
+    if svm is None:
+        raise MigrationException("SVM with id %s was not found" % str(svm_id))
 
     # remote_host has host and port.
+    print 'VM found: ' + str(svm)
     print 'Migrating to remote cloudlet: ' + remote_host
 
     # Transfer the metadata.
@@ -140,7 +142,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
     print 'Pausing VM...'
     was_pause_successful = svm.pause()
     if not was_pause_successful:
-        raise Exception("Cannot pause VM: %s", str(svm_id))
+        raise MigrationException("Cannot pause VM: %s" % str(svm_id))
     print 'VM paused.'
 
     try:

@@ -46,11 +46,13 @@ class CloudletFinder(object):
     # Finds cloudlets and returns a list.
     ####################################################################################################################
     def find_cloudlets(self, seconds_to_wait=3):
+        print 'Started looking for cloudlets'
         self.services = {}
         zeroconf = Zeroconf()
         browser = ServiceBrowser(zeroconf, CloudletFinder.CLOUDLET_SERVICE_DNS, listener=self)
 
         # Wait to find cloudlets.
+        print 'Waiting for results'
         time.sleep(seconds_to_wait)
 
         # Stop looking for cloudlets.
@@ -66,10 +68,14 @@ class CloudletFinder(object):
     ####################################################################################################################
     def add_service(self, zeroconf, type, name):
         info = zeroconf.get_service_info(type, name)
-        print("Service %s added, service info: %s" % (name, info))
+        if info is None:
+            print("Empty service was registered; ignoring it.")
+            return
+
+        print("Service added, service name: %s" % name)
         self.services[info.server] = info
 
-        # Move encryption state to speific property for easier access.
+        # Move encryption state to specific property for easier access.
         encryption = ''
         if 'encryption' in info.properties:
             encryption = info.properties['encryption']
