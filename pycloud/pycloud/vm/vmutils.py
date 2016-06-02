@@ -31,6 +31,7 @@ __author__ = 'jdroot'
 import libvirt
 
 QEMU_URI_PREFIX = "qemu://"
+QEMU_URI_TCP_PREFIX = "tcp://"
 SYSTEM_LIBVIRT_DAEMON_SUFFIX = "/system"
 SESSION_LIBVIRT_DAEMON_SUFFIX = "/session"
 
@@ -90,6 +91,14 @@ class VirtualMachine(object):
             uri += SYSTEM_LIBVIRT_DAEMON_SUFFIX
         else:
             uri += SESSION_LIBVIRT_DAEMON_SUFFIX
+        return uri
+
+    ################################################################################################################
+    # Builds a libvir URI for a QEMU connection.
+    ################################################################################################################
+    @staticmethod
+    def _get_qemu_libvirt_tcp_connection_uri(host_name=''):
+        uri = QEMU_URI_TCP_PREFIX + host_name
         return uri
 
     ################################################################################################################
@@ -189,7 +198,7 @@ class VirtualMachine(object):
     ################################################################################################################
     #
     ################################################################################################################
-    def perform_memory_migration(self, remote_host, p2p=True):
+    def perform_memory_migration(self, remote_host, p2p=False):
         # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
         # (and some hypervisors do not support it anyway).
         flags = 0
@@ -200,8 +209,8 @@ class VirtualMachine(object):
             flags = flags | libvirt.VIR_MIGRATE_PEER2PEER | libvirt.VIR_MIGRATE_TUNNELLED
             uri = None
         else:
-            uri = None
-            #uri = VirtualMachine._get_qemu_libvirt_connection_uri(is_system_level=True, host_name=remote_host)
+            #uri = None
+            uri = VirtualMachine._get_qemu_libvirt_tcp_connection_uri(host_name=remote_host)
 
         try:
             # Migrate the state and memory (note that have to connect to the system-level libvirtd on the remote host).
