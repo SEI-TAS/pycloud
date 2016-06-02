@@ -28,6 +28,8 @@
 
 from zeroconf import ServiceBrowser, Zeroconf
 import time
+import socket
+
 
 #######################################################################################################################
 # Finds cloudlets through Zeroconf.
@@ -72,7 +74,8 @@ class CloudletFinder(object):
             print("Empty service was registered; ignoring it.")
             return
 
-        print("Service added, service name: %s" % name)
+        address_string = socket.inet_ntoa(info.address)
+        print "Service added, service name: {}, and ip {}".format(name, address_string)
         self.services[info.server] = info
 
         # Move encryption state to specific property for easier access.
