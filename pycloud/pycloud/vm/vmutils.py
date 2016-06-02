@@ -209,7 +209,6 @@ class VirtualMachine(object):
             flags = flags | libvirt.VIR_MIGRATE_PEER2PEER | libvirt.VIR_MIGRATE_TUNNELLED
             uri = None
         else:
-            #uri = None
             uri = VirtualMachine._get_qemu_libvirt_tcp_connection_uri(host_name=remote_host)
 
         try:
