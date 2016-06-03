@@ -177,9 +177,9 @@ def migrate_svm(svm_id, remote_host, remote_ip, encrypted):
             # De-serializing generated data.
             print serialized_credentials
             paired_device_data_bundle = PairedDeviceDataBundle()
+            paired_device_data_bundle.fill_from_dict(json.loads(serialized_credentials))
             paired_device_data_bundle.cloudlet_ip = remote_ip
             paired_device_data_bundle.cloudlet_port = remote_host_port
-            paired_device_data_bundle.fill_from_dict(json.loads(serialized_credentials))
 
             # Create the appropriate command.
             data_contains_only_cloudlet_info = paired_device_data_bundle.auth_password is None
