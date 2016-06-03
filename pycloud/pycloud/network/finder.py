@@ -83,6 +83,7 @@ class CloudletFinder(object):
         if 'encryption' in info.properties:
             encryption = info.properties['encryption']
         self.services[info.server].encryption = encryption
+        self.services[info.server].address_string = address_string
 
     ####################################################################################################################
     # Called when a service is removed, removes it from a list of services.

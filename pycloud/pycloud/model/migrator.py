@@ -122,7 +122,7 @@ def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
 ############################################################################################################
 # Command to migrate a machine.
 ############################################################################################################
-def migrate_svm(svm_id, remote_host, encrypted):
+def migrate_svm(svm_id, remote_host, remote_ip, encrypted):
     # Find the SVM.
     svm = ServiceVM.by_id(svm_id)
     if svm is None:
@@ -156,7 +156,8 @@ def migrate_svm(svm_id, remote_host, encrypted):
 
         # Do the memory state migration.
         remote_host_name = remote_host.split(':')[0]
-        print 'Migrating through libvirtd to ' + remote_host_name
+        remote_host_port = remote_host.split(':')[1]
+        print 'Migrating through libvirtd to {} ({})'.format(remote_host_name, remote_ip)
         svm.migrate(remote_host_name)
         print 'Memory migration through libvirtd completed'
 
@@ -176,6 +177,8 @@ def migrate_svm(svm_id, remote_host, encrypted):
             # De-serializing generated data.
             print serialized_credentials
             paired_device_data_bundle = PairedDeviceDataBundle()
+            paired_device_data_bundle.cloudlet_ip = remote_ip
+            paired_device_data_bundle.cloudlet_port = remote_host_port
             paired_device_data_bundle.fill_from_dict(json.loads(serialized_credentials))
 
             # Create the appropriate command.
@@ -318,7 +321,6 @@ def generate_migration_device_credentials(device_id, connection_id, svm_id):
     cloudlet = get_cloudlet_instance()
     device_credentials.cloudlet_name = Cloudlet.get_hostname()
     device_credentials.cloudlet_fqdn = Cloudlet.get_fqdn()
-    device_credentials.cloudlet_port = 9999                 # TODO: find a way to get the port we (API) are listening to
     device_credentials.cloudlet_encryption_enabled = cloudlet.api_encrypted
     device_credentials.ssid = cloudlet.ssid
 
