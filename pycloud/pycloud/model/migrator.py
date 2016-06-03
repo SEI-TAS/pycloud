@@ -172,7 +172,6 @@ def migrate_svm(svm_id, remote_host, remote_ip, encrypted):
             connection_id = deployment.cloudlet.get_id() + "-" + device.device_id
             payload = {'device_id': device.device_id, 'connection_id': connection_id, 'svm_id': svm_id}
             response, serialized_credentials = __send_api_command(remote_host, MIGRATE_CREDENTIALS_CMD, encrypted, payload)
-            print 'Remote credentials were generated: ' + str(response)
 
             # De-serializing generated data.
             print serialized_credentials
@@ -180,6 +179,7 @@ def migrate_svm(svm_id, remote_host, remote_ip, encrypted):
             paired_device_data_bundle.fill_from_dict(json.loads(serialized_credentials))
             paired_device_data_bundle.cloudlet_ip = remote_ip
             paired_device_data_bundle.cloudlet_port = remote_host_port
+            print 'Remote credentials to be sent: ' + str(paired_device_data_bundle)
 
             # Create the appropriate command.
             data_contains_only_cloudlet_info = paired_device_data_bundle.auth_password is None
