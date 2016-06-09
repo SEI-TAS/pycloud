@@ -189,7 +189,6 @@ class InstancesController(BaseController):
                 WifiManager.disconnect_from_network(interface=app_globals.cloudlet.wifi_adapter)
         except Exception, e:
             msg = 'Error migrating: ' + str(e)
-
             return ajaxutils.show_and_return_error_dict(msg)
 
         return ajaxutils.JSON_OK
