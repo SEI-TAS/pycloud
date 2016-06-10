@@ -123,6 +123,9 @@ class Cloudlet(object):
         self.radius_certs_folder = config['pycloud.radius.certs_folder'] if 'pycloud.radius.certs_folder' in config else None
         self.radius_eap_conf_file = config['pycloud.radius.eap_conf_file'] if 'pycloud.radius.eap_conf_file' in config else None
 
+        # DNS
+        self.dns_enabled = config['pycloud.dns.enabled'] == 'True' if 'pycloud.dns.enabled' in config else False
+
         # Load version information.
         base_folder = os.path.dirname(os.path.realpath(__file__))
         self.version = ''

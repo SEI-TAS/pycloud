@@ -503,19 +503,21 @@ class ServiceVM(Model):
     # Generates a FQDN for the SVM.
     ################################################################################################################
     def _generate_fqdn(self):
-        hostname = self.service_id + '.' + self._id
-        self.fqdn = cloudlet_dns.CloudletDNS.generate_fqdn(hostname)
+        if get_cloudlet_instance().dns_enabled:
+            hostname = self.service_id + '.' + self._id
+            self.fqdn = cloudlet_dns.CloudletDNS.generate_fqdn(hostname)
 
     ################################################################################################################
     # Register with DNS server.
     ################################################################################################################
     def register_with_dns(self):
-        # Register with DNS. If we are in bridged mode, we need to set up a specific record to the new IP address.
-        dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
-        if self.network_mode == 'bridged':
-            dns_server.register_svm(self.fqdn, self.ip_address)
-        else:
-            dns_server.register_svm(self.fqdn)
+        if get_cloudlet_instance().dns_enabled:
+            # Register with DNS. If we are in bridged mode, we need to set up a specific record to the new IP address.
+            dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
+            if self.network_mode == 'bridged':
+                dns_server.register_svm(self.fqdn, self.ip_address)
+            else:
+                dns_server.register_svm(self.fqdn)
 
     ################################################################################################################
     # Stop this service VM, removing its files, database records, and other related records.
@@ -542,8 +544,7 @@ class ServiceVM(Model):
 
         # Unregister from DNS.
         try:
-            dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
-            dns_server.unregister_svm(self.fqdn)
+            self._unregister_from_dns()
         except Exception, e:
             print "Warning: error while removing DNS record: " + str(e)
 
@@ -561,6 +562,14 @@ class ServiceVM(Model):
         print "Storing VM memory state to file %s" % self.vm_image.state_image
         self.vm.save_state(self.vm_image.state_image)
         print "Memory state successfully saved."
+
+    ################################################################################################################
+    # Unregister from DNS server.
+    ################################################################################################################
+    def _unregister_from_dns(self):
+        if get_cloudlet_instance().dns_enabled:
+            dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
+            dns_server.unregister_svm(self.fqdn)
 
     ################################################################################################################
     # Pauses a VM.
@@ -593,8 +602,7 @@ class ServiceVM(Model):
         self.vm.perform_memory_migration(remote_host)
 
         # Unregister from DNS server.
-        dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
-        dns_server.unregister_svm(self.fqdn)
+        self._unregister_from_dns()
 
         elapsed_time = time.time() - start_time
         print 'Migration finished successfully. It took ' + str(elapsed_time) + ' seconds.'
