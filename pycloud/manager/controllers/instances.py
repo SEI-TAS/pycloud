@@ -195,7 +195,7 @@ class InstancesController(BaseController):
 
     ############################################################################################################
     # Returns a list of running svms.
-    ############################################################################################################    
+    ############################################################################################################
     @asjson    
     def GET_svmList(self):
         try:    
@@ -220,7 +220,6 @@ class InstancesController(BaseController):
         except Exception as e:
             msg = 'Error connecting to Wi-Fi network {}: {}'.format(ssid, str(e))
             return ajaxutils.show_and_return_error_dict(msg)
-
 
     ############################################################################################################
     #

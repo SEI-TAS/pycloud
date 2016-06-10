@@ -77,6 +77,7 @@ class ServiceVM(Model):
     ################################################################################################################
     def __init__(self, *args, **kwargs):
         self._id = None
+        self.name = None
         self.vm = VirtualMachine()
         self.vm_image = None
         self.os = 'lin'     # By default, used when creating a new SVM only.
@@ -203,7 +204,6 @@ class ServiceVM(Model):
 
         if not self.name:
             self.name = ''
-
 
     ################################################################################################################
     # Generates a random ID, valid as a VM id.
