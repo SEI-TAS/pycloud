@@ -523,24 +523,31 @@ class ServiceVM(Model):
     # Stop this service VM, removing its files, database records, and other related records.
     ################################################################################################################
     def stop(self, foce_save_state=False, cleanup_files=True):
-        # Check if this instance is actually running
+        print "Stopping or cleaning up Service VM with instance id %s" % self._id
+
+        # First save memory state if needed.
         if self.running:
             try:
                 # Save the state, if our image is not cloned.
                 if not self.vm_image.cloned or foce_save_state:
                     self._save_state()
-                    self.running = False
+            except Exception, e:
+                print "Warning: error while saving VM: " + str(e)
 
-                # Destroy the VM if it exists, and mark it as not running.
+        # Destroy the VM if it exists.
+        if self.running:
+            try:
                 if self.vm:
                     print "Stopping Service VM with instance id %s" % self._id
                     self.vm.destroy()
                 else:
                     print 'VM with id %s not found while stopping it.' % self._id
-                self.running = False
-                self.ready = False
             except Exception, e:
                 print "Warning: error while cleaning up VM: " + str(e)
+
+        # Ensure we are marked as not running nor ready.
+        self.running = False
+        self.ready = False
 
         # Unregister from DNS.
         try:
@@ -555,12 +562,15 @@ class ServiceVM(Model):
             # Remove VM files
             self.vm_image.cleanup()
 
+        print "Service VM has finished stopping and cleaning up"
+
     ################################################################################################################
     # Pauses a VM and stores its memory state to a disk file.
     ################################################################################################################
     def _save_state(self):
         print "Storing VM memory state to file %s" % self.vm_image.state_image
         self.vm.save_state(self.vm_image.state_image)
+        self.running = False
         print "Memory state successfully saved."
 
     ################################################################################################################
