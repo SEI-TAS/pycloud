@@ -9,3 +9,5 @@ radius/auto_reload/pycloud-run_every.sh /opt/
 radius/auto_reload/pycloud-reload_configs.sh /opt/
 radius/auto_reload/freeradius.conf /etc/init/
 radius/auto_reload/freerad /etc/cron.d/
+dns/db.svm.cloudlet.local /var/lib/bind/
+dns/named.conf.local /etc/bind/

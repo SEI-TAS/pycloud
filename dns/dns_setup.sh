@@ -1,5 +1,7 @@
 #!/bin/sh
 
+DATA_FOLDER=$1
+
 # Stop bind, in case it has any journals pending.
 echo 'Stopping bind, removing journals.'
 sudo service bind9 stop
@@ -9,11 +11,11 @@ echo 'Copying templates.'
 
 # Copy zone file template, and create a backup, just in case, since it will be dynamically modified by bind.
 # NOTE: setting the cloudlet's IP will have to be done on the zone file manually.
-sudo cp ../dns/db.svm.cloudlet.local /var/lib/bind/
+sudo cp db.svm.cloudlet.local /var/lib/bind/
 sudo cp /var/lib/bind/db.svm.cloudlet.local /var/lib/bind/db.svm.cloudlet.local.backup
 
 # Copy config file template.
-sudo cp ../dns/named.conf.local /etc/bind/
+sudo cp named.conf.local /etc/bind/
 
 # Generate TSIG key file with default name scheme.
 echo 'Generating TSIG key.'
@@ -21,7 +23,7 @@ dnssec-keygen -a HMAC-MD5 -b 512 -n HOST -r /dev/urandom  svm.cloudlet.local
 
 # Move keyfile to proper folder and name.
 # NOTE: The TSIG key will have to be copied manually to data folder in the installer case.... somehow.
-TSIG_PASSWORD_FOLDER=../data/dns
+TSIG_PASSWORD_FOLDER=${DATA_FOLDER}/dns
 TSIG_PASSWORD_FILE=Ksvm.cloudlet.local.private
 mv Ksvm.cloudlet.local*.private ${TSIG_PASSWORD_FILE}
 mkdir -p ${TSIG_PASSWORD_FOLDER}
