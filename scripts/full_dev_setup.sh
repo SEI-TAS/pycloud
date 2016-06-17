@@ -53,5 +53,14 @@ bash libusb_setup.sh ${CLOUDLET_USER}
 cd ../dns
 bash dns_setup.sh ../${DATA_FOLDER}
 
+######################################################################
+# 3. Other final changes for dev env only.
+######################################################################
+
+# Setup FreeRADIUS reload job.
+cd ../freerad/auto_reload
+sudo bash freerad_auto_resolad_setup.sh
+cd ../../
+
 # Back to this folder.
 cd ../scripts

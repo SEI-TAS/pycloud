@@ -8,8 +8,3 @@ sudo chmod -R g+rw /etc/freeradius/
 
 # Add the user.
 sudo adduser $CLOUDLET_USER freerad
-
-# Setup FreeRADIUS reload job.
-cd ./auto_reload
-sudo bash setup.sh
-cd ../
