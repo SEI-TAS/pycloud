@@ -77,3 +77,16 @@ def remove_dns_record(zone, key, host):
     # Send the update command to the local DNS server.
     print 'Removing SVM from DNS server: ' + host
     _send_dynamic_update(update_command)
+
+
+def test():
+    # Shared secret.
+    keyring = dns.tsigkeyring.from_text({'svm.cloudlet.local.': 'aaaa'})
+
+    # Prepare the update command.
+    update_command = dns.update.Update('svm.cloudlet.local.', keyring=keyring)
+    update_command.add('speech', 300, 'CNAME', 'cloudlet')
+
+    # Send the update command to the local DNS server.
+    response = dns.query.tcp(update_command, '127.0.0.1', timeout=10)
+    print response
