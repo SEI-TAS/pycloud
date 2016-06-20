@@ -99,7 +99,7 @@ class CloudletPairingController(BaseController):
                 id = "10.10.10.10"
                 port = "1723"
                 name = "WiFi1"
-                curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name})
+                curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
                 curr_device.listen()
             else:
                 pass
@@ -151,12 +151,12 @@ class CloudletPairingController(BaseController):
                 id = "10.10.10.1"
                 port = "1723"
                 name = "WiFi1"
-                curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name})
+                curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
             else:
                 pass
 
             deployment = Deployment.get_instance()
-            deployment.pair_cloudlet(curr_device)
+            deployment.pair_cloudlet(curr_device, secret)
         except Exception, e:
             return ajaxutils.show_and_return_error_dict(e.message)
 

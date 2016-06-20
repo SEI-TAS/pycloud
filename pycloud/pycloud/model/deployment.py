@@ -170,7 +170,7 @@ class Deployment(Model):
     ############################################################################################################
     # Pair a cloudlet instead of a device
     ############################################################################################################
-    def pair_cloudlet(self, curr_device):
+    def pair_cloudlet(self, curr_device, secret):
         type = 'cloudlet'
         try:
             # Following line is for testing only
