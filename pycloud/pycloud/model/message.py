@@ -30,6 +30,7 @@ import datetime
 
 from pycloud.pycloud.mongo import Model, ObjectID
 
+
 ################################################################################################################
 # Represents a mailbox where messages to devices can be put.
 ################################################################################################################
@@ -126,6 +127,18 @@ class DeviceMessage(Model):
         # Find the right app and remove it. find_and_modify will only return the document with matching id.
         return DeviceMessage.find_and_modify(query={'_id': item_id}, remove=True)
 
+    ################################################################################################################
+    # Removes all messages of a certain type for a given device.
+    ################################################################################################################
+    # noinspection PyBroadException
+    @staticmethod
+    def clear_all_messages(device_id, message_string):
+        messages = DeviceMessage.find({'device_id': device_id,
+                                       'message': message_string})
+        for message in messages:
+            DeviceMessage.find_and_remove(message._id)
+
+
 ################################################################################################################
 # Particular message used to notify a device that it has to create a certain wifi profile and store credentials.
 ################################################################################################################
@@ -147,7 +160,28 @@ class AddTrustedCloudletDeviceMessage(DeviceMessage):
     # noinspection PyBroadException
     @staticmethod
     def clear_messages(device_id):
-        messages = AddTrustedCloudletDeviceMessage.find({'device_id': device_id,
-                                                         'message': AddTrustedCloudletDeviceMessage.MESSAGE})
-        for message in messages:
-            AddTrustedCloudletDeviceMessage.find_and_remove(message._id)
+        AddTrustedCloudletDeviceMessage.clear_all_messages(device_id, AddTrustedCloudletDeviceMessage.MESSAGE)
+
+
+################################################################################################################
+# Particular message used to notify a device that it has to move to a new cloudlet.
+################################################################################################################
+class ConnectToNewCloudletMessage(DeviceMessage):
+
+    MESSAGE = 'move-to-new-cloudlet-network'
+
+    ################################################################################################################
+    # Constructor.
+    ################################################################################################################
+    def __init__(self, paired_device_data_bundle, *args, **kwargs):
+        super(ConnectToNewCloudletMessage, self).__init__(*args, **kwargs)
+        self.message = self.MESSAGE
+        self.params = paired_device_data_bundle.__dict__
+
+    ################################################################################################################
+    #
+    ################################################################################################################
+    # noinspection PyBroadException
+    @staticmethod
+    def clear_messages(device_id):
+        ConnectToNewCloudletMessage.clear_all_messages(device_id, ConnectToNewCloudletMessage.MESSAGE)

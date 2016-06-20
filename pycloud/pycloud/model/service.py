@@ -113,7 +113,7 @@ class Service(Model):
                 return svm
 
         # If no ServiceVMs for that ID were found, or service is not shared, or join=False, create a new one.
-        print 'No SVM was available, starting a new instance.'
+        print 'No SVM was available or a new instance was requested; starting a new instance.'
         svm = ServiceVM()
         svm.generate_random_id()
         svm.service_id = self.service_id

@@ -39,10 +39,10 @@ from pycloud.pycloud.security import encryption
 from pycloud.pycloud.model import PairedDevice
 from pycloud.pycloud.model.deployment import Deployment
 from pycloud.pycloud.model.paired_device_data_bundle import PairedDeviceDataBundle
-from pycloud.pycloud.model.message import AddTrustedCloudletDeviceMessage
+from pycloud.pycloud.model.message import AddTrustedCloudletDeviceMessage, ConnectToNewCloudletMessage
 from pycloud.pycloud.model.servicevm import SVMNotFoundException
 from pycloud.pycloud.model.cloudlet_credential import CloudletCredential
-from pycloud.pycloud.vm.vmutils import VirtualMachineException
+from pycloud.pycloud.model.deployment import DeviceAlreadyPairedException
 
 # API migration commands
 MIGRATE_METADATA_CMD = '/servicevm/migration_svm_metadata'
@@ -105,7 +105,7 @@ def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
     req = requests.Request('POST', remote_url, data=payload, headers=headers, files=files)
     prepared = req.prepare()
     print remote_url
-    #__print_request(prepared)
+
     session = requests.Session()
     response = session.send(prepared)
 
@@ -122,12 +122,14 @@ def __send_api_command(host, command, encrypted, payload, headers={}, files={}):
 ############################################################################################################
 # Command to migrate a machine.
 ############################################################################################################
-def migrate_svm(svm_id, remote_host, encrypted):
+def migrate_svm(svm_id, remote_host, remote_ip, encrypted):
     # Find the SVM.
     svm = ServiceVM.by_id(svm_id)
-    print 'VM found: ' + str(svm)
+    if svm is None:
+        raise MigrationException("SVM with id %s was not found" % str(svm_id))
 
     # remote_host has host and port.
+    print 'VM found: ' + str(svm)
     print 'Migrating to remote cloudlet: ' + remote_host
 
     # Transfer the metadata.
@@ -140,7 +142,7 @@ def migrate_svm(svm_id, remote_host, encrypted):
     print 'Pausing VM...'
     was_pause_successful = svm.pause()
     if not was_pause_successful:
-        raise Exception("Cannot pause VM: %s", str(svm_id))
+        raise MigrationException("Cannot pause VM: %s" % str(svm_id))
     print 'VM paused.'
 
     try:
@@ -154,7 +156,8 @@ def migrate_svm(svm_id, remote_host, encrypted):
 
         # Do the memory state migration.
         remote_host_name = remote_host.split(':')[0]
-        print 'Migrating through libvirtd to ' + remote_host_name
+        remote_host_port = remote_host.split(':')[1]
+        print 'Migrating through libvirtd to {} ({})'.format(remote_host_name, remote_ip)
         svm.migrate(remote_host_name)
         print 'Memory migration through libvirtd completed'
 
@@ -168,14 +171,24 @@ def migrate_svm(svm_id, remote_host, encrypted):
             deployment = Deployment.get_instance()
             connection_id = deployment.cloudlet.get_id() + "-" + device.device_id
             payload = {'device_id': device.device_id, 'connection_id': connection_id, 'svm_id': svm_id}
-            result, response_text = __send_api_command(remote_host, MIGRATE_CREDENTIALS_CMD, encrypted, payload)
-            print 'Remote credentials were generated: ' + str(result)
+            response, serialized_credentials = __send_api_command(remote_host, MIGRATE_CREDENTIALS_CMD, encrypted, payload)
 
-            # Store the new credentials so that a device asking for them will get them.
-            print response_text
+            # De-serializing generated data.
+            print serialized_credentials
             paired_device_data_bundle = PairedDeviceDataBundle()
-            paired_device_data_bundle.fill_from_dict(json.loads(response_text))
-            device_command = AddTrustedCloudletDeviceMessage(paired_device_data_bundle)
+            paired_device_data_bundle.fill_from_dict(json.loads(serialized_credentials))
+            paired_device_data_bundle.cloudlet_ip = remote_ip
+            paired_device_data_bundle.cloudlet_port = remote_host_port
+            print 'Remote credentials to be sent: ' + str(paired_device_data_bundle)
+
+            # Create the appropriate command.
+            data_contains_only_cloudlet_info = paired_device_data_bundle.auth_password is None
+            if data_contains_only_cloudlet_info:
+                device_command = ConnectToNewCloudletMessage(paired_device_data_bundle)
+            else:
+                device_command = AddTrustedCloudletDeviceMessage(paired_device_data_bundle)
+
+            # Add device and service id data, and store the message to be picked up by the phone.
             device_command.device_id = device.device_id
             device_command.service_id = svm.service_id
             device_command.save()
@@ -268,6 +281,7 @@ def abort_migration(svm_id):
     print 'Aborting migration, cleaning up...'
     migrated_svm.stop()
 
+    # Unpairing all paired devices that were using this VM.
     deployment = Deployment.get_instance()
     paired_devices = PairedDevice.by_instance(svm_id)
     for paired_device in paired_devices:
@@ -279,33 +293,38 @@ def abort_migration(svm_id):
 # Generates and returns credentials for the given device.
 ############################################################################################################
 def generate_migration_device_credentials(device_id, connection_id, svm_id):
-    # Get the new credentials for the device on the current deployment.
-    print 'Generating credentials for device that will migrate to our cloudlet.'
-    device_type = 'mobile'
-    deployment = Deployment.get_instance()
-    device_keys = deployment.pair_device(device_id, connection_id, device_type)
-
-    # Configure the associated instance.
-    paired_device = PairedDevice.by_id(device_id)
-    paired_device.instance = svm_id
-    paired_device.save()
-
-    # Bundle the credentials and info needed for a newly paired device.
-    print 'Bundling credentials for device.'
-    cloudlet = get_cloudlet_instance()
+    print 'Preparing credentials and cloudlet information.'
     device_credentials = PairedDeviceDataBundle()
+    try:
+        # Get the new credentials for the device on the current deployment.
+        print 'Generating credentials for device that will migrate to our cloudlet.'
+        deployment = Deployment.get_instance()
+        device_type = 'mobile'
+        device_keys = deployment.pair_device(device_id, connection_id, device_type)
+
+        # Configure the associated instance.
+        paired_device = PairedDevice.by_id(device_id)
+        paired_device.instance = svm_id
+        paired_device.save()
+
+        # Bundle the credentials for a newly paired device.
+        print 'Bundling credentials for device.'
+        device_credentials.auth_password = device_keys.auth_password
+        device_credentials.server_public_key = device_keys.server_public_key
+        device_credentials.device_private_key = device_keys.private_key
+        device_credentials.load_certificate(deployment.radius_server.cert_file_path)
+    except DeviceAlreadyPairedException as e:
+        print 'Credentials not generated: ' + e.message
+
+    # Bundle common cloudlet information.
+    print 'Bundling cloudlet information for device.'
+    cloudlet = get_cloudlet_instance()
     device_credentials.cloudlet_name = Cloudlet.get_hostname()
     device_credentials.cloudlet_fqdn = Cloudlet.get_fqdn()
-    device_credentials.cloudlet_port = 9999                 # TODO: find a way to get the port we (API) are listening to
     device_credentials.cloudlet_encryption_enabled = cloudlet.api_encrypted
+    device_credentials.ssid = cloudlet.ssid
 
-    device_credentials.ssid = deployment.cloudlet.ssid
-    device_credentials.auth_password = device_keys.auth_password
-    device_credentials.server_public_key = device_keys.server_public_key
-    device_credentials.device_private_key = device_keys.private_key
-    device_credentials.load_certificate(deployment.radius_server.cert_file_path)
-
-    print 'Returning credentials.'
+    print 'Returning credentials and cloudlet data.'
     return device_credentials.__dict__
 
 

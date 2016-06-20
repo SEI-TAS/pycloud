@@ -167,8 +167,10 @@ class WifiManager(object):
     ################################################################################################################
     @staticmethod
     def is_connected_to_cloudlet_network(interface):
+        is_connected_to_cloudlet_net = False
         current_network = WifiManager.get_current_network(interface)
-        is_connected_to_cloudlet_net = current_network.startswith(WifiManager.CLOUDLET_NETWORK_PREFIX)
+        if current_network is not None:
+            is_connected_to_cloudlet_net = current_network.startswith(WifiManager.CLOUDLET_NETWORK_PREFIX)
         return is_connected_to_cloudlet_net
 
     ################################################################################################################
@@ -189,4 +191,5 @@ class WifiManager(object):
     def disconnect_from_network(interface):
         if WifiManager.is_wifi_enabled():
             current_network = WifiManager.get_current_network(interface)
-            nmcli('connection down id "{}"'.format(current_network), response_should_be_empty=True)
+            if current_network is not None:
+                nmcli('connection down id "{}"'.format(current_network), response_should_be_empty=True)

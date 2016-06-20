@@ -35,6 +35,16 @@ from pycloud.pycloud.security import radius
 from pycloud.pycloud.security import credentials
 from pycloud.pycloud.model.paired_device import PairedDevice
 
+
+################################################################################################################
+#
+################################################################################################################
+class DeviceAlreadyPairedException(Exception):
+    def __init__(self, message):
+        super(DeviceAlreadyPairedException, self).__init__(message)
+        self.message = message
+
+
 # ###############################################################################################################
 # Represents a deployment of authorization on the cloudlet.
 ################################################################################################################
@@ -141,7 +151,7 @@ class Deployment(Model):
             # Check if the device was already paired, and if so, abort.
             previously_paired_device = PairedDevice.by_id(device_internal_id)
             if previously_paired_device:
-                raise Exception("Device with id {} is already paired.".format(device_internal_id))
+                raise DeviceAlreadyPairedException("Device with id {} is already paired.".format(device_internal_id))
 
             # Generate credentials, register the device, and return them.
             device_keys = self.__generate_device_credentials(device_internal_id)
@@ -149,7 +159,9 @@ class Deployment(Model):
                                    device_keys.encryption_password, device_type)
 
             return device_keys
-        except Exception, e:
+        except DeviceAlreadyPairedException as e:
+            raise e
+        except Exception as e:
             raise Exception("Error pairing with device: " + str(e))
 
     ################################################################################################################

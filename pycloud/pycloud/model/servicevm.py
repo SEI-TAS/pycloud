@@ -77,6 +77,7 @@ class ServiceVM(Model):
     ################################################################################################################
     def __init__(self, *args, **kwargs):
         self._id = None
+        self.name = None
         self.vm = VirtualMachine()
         self.vm_image = None
         self.os = 'lin'     # By default, used when creating a new SVM only.
@@ -101,11 +102,18 @@ class ServiceVM(Model):
     # Finds all SVMs given some search criteria.
     ################################################################################################################
     @staticmethod
-    def find_all(search_dict={}, only_find_ready_ones=True):
+    def find_all(search_dict={}, only_find_ready_ones=True, connect_to_vm=True):
+        service_vms_array = []
         if only_find_ready_ones:
             search_dict['ready'] = True
         svm_list = ServiceVM.find(search_dict)
-        return svm_list
+        for service_vm in svm_list:
+            if connect_to_vm:
+                service_vm.connect_to_vm()
+            else:
+                service_vm.vm = None
+            service_vms_array.append(service_vm)
+        return service_vms_array
 
     ################################################################################################################
     # Locate a ServiceVM by its ID
@@ -122,27 +130,28 @@ class ServiceVM(Model):
             return None
 
         if service_vm:
-            service_vm.vm = VirtualMachine()
-            try:
-                service_vm.vm.connect_to_virtual_machine(service_vm._id)
-            except VirtualMachineException as e:
-                print 'Error connecting to VM with id {}: {}'.format(svm_id, e.message)
-                service_vm.vm = None
+            service_vm.connect_to_vm()
 
         return service_vm
+
+    ################################################################################################################
+    # Connects to a libvirt vm.
+    ################################################################################################################
+    def connect_to_vm(self):
+        self.vm = VirtualMachine()
+        try:
+            self.vm.connect_to_virtual_machine(self._id)
+        except VirtualMachineException as e:
+            print 'Error connecting to VM with id {}: {}'.format(self._id, e.message)
+            self.vm = None
 
     ################################################################################################################
     #
     ################################################################################################################
     @staticmethod
     def by_service(service_id):
-        service_vms_array = []
         service_vms = ServiceVM.find_all({'service_id': service_id})
-        for service_vm in service_vms:
-            service_vm.vm = VirtualMachine()
-            service_vm.vm.connect_to_virtual_machine(service_vm._id)
-            service_vms_array.append(service_vm)
-        return service_vms_array
+        return service_vms
 
     ################################################################################################################
     # Cleanly and safely gets a ServiceVM and removes it from the database.
@@ -172,10 +181,29 @@ class ServiceVM(Model):
         return json_string
 
     ################################################################################################################
-    #
+    # Sets the name based on the space in the XML string.
     ################################################################################################################
-    def get_name(self):
-        return self.VM_NAME_PREFIX + '-' + self._id
+    def set_default_name(self, xml_string=None):
+        self.name = None
+        default_new_name = self.VM_NAME_PREFIX + '-' + self._id
+
+        if not xml_string:
+            self.name = default_new_name
+        else:
+            original_name = VirtualMachineDescriptor.get_raw_name(xml_string)
+            if VirtualMachineDescriptor.does_name_fit(xml_string, default_new_name):
+                new_name = default_new_name
+            else:
+                print 'Truncating new VM name.'
+                new_name = default_new_name[:len(original_name)]
+
+            self.name = new_name
+
+            print 'Original VM Name: {}'.format(original_name)
+            print 'New VM Name: {}'.format(self.name)
+
+        if not self.name:
+            self.name = ''
 
     ################################################################################################################
     # Generates a random ID, valid as a VM id.
@@ -196,6 +224,7 @@ class ServiceVM(Model):
 
         # Load the XML template and update it with this VM's information.
         template_xml_descriptor = open(vm_xml_template_file, "r").read()
+        self.set_default_name()
         updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)
 
         # Create a VM ("domain") through the hypervisor.
@@ -226,10 +255,11 @@ class ServiceVM(Model):
 
         # Update the state image with the updated descriptor.
         # NOTE: this is only needed since libvirt wont allow us to change the ID of a VM being restored through its API. 
-        # Instead, we trick it by manually changing the ID of the saved state file, so the API won't know we changed it. 
+        # Instead, we trick it by manually changing the ID of the saved state file, so the API won't know we changed it.
         raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription()
+        self.set_default_name(raw_saved_xml_descriptor)
         updated_xml_descriptor_id_only = VirtualMachineDescriptor.update_raw_name_and_id(raw_saved_xml_descriptor,
-                                                                                         self._id, self.get_name())
+                                                                                         self._id, self.name)
         saved_state.updateStoredVmDescription(updated_xml_descriptor_id_only)
 
         # Get the descriptor and update it to include the current disk image path, port mappings, etc.
@@ -258,7 +288,9 @@ class ServiceVM(Model):
         self.register_with_dns()
 
         # Check if the service is available, wait for it for a bit.
-        self._check_service()
+        # CURRENT IMPLEMENTATION ONLY WORKS IN BRIDGED MODE.
+        if self.network_mode == "bridged":
+            self._check_service()
 
         return self
 
@@ -271,7 +303,7 @@ class ServiceVM(Model):
 
         # Change the ID and Name (note: not currently that useful since they are changed in the saved state file).
         xml_descriptor.setUuid(self._id)
-        xml_descriptor.setName(self.get_name())
+        xml_descriptor.setName(self.name)
 
         # Set the disk image in the description of the VM.
         xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')
@@ -448,6 +480,9 @@ class ServiceVM(Model):
 
     ################################################################################################################
     # Waits for the service to boot up.
+    # TODO: this method does not work as intended in non-bridged mode. It properly checks that the external,
+    # TODO: port-fowarding port is open, but if there is no forwarded internal port open, it succeeds as well (the
+    # TODO: connection is just closed right away, but that is not checked here).
     ################################################################################################################
     def _wait_for_service(self, retries=5):
         if retries == 0:
@@ -468,47 +503,55 @@ class ServiceVM(Model):
     # Generates a FQDN for the SVM.
     ################################################################################################################
     def _generate_fqdn(self):
-        hostname = self.service_id + '.' + self._id
-        self.fqdn = cloudlet_dns.CloudletDNS.generate_fqdn(hostname)
+        if get_cloudlet_instance().dns_enabled:
+            hostname = self.service_id + '.' + self._id
+            self.fqdn = cloudlet_dns.CloudletDNS.generate_fqdn(hostname)
 
     ################################################################################################################
     # Register with DNS server.
     ################################################################################################################
     def register_with_dns(self):
-        # Register with DNS. If we are in bridged mode, we need to set up a specific record to the new IP address.
-        dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
-        if self.network_mode == 'bridged':
-            dns_server.register_svm(self.fqdn, self.ip_address)
-        else:
-            dns_server.register_svm(self.fqdn)
+        if get_cloudlet_instance().dns_enabled:
+            # Register with DNS. If we are in bridged mode, we need to set up a specific record to the new IP address.
+            dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
+            if self.network_mode == 'bridged':
+                dns_server.register_svm(self.fqdn, self.ip_address)
+            else:
+                dns_server.register_svm(self.fqdn)
 
     ################################################################################################################
     # Stop this service VM, removing its files, database records, and other related records.
     ################################################################################################################
     def stop(self, foce_save_state=False, cleanup_files=True):
-        # Check if this instance is actually running
+        print "Stopping or cleaning up Service VM with instance id %s" % self._id
+
+        # First save memory state if needed.
         if self.running:
             try:
                 # Save the state, if our image is not cloned.
                 if not self.vm_image.cloned or foce_save_state:
                     self._save_state()
-                    self.running = False
+            except Exception, e:
+                print "Warning: error while saving VM: " + str(e)
 
-                # Destroy the VM if it exists, and mark it as not running.
-                if self.vm and self.running:
+        # Destroy the VM if it exists.
+        if self.running:
+            try:
+                if self.vm:
                     print "Stopping Service VM with instance id %s" % self._id
                     self.vm.destroy()
                 else:
                     print 'VM with id %s not found while stopping it.' % self._id
-                self.running = False
-                self.ready = False
             except Exception, e:
                 print "Warning: error while cleaning up VM: " + str(e)
 
+        # Ensure we are marked as not running nor ready.
+        self.running = False
+        self.ready = False
+
         # Unregister from DNS.
         try:
-            dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
-            dns_server.unregister_svm(self.fqdn)
+            self._unregister_from_dns()
         except Exception, e:
             print "Warning: error while removing DNS record: " + str(e)
 
@@ -519,13 +562,24 @@ class ServiceVM(Model):
             # Remove VM files
             self.vm_image.cleanup()
 
+        print "Service VM has finished stopping and cleaning up"
+
     ################################################################################################################
     # Pauses a VM and stores its memory state to a disk file.
     ################################################################################################################
     def _save_state(self):
         print "Storing VM memory state to file %s" % self.vm_image.state_image
         self.vm.save_state(self.vm_image.state_image)
+        self.running = False
         print "Memory state successfully saved."
+
+    ################################################################################################################
+    # Unregister from DNS server.
+    ################################################################################################################
+    def _unregister_from_dns(self):
+        if get_cloudlet_instance().dns_enabled:
+            dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
+            dns_server.unregister_svm(self.fqdn)
 
     ################################################################################################################
     # Pauses a VM.
@@ -558,8 +612,7 @@ class ServiceVM(Model):
         self.vm.perform_memory_migration(remote_host)
 
         # Unregister from DNS server.
-        dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
-        dns_server.unregister_svm(self.fqdn)
+        self._unregister_from_dns()
 
         elapsed_time = time.time() - start_time
         print 'Migration finished successfully. It took ' + str(elapsed_time) + ' seconds.'
@@ -573,11 +626,8 @@ class ServiceVM(Model):
         svm_list = ServiceVM.find_all(only_find_ready_ones=False)
         for svm in svm_list:
             try:
-                if svm.vm:
-                    svm.vm.connect_to_virtual_machine(svm._id)
+                svm.stop()
             except VirtualMachineException as e:
                 print 'Problem shutting down vm with id {}: {}'.format(svm._id, e.message)
-
-            svm.stop()
 
         print 'All machines shutdown.'

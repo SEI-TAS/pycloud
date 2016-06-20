@@ -28,6 +28,8 @@
 
 from zeroconf import ServiceBrowser, Zeroconf
 import time
+import socket
+
 
 #######################################################################################################################
 # Finds cloudlets through Zeroconf.
@@ -46,11 +48,13 @@ class CloudletFinder(object):
     # Finds cloudlets and returns a list.
     ####################################################################################################################
     def find_cloudlets(self, seconds_to_wait=3):
+        print 'Started looking for cloudlets'
         self.services = {}
         zeroconf = Zeroconf()
         browser = ServiceBrowser(zeroconf, CloudletFinder.CLOUDLET_SERVICE_DNS, listener=self)
 
         # Wait to find cloudlets.
+        print 'Waiting for results'
         time.sleep(seconds_to_wait)
 
         # Stop looking for cloudlets.
@@ -66,14 +70,20 @@ class CloudletFinder(object):
     ####################################################################################################################
     def add_service(self, zeroconf, type, name):
         info = zeroconf.get_service_info(type, name)
-        print("Service %s added, service info: %s" % (name, info))
+        if info is None:
+            print("Empty service was registered; ignoring it.")
+            return
+
+        address_string = socket.inet_ntoa(info.address)
+        print "Service added, service name: {}, and ip {}".format(name, address_string)
         self.services[info.server] = info
 
-        # Move encryption state to speific property for easier access.
+        # Move encryption state to specific property for easier access.
         encryption = ''
         if 'encryption' in info.properties:
             encryption = info.properties['encryption']
         self.services[info.server].encryption = encryption
+        self.services[info.server].address_string = address_string
 
     ####################################################################################################################
     # Called when a service is removed, removes it from a list of services.

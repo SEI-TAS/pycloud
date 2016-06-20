@@ -53,6 +53,30 @@ class VirtualMachineDescriptor(object):
         self.xmlRoot = ElementTree.fromstring(xmlDescriptorString)
 
     ################################################################################################################
+    #
+    ################################################################################################################
+    @staticmethod
+    def does_name_fit(xml_string, new_name):
+        # Any new data must not be bigger than the previous one, or it won't fit in the raw header.
+        new_name_will_fit = False
+        original_name = VirtualMachineDescriptor.get_raw_name(xml_string)
+        if original_name:
+            new_name_will_fit = len(new_name) <= len(original_name)
+
+        return new_name_will_fit
+
+    ################################################################################################################
+    # Gets the name from a raw xml descriptor string.
+    ################################################################################################################
+    @staticmethod
+    def get_raw_name(xml_string):
+        name = None
+        matches = re.search(r"<name>([\w\-]+)</name>", xml_string)
+        if matches:
+            name = matches.group(1)
+        return name
+
+    ################################################################################################################
     # Updates the name and id of an xml by simply replacing the text, without parsing, to ensure the result will
     # have exactly the same length as before.
     ################################################################################################################
@@ -73,8 +97,12 @@ class VirtualMachineDescriptor(object):
     # Returns the port the VNC server is listening on, if any.
     ################################################################################################################
     def getVNCPort(self):
-        vncPort = self.xmlRoot.find("devices/graphics[@type='vnc']").get("port")
-        return vncPort
+        vnc_node = self.xmlRoot.find("devices/graphics[@type='vnc']")
+        if vnc_node is not None:
+            vnc_port = vnc_node.get("port")
+            return vnc_port
+        else:
+            raise VirtualMachineException("VNC not set up for this VM.")
 
     ################################################################################################################
     # Sets the realtek network driver instead of the default virtio one. Needed for Windows-based VMs that do

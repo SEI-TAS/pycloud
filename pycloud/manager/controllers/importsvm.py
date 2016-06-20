@@ -26,14 +26,13 @@
 # Released under the MIT license
 # http://jquery.org/license
 
-__author__ = 'jdroot'
-
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.model import Service
 import tarfile
 import json
 import os
+import time
 from pylons import request, app_globals
 
 
@@ -58,8 +57,10 @@ class ImportController(BaseController):
         filename = request.params.get("filename")
 
         if not filename.endswith(".csvm"):
+            print "Invalid file"
             return {"error": "Invalid file"}
         if not os.path.exists(filename):
+            print "File does not exist"
             return {"error": "File does not exist"}
 
         print "Importing file: ", filename
@@ -73,6 +74,7 @@ class ImportController(BaseController):
         state_image = service.vm_image.state_image
 
         if os.path.exists(svm_path):
+            print "Service path already exists"
             return {"error": "Service already exists"}
 
         os.makedirs(svm_path)
@@ -90,5 +92,33 @@ class ImportController(BaseController):
             return {"error", str(e)}
 
         print "Done importing!"
+
+        # Now, attempt to start the SVM and store its memory state, since usually the memory state from an
+        # imported SVM will be incompatible with another computer.
+        svm = None
+        try:
+            # Create an independent new SVM for this service.
+            print "Starting service SVM to refresh memory state."
+            svm = service.get_vm_instance(join=False, clone_full_image=True)
+
+            # Wait for a bit to allow it to boot up.
+            boot_wait_time_in_s = 15
+            time.sleep(boot_wait_time_in_s)
+
+            svm.stop(foce_save_state=True, cleanup_files=False)
+            print "Service VM stopped, and machine state saved."
+
+            # Permanently store the VM.
+            vm_image_folder = os.path.dirname(service.vm_image.disk_image)
+            print 'Moving Service VM Image to cache, from folder {} to folder {}.'.format(os.path.dirname(svm.vm_image.disk_image), vm_image_folder)
+            svm.vm_image.move(vm_image_folder)
+            svm.vm_image.protect()
+            print 'VM Image updated.'
+        except Exception as e:
+            if svm:
+                svm.stop()
+
+            print "Exception updating SVM memory state: ", str(e)
+            return {"error", str(e)}
 
         return service

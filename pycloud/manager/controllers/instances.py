@@ -116,8 +116,9 @@ class InstancesController(BaseController):
         cloudlet_info_dict = {}
         for cloudlet_name in cloudlets:
             cloudlet_info = cloudlets[cloudlet_name]
-            encoded_cloudlet_info = cloudlet_name + ":" + str(cloudlet_info.port) + ":encryption-" + cloudlet_info.encryption
-            cloudlet_info_dict[encoded_cloudlet_info] = encoded_cloudlet_info
+            encoded_cloudlet_info_to_display = cloudlet_name + ":" + str(cloudlet_info.port) + ":encryption-" + cloudlet_info.encryption
+            encoded_cloudlet_info = cloudlet_info.address_string + ":" + cloudlet_name + ":" + str(cloudlet_info.port) + ":encryption-" + cloudlet_info.encryption
+            cloudlet_info_dict[encoded_cloudlet_info] = encoded_cloudlet_info_to_display
 
         print 'Available cloudlets: '
         print cloudlet_info_dict
@@ -178,30 +179,28 @@ class InstancesController(BaseController):
     def GET_migrateInstance(self, id):
         try:
             remote_host_info = request.params.get('target', None).split(':')
-            remote_host = remote_host_info[0] + ':' + remote_host_info[1]
-            encrypted = True if remote_host_info[2] == 'encryption-enabled' else False
-            migrator.migrate_svm(id, remote_host, encrypted)
+            remote_ip = remote_host_info[0]
+            remote_host = remote_host_info[1] + ':' + remote_host_info[2]
+            encrypted = True if remote_host_info[3] == 'encryption-enabled' else False
+            migrator.migrate_svm(id, remote_host, remote_ip, encrypted)
 
             if WifiManager.is_connected_to_cloudlet_network(interface=app_globals.cloudlet.wifi_adapter):
                 print 'Disconnecting from cloudlet Wi-Fi network.'
                 WifiManager.disconnect_from_network(interface=app_globals.cloudlet.wifi_adapter)
         except Exception, e:
             msg = 'Error migrating: ' + str(e)
-            import traceback
-            traceback.print_exc()
-
             return ajaxutils.show_and_return_error_dict(msg)
 
         return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Returns a list of running svms.
-    ############################################################################################################    
+    ############################################################################################################
     @asjson    
     def GET_svmList(self):
         try:    
             # Get the list of running instances.
-            svm_list = ServiceVM.find_all()
+            svm_list = ServiceVM.find_all(connect_to_vm=False)
             return svm_list
         except Exception as e:
             # If there was a problem stopping the instance, return that there was an error.
@@ -221,7 +220,6 @@ class InstancesController(BaseController):
         except Exception as e:
             msg = 'Error connecting to Wi-Fi network {}: {}'.format(ssid, str(e))
             return ajaxutils.show_and_return_error_dict(msg)
-
 
     ############################################################################################################
     #
