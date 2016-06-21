@@ -3,7 +3,7 @@ python-pycloud (0.5.0) unstable; urgency=medium
   * Added support for identity migration
   * Added support for accessing Service VM's by FQDN instead of IP directly
 
- -- Sebastian Echeverria <secheverria@sei.cmu.edu>  Fri, 5 May 2016 11:38:51 -0400
+ -- Sebastian Echeverria <secheverria@sei.cmu.edu>  Fri, 5 June 2016 11:38:51 -0400
 
 python-pycloud (0.4.0) unstable; urgency=medium
 

@@ -58,8 +58,8 @@ bash dns_setup.sh ../${DATA_FOLDER}
 ######################################################################
 
 # Setup FreeRADIUS reload job.
-cd ../freerad/auto_reload
-sudo bash freerad_auto_resolad_setup.sh
+cd ../radius/auto_reload
+sudo bash freerad_auto_reload_setup.sh
 cd ../../
 
 # Back to this folder.
