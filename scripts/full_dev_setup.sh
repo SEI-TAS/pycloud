@@ -43,7 +43,7 @@ bash qemu_setup.sh ${CLOUDLET_USER}
 
 # Set up FreeRADIUS.
 cd ../radius
-sudo bash freerad_setup.sh ${CLOUDLET_USER}
+bash freerad_setup.sh ${CLOUDLET_USER}
 
 # Setup USB.
 cd ../libusb
@@ -60,7 +60,4 @@ bash dns_setup.sh ../${DATA_FOLDER}
 # Setup FreeRADIUS reload job.
 cd ../radius/auto_reload
 sudo bash freerad_auto_reload_setup.sh
-cd ../../
-
-# Back to this folder.
-cd ../scripts
+cd ../../scripts
