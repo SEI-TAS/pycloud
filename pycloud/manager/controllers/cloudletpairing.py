@@ -82,6 +82,19 @@ class CloudletPairingController(BaseController):
         curr_device = None
         try:
             # Create a device depending on the type.
+
+            if connection == 'wifi':
+                #port = request.params.get('port', None)
+                #name = request.params.get('name', None)
+                secret = request.params.get('secret', None)
+                id = "10.10.10.10"
+                port = "1723"
+                name = "WiFi1"
+                curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
+                curr_device.listen()
+            else:
+                pass
+
             #port = request.params.get('port', None)
             #name = request.params.get('name', None)
             id = "10.10.10.10"
@@ -106,6 +119,7 @@ class CloudletPairingController(BaseController):
             device_keys = deployment.pair_device(device_internal_id, curr_device.get_name(), device_type)
             deployment.send_paired_credentials(curr_device, device_keys)
             deployment.clear_device_keys(device_keys)
+
         except Exception, e:
             print str(e)
             raise e
@@ -148,6 +162,30 @@ class CloudletPairingController(BaseController):
         secret = request.params.get('secret', None)
         ssid = request.params.get('ssid', None)
         psk = request.params.get('psk', None)
+
+        connection = request.params.get('connection', None)
+        if connection is None:
+            connection = 'wifi'
+
+        try:
+            # Create a device depending on the type.
+            curr_device = None
+            if connection == 'wifi':
+                #port = request.params.get('port', None)
+                #name = request.params.get('name', None)
+                id = "10.10.10.1"
+                port = "1723"
+                name = "WiFi1"
+                curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
+            else:
+                pass
+
+            deployment = Deployment.get_instance()
+            deployment.pair_cloudlet(curr_device, secret)
+        except Exception, e:
+            return ajaxutils.show_and_return_error_dict(e.message)
+
+
 
         command = "wpa_passphrase " + ssid + " " + psk + ">hostapd/wpa.conf"
         cmd = subprocess.Popen(command, shell=True, stdout=None)

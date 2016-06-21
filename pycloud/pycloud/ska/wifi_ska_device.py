@@ -35,6 +35,8 @@ import sys
 
 from ska_device_interface import ISKADevice
 from pycloud.pycloud.ska import ska_constants
+from pycloud.pycloud.security import encryption
+
 
 # Size of a chunk when transmitting through TCP .
 CHUNK_SIZE = 4096
@@ -221,10 +223,13 @@ class WiFiSKADevice(ISKADevice):
                 # Open and send the file in chunks.
                 print 'Sending file.'
                 file_to_send = open(file_path, 'rb')
+                file_data = file_to_send.readall()
+                file_data = encryption.encrypt_message(file_data, self.device_info['secret'])
+
 
                 # Send until there is no more data in the file.
                 while True:
-                    data_chunk = file_to_send.read(CHUNK_SIZE)
+                    data_chunk = file_data.read(CHUNK_SIZE)
                     if not data_chunk:
                         break
 
@@ -261,6 +266,7 @@ class WiFiSKADevice(ISKADevice):
     # Receives a command from another clouudlet
     ####################################################################################################################
     def __receive_command(self, data):
+        data = encryption.decrypt_message(data, self.device_info['secret'])
         message = json.loads(data)
         return message
 
@@ -283,6 +289,8 @@ class WiFiSKADevice(ISKADevice):
         if self.device_socket is None:
             raise Exception("Not connected to a device.")
 
+        data_string = encryption.encrypt_message(data_string, self.device_info['secret'])
+
         print 'Sending data: ' + data_string
         self.device_socket.send(data_string)
 
@@ -301,24 +309,57 @@ class WiFiSKADevice(ISKADevice):
         if message['wifi_command'] == "receive_file":
             self.file_path = message['file_id']
             conn.sendall('ack')
-            file_to_receive = open(self.file_path, 'wb')
+            size = conn.recv(4096)
+            if size > 0:
+                file_to_receive = open(self.file_path, 'wb')
+                encrypted_file = ''
 
             # Send until there is no more data in the file.
-            while True:
-                received = conn.recv(4096)
-                if not received: break
-                file_to_receive.write(received)
+                while True:
+                    received = conn.recv(4096)
+                    encrypted_file = ''.join(encrypted_file, received)
+                    file_data = encryption.decrypt_message(encrypted_file, self.device_info['secret'])
+                    file_to_receive.write(file_data)
+                    if not received: break
 
 
 
             conn.close()
             file_to_receive.close()
         elif message['wifi_command'] == "receive_data":
-            return json.loads(message)
+            if message['command'] == "wifi-profile":
+                try:
+                    self.create_wifi_profile(message)
+                except:
+                    pass
+
         elif message['wifi_command'] == "transfer_complete":
             return "transfer_complete"
         else:
             pass
+
+    ####################################################################################################################
+    # Create a wifi profile in /etc/NetworkManager/system-connections using system-connection-template.ini
+    ####################################################################################################################
+    def create_wifi_profile(self, message):
+        ini_file = open("./system-connection-template.ini", "r")
+        file_data = ini_file.read()
+        ini_file.close()
+        file_data = file_data.replace('$ssid', message['ssid'])
+        file_data = file_data.replace('$name', message['cloudlet_name'])
+        file_data = file_data.replace('$password', message['password'])
+        file_data = file_data.replace('$ca-cert', message['server_cert_name'])
+        filename = "/etc/NetworkManager/system-connections" + message['cloudlet-name']
+        profile = open(filename, "w")
+        profile.write(file_data)
+        profile.close()
+
+
+
+
+
+
+
 
 ######################################################################################################################
 # Test method
