@@ -77,23 +77,13 @@ class CloudletPairingController(BaseController):
     ############################################################################################################
     # Does the work after data is entered
     ############################################################################################################
-    def POST_pair(self):
+    def POST_discover(self):
         device_type = 'cloudlet'
         curr_device = None
         try:
             # Create a device depending on the type.
+            connection = request.params.get('connection', None)
 
-            if connection == 'wifi':
-                #port = request.params.get('port', None)
-                #name = request.params.get('name', None)
-                secret = request.params.get('secret', None)
-                id = "10.10.10.10"
-                port = "1723"
-                name = "WiFi1"
-                curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
-                curr_device.listen()
-            else:
-                pass
 
             #port = request.params.get('port', None)
             #name = request.params.get('name', None)
@@ -101,11 +91,22 @@ class CloudletPairingController(BaseController):
             port = "1723"
             name = "WiFi1"
             curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name})
-            curr_device.listen()
+            #curr_device.listen()
 
             # Now the pairing process will be followed, generating all required credentials.
             # The first step is to connect to the device.
-            successful_connection = curr_device.connect()
+            ap = curr_device.start_ap()
+            if not ap:
+                raise Exception("Could not start AP on local NIC.")
+
+            i = 1
+            command = "ping 10.10.10.1 -c 1 -W 1"
+            while i == 1:
+                cmd = subprocess.Popen(command, shell=True, stdout=None)
+                cmd.wait()
+                i = cmd.returncode
+                
+            successful_connection = curr_device.connect("10.10.10.1", "1723", "WiFiClient")
             if not successful_connection:
                 raise Exception("Could not connect to cloudlet with id {}.".format(id))
 
@@ -147,9 +148,9 @@ class CloudletPairingController(BaseController):
         page.ssid = host + "-" + temp #ssid should be "<cloudlet machine name>-<alphanumeric and 6 symbols long>"
         psk = ''.join(random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"], 6))
         page.psk = psk #psk should be alphanumeric and 6 symbols long
-        command = "sed -ie \"s/xxxxxx/" + page.ssid + "/g\" hostapd/hostapd-nic.conf"
+        command = "sed -ie \"s/xxxx/" + page.ssid + "/g\" hostapd/hostapd-nic.conf"
         cmd = subprocess.Popen(command, shell=True, stdout=None)
-        command = "sed -ie \"s/yyyyyy/" + page.psk + "/g\" hostapd/hostapd-nic.conf"
+        command = "sed -ie \"s/yyyy/" + page.psk + "/g\" hostapd/hostapd-nic.conf"
         cmd = subprocess.Popen(command, shell=True, stdout=None)
 
         return page.render()
@@ -157,7 +158,7 @@ class CloudletPairingController(BaseController):
     ############################################################################################################
     # Does the wrk after data is entered
     ############################################################################################################
-    def POST_discover(self):
+    def POST_pair(self):
         # Generate secret to display
         secret = request.params.get('secret', None)
         ssid = request.params.get('ssid', None)
@@ -171,17 +172,20 @@ class CloudletPairingController(BaseController):
             # Create a device depending on the type.
             curr_device = None
             if connection == 'wifi':
+                command = "wpa_passphrase " + ssid + " " + psk + ">hostapd/wpa.conf"
+                cmd = subprocess.Popen(command, shell=True, stdout=None)
+                command = "wpa_supplicant -Dwext -iwlan0 -chostapd/wpa.conf"
+                cmd = subprocess.Popen(command, shell=True, stdout=None)
                 #port = request.params.get('port', None)
                 #name = request.params.get('name', None)
                 id = "10.10.10.1"
                 port = "1723"
                 name = "WiFi1"
                 curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
+                curr_device.listen()
             else:
                 pass
 
-            deployment = Deployment.get_instance()
-            deployment.pair_cloudlet(curr_device, secret)
         except Exception, e:
             return ajaxutils.show_and_return_error_dict(e.message)
 
