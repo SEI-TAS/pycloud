@@ -158,21 +158,24 @@ class WiFiSKADevice(ISKADevice):
         return ska_devices
 
     ####################################################################################################################
-    # Makes a TCP connection to this device.
+    # Makes a TCP connection to the remote device.
     ####################################################################################################################
-    def connect(self):
-        # Check that there is a WiFi adapter available.
+    def connect(self, host, port, name):
+        self.device_socket = connect_to_device(host, port, name)
+        if self.device_socket is None:
+            return False
+        else:
+            return True
+    ####################################################################################################################
+    # Makes a TCP connection to the remote device.
+    ####################################################################################################################
+    def start_ap(self):
+    # Check that there is a WiFi adapter available.
         adapter_address = get_adapter_address()
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
         # Connect to the device.
         cmd = subprocess.Popen('hostapd/start_ap.sh', shell=True, stdout=None)
-        self.device_socket = connect_to_device(self.device_info['host'], self.device_info['port'], self.device_info['name'])
-        if self.device_socket is None:
-            return False
-        else:
-            return True
-
     ####################################################################################################################
     # Listen on a socket and handle commands. Each connection spawns a separate thread
     ####################################################################################################################
@@ -194,6 +197,7 @@ class WiFiSKADevice(ISKADevice):
     ####################################################################################################################
     def disconnect(self):
         if self.device_socket is not None:
+            self.__send_command("transfer_complete",'')
             self.device_socket.close()
 
     ####################################################################################################################
