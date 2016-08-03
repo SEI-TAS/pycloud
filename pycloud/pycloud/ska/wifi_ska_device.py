@@ -184,7 +184,8 @@ class WiFiSKADevice(ISKADevice):
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
         self.device_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.device_socket.bind(self.device_info['host'],self.device_info['port'])
+        print((self.device_info['host'],self.device_info['port']))
+        self.device_socket.bind((self.device_info['host'],self.device_info['port']))
         self.device_socket.listen()
         conn, addr = self.device_socket.accept()
         while True:

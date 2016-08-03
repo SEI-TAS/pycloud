@@ -83,15 +83,10 @@ class CloudletPairingController(BaseController):
         try:
             # Create a device depending on the type.
             connection = request.params.get('connection', None)
+            if connection is None:
+                connection = 'wifi'
 
 
-            #port = request.params.get('port', None)
-            #name = request.params.get('name', None)
-            id = "10.10.10.10"
-            port = "1723"
-            name = "WiFi1"
-            curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name})
-            curr_device.listen()
 
             # Now the pairing process will be followed, generating all required credentials.
             # The first step is to connect to the device.
