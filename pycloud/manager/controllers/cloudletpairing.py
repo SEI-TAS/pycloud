@@ -86,6 +86,7 @@ class CloudletPairingController(BaseController):
             if connection is None:
                 connection = 'wifi'
 
+            secret = request.params.get('secret', None)
             id = "10.10.10.10"
             port = "1723"
             name = "WiFi1"
