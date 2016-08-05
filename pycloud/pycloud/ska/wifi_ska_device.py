@@ -310,6 +310,7 @@ class WiFiSKADevice(ISKADevice):
     def handle_incoming(self, conn, addr):
         data = conn.recv(4096)
         if not data: return
+        print "Got data"
         message = self.__receive_command(self, data)
         if message['wifi_command'] == "receive_file":
             self.file_path = message['file_id']
