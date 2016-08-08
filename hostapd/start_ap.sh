@@ -3,7 +3,8 @@
 # Disable Network Manager use of Wifi and create wlan0 interface
 nmcli nm wifi off
 rfkill unblock wlan
-sudo ifconfig wlan0 up 10.10.10.10 netmask 255.255.255.0
+sudo ifconfig wlan0 10.10.10.10/24 up
+sleep 1
 
 # Stop the dnsmasq instance used by libtirtd.
 sudo killall dnsmasq
