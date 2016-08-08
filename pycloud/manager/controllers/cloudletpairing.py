@@ -147,10 +147,13 @@ class CloudletPairingController(BaseController):
         host = os.uname()[1]
         page.ssid = host + "-" + temp #ssid should be "<cloudlet machine name>-<alphanumeric and 6 symbols long>"
         psk = ''.join(random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"], 8))
-        page.psk = psk #psk should be alphanumeric and 6 symbols long
+        page.psk = psk #psk should be alphanumeric and 8 symbols long
+
         command = "sed -e \"s/xxxx/" + page.ssid + "/g\" < hostapd/hostapd.conf > hostapd/hostapd-nic.conf"
+        print commmand
         cmd = subprocess.Popen(command, shell=True, stdout=None)
         command = "sed -e \"s/yyyy/" + page.psk + "/g\" < hostapd/hostapd.conf > hostapd/hostapd-nic.conf"
+        print commmand
         cmd = subprocess.Popen(command, shell=True, stdout=None)
 
         return page.render()
