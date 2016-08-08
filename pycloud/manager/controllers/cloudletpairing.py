@@ -150,13 +150,13 @@ class CloudletPairingController(BaseController):
         page.psk = psk #psk should be alphanumeric and 8 symbols long
 
         command = "sed -e \"s/xxxx/" + page.ssid + "/g\" < hostapd/hostapd.conf > hostapd/hostapd-nic.conf"
-        print commmand
+        print "1 " + commmand
         cmd = subprocess.Popen(command, shell=True, stdout=None)
         while True:
             if cmd.returncode != None:
                 break
         command = "sed -e \"s/yyyy/" + page.psk + "/g\" < hostapd/hostapd.conf > hostapd/hostapd-nic.conf"
-        print commmand
+        print "2 " + commmand
         cmd = subprocess.Popen(command, shell=True, stdout=None)
 
         return page.render()
