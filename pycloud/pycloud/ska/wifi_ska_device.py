@@ -176,6 +176,8 @@ class WiFiSKADevice(ISKADevice):
             raise Exception("WiFi adapter not available.")
         # Connect to the device.
         cmd = subprocess.Popen('hostapd/start_ap.sh', shell=True, stdout=None)
+        while cmd.returncode == None:
+            pass
     ####################################################################################################################
     # Listen on a socket and handle commands. Each connection spawns a separate thread
     ####################################################################################################################
