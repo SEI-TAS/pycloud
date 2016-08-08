@@ -14,4 +14,4 @@ sudo service bind9 stop
 #sudo dnsmasq -z --dhcp-authoritative --interface=wlan0 --dhcp-range=192.168.2.20,192.168.2.100,255.255.255.0,4h
 
 # Start hostapd
-sudo hostapd -B ./hostapd-nic.conf
+sudo hostapd -B hostapd/hostapd-nic.conf
