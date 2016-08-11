@@ -177,7 +177,7 @@ class CloudletPairingController(BaseController):
             if connection == 'wifi':
                 command = "wpa_passphrase " + ssid + " " + psk + ">hostapd/wpa.conf"
                 cmd = subprocess.Popen(command, shell=True, stdout=None)
-                command = "wpa_supplicant -Dwext -iwlan0 -chostapd/wpa.conf"
+                command = "wpa_supplicant -Dwext -iwlan1 -chostapd/wpa.conf"
                 cmd = subprocess.Popen(command, shell=True, stdout=None)
                 #port = request.params.get('port', None)
                 #name = request.params.get('name', None)
