@@ -177,7 +177,7 @@ class WiFiSKADevice(ISKADevice):
         # Connect to the device.
         cmd = subprocess.Popen('hostapd/start_ap.sh', shell=True, stdout=None)
         cmd.wait()
-        
+
     ####################################################################################################################
     # Listen on a socket and handle commands. Each connection spawns a separate thread
     ####################################################################################################################
