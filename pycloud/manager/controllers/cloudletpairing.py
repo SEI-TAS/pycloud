@@ -153,7 +153,7 @@ class CloudletPairingController(BaseController):
         cmd = subprocess.Popen(command, shell=True, stdout=None)
 
         cmd.wait()
-        command = "sed -e \"s/yyyy/" + page.psk + "/g\" < hostapd/hostapd-tmp.conf > hostapd/wpa-nic.conf"
+        command = "sed -e \"s/yyyy/" + page.psk + "/g\" < hostapd/wpa-tmp.conf > hostapd/wpa-nic.conf"
         print "2 " + command
         cmd = subprocess.Popen(command, shell=True, stdout=None)
 
