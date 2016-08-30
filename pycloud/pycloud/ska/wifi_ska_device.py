@@ -175,7 +175,8 @@ class WiFiSKADevice(ISKADevice):
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
         # Connect to the device.
-        cmd = subprocess.Popen('hostapd/start_ap.sh', shell=True, stdout=None)
+        command = "wpa_supplicant -B -Dnl80211,wext -iwlan1 -chostapd/wpa.conf"
+        cmd = subprocess.Popen(command, shell=True, stdout=None)
         cmd.wait()
 
     ####################################################################################################################
