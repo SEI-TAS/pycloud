@@ -177,12 +177,12 @@ class CloudletPairingController(BaseController):
             curr_device = None
             if connection == 'wifi':
                 command = "sed -e \"s/xxxx/" + page.ssid + "/g\" < hostapd/wpa.conf > hostapd/wpa-tmp.conf"
-                print "1 " + command
+                print "1P " + command
                 cmd = subprocess.Popen(command, shell=True, stdout=None)
 
                 cmd.wait()
-                command = "sed -e \"s/yyyy/" + page.psk + "/g\" < hostapd/hostapd-tmp.conf > hostapd/wpa-nic.conf"
-                print "2 " + command
+                command = "sed -e \"s/yyyy/" + page.psk + "/g\" < hostapd/wpa-tmp.conf > hostapd/wpa-nic.conf"
+                print "2P " + command
                 cmd = subprocess.Popen(command, shell=True, stdout=None)
                 #command = "wpa_passphrase " + ssid + " " + psk + ">hostapd/wpa.conf"
                 #cmd = subprocess.Popen(command, shell=True, stdout=None)
