@@ -186,7 +186,7 @@ class CloudletPairingController(BaseController):
                 cmd = subprocess.Popen(command, shell=True, stdout=None)
                 #command = "wpa_passphrase " + ssid + " " + psk + ">hostapd/wpa.conf"
                 #cmd = subprocess.Popen(command, shell=True, stdout=None)
-                command = "wpa_supplicant -B -Dnl80211,wext -iwlan1 -chostapd/wpa-nic.conf"
+                command = "wpa_supplicant -B -Dnl80211,wext -iwlan2 -chostapd/wpa-nic.conf"
                 cmd = subprocess.Popen(command, shell=True, stdout=None)
                 #port = request.params.get('port', None)
                 #name = request.params.get('name', None)
