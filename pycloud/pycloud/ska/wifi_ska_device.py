@@ -180,7 +180,7 @@ class WiFiSKADevice(ISKADevice):
         cmd = subprocess.Popen(command, shell=True, stdout=None)
         cmd.wait()
         command = "sudo ifconfig " + adapter_address + " inet " + self.device_info['host'] + "netmask 255.255.255.0 up"
-        cmd.subprocess.Popen(command, shell=True, stdout=None)
+        cmd = subprocess.Popen(command, shell=True, stdout=None)
         cmd.wait()
         return True
 
