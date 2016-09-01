@@ -178,6 +178,7 @@ class WiFiSKADevice(ISKADevice):
         command = "sudo wpa_supplicant -B -Dnl80211,wext -iwlan2 -chostapd/wpa-nic.conf"
         cmd = subprocess.Popen(command, shell=True, stdout=None)
         cmd.wait()
+        return True
 
     ####################################################################################################################
     # Listen on a socket and handle commands. Each connection spawns a separate thread
