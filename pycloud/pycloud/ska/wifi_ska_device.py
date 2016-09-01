@@ -51,6 +51,7 @@ def get_adapter_address():
     for line in cmd.stdout:
         if "Interface" in line:
             internal_address = line.split(' ')[1]
+            break
 
     if internal_address is not None:
         print "WiFi adapter with address {} found".format(internal_address)
@@ -175,8 +176,11 @@ class WiFiSKADevice(ISKADevice):
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
         # Connect to the device.
-        command = "sudo wpa_supplicant -B -Dnl80211,wext -iwlan2 -chostapd/wpa-nic.conf"
+        command = "sudo wpa_supplicant -B -Dnl80211,wext -i" + adapter_address + " -chostapd/wpa-nic.conf"
         cmd = subprocess.Popen(command, shell=True, stdout=None)
+        cmd.wait()
+        command = "sudo ifconfig " + adapter_address + " inet " + self.device_info['host'] + "netmask 255.255.255.0 up"
+        cmd.subprocess.Popen(command, shell=True, stdout=None)
         cmd.wait()
         return True
 

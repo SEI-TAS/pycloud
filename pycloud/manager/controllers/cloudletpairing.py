@@ -111,9 +111,9 @@ class CloudletPairingController(BaseController):
             #    raise Exception("Could not connect to cloudlet with id {}.".format(id))
 
             # Get the device id.
-            id_data = curr_device.get_data({'device_id': 'none'})
-            device_internal_id = id_data['device_id']
-            print 'Device id: ' + device_internal_id
+            #id_data = curr_device.get_data({'device_id': 'none'})
+            #device_internal_id = id_data['device_id']
+            #print 'Device id: ' + device_internal_id
 
             # Pair the device, send the credentials, and clear their local files.
             #deployment = Deployment.get_instance()
