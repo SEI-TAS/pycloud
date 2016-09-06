@@ -177,10 +177,13 @@ class WiFiSKADevice(ISKADevice):
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
         # Connect to the device.
+        command = "sudo rm /run/wpa_supplicant/" + adapter_address
+        cmd = subprocess.Popen(command, shell=True, stdout=None)
+        cmd.wait()
         command = "sudo wpa_supplicant -B -Dnl80211,wext -i" + adapter_address + " -chostapd/wpa-nic.conf"
         cmd = subprocess.Popen(command, shell=True, stdout=None)
         cmd.wait()
-        command = "sudo ifconfig " + adapter_address + " inet " + self.device_info['host'] + "netmask 255.255.255.0 up"
+        command = "sudo ifconfig " + adapter_address + " inet " + self.device_info['host'] + " netmask 255.255.255.0 up"
         cmd = subprocess.Popen(command, shell=True, stdout=None)
         cmd.wait()
         return True
