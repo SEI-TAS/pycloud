@@ -51,7 +51,7 @@ def get_adapter_address():
     for line in cmd.stdout:
         if "Interface" in line:
             internal_address = line.split(' ')[1]
-            internal_address.replace("\n","")
+            internal_address = internal_address.replace("\n","")
             break
 
     if internal_address is not None:
