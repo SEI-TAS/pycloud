@@ -198,7 +198,7 @@ class WiFiSKADevice(ISKADevice):
         self.device_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print((self.device_info['host'],self.device_info['port']))
         self.device_socket.bind((self.device_info['host'],self.device_info['port']))
-        self.device_socket.listen()
+        self.device_socket.listen(1)
         conn, addr = self.device_socket.accept()
         while True:
             ret = self.handle_incoming(self, conn, addr)
