@@ -40,6 +40,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import CloudletPairingPage
 from pycloud.manager.lib.pages import CloudletDiscoveryPage
 from pycloud.pycloud.ska.wifi_ska_device import WiFiSKADevice
+from pycloud.pycloud.ska.wifi_ska_device import get_adapter_address
 from pycloud.pycloud.pylons.lib import helpers as h
 
 from pycloud.pycloud.model.deployment import Deployment
