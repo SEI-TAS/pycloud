@@ -176,6 +176,7 @@ class CloudletPairingController(BaseController):
             # Create a device depending on the type.
             curr_device = None
             if connection == 'wifi':
+                adapter_address = get_adapter_address()
                 command = "sed -e \"s/xxxx/" + ssid + "/g\" < hostapd/wpa.conf > hostapd/wpa-tmp.conf"
                 print "1P " + command
                 cmd = subprocess.Popen(command, shell=True, stdout=None)
@@ -186,7 +187,7 @@ class CloudletPairingController(BaseController):
                 cmd = subprocess.Popen(command, shell=True, stdout=None)
                 #command = "wpa_passphrase " + ssid + " " + psk + ">hostapd/wpa.conf"
                 #cmd = subprocess.Popen(command, shell=True, stdout=None)
-                command = "sudo wpa_supplicant -B -Dnl80211,wext -iwlan2 -chostapd/wpa-nic.conf"
+                command = "sudo wpa_supplicant -B -Dnl80211,wext -i" + adapter_address + " -chostapd/wpa-nic.conf"
                 cmd = subprocess.Popen(command, shell=True, stdout=None)
                 #port = request.params.get('port', None)
                 #name = request.params.get('name', None)
