@@ -196,7 +196,7 @@ class CloudletPairingController(BaseController):
                 port = "1723"
                 name = "WiFi1"
                 curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
-                successful_connection = curr_device.connect("10.10.10.10", "1723", "WiFiAP")
+                successful_connection = curr_device.connect("10.10.10.10", port, "WiFiAP")
                 if not successful_connection:
                     raise Exception("Could not connect to cloudlet with id {}.".format(ssid))
 
