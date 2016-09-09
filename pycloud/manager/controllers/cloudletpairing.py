@@ -40,6 +40,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import CloudletPairingPage
 from pycloud.manager.lib.pages import CloudletDiscoveryPage
 from pycloud.pycloud.ska.wifi_ska_device import WiFiSKADevice
+from pycloud.pycloud.ska.wifi_ska_device import get_adapter_address
 from pycloud.pycloud.pylons.lib import helpers as h
 
 from pycloud.pycloud.model.deployment import Deployment
@@ -83,15 +84,14 @@ class CloudletPairingController(BaseController):
         try:
             # Create a device depending on the type.
             connection = request.params.get('connection', None)
+            if connection is None:
+                connection = 'wifi'
 
-
-            #port = request.params.get('port', None)
-            #name = request.params.get('name', None)
+            secret = request.params.get('secret', None)
             id = "10.10.10.10"
             port = "1723"
             name = "WiFi1"
-            curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name})
-            curr_device.listen()
+            curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
 
             # Now the pairing process will be followed, generating all required credentials.
             # The first step is to connect to the device.
@@ -112,9 +112,9 @@ class CloudletPairingController(BaseController):
             #    raise Exception("Could not connect to cloudlet with id {}.".format(id))
 
             # Get the device id.
-            id_data = curr_device.get_data({'device_id': 'none'})
-            device_internal_id = id_data['device_id']
-            print 'Device id: ' + device_internal_id
+            #id_data = curr_device.get_data({'device_id': 'none'})
+            #device_internal_id = id_data['device_id']
+            #print 'Device id: ' + device_internal_id
 
             # Pair the device, send the credentials, and clear their local files.
             #deployment = Deployment.get_instance()
@@ -147,11 +147,15 @@ class CloudletPairingController(BaseController):
         temp = ''.join(random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"], 6))
         host = os.uname()[1]
         page.ssid = host + "-" + temp #ssid should be "<cloudlet machine name>-<alphanumeric and 6 symbols long>"
-        psk = ''.join(random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"], 6))
-        page.psk = psk #psk should be alphanumeric and 6 symbols long
-        command = "sed -ie \"s/xxxx/" + page.ssid + "/g\" hostapd/hostapd-nic.conf"
+        psk = ''.join(random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"], 8))
+        page.psk = psk #psk should be alphanumeric and 8 symbols long
+        command = "sed -e \"s/xxxx/" + page.ssid + "/g\" < hostapd/wpa.conf > hostapd/wpa-tmp.conf"
+        print "1 " + command
         cmd = subprocess.Popen(command, shell=True, stdout=None)
-        command = "sed -ie \"s/yyyy/" + page.psk + "/g\" hostapd/hostapd-nic.conf"
+
+        cmd.wait()
+        command = "sed -e \"s/yyyy/" + page.psk + "/g\" < hostapd/wpa-tmp.conf > hostapd/wpa-nic.conf"
+        print "2 " + command
         cmd = subprocess.Popen(command, shell=True, stdout=None)
 
         return page.render()
@@ -173,9 +177,18 @@ class CloudletPairingController(BaseController):
             # Create a device depending on the type.
             curr_device = None
             if connection == 'wifi':
-                command = "wpa_passphrase " + ssid + " " + psk + ">hostapd/wpa.conf"
+                adapter_address = get_adapter_address()
+                command = "sed -e \"s/xxxx/" + ssid + "/g\" < hostapd/wpa.conf > hostapd/wpa-tmp.conf"
+                print "1P " + command
                 cmd = subprocess.Popen(command, shell=True, stdout=None)
-                command = "wpa_supplicant -Dwext -iwlan0 -chostapd/wpa.conf"
+
+                cmd.wait()
+                command = "sed -e \"s/yyyy/" + psk + "/g\" < hostapd/wpa-tmp.conf > hostapd/wpa-nic.conf"
+                print "2P " + command
+                cmd = subprocess.Popen(command, shell=True, stdout=None)
+                #command = "wpa_passphrase " + ssid + " " + psk + ">hostapd/wpa.conf"
+                #cmd = subprocess.Popen(command, shell=True, stdout=None)
+                command = "sudo wpa_supplicant -B -Dnl80211,wext -i" + adapter_address + " -chostapd/wpa-nic.conf"
                 cmd = subprocess.Popen(command, shell=True, stdout=None)
                 #port = request.params.get('port', None)
                 #name = request.params.get('name', None)
@@ -183,7 +196,7 @@ class CloudletPairingController(BaseController):
                 port = "1723"
                 name = "WiFi1"
                 curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
-                successful_connection = curr_device.connect("10.10.10.10", "1723", "WiFiAP")
+                successful_connection = curr_device.connect("10.10.10.10", port, "WiFiAP")
                 if not successful_connection:
                     raise Exception("Could not connect to cloudlet with id {}.".format(ssid))
 

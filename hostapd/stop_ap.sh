@@ -4,7 +4,7 @@
 sudo pkill -f 'hostapd -B ./hostapd.conf'
 
 # Undo changes to return control to NM.
-sudo ifconfig wlan0 down
+sudo ifconfig wlan1 down
 rfkill block wlan
 nmcli nm wifi on
 

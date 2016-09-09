@@ -51,6 +51,8 @@ def get_adapter_address():
     for line in cmd.stdout:
         if "Interface" in line:
             internal_address = line.split(' ')[1]
+            internal_address = internal_address.replace("\n","")
+            break
 
     if internal_address is not None:
         print "WiFi adapter with address {} found".format(internal_address)
@@ -175,7 +177,17 @@ class WiFiSKADevice(ISKADevice):
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
         # Connect to the device.
-        cmd = subprocess.Popen('hostapd/start_ap.sh', shell=True, stdout=None)
+        command = "sudo rm /run/wpa_supplicant/" + adapter_address
+        cmd = subprocess.Popen(command, shell=True, stdout=None)
+        cmd.wait()
+        command = "sudo wpa_supplicant -B -Dnl80211,wext -i" + adapter_address + " -chostapd/wpa-nic.conf"
+        cmd = subprocess.Popen(command, shell=True, stdout=None)
+        cmd.wait()
+        command = "sudo ifconfig " + adapter_address + " inet " + self.device_info['host'] + " netmask 255.255.255.0 up"
+        cmd = subprocess.Popen(command, shell=True, stdout=None)
+        cmd.wait()
+        return True
+
     ####################################################################################################################
     # Listen on a socket and handle commands. Each connection spawns a separate thread
     ####################################################################################################################
@@ -184,8 +196,9 @@ class WiFiSKADevice(ISKADevice):
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
         self.device_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.device_socket.bind(self.device_info['host'],self.device_info['port'])
-        self.device_socket.listen()
+        print((self.device_info['host'],self.device_info['port']))
+        self.device_socket.bind((self.device_info['host'],self.device_info['port']))
+        self.device_socket.listen(1)
         conn, addr = self.device_socket.accept()
         while True:
             ret = self.handle_incoming(self, conn, addr)
@@ -309,6 +322,7 @@ class WiFiSKADevice(ISKADevice):
     def handle_incoming(self, conn, addr):
         data = conn.recv(4096)
         if not data: return
+        print "Got data"
         message = self.__receive_command(self, data)
         if message['wifi_command'] == "receive_file":
             self.file_path = message['file_id']
