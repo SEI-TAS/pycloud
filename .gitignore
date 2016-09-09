@@ -8,3 +8,4 @@
 *.pyc
 .idea/
 /tls/certs
+/scripts/get-pip.py
