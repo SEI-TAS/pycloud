@@ -41,25 +41,26 @@ from pycloud.pycloud.security import encryption
 # Size of a chunk when transmitting through TCP .
 CHUNK_SIZE = 4096
 
+
 ######################################################################################################################
-# Checks that there is an enabled WiFi device, and returns its address.
+# Checks that there is an enabled WiFi device, and returns its name.
 ######################################################################################################################
-def get_adapter_address():
-    internal_address = None
+def get_adapter_name():
+    internal_name = None
 
     cmd = subprocess.Popen('iw dev', shell=True, stdout=subprocess.PIPE)
     for line in cmd.stdout:
         if "Interface" in line:
-            internal_address = line.split(' ')[1]
-            internal_address = internal_address.replace("\n","")
+            internal_name = line.split(' ')[1]
+            internal_name = internal_name.replace("\n", "")
             break
 
-    if internal_address is not None:
-        print "WiFi adapter with address {} found".format(internal_address)
+    if internal_name is not None:
+        print "WiFi adapter with name {} found".format(internal_name)
     else:
         print "WiFi adapter not found."
 
-    return internal_address
+    return internal_name
 
 ######################################################################################################################
 # Connects to a device given the device info dict, and returns a socket.
@@ -145,7 +146,7 @@ class WiFiSKADevice(ISKADevice):
     @staticmethod
     def list_devices():
         # Check that there is an adapter available.
-        adapter_address = get_adapter_address()
+        adapter_address = get_adapter_name()
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
 
@@ -168,42 +169,50 @@ class WiFiSKADevice(ISKADevice):
             return False
         else:
             return True
+
     ####################################################################################################################
-    # Makes a TCP connection to the remote device.
+    #
     ####################################################################################################################
     def start_ap(self):
-    # Check that there is a WiFi adapter available.
-        adapter_address = get_adapter_address()
+        # Check that there is a WiFi adapter available.
+        adapter_address = get_adapter_name()
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
-        # Connect to the device.
+
+        # Remove previous adapter configuration.
         command = "sudo rm /run/wpa_supplicant/" + adapter_address
         cmd = subprocess.Popen(command, shell=True, stdout=None)
         cmd.wait()
+
+        # Start the wpa_supplicant daemon.
         command = "sudo wpa_supplicant -B -Dnl80211,wext -i" + adapter_address + " -chostapd/wpa-nic.conf"
         cmd = subprocess.Popen(command, shell=True, stdout=None)
         cmd.wait()
+
+        # Configure our static IP.
         command = "sudo ifconfig " + adapter_address + " inet " + self.device_info['host'] + " netmask 255.255.255.0 up"
         cmd = subprocess.Popen(command, shell=True, stdout=None)
         cmd.wait()
+
         return True
 
     ####################################################################################################################
     # Listen on a socket and handle commands. Each connection spawns a separate thread
     ####################################################################################################################
     def listen(self):
-        adapter_address = get_adapter_address()
-        if adapter_address is None:
+        adapter_name = get_adapter_name()
+        if adapter_name is None:
             raise Exception("WiFi adapter not available.")
+
         self.device_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print((self.device_info['host'],self.device_info['port']))
-        self.device_socket.bind((self.device_info['host'],self.device_info['port']))
+        print((self.device_info['host'], self.device_info['port']))
+        self.device_socket.bind((self.device_info['host'], self.device_info['port']))
         self.device_socket.listen(1)
         conn, addr = self.device_socket.accept()
         while True:
-            ret = self.handle_incoming(self, conn, addr)
-            if ret == 'transfer_complete': break
-
+            ret = self.handle_incoming(conn, addr)
+            if ret == 'transfer_complete':
+                break
 
     ####################################################################################################################
     # Closes the TCP socket.
@@ -243,7 +252,6 @@ class WiFiSKADevice(ISKADevice):
                 file_data = file_to_send.readall()
                 file_data = encryption.encrypt_message(file_data, self.device_info['secret'])
 
-
                 # Send until there is no more data in the file.
                 while True:
                     data_chunk = file_data.read(CHUNK_SIZE)
@@ -263,8 +271,6 @@ class WiFiSKADevice(ISKADevice):
                 # Check result.
                 return self.__parse_result(reply)
 
-
-
     ####################################################################################################################
     # Sends a command.
     ####################################################################################################################
@@ -280,7 +286,7 @@ class WiFiSKADevice(ISKADevice):
         return result
 
     ####################################################################################################################
-    # Receives a command from another clouudlet
+    # Receives a command from another cloudlet
     ####################################################################################################################
     def __receive_command(self, data):
         data = encryption.decrypt_message(data, self.device_info['secret'])
@@ -294,8 +300,8 @@ class WiFiSKADevice(ISKADevice):
         # Check error and log it.
         json_data = json.loads(result)
         if json_data[ska_constants.RESULT_KEY] != ska_constants.SUCCESS:
-            error_messge = 'Error processing command on device: ' + json_data[ska_constants.ERROR_MSG_KEY]
-            raise Exception(error_messge)
+            error_message = 'Error processing command on device: ' + json_data[ska_constants.ERROR_MSG_KEY]
+            raise Exception(error_message)
 
         return json.loads(result)
 
@@ -321,29 +327,31 @@ class WiFiSKADevice(ISKADevice):
     ####################################################################################################################
     def handle_incoming(self, conn, addr):
         data = conn.recv(4096)
-        if not data: return
+        if not data:
+            return
         print "Got data"
-        message = self.__receive_command(self, data)
+        message = self.__receive_command(data)
         if message['wifi_command'] == "receive_file":
-            self.file_path = message['file_id']
+            file_to_receive = None
+            file_path = message['file_id']
             conn.sendall('ack')
             size = conn.recv(4096)
             if size > 0:
-                file_to_receive = open(self.file_path, 'wb')
+                file_to_receive = open(file_path, 'wb')
                 encrypted_file = ''
 
-            # Send until there is no more data in the file.
+                # Send until there is no more data in the file.
                 while True:
                     received = conn.recv(4096)
-                    encrypted_file = ''.join(encrypted_file, received)
+                    encrypted_file += str(received)
                     file_data = encryption.decrypt_message(encrypted_file, self.device_info['secret'])
                     file_to_receive.write(file_data)
-                    if not received: break
-
-
+                    if not received:
+                        break
 
             conn.close()
-            file_to_receive.close()
+            if file_to_receive is not None:
+                file_to_receive.close()
         elif message['wifi_command'] == "receive_data":
             if message['command'] == "wifi-profile":
                 try:
@@ -371,13 +379,6 @@ class WiFiSKADevice(ISKADevice):
         profile = open(filename, "w")
         profile.write(file_data)
         profile.close()
-
-
-
-
-
-
-
 
 ######################################################################################################################
 # Test method

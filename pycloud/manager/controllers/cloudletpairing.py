@@ -28,7 +28,6 @@
 __author__ = 'Keegan'
 
 import logging
-import time
 import random
 import os
 
@@ -40,13 +39,12 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import CloudletPairingPage
 from pycloud.manager.lib.pages import CloudletDiscoveryPage
 from pycloud.pycloud.ska.wifi_ska_device import WiFiSKADevice
-from pycloud.pycloud.ska.wifi_ska_device import get_adapter_address
+from pycloud.pycloud.ska.wifi_ska_device import get_adapter_name
 from pycloud.pycloud.pylons.lib import helpers as h
 
 from pycloud.pycloud.model.deployment import Deployment
 
 from pycloud.pycloud.utils import ajaxutils
-from pycloud.pycloud.pylons.lib.util import asjson
 
 import subprocess
 
@@ -79,13 +77,10 @@ class CloudletPairingController(BaseController):
     # Does the work after data is entered
     ############################################################################################################
     def POST_discover(self):
-        device_type = 'cloudlet'
         curr_device = None
         try:
             # Create a device depending on the type.
-            connection = request.params.get('connection', None)
-            if connection is None:
-                connection = 'wifi'
+            connection = request.params.get('connection', 'wifi')
 
             secret = request.params.get('secret', None)
             id = "10.10.10.10"
@@ -165,6 +160,7 @@ class CloudletPairingController(BaseController):
     ############################################################################################################
     def POST_pair(self):
         # Generate secret to display
+        device_type = 'cloudlet'
         secret = request.params.get('secret', None)
         ssid = request.params.get('ssid', None)
         psk = request.params.get('psk', None)
@@ -177,7 +173,7 @@ class CloudletPairingController(BaseController):
             # Create a device depending on the type.
             curr_device = None
             if connection == 'wifi':
-                adapter_address = get_adapter_address()
+                adapter_address = get_adapter_name()
                 command = "sed -e \"s/xxxx/" + ssid + "/g\" < hostapd/wpa.conf > hostapd/wpa-tmp.conf"
                 print "1P " + command
                 cmd = subprocess.Popen(command, shell=True, stdout=None)
@@ -203,7 +199,14 @@ class CloudletPairingController(BaseController):
             else:
                 pass
 
-                # Pair the device, send the credentials, and clear their local files.
+            # TODO: re-enable this.
+            # Get the device id.
+            device_internal_id = ''
+            #id_data = curr_device.get_data({'device_id': 'none'})
+            #device_internal_id = id_data['device_id']
+            #print 'Device id: ' + device_internal_id
+
+            # Pair the device, send the credentials, and clear their local files.
             deployment = Deployment.get_instance()
             device_keys = deployment.pair_device(device_internal_id, curr_device.get_name(), device_type)
             deployment.send_paired_credentials(curr_device, device_keys)
@@ -211,7 +214,5 @@ class CloudletPairingController(BaseController):
 
         except Exception, e:
             return ajaxutils.show_and_return_error_dict(e.message)
-
-
 
         return h.redirect_to(controller='devices', action='list')
