@@ -128,10 +128,12 @@ class CloudletPairingController(BaseController):
         finally:
             if curr_device is not None:
                 try:
-                    print 'Closing connection.'
-                    curr_device.disconnect()
+                    print 'Listener will shut down in 60 seconds.'
+                    command = "./hostapd/stop_pairing_ap.sh"
+                    cmd = subprocess.Popen(command, shell=True, stdin=None, stdout=None, stderr=None)
+
                 except Exception, e:
-                    error = "Error closing connection with device: " + str(e)
+                    error = "Error launching timer function: " + str(e)
                     print error
                     raise Exception(error)
 
@@ -229,5 +231,18 @@ class CloudletPairingController(BaseController):
 
         except Exception, e:
             return ajaxutils.show_and_return_error_dict(e.message)
+
+        finally:
+            if curr_device is not None:
+                try:
+                    print 'Disconnecting from cloudlet.'
+                    curr_device.disconnect()
+                    command = "./hostapd/stop_pairing_ap.sh"
+                    cmd = subprocess.Popen(command, shell=True, stdin=None, stdout=None, stderr=None)
+
+                except Exception, e:
+                    error = "Error disconnecting" + str(e)
+                    print error
+                    raise Exception(error)
 
         return h.redirect_to(controller='devices', action='list')
