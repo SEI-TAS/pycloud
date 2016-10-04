@@ -118,7 +118,6 @@ class ImportController(BaseController):
             if svm:
                 svm.stop()
 
-            print "Exception updating SVM memory state: ", str(e)
-            return {"error", str(e)}
+            print "Ignoring exception updating SVM memory state: " + str(e)
 
         return service
