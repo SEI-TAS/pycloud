@@ -32,7 +32,7 @@ from pycloud.pycloud.model import Service
 import tarfile
 import json
 import os
-import time
+import shutil
 from pylons import request, app_globals
 
 
@@ -59,6 +59,7 @@ class ImportController(BaseController):
         if not filename.endswith(".csvm"):
             print "Invalid file"
             return {"error": "Invalid file"}
+
         if not os.path.exists(filename):
             print "File does not exist"
             return {"error": "File does not exist"}
@@ -78,46 +79,31 @@ class ImportController(BaseController):
             return {"error": "Service already exists"}
 
         os.makedirs(svm_path)
+        service.vm_image.disk_image = os.path.join(svm_path, disk_image)
+        service.vm_image.state_image = os.path.join(svm_path, state_image)
 
         try:
+            # Extract the disk image to its permanent location.
             tar.extract(disk_image, path=svm_path)
-            tar.extract(state_image, path=svm_path)
 
-            service.vm_image.disk_image = os.path.join(svm_path, disk_image)
-            service.vm_image.state_image = os.path.join(svm_path, state_image)
+            try:
+                # Extract the memory image to its permanent location.
+                tar.extract(state_image, path=svm_path)
+
+                # Since usually the memory state from an imported SVM will be incompatible with another computer,
+                # refresh the memory state.
+                service.refresh_image_memory_state()
+            except Exception as e:
+                # Create a memory image from a XML template, since the one in the tar was not valid.
+                print "Could not load VM XML info; creating new one from disk image and standard XML template."
+                service.create_image_memory_state(svm_path)
 
             service.save()
         except Exception as e:
-            print "Exception while importing: ", str(e)
-            return {"error", str(e)}
+            print "Exception while importing: " + str(e)
+            shutil.rmtree(svm_path)
+            return {"error": str(e)}
 
         print "Done importing!"
-
-        # Now, attempt to start the SVM and store its memory state, since usually the memory state from an
-        # imported SVM will be incompatible with another computer.
-        svm = None
-        try:
-            # Create an independent new SVM for this service.
-            print "Starting service SVM to refresh memory state."
-            svm = service.get_vm_instance(join=False, clone_full_image=True)
-
-            # Wait for a bit to allow it to boot up.
-            boot_wait_time_in_s = 15
-            time.sleep(boot_wait_time_in_s)
-
-            svm.stop(foce_save_state=True, cleanup_files=False)
-            print "Service VM stopped, and machine state saved."
-
-            # Permanently store the VM.
-            vm_image_folder = os.path.dirname(service.vm_image.disk_image)
-            print 'Moving Service VM Image to cache, from folder {} to folder {}.'.format(os.path.dirname(svm.vm_image.disk_image), vm_image_folder)
-            svm.vm_image.move(vm_image_folder)
-            svm.vm_image.protect()
-            print 'VM Image updated.'
-        except Exception as e:
-            if svm:
-                svm.stop()
-
-            print "Ignoring exception updating SVM memory state: " + str(e)
 
         return service
