@@ -152,6 +152,8 @@ class Deployment(Model):
             previously_paired_device = PairedDevice.by_id(device_internal_id)
             if previously_paired_device:
                 raise DeviceAlreadyPairedException("Device with id {} is already paired.".format(device_internal_id))
+            else:
+                print "Pairing with {}.".format(device_internal_id)
 
             # Generate credentials, register the device, and return them.
             device_keys = self.__generate_device_credentials(device_internal_id)
