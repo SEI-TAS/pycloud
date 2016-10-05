@@ -8,8 +8,8 @@ sudo pkill -f 'wpa_supplicant'
 
 # Undo changes to return control to NM.
 sudo ifconfig wlan1 down
-rfkill block wlan
-nmcli nm wifi on
+#rfkill block wlan
+#nmcli nm wifi on
 
 # Restart libvirtd and its dnsmasq.
 sudo killall dnsmasq

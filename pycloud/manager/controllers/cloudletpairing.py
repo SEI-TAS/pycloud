@@ -209,7 +209,7 @@ class CloudletPairingController(BaseController):
                 #name = request.params.get('name', None)
 
                 curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
-                successful_connection = curr_device.connect("10.10.10.10", port, "WiFiAP")
+                successful_connection = curr_device.connect("10.10.10.10", int(port), "WiFiAP")
                 if not successful_connection:
                     raise Exception("Could not connect to cloudlet with id {}.".format(ssid))
 
@@ -218,10 +218,10 @@ class CloudletPairingController(BaseController):
 
             # TODO: re-enable this.
             # Get the device id.
-            device_internal_id = ''
+            device_internal_id = ssid
             #id_data = curr_device.get_data({'device_id': 'none'})
             #device_internal_id = id_data['device_id']
-            #print 'Device id: ' + device_internal_id
+            print 'Device id: ' + device_internal_id
 
             # Pair the device, send the credentials, and clear their local files.
             deployment = Deployment.get_instance()
