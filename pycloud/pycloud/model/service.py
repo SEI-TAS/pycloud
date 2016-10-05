@@ -32,6 +32,7 @@ from pycloud.pycloud.mongo import Model, ObjectID
 from pycloud.pycloud.model.vmimage import VMImage
 from pycloud.pycloud.model.servicevm import ServiceVM
 import os
+import time
 from pylons import app_globals
 
 # ###############################################################################################################
@@ -132,6 +133,63 @@ class Service(Model):
             raise e
 
         return svm
+
+    ################################################################################################################
+    #
+    ################################################################################################################
+    def create_image_memory_state(self, os_type='Linux'):
+        print 'Creating SVM...'
+        svm = ServiceVM()
+        svm.generate_random_id()
+        svm.service_id = self.service_id
+        svm.service_port = self.port
+        svm.vm_image = self.vm_image
+
+        # Set the OS type.
+        if os_type == 'Windows':
+            svm.os = "win"
+        else:
+            svm.os = "lin"
+
+        # Create the VM (this will also start it).
+        template_xml_file = os.path.abspath(app_globals.cloudlet.newVmXml)
+        svm.create(template_xml_file)
+        svm.save()
+
+        # Stop and store the memory image state.
+        svm.stop(foce_save_state=True, cleanup_files=False)
+        print "VM info and state created from template."
+
+    ####################################################################################################################
+    # Attempt to refresh the memory state of the VM Image for this service.
+    ####################################################################################################################
+    def refresh_image_memory_state(self):
+        svm = None
+        try:
+            # Create an independent new SVM for this service.
+            print "Starting service SVM to refresh memory state."
+            svm = self.get_vm_instance(join=False, clone_full_image=True)
+
+            # Wait for a bit to allow it to boot up.
+            boot_wait_time_in_s = 15
+            time.sleep(boot_wait_time_in_s)
+
+            svm.stop(foce_save_state=True, cleanup_files=False)
+            print "Service VM stopped, and machine state saved."
+
+            # Permanently store the VM.
+            vm_image_folder = os.path.dirname(self.vm_image.disk_image)
+            print 'Moving Service VM Image to cache, from folder {} to folder {}.'.format(
+                os.path.dirname(svm.vm_image.disk_image), vm_image_folder)
+            svm.vm_image.move(vm_image_folder)
+            svm.vm_image.protect()
+            print 'VM Image updated.'
+        except Exception as e:
+            if svm:
+                svm.stop()
+
+            print "Exception updating SVM memory state: " + str(e)
+            return {'error': str(e)}
 
     ################################################################################################################
     # Returns a VM linked to the original VM image so that it can be modified.
