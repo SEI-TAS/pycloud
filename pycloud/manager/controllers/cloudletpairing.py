@@ -81,47 +81,19 @@ class CloudletPairingController(BaseController):
     def POST_discover(self):
         curr_device = None
         try:
-            # Create a device depending on the type.
-            connection = request.params.get('connection', 'wifi')
-
             secret = request.params.get('secret', None)
             id = "10.10.10.10"
             port = "1723"
             name = "WiFi1"
 
             adhoc_mode_enabled = wifi_adhoc.enable_adhoc_mode(id)
-
-            # Now the pairing process will be followed, generating all required credentials.
-            # The first step is to connect to the device.
-            #ap = curr_device.start_ap()
             if not adhoc_mode_enabled:
                 raise Exception("Could not start ad-hoc mode on local NIC.")
 
+            # Now the pairing process will be followed, generating all required credentials.
+            # The first step is to connect to the device.
             curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
             curr_device.listen()
-
-            #i = 1
-            #command = "ping 10.10.10.1 -c 1 -W 1"
-            #while i == 1:
-            #    cmd = subprocess.Popen(command, shell=True, stdout=None)
-            #    cmd.wait()
-            #    i = cmd.returncode
-
-            #successful_connection = curr_device.connect("10.10.10.1", "1723", "WiFiClient")
-            #if not successful_connection:
-            #    raise Exception("Could not connect to cloudlet with id {}.".format(id))
-
-            # Get the device id.
-            #id_data = curr_device.get_data({'device_id': 'none'})
-            #device_internal_id = id_data['device_id']
-            #print 'Device id: ' + device_internal_id
-
-            # Pair the device, send the credentials, and clear their local files.
-            #deployment = Deployment.get_instance()
-            #device_keys = deployment.pair_device(device_internal_id, curr_device.get_name(), device_type)
-            #deployment.send_paired_credentials(curr_device, device_keys)
-            #deployment.clear_device_keys(device_keys)
-
         except Exception, e:
             print str(e)
             raise e
@@ -130,7 +102,7 @@ class CloudletPairingController(BaseController):
                 try:
                     print 'Listener will shut down in 60 seconds.'
                     command = "./hostapd/stop_pairing_ap.sh"
-                    cmd = subprocess.Popen(command, shell=True, stdin=None, stdout=None, stderr=None)
+                    subprocess.Popen(command, shell=True, stdin=None, stdout=None, stderr=None)
 
                 except Exception, e:
                     error = "Error launching timer function: " + str(e)
@@ -145,21 +117,12 @@ class CloudletPairingController(BaseController):
     def GET_discover(self):
         page = CloudletDiscoveryPage()
 
-        # TODO: Generate ssid and random psk here
+        # Generate ssid and random psk here
         temp = ''.join(random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"], 6))
         host = os.uname()[1]
         page.ssid = host + "-" + temp #ssid should be "<cloudlet machine name>-<alphanumeric and 6 symbols long>"
         psk = ''.join(random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"], 8))
         page.psk = psk #psk should be alphanumeric and 8 symbols long
-
-        #command = "sed -e \"s/xxxx/" + page.ssid + "/g\" < hostapd/wpa.conf > hostapd/wpa-tmp.conf"
-        #print "1 " + command
-        #cmd = subprocess.Popen(command, shell=True, stdout=None)
-
-        #cmd.wait()
-        #command = "sed -e \"s/yyyy/" + page.psk + "/g\" < hostapd/wpa-tmp.conf > hostapd/wpa-nic.conf"
-        #print "2 " + command
-        #cmd = subprocess.Popen(command, shell=True, stdout=None)
 
         wifi_adhoc.configure_wpa2_params(page.ssid, page.psk)
 
@@ -179,20 +142,10 @@ class CloudletPairingController(BaseController):
         if connection is None:
             connection = 'wifi'
 
+        curr_device = None
         try:
             # Create a device depending on the type.
-            curr_device = None
             if connection == 'wifi':
-                adapter_address = get_adapter_name()
-                #command = "sed -e \"s/xxxx/" + ssid + "/g\" < hostapd/wpa.conf > hostapd/wpa-tmp.conf"
-                #print "1P " + command
-                #cmd = subprocess.Popen(command, shell=True, stdout=None)
-
-                #cmd.wait()
-                #command = "sed -e \"s/yyyy/" + psk + "/g\" < hostapd/wpa-tmp.conf > hostapd/wpa-nic.conf"
-                #print "2P " + command
-                #cmd = subprocess.Popen(command, shell=True, stdout=None)
-
                 id = "10.10.10.1"
                 port = "1723"
                 name = "WiFi1"
@@ -200,21 +153,10 @@ class CloudletPairingController(BaseController):
                 wifi_adhoc.configure_wpa2_params(ssid, psk)
                 wifi_adhoc.enable_adhoc_mode(id)
 
-                #command = "wpa_passphrase " + ssid + " " + psk + ">hostapd/wpa.conf"
-                #cmd = subprocess.Popen(command, shell=True, stdout=None)
-                #command = "sudo wpa_supplicant -B -Dnl80211,wext -i" + adapter_address + " -chostapd/wpa-nic.conf"
-                #cmd = subprocess.Popen(command, shell=True, stdout=None)
-
-                #port = request.params.get('port', None)
-                #name = request.params.get('name', None)
-
                 curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
                 successful_connection = curr_device.connect("10.10.10.10", int(port), "WiFiAP")
                 if not successful_connection:
                     raise Exception("Could not connect to cloudlet with id {}.".format(ssid))
-
-            else:
-                pass
 
             # TODO: re-enable this.
             # Get the device id.
@@ -238,7 +180,7 @@ class CloudletPairingController(BaseController):
                     print 'Disconnecting from cloudlet.'
                     curr_device.disconnect()
                     command = "./hostapd/stop_pairing_ap.sh"
-                    cmd = subprocess.Popen(command, shell=True, stdin=None, stdout=None, stderr=None)
+                    subprocess.Popen(command, shell=True, stdin=None, stdout=None, stderr=None)
 
                 except Exception, e:
                     error = "Error disconnecting" + str(e)
