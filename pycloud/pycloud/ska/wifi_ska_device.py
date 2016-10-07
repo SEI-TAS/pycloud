@@ -36,6 +36,7 @@ import sys
 from ska_device_interface import ISKADevice
 from pycloud.pycloud.ska import ska_constants
 from pycloud.pycloud.security import encryption
+from pycloud.pycloud.cloudlet import Cloudlet
 
 
 # Size of a chunk when transmitting through TCP .
@@ -323,10 +324,28 @@ class WiFiSKADevice(ISKADevice):
         return reply
 
     ####################################################################################################################
+    #
+    ####################################################################################################################
+    def __send_data(self, conn, data_key, data_value):
+        conn.send(json.dumps({ska_constants.RESULT_KEY: ska_constants.SUCCESS, data_key: data_value}))
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def __send_success_reply(self, conn):
+        conn.send(json.dumps({ska_constants.RESULT_KEY: ska_constants.SUCCESS}))
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def __send_error_reply(self, conn, error):
+        conn.send(json.dumps({ska_constants.RESULT_KEY: ska_constants.ERROR, ska_constants.ERROR_MSG_KEY: error}))
+
+    ####################################################################################################################
     # Handle an incoming message in a thread
     ####################################################################################################################
     def handle_incoming(self, conn, addr):
-        data = conn.recv(4096)
+        data = conn.recv(CHUNK_SIZE)
         if not data:
             return
         print "Got data"
@@ -335,20 +354,22 @@ class WiFiSKADevice(ISKADevice):
             file_to_receive = None
             file_path = message['file_id']
             conn.sendall('ack')
-            size = conn.recv(4096)
+            size = conn.recv(CHUNK_SIZE)
             if size > 0:
                 file_to_receive = open(file_path, 'wb')
                 encrypted_file = ''
 
-                # Send until there is no more data in the file.
+                # Get until there is no more data in the socket.
                 while True:
-                    received = conn.recv(4096)
-                    encrypted_file += str(received)
-                    file_data = encryption.decrypt_message(encrypted_file, self.device_info['secret'])
-                    file_to_receive.write(file_data)
+                    received = conn.recv(CHUNK_SIZE)
                     if not received:
                         break
+                    encrypted_file += str(received)
 
+                file_data = encryption.decrypt_message(encrypted_file, self.device_info['secret'])
+                file_to_receive.write(file_data)
+
+            self.__send_success_reply(conn)
             conn.close()
             if file_to_receive is not None:
                 file_to_receive.close()
@@ -356,13 +377,26 @@ class WiFiSKADevice(ISKADevice):
             if message['command'] == "wifi-profile":
                 try:
                     self.create_wifi_profile(message)
-                except:
-                    pass
-
+                    self.__send_success_reply(conn)
+                except Exception as e:
+                    print 'Error creating Wi-Fi profile: ' + str(e)
+                    self.__send_error_reply(conn, e.message)
+        elif message['wifi_command'] == "send_data":
+            if 'device_id' in message:
+                self.__send_data(conn, 'device_id', Cloudlet.get_id())
+            else:
+                error_message = 'Unrecognized data request: ' + str(message)
+                print error_message
+                self.__send_error_reply(conn, error_message)
         elif message['wifi_command'] == "transfer_complete":
+            self.__send_success_reply(conn)
             return "transfer_complete"
         else:
-            pass
+            error_message = 'Unrecognized command: ' + message['wifi_command']
+            print error_message
+            self.__send_error_reply(conn, error_message)
+
+        return ''
 
     ####################################################################################################################
     # Create a wifi profile in /etc/NetworkManager/system-connections using system-connection-template.ini

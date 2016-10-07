@@ -158,11 +158,10 @@ class CloudletPairingController(BaseController):
                 if not successful_connection:
                     raise Exception("Could not connect to cloudlet with id {}.".format(ssid))
 
-            # TODO: re-enable this.
+            # TODO: test this.
             # Get the device id.
-            device_internal_id = ssid
-            #id_data = curr_device.get_data({'device_id': 'none'})
-            #device_internal_id = id_data['device_id']
+            id_data = curr_device.get_data({'device_id': 'none'})
+            device_internal_id = id_data['device_id']
             print 'Device id: ' + device_internal_id
 
             # Pair the device, send the credentials, and clear their local files.
