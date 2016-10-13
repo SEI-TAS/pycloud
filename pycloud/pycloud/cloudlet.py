@@ -95,6 +95,7 @@ class Cloudlet(object):
         self.service_cache = os.path.join(self.data_folder, 'svmcache/')
         self.svmInstancesFolder = os.path.join(self.data_folder, 'temp/instances/')
         self.appFolder = os.path.join(self.data_folder, 'apks/')
+        self.cloudletCredentialsFolder = os.path.join(self.data_folder, 'cloudlet_creds/')
         
         # Load the templates to be used when creating VMs.
         self.newVmFolder = os.path.join(self.data_folder, 'temp/servicevm/')
@@ -170,6 +171,8 @@ class Cloudlet(object):
             os.makedirs(self.export_path)
         if not os.path.exists(self.appFolder):
             os.makedirs(self.appFolder)
+        if not os.path.exists(self.cloudletCredentialsFolder):
+            os.makedirs(self.cloudletCredentialsFolder)
 
     @staticmethod
     def _clean_temp_folder(folder):

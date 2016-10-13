@@ -153,7 +153,7 @@ class WiFiSKADevice(ISKADevice):
     ####################################################################################################################
     # Listen on a socket and handle commands. Each connection spawns a separate thread
     ####################################################################################################################
-    def listen(self):
+    def listen(self, files_path):
         adapter_name = get_adapter_name()
         if adapter_name is None:
             raise Exception("WiFi adapter not available.")
@@ -180,8 +180,7 @@ class WiFiSKADevice(ISKADevice):
                     if return_code == 'send':
                         self.__send_data(return_data)
                     elif return_code == 'file':
-                        # TODO: set base path
-                        self.receive_file(message, '')
+                        self.receive_file(message, files_path)
                         self.__send_success_reply()
                     elif return_code == 'ok':
                         self.__send_success_reply()

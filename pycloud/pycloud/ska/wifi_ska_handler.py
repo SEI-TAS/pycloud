@@ -43,6 +43,8 @@ class WiFiSKAHandler(object):
 
         command = message['wifi_command']
         if command == "receive_file":
+            # TODO: generate and store encryption key when file id is 'device.key'
+            # TODO: store certificate in /etc/ca-certificates/ when id is radius.RADIUS_CERT_FILE_NAME
             return 'file'
         elif command == "receive_data":
             if 'command' not in message:
@@ -77,14 +79,15 @@ class WiFiSKAHandler(object):
     ####################################################################################################################
     def create_wifi_profile(self, message):
 
-        with open("./system-connection-template.ini", "r") as ini_file:
+        with open("./hostapd/system-connection-template.ini", "r") as ini_file:
             file_data = ini_file.read()
 
+        file_data = file_data.replace('$cloudlet-id', Cloudlet.get_id())
         file_data = file_data.replace('$ssid', message['ssid'])
-        file_data = file_data.replace('$name', message['cloudlet_name'])
+        file_data = file_data.replace('$name', message['ssid'])
         file_data = file_data.replace('$password', message['password'])
         file_data = file_data.replace('$ca-cert', message['server_cert_name'])
 
-        filename = "/etc/NetworkManager/system-connections" + message['cloudlet-name']
+        filename = os.path.join("/etc/NetworkManager/system-connections", message['ssid'])
         with open(filename, "w") as profile:
             profile.write(file_data)

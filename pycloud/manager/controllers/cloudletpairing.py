@@ -39,7 +39,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import CloudletPairingPage
 from pycloud.manager.lib.pages import CloudletDiscoveryPage
 from pycloud.pycloud.ska.wifi_ska_device import WiFiSKADevice
-from pycloud.pycloud.ska.wifi_ska_device import get_adapter_name
+from pycloud.pycloud.cloudlet import Cloudlet, get_cloudlet_instance
 from pycloud.pycloud.pylons.lib import helpers as h
 
 from pycloud.pycloud.model.deployment import Deployment
@@ -92,8 +92,9 @@ class CloudletPairingController(BaseController):
 
             # Now the pairing process will be followed, generating all required credentials.
             # The first step is to connect to the device.
+            cloudlet = get_cloudlet_instance()
             curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
-            curr_device.listen()
+            curr_device.listen(cloudlet.cloudletCredentialsFolder)
         except Exception, e:
             print str(e)
             raise e
