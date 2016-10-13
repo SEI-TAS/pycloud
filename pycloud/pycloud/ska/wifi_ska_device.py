@@ -164,12 +164,35 @@ class WiFiSKADevice(ISKADevice):
         self.device_socket.listen(1)
 
         # Get new data until we get a final command.
-        while True:
-            data_socket, addr = self.device_socket.accept()
-            handler = WiFiSKAHandler(data_socket, self.device_info['secret'])
-            return_code = handler.handle_incoming()
-            if return_code == 'transfer_complete':
-                break
+        data_socket = None
+        try:
+            while True:
+                data_socket, addr = self.device_socket.accept()
+                self.comm = WiFiSKACommunicator(data_socket, self.device_info['secret'])
+                handler = WiFiSKAHandler()
+
+                try:
+                    received_data = self.comm.receive_string()
+                    message = json.loads(received_data)
+                    print "Received a message."
+
+                    return_code, return_data = handler.handle_incoming(message)
+                    if return_code == 'send':
+                        self.__send_data(return_data)
+                    elif return_code == 'file':
+                        # TODO: set base path
+                        self.receive_file(message, '')
+                        self.__send_success_reply()
+                    elif return_code == 'ok':
+                        self.__send_success_reply()
+                    elif return_code == 'transfer_complete':
+                        self.__send_success_reply()
+                        break
+                except Exception as e:
+                    self.__send_error_reply(e.message)
+        except:
+            if data_socket is not None:
+                data_socket.close()
 
     ####################################################################################################################
     # Closes the TCP socket.
@@ -212,6 +235,16 @@ class WiFiSKADevice(ISKADevice):
                 return self.__parse_result(reply)
 
     ####################################################################################################################
+    #
+    ####################################################################################################################
+    def receive_file(self, message, base_path):
+        self.comm.send_string('ack')
+        size = self.comm.receive_string()
+        if size > 0:
+            file_path = os.path.join(base_path, message['file_id'])
+            self.comm.receive_file(file_path)
+
+    ####################################################################################################################
     # Sends a command.
     ####################################################################################################################
     def __send_command(self, command, data):
@@ -227,6 +260,28 @@ class WiFiSKADevice(ISKADevice):
         # Wait for reply, it should be small enough to fit in one chunk.
         reply = self.comm.receive_string()
         return reply
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def __send_data(self, data_pair):
+        data_key = data_pair[0]
+        data_value = data_pair[1]
+        self.comm.send_string(
+            json.dumps({ska_constants.RESULT_KEY: ska_constants.SUCCESS, data_key: data_value}))
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def __send_success_reply(self):
+        self.comm.send_string(json.dumps({ska_constants.RESULT_KEY: ska_constants.SUCCESS}))
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def __send_error_reply(self, error):
+        self.comm.send_string(
+            json.dumps({ska_constants.RESULT_KEY: ska_constants.ERROR, ska_constants.ERROR_MSG_KEY: error}))
 
     ####################################################################################################################
     # Checks the success of a result.

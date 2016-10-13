@@ -26,12 +26,7 @@
 # Released under the MIT license
 # http://jquery.org/license
 
-import os
-import json
-
-from pycloud.pycloud.ska import ska_constants
 from pycloud.pycloud.cloudlet import Cloudlet
-from pycloud.pycloud.ska.wifi_ska_comm import WiFiSKACommunicator
 
 
 ########################################################################################################################
@@ -40,90 +35,42 @@ from pycloud.pycloud.ska.wifi_ska_comm import WiFiSKACommunicator
 class WiFiSKAHandler(object):
 
     ####################################################################################################################
-    #
-    ####################################################################################################################
-    def __init__(self, data_socket, encryption_secret):
-        self.data_socket = data_socket
-        self.encryption_secret = encryption_secret
-        self.comm = WiFiSKACommunicator(self.data_socket, self.encryption_secret)
-
-    ####################################################################################################################
     # Handle an incoming message.
     ####################################################################################################################
-    def handle_incoming(self):
-        try:
-            received_data = self.comm.receive_string()
-            message = json.loads(received_data)
-            print "Got data"
+    def handle_incoming(self, message):
+        if 'wifi_command' not in message:
+            raise Exception('Invalid message received: it does not contain a wifi_command field.')
 
-            if 'wifi_command' not in message:
-                self.__send_error_reply('Invalid message received.')
+        command = message['wifi_command']
+        if command == "receive_file":
+            return 'file'
+        elif command == "receive_data":
+            if 'command' not in message:
+                raise Exception('Invalid message received: it does not contain a command field.')
 
-            command = message['wifi_command']
-            if command == "receive_file":
-                # TODO: set base path
-                self.receive_file(message, '')
-                self.__send_success_reply()
-            elif command == "receive_data":
-                if 'command' not in message:
-                    self.__send_error_reply('Invalid message received.')
-
-                data_command = message['command']
-                if data_command == "wifi-profile":
-                    try:
-                        self.create_wifi_profile(message)
-                        self.__send_success_reply()
-                    except Exception as e:
-                        print 'Error creating Wi-Fi profile: ' + str(e)
-                        self.__send_error_reply(e.message)
-                else:
-                    self.__send_error_reply('Unknown data command: ' + data_command)
-            elif command == "send_data":
-                if 'device_id' in message:
-                    self.__send_data('device_id', Cloudlet.get_id())
-                else:
-                    error_message = 'Unrecognized data request: ' + str(message)
-                    print error_message
-                    self.__send_error_reply(error_message)
-            elif command == "transfer_complete":
-                self.__send_success_reply()
-                return "transfer_complete"
+            data_command = message['command']
+            if data_command == "wifi-profile":
+                try:
+                    self.create_wifi_profile(message)
+                    return 'ok'
+                except Exception as e:
+                    print 'Error creating Wi-Fi profile: ' + str(e)
+                    raise Exception(e.message)
             else:
-                error_message = 'Unrecognized command: ' + message['wifi_command']
+                raise Exception('Unknown data command: ' + data_command)
+        elif command == "send_data":
+            if 'device_id' in message:
+                return 'send', ('device_id', Cloudlet.get_id())
+            else:
+                error_message = 'Unrecognized data request: ' + str(message)
                 print error_message
-                self.__send_error_reply(error_message)
-        finally:
-            self.data_socket.close()
-
-        return 'ok'
-
-    ####################################################################################################################
-    #
-    ####################################################################################################################
-    def __send_data(self, data_key, data_value):
-        self.comm.send_string(json.dumps({ska_constants.RESULT_KEY: ska_constants.SUCCESS, data_key: data_value}))
-
-    ####################################################################################################################
-    #
-    ####################################################################################################################
-    def __send_success_reply(self):
-        self.comm.send_string(json.dumps({ska_constants.RESULT_KEY: ska_constants.SUCCESS}))
-
-    ####################################################################################################################
-    #
-    ####################################################################################################################
-    def __send_error_reply(self, error):
-        self.comm.send_string(json.dumps({ska_constants.RESULT_KEY: ska_constants.ERROR, ska_constants.ERROR_MSG_KEY: error}))
-
-    ####################################################################################################################
-    #
-    ####################################################################################################################
-    def receive_file(self, message, base_path):
-        self.comm.send_string('ack')
-        size = self.comm.receive_string()
-        if size > 0:
-            file_path = os.path.join(base_path, message['file_id'])
-            self.comm.receive_file(file_path)
+                raise Exception(error_message)
+        elif command == "transfer_complete":
+            return "transfer_complete"
+        else:
+            error_message = 'Unrecognized command: ' + message['wifi_command']
+            print error_message
+            raise Exception(error_message)
 
     ####################################################################################################################
     # Create a wifi profile in /etc/NetworkManager/system-connections using system-connection-template.ini
