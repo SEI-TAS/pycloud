@@ -181,7 +181,8 @@ class WiFiSKADevice(ISKADevice):
                     command = message['wifi_command']
 
                     if command == "receive_file":
-                        self.receive_file(message, files_path)
+                        folder_path = handler.get_storage_folder_path(files_path, message)
+                        self.receive_file(message, folder_path)
 
                     return_code, return_data = handler.handle_incoming(command, message, files_path)
                     if return_code == 'send':

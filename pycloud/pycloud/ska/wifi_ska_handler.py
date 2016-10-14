@@ -39,13 +39,22 @@ from pycloud.pycloud.model.cloudlet_credential import CloudletCredential
 #
 ########################################################################################################################
 class WiFiSKAHandler(object):
+    ####################################################################################################################
+    # Create path and folders to store the files.
+    ####################################################################################################################
+    def get_storage_folder_path(self, base_path, message):
+        folder_path = os.path.join(base_path, message['cloudlet_name'])
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        return folder_path
 
     ####################################################################################################################
     # Handle an incoming message.
     ####################################################################################################################
     def handle_incoming(self, command, message, files_path):
         if command == "receive_file":
-            full_path = os.path.join(files_path, message['file_id'])
+            full_path = os.path.join(self.get_storage_folder_path(files_path, message), message['file_id'])
+
             if message['file_id'] == 'device.key':
                 self.store_encryption_password(message['cloudlet_name'], full_path)
                 pass
