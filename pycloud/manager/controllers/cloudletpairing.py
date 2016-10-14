@@ -52,6 +52,11 @@ import subprocess
 
 log = logging.getLogger(__name__)
 
+SKA_CLIENT_IP = '10.10.10.1'
+SKA_SERVER_IP = '10.10.10.10'
+SKA_SERVER_PORT = '1723'
+
+
 ################################################################################################################
 # Controller for the Pairing page.
 ################################################################################################################
@@ -79,27 +84,24 @@ class CloudletPairingController(BaseController):
     # Does the work after data is entered
     ############################################################################################################
     def POST_discover(self):
-        curr_device = None
+        client_cloudlet = None
         try:
             secret = request.params.get('secret', None)
-            id = "10.10.10.10"
-            port = "1723"
-            name = "WiFi1"
 
-            adhoc_mode_enabled = wifi_adhoc.enable_adhoc_mode(id)
-            if not adhoc_mode_enabled:
-                raise Exception("Could not start ad-hoc mode on local NIC.")
+            # Enable ad-hoc mode.
+            wifi_adhoc.enable_adhoc_mode(SKA_SERVER_IP)
 
-            # Now the pairing process will be followed, generating all required credentials.
-            # The first step is to connect to the device.
+            # Here we are abusing the WiFiSKADevice object which, in this case, we don't have information of since we
+            # will be waiting for messages from it.
+            client_cloudlet_name = "WiFiClient"
             cloudlet = get_cloudlet_instance()
-            curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
-            curr_device.listen(cloudlet.cloudletCredentialsFolder)
+            client_cloudlet = WiFiSKADevice({'host': SKA_CLIENT_IP, 'port': 0, 'name': client_cloudlet_name, 'secret': secret})
+            client_cloudlet.wait_for_messages(host=SKA_SERVER_IP, port=SKA_SERVER_PORT, secret=secret, files_path=cloudlet.cloudletCredentialsFolder)
         except Exception, e:
             print str(e)
             raise e
         finally:
-            if curr_device is not None:
+            if client_cloudlet is not None:
                 try:
                     print 'Listener will shut down in 60 seconds.'
                     command = "./wpa_supplicant/stop_adhoc_mode.sh"
@@ -143,42 +145,41 @@ class CloudletPairingController(BaseController):
         if connection is None:
             connection = 'wifi'
 
-        curr_device = None
+        remote_cloudlet = None
         try:
-            # Create a device depending on the type.
             if connection == 'wifi':
-                id = "10.10.10.1"
-                port = "1723"
-                name = "WiFi1"
-
+                # Set up the ad-hoc network.
                 wifi_adhoc.configure_wpa2_params(ssid, psk)
-                wifi_adhoc.enable_adhoc_mode(id)
+                wifi_adhoc.enable_adhoc_mode(SKA_CLIENT_IP)
 
-                curr_device = WiFiSKADevice({'host': id, 'port': int(port), 'name': name, 'secret': secret})
-                successful_connection = curr_device.connect("10.10.10.10", int(port), "WiFiAP")
+                # Connect to the server (cloudlet) in the network.
+                remote_cloudlet_name = "WiFiServer"
+                remote_cloudlet = WiFiSKADevice({'host': SKA_SERVER_IP, 'port': int(SKA_SERVER_PORT),
+                                                 'name': remote_cloudlet_name, 'secret': secret})
+                successful_connection = remote_cloudlet.connect()
                 if not successful_connection:
                     raise Exception("Could not connect to cloudlet with id {}.".format(ssid))
 
             # TODO: test this.
             # Get the device id.
-            id_data = curr_device.get_data({'device_id': 'none'})
+            id_data = remote_cloudlet.get_data({'device_id': 'none'})
             device_internal_id = id_data['device_id']
             print 'Device id: ' + device_internal_id
 
             # Pair the device, send the credentials, and clear their local files.
             deployment = Deployment.get_instance()
-            device_keys = deployment.pair_device(device_internal_id, curr_device.get_name(), device_type)
-            deployment.send_paired_credentials(curr_device, device_keys)
+            device_keys = deployment.pair_device(device_internal_id, remote_cloudlet.get_name(), device_type)
+            deployment.send_paired_credentials(remote_cloudlet, device_keys)
             deployment.clear_device_keys(device_keys)
 
         except Exception, e:
             return ajaxutils.show_and_return_error_dict(e.message)
 
         finally:
-            if curr_device is not None:
+            if remote_cloudlet is not None:
                 try:
                     print 'Disconnecting from cloudlet.'
-                    curr_device.disconnect()
+                    remote_cloudlet.disconnect()
                     command = "./wpa_supplicant/stop_adhoc_mode.sh"
                     subprocess.Popen(command, shell=True, stdin=None, stdout=None, stderr=None)
 
