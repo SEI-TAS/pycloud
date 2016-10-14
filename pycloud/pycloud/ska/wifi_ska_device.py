@@ -27,36 +27,11 @@
 # http://jquery.org/license
 __author__ = 'Dan'
 
-import json
-import os
 import socket
-import subprocess
 
-from pycloud.pycloud.security.pairing_handler import PairingHandler
-from pycloud.pycloud.ska import ska_constants
-from pycloud.pycloud.ska.wifi_ska_comm import WiFiSKACommunicator
+from pycloud.pycloud.ska.wifi_ska_comm import WiFiSKACommunicator, get_adapter_name
 from ska_device_interface import ISKADevice
 
-
-######################################################################################################################
-# Checks that there is an enabled WiFi device, and returns its name.
-######################################################################################################################
-def get_adapter_name():
-    internal_name = None
-
-    cmd = subprocess.Popen('iw dev', shell=True, stdout=subprocess.PIPE)
-    for line in cmd.stdout:
-        if "Interface" in line:
-            internal_name = line.split(' ')[1]
-            internal_name = internal_name.replace("\n", "")
-            break
-
-    if internal_name is not None:
-        print "WiFi adapter with name {} found".format(internal_name)
-    else:
-        print "WiFi adapter not found."
-
-    return internal_name
 
 ######################################################################################################################
 # Connects to a device given the device info dict, and returns a socket.
@@ -151,150 +126,32 @@ class WiFiSKADevice(ISKADevice):
             return True
 
     ####################################################################################################################
-    # Listen on a socket and handle commands. Each connection spawns a separate thread
-    ####################################################################################################################
-    def wait_for_messages(self, host, port, secret, files_path):
-        adapter_name = get_adapter_name()
-        if adapter_name is None:
-            raise Exception("WiFi adapter not available.")
-
-        self.device_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print((host, port))
-        self.device_socket.bind((host, port))
-        self.device_socket.listen(1)
-
-        # Get new data until we get a final command.
-        data_socket = None
-        try:
-            while True:
-                data_socket, addr = self.device_socket.accept()
-                self.comm = WiFiSKACommunicator(data_socket, secret)
-                handler = PairingHandler()
-
-                try:
-                    received_data = self.comm.receive_string()
-                    message = json.loads(received_data)
-                    print "Received a message."
-
-                    if 'wifi_command' not in message:
-                        raise Exception('Invalid message received: it does not contain a wifi_command field.')
-                    command = message['wifi_command']
-
-                    if command == "receive_file":
-                        folder_path = handler.get_storage_folder_path(files_path, message)
-                        self.receive_file(message, folder_path)
-
-                    return_code, return_data = handler.handle_incoming(command, message, files_path)
-                    if return_code == 'send':
-                        self.__send_data(return_data)
-                    elif return_code == 'ok':
-                        self.__send_success_reply()
-                    elif return_code == 'transfer_complete':
-                        self.__send_success_reply()
-                        break
-                except Exception as e:
-                    self.__send_error_reply(e.message)
-        except:
-            if data_socket is not None:
-                data_socket.close()
-
-    ####################################################################################################################
     # Closes the TCP socket.
     ####################################################################################################################
     def disconnect(self):
         if self.device_socket is not None:
-            self.__send_command("transfer_complete", '')
+            self.comm.send_command('transfer_complete', '')
             self.device_socket.close()
 
     ####################################################################################################################
     #
     ####################################################################################################################
     def get_data(self, data):
-        result = self.__send_command('send_data', data)
-        return self.__parse_result(result)
+        result = self.comm.send_command('send_data', data)
+        return self.comm.parse_result(result)
 
     ####################################################################################################################
     #
     ####################################################################################################################
     def send_data(self, data):
-        result = self.__send_command('receive_data', data)
-        return self.__parse_result(result)
+        result = self.comm.send_command('receive_data', data)
+        return self.comm.parse_result(result)
 
     ####################################################################################################################
     # Sends a given file, ensuring the other side is ready to store it.
     ####################################################################################################################
     def send_file(self, file_path, file_id):
-        result = self.__send_command('receive_file', {'file_id': file_id})
+        result = self.comm.send_command('receive_file', {'file_id': file_id})
         if result == 'ack':
-            # First send the file size in bytes.
-            file_size = os.path.getsize(file_path)
-            self.comm.send_string(str(file_size))
-            reply = self.comm.receive_string()
-            if reply == 'ack':
-                self.comm.send_file(file_path)
-
-                # Wait for final result.
-                print 'Finished sending file. Waiting for result.'
-                reply = self.comm.receive_string()
-                return self.__parse_result(reply)
-
-    ####################################################################################################################
-    #
-    ####################################################################################################################
-    def receive_file(self, message, base_path):
-        self.comm.send_string('ack')
-        size = self.comm.receive_string()
-        if size > 0:
-            file_path = os.path.join(base_path, message['file_id'])
-            self.comm.receive_file(file_path)
-
-    ####################################################################################################################
-    # Sends a command.
-    ####################################################################################################################
-    def __send_command(self, command, data):
-        # Prepare command.
-        message = dict(data)
-        message['wifi_command'] = command
-        message['cloudlet_name'] = socket.gethostname()
-        message_string = json.dumps(message)
-
-        # Send command.
-        self.comm.send_string(message_string)
-
-        # Wait for reply, it should be small enough to fit in one chunk.
-        reply = self.comm.receive_string()
-        return reply
-
-    ####################################################################################################################
-    #
-    ####################################################################################################################
-    def __send_data(self, data_pair):
-        data_key = data_pair[0]
-        data_value = data_pair[1]
-        self.comm.send_string(
-            json.dumps({ska_constants.RESULT_KEY: ska_constants.SUCCESS, data_key: data_value}))
-
-    ####################################################################################################################
-    #
-    ####################################################################################################################
-    def __send_success_reply(self):
-        self.comm.send_string(json.dumps({ska_constants.RESULT_KEY: ska_constants.SUCCESS}))
-
-    ####################################################################################################################
-    #
-    ####################################################################################################################
-    def __send_error_reply(self, error):
-        self.comm.send_string(
-            json.dumps({ska_constants.RESULT_KEY: ska_constants.ERROR, ska_constants.ERROR_MSG_KEY: error}))
-
-    ####################################################################################################################
-    # Checks the success of a result.
-    ####################################################################################################################
-    def __parse_result(self, result):
-        # Check error and log it.
-        json_data = json.loads(result)
-        if json_data[ska_constants.RESULT_KEY] != ska_constants.SUCCESS:
-            error_message = 'Error processing command on device: ' + json_data[ska_constants.ERROR_MSG_KEY]
-            raise Exception(error_message)
-
-        return json.loads(result)
+            reply = self.comm.send_file(file_path)
+            return self.comm.parse_result(reply)

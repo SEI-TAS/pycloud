@@ -39,6 +39,7 @@ from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import CloudletPairingPage
 from pycloud.manager.lib.pages import CloudletDiscoveryPage
 from pycloud.pycloud.ska.wifi_ska_device import WiFiSKADevice
+from pycloud.pycloud.ska.wifi_ska_server import WiFiSKAServer
 from pycloud.pycloud.cloudlet import Cloudlet, get_cloudlet_instance
 from pycloud.pycloud.pylons.lib import helpers as h
 
@@ -91,12 +92,11 @@ class CloudletPairingController(BaseController):
             # Enable ad-hoc mode.
             wifi_adhoc.enable_adhoc_mode(SKA_SERVER_IP)
 
-            # Here we are abusing the WiFiSKADevice object which, in this case, we don't have information of since we
-            # will be waiting for messages from it.
-            client_cloudlet_name = "WiFiClient"
+            # Wait for messages.
             cloudlet = get_cloudlet_instance()
-            client_cloudlet = WiFiSKADevice({'host': SKA_CLIENT_IP, 'port': 0, 'name': client_cloudlet_name, 'secret': secret})
-            client_cloudlet.wait_for_messages(host=SKA_SERVER_IP, port=SKA_SERVER_PORT, secret=secret, files_path=cloudlet.cloudletCredentialsFolder)
+            server = WiFiSKAServer(host=SKA_SERVER_IP, port=SKA_SERVER_PORT, secret=secret,
+                                   files_path=cloudlet.cloudletCredentialsFolder)
+            server.wait_for_messages()
         except Exception, e:
             print str(e)
             raise e

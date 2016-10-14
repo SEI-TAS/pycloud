@@ -25,11 +25,37 @@
 # Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
 # Released under the MIT license
 # http://jquery.org/license
+import json
+import socket
+import os
+import subprocess
 
+from pycloud.pycloud.ska import ska_constants
 from pycloud.pycloud.security import encryption
 
 # Size of a chunk when transmitting through TCP .
 CHUNK_SIZE = 4096
+
+
+######################################################################################################################
+# Checks that there is an enabled WiFi device, and returns its name.
+######################################################################################################################
+def get_adapter_name():
+    internal_name = None
+
+    cmd = subprocess.Popen('iw dev', shell=True, stdout=subprocess.PIPE)
+    for line in cmd.stdout:
+        if "Interface" in line:
+            internal_name = line.split(' ')[1]
+            internal_name = internal_name.replace("\n", "")
+            break
+
+    if internal_name is not None:
+        print "WiFi adapter with name {} found".format(internal_name)
+    else:
+        print "WiFi adapter not found."
+
+    return internal_name
 
 
 ########################################################################################################################
@@ -44,9 +70,73 @@ class WiFiSKACommunicator(object):
         self.encryption_secret = encryption_secret
 
     ####################################################################################################################
+    # Sends a command.
+    ####################################################################################################################
+    def send_command(self, command, data):
+        # Prepare command.
+        message = dict(data)
+        message['wifi_command'] = command
+        message['cloudlet_name'] = socket.gethostname()
+        message_string = json.dumps(message)
+
+        # Send command.
+        self._send_string(message_string)
+
+        # Wait for reply, it should be small enough to fit in one chunk.
+        reply = self._receive_string()
+        return reply
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def receive_command(self):
+        received_data = self._receive_string()
+        message = json.loads(received_data)
+
+        if 'wifi_command' not in message:
+            raise Exception('Invalid message received: it does not contain a wifi_command field.')
+        command = message['wifi_command']
+
+        return command, message
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def send_data(self, data_pair):
+        data_key = data_pair[0]
+        data_value = data_pair[1]
+        self._send_string(
+            json.dumps({ska_constants.RESULT_KEY: ska_constants.SUCCESS, data_key: data_value}))
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def send_success_reply(self):
+        self._send_string(json.dumps({ska_constants.RESULT_KEY: ska_constants.SUCCESS}))
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def send_error_reply(self, error):
+        self._send_string(
+            json.dumps({ska_constants.RESULT_KEY: ska_constants.ERROR, ska_constants.ERROR_MSG_KEY: error}))
+
+    ####################################################################################################################
+    # Checks the success of a result.
+    ####################################################################################################################
+    def parse_result(self, result):
+        # Check error and log it.
+        json_data = json.loads(result)
+        if json_data[ska_constants.RESULT_KEY] != ska_constants.SUCCESS:
+            error_message = 'Error processing command on device: ' + json_data[ska_constants.ERROR_MSG_KEY]
+            raise Exception(error_message)
+
+        return json.loads(result)
+
+    ####################################################################################################################
     # Sends a short string.
     ####################################################################################################################
-    def send_string(self, data_string):
+    def _send_string(self, data_string):
         print 'Sending data: ' + data_string
         encrypted_data = encryption.encrypt_message(data_string, self.encryption_secret)
         self.data_socket.send(encrypted_data)
@@ -54,16 +144,44 @@ class WiFiSKACommunicator(object):
     ####################################################################################################################
     #
     ####################################################################################################################
-    def receive_string(self):
+    def _receive_string(self):
         data = self.data_socket.recv(CHUNK_SIZE)
         decrypted_data = encryption.decrypt_message(data, self.encryption_secret)
         print 'Received data: ' + decrypted_data
         return decrypted_data
 
     ####################################################################################################################
-    #
+    # Sends a given file, ensuring the other side is ready to store it.
     ####################################################################################################################
     def send_file(self, file_path):
+        # First send the file size in bytes.
+        file_size = os.path.getsize(file_path)
+        self._send_string(str(file_size))
+        reply = self._receive_string()
+        if reply == 'ack':
+            self._send_file_contents(file_path)
+
+            # Wait for final result.
+            print 'Finished sending file. Waiting for result.'
+            reply = self._receive_string()
+            return reply
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def receive_file(self, message, base_path):
+        file_path = os.path.join(base_path, message['file_id'])
+        self._send_string('ack')
+
+        size = self._receive_string()
+        self._send_string('ack')
+        if size > 0:
+            self._receive_file_contents(file_path)
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def _send_file_contents(self, file_path):
         # Open, encrypt and send the file in chunks.
         print 'Sending file.'
         with open(file_path, 'rb') as file_to_send:
@@ -85,7 +203,7 @@ class WiFiSKACommunicator(object):
     ####################################################################################################################
     #
     ####################################################################################################################
-    def receive_file(self, file_path):
+    def _receive_file_contents(self, file_path):
         # Get until there is no more data in the socket.
         print 'Receiving file.'
         encrypted_data = ''
