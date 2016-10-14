@@ -12,6 +12,6 @@ sudo ifconfig wlan1 down
 #nmcli nm wifi on
 
 # Restart libvirtd and its dnsmasq.
-sudo killall dnsmasq
-sudo start libvirt-bin
-sudo service bind9 start
+#sudo killall dnsmasq
+#sudo start libvirt-bin
+#sudo service bind9 start

@@ -38,7 +38,7 @@ from pycloud.pycloud.model.cloudlet_credential import CloudletCredential
 ########################################################################################################################
 #
 ########################################################################################################################
-class WiFiSKAHandler(object):
+class PairingHandler(object):
     ####################################################################################################################
     # Create path and folders to store the files.
     ####################################################################################################################
@@ -109,7 +109,7 @@ class WiFiSKAHandler(object):
     ####################################################################################################################
     def create_wifi_profile(self, message):
 
-        with open("./hostapd/system-connection-template.ini", "r") as ini_file:
+        with open("./wpa_supplicant/system-connection-template.ini", "r") as ini_file:
             file_data = ini_file.read()
 
         file_data = file_data.replace('$cloudlet-id', message['ssid'])

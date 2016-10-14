@@ -102,7 +102,7 @@ class CloudletPairingController(BaseController):
             if curr_device is not None:
                 try:
                     print 'Listener will shut down in 60 seconds.'
-                    command = "./hostapd/stop_pairing_ap.sh"
+                    command = "./wpa_supplicant/stop_adhoc_mode.sh"
                     subprocess.Popen(command, shell=True, stdin=None, stdout=None, stderr=None)
 
                 except Exception, e:
@@ -179,7 +179,7 @@ class CloudletPairingController(BaseController):
                 try:
                     print 'Disconnecting from cloudlet.'
                     curr_device.disconnect()
-                    command = "./hostapd/stop_pairing_ap.sh"
+                    command = "./wpa_supplicant/stop_adhoc_mode.sh"
                     subprocess.Popen(command, shell=True, stdin=None, stdout=None, stderr=None)
 
                 except Exception, e:

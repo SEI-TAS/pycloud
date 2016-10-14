@@ -27,15 +27,15 @@
 # http://jquery.org/license
 __author__ = 'Dan'
 
-import subprocess
-import os
 import json
+import os
 import socket
+import subprocess
 
-from ska_device_interface import ISKADevice
+from pycloud.pycloud.security.pairing_handler import PairingHandler
 from pycloud.pycloud.ska import ska_constants
-from pycloud.pycloud.ska.wifi_ska_handler import WiFiSKAHandler
 from pycloud.pycloud.ska.wifi_ska_comm import WiFiSKACommunicator
+from ska_device_interface import ISKADevice
 
 
 ######################################################################################################################
@@ -169,7 +169,7 @@ class WiFiSKADevice(ISKADevice):
             while True:
                 data_socket, addr = self.device_socket.accept()
                 self.comm = WiFiSKACommunicator(data_socket, self.device_info['secret'])
-                handler = WiFiSKAHandler()
+                handler = PairingHandler()
 
                 try:
                     received_data = self.comm.receive_string()

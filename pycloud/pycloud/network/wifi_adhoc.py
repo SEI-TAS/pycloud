@@ -28,6 +28,7 @@
 
 import subprocess
 
+CONFIGS_FOLDER = 'wpa_supplicant'
 
 ######################################################################################################################
 # Checks that there is an enabled WiFi device, and returns its name.
@@ -65,7 +66,7 @@ def enable_adhoc_mode(ip_address):
     cmd.wait()
 
     # Start the wpa_supplicant daemon.
-    command = "sudo wpa_supplicant -B -Dnl80211,wext -i" + adapter_address + " -chostapd/wpa-nic.conf"
+    command = "sudo wpa_supplicant -B -Dnl80211,wext -i" + adapter_address + " -c" + CONFIGS_FOLDER + "/wpa-nic.conf"
     cmd = subprocess.Popen(command, shell=True, stdout=None)
     cmd.wait()
 
@@ -80,13 +81,35 @@ def enable_adhoc_mode(ip_address):
 ####################################################################################################################
 #
 ####################################################################################################################
+def disable_adhoc_mode():
+    # Check that there is a WiFi adapter available.
+    adapter_address = get_adapter_name()
+    if adapter_address is None:
+        raise Exception("WiFi adapter not available.")
+
+    # Stop wpa_supplicant daemon.
+    command = "pkill -f 'wpa_supplicant'"
+    cmd = subprocess.Popen(command, shell=True, stdout=None)
+    cmd.wait()
+
+    # Configure our static IP.
+    command = "sudo ifconfig " + adapter_address + " down"
+    cmd = subprocess.Popen(command, shell=True, stdout=None)
+    cmd.wait()
+
+    return True
+
+
+####################################################################################################################
+#
+####################################################################################################################
 def configure_wpa2_params(ssid, psk):
-    command = "sed -e \"s/xxxx/" + ssid + "/g\" < hostapd/wpa.conf > hostapd/wpa-tmp.conf"
+    command = "sed -e \"s/xxxx/" + ssid + "/g\" < " + CONFIGS_FOLDER + "/wpa.conf > " + CONFIGS_FOLDER + "/wpa-tmp.conf"
     print "1 " + command
     cmd = subprocess.Popen(command, shell=True, stdout=None)
 
     cmd.wait()
-    command = "sed -e \"s/yyyy/" + psk + "/g\" < hostapd/wpa-tmp.conf > hostapd/wpa-nic.conf"
+    command = "sed -e \"s/yyyy/" + psk + "/g\" < " + CONFIGS_FOLDER + "/wpa-tmp.conf > " + CONFIGS_FOLDER + "/wpa-nic.conf"
     print "2 " + command
     cmd = subprocess.Popen(command, shell=True, stdout=None)
     cmd.wait()
