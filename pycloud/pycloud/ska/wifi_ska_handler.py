@@ -26,7 +26,13 @@
 # Released under the MIT license
 # http://jquery.org/license
 
+import os
+import shutil
+import hashlib
+
 from pycloud.pycloud.cloudlet import Cloudlet
+from pycloud.pycloud.security import radius
+from pycloud.pycloud.model.cloudlet_credential import CloudletCredential
 
 
 ########################################################################################################################
@@ -37,15 +43,17 @@ class WiFiSKAHandler(object):
     ####################################################################################################################
     # Handle an incoming message.
     ####################################################################################################################
-    def handle_incoming(self, message):
-        if 'wifi_command' not in message:
-            raise Exception('Invalid message received: it does not contain a wifi_command field.')
-
-        command = message['wifi_command']
+    def handle_incoming(self, command, message, files_path):
         if command == "receive_file":
-            # TODO: generate and store encryption key when file id is 'device.key'
-            # TODO: store certificate in /etc/ca-certificates/ when id is radius.RADIUS_CERT_FILE_NAME
-            return 'file'
+            full_path = os.path.join(files_path, message['file_id'])
+            if message['file_id'] == 'device.key':
+                self.store_encryption_password(message['cloudlet_name'], full_path)
+                pass
+            elif message['file_id'] == radius.RADIUS_CERT_FILE_NAME:
+                shutil.copy(full_path, '/etc/ca-certificates/')
+                pass
+
+            return 'ok'
         elif command == "receive_data":
             if 'command' not in message:
                 raise Exception('Invalid message received: it does not contain a command field.')
@@ -68,11 +76,24 @@ class WiFiSKAHandler(object):
                 print error_message
                 raise Exception(error_message)
         elif command == "transfer_complete":
-            return "transfer_complete"
+            return 'transfer_complete'
         else:
             error_message = 'Unrecognized command: ' + message['wifi_command']
             print error_message
             raise Exception(error_message)
+
+    ####################################################################################################################
+    #
+    ####################################################################################################################
+    def store_encryption_password(self, cloudlet_hostname, private_key_file_path):
+        with open(private_key_file_path, 'r') as private_key_file:
+            private_key = private_key_file.readall()
+        encryption_password = hashlib.sha256(private_key).hexdigest()
+
+        credentials = CloudletCredential()
+        credentials.cloudlet_fqdn = cloudlet_hostname
+        credentials.encryption_password = encryption_password
+        credentials.save()
 
     ####################################################################################################################
     # Create a wifi profile in /etc/NetworkManager/system-connections using system-connection-template.ini
@@ -82,7 +103,7 @@ class WiFiSKAHandler(object):
         with open("./hostapd/system-connection-template.ini", "r") as ini_file:
             file_data = ini_file.read()
 
-        file_data = file_data.replace('$cloudlet-id', Cloudlet.get_id())
+        file_data = file_data.replace('$cloudlet-id', message['ssid'])
         file_data = file_data.replace('$ssid', message['ssid'])
         file_data = file_data.replace('$name', message['ssid'])
         file_data = file_data.replace('$password', message['password'])

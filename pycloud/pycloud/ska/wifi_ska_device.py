@@ -176,12 +176,16 @@ class WiFiSKADevice(ISKADevice):
                     message = json.loads(received_data)
                     print "Received a message."
 
-                    return_code, return_data = handler.handle_incoming(message)
+                    if 'wifi_command' not in message:
+                        raise Exception('Invalid message received: it does not contain a wifi_command field.')
+                    command = message['wifi_command']
+
+                    if command == "receive_file":
+                        self.receive_file(message, files_path)
+
+                    return_code, return_data = handler.handle_incoming(command, message, files_path)
                     if return_code == 'send':
                         self.__send_data(return_data)
-                    elif return_code == 'file':
-                        self.receive_file(message, files_path)
-                        self.__send_success_reply()
                     elif return_code == 'ok':
                         self.__send_success_reply()
                     elif return_code == 'transfer_complete':

@@ -226,7 +226,9 @@ class Deployment(Model):
         # Send a command to create a Wi-Fi profile on the device. The message has to contain three key pairs:
         # ssid, the RADIUS certificate filename, and the password to be used in the profile.
         ssid = self.cloudlet.ssid
-        curr_device.send_data({'command': 'wifi-profile', 'ssid': ssid, 'server_cert_name': cert_file_name,
+        curr_device.send_data({'command': 'wifi-profile',
+                               'ssid': ssid,
+                               'server_cert_name': cert_file_name,
                                'password': device_keys.auth_password})
 
 
