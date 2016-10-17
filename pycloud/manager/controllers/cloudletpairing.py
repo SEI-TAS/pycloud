@@ -40,6 +40,7 @@ from pycloud.manager.lib.pages import CloudletPairingPage
 from pycloud.manager.lib.pages import CloudletDiscoveryPage
 from pycloud.pycloud.ska.wifi_ska_device import WiFiSKADevice
 from pycloud.pycloud.ska.wifi_ska_server import WiFiSKAServer
+from pycloud.pycloud.security.pairing_handler import PairingHandler
 from pycloud.pycloud.cloudlet import Cloudlet, get_cloudlet_instance
 from pycloud.pycloud.pylons.lib import helpers as h
 
@@ -95,7 +96,7 @@ class CloudletPairingController(BaseController):
             # Wait for messages.
             cloudlet = get_cloudlet_instance()
             server = WiFiSKAServer(host=SKA_SERVER_IP, port=SKA_SERVER_PORT, secret=secret,
-                                   files_path=cloudlet.cloudletCredentialsFolder)
+                                   files_path=cloudlet.cloudletCredentialsFolder, pairing_handler=PairingHandler())
             server.wait_for_messages()
         except Exception, e:
             print str(e)

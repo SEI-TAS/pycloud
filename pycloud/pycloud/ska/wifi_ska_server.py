@@ -27,8 +27,7 @@
 # http://jquery.org/license
 import socket
 
-from pycloud.pycloud.security.pairing_handler import PairingHandler
-from pycloud.pycloud.ska.wifi_ska_comm import WiFiSKACommunicator, get_adapter_name
+from wifi_ska_comm import WiFiSKACommunicator, WiFiAdapter, TestAdapter
 
 
 ######################################################################################################################
@@ -39,18 +38,20 @@ class WiFiSKAServer(object):
     ####################################################################################################################
     #
     ####################################################################################################################
-    def __init__(self, host, port, secret, files_path):
+    def __init__(self, host, port, secret, files_path, pairing_handler, adapter=WiFiAdapter()):
         self.device_socket = None
         self.host = host
         self.port = port
         self.secret = secret
         self.files_path = files_path
+        self.handler = pairing_handler
+        self.adapter = adapter
 
     ####################################################################################################################
     # Listen on a socket and handle commands. Each connection spawns a separate thread
     ####################################################################################################################
     def wait_for_messages(self):
-        adapter_name = get_adapter_name()
+        adapter_name = self.adapter.get_adapter_name()
         if adapter_name is None:
             raise Exception("WiFi adapter not available.")
 
@@ -62,20 +63,22 @@ class WiFiSKAServer(object):
         # Get new data until we get a final command.
         data_socket = None
         try:
-            while True:
-                data_socket, addr = self.device_socket.accept()
-                comm = WiFiSKACommunicator(data_socket, self.secret)
-                handler = PairingHandler()
+            print('Waiting for messages')
+            data_socket, addr = self.device_socket.accept()
+            print('Device connected')
+            comm = WiFiSKACommunicator(data_socket, self.secret)
+            self.device_socket.close()
 
-                try:
+            try:
+                while True:
                     command, message = comm.receive_command()
                     print "Received a message."
 
                     if command == "receive_file":
-                        folder_path = handler.get_storage_folder_path(self.files_path, message)
+                        folder_path = self.handler.get_storage_folder_path(self.files_path, message)
                         comm.receive_file(message, folder_path)
 
-                    return_code, return_data = handler.handle_incoming(command, message, self.files_path)
+                    return_code, return_data = self.handler.handle_incoming(command, message, self.files_path)
                     if return_code == 'send':
                         comm.send_data(return_data)
                     elif return_code == 'ok':
@@ -83,9 +86,38 @@ class WiFiSKAServer(object):
                     elif return_code == 'transfer_complete':
                         comm.send_success_reply()
                         break
-                except Exception as e:
-                    comm.send_error_reply(e.message)
+            except Exception as e:
+                comm.send_error_reply(e.message)
         finally:
+            print('Closing connections...')
             if data_socket is not None:
                 data_socket.close()
-            self.device_socket.close()
+
+######################################################################################################################
+# Test handler
+######################################################################################################################
+class TestHandler(object):
+    ####################################################################################################################
+    # Create path and folders to store the files.
+    ####################################################################################################################
+    def get_storage_folder_path(self, base_path, message):
+        return base_path + '/' + message['cloudlet_name']
+
+    ####################################################################################################################
+    # Handle an incoming message.
+    ####################################################################################################################
+    def handle_incoming(self, command, message, files_path):
+        print 'Handling command: ' + command
+        if command == 'send_data':
+            return 'send', ('device_id', 'pepe')
+        elif command == 'transfer_complete':
+            return command, ''
+
+
+######################################################################################################################
+# Test method
+######################################################################################################################
+def test():
+    server = WiFiSKAServer(host='127.0.0.1', port=1700, secret='secret',
+                           files_path='./data/test', pairing_handler=TestHandler(), adapter=TestAdapter('eth0'))
+    server.wait_for_messages()

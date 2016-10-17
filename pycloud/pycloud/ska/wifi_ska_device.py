@@ -29,7 +29,7 @@ __author__ = 'Dan'
 
 import socket
 
-from pycloud.pycloud.ska.wifi_ska_comm import WiFiSKACommunicator, get_adapter_name
+from wifi_ska_comm import WiFiSKACommunicator, WiFiAdapter
 from ska_device_interface import ISKADevice
 
 
@@ -100,7 +100,7 @@ class WiFiSKADevice(ISKADevice):
     @staticmethod
     def list_devices():
         # Check that there is an adapter available.
-        adapter_address = get_adapter_name()
+        adapter_address = WiFiAdapter().get_adapter_name()
         if adapter_address is None:
             raise Exception("WiFi adapter not available.")
 
@@ -155,3 +155,22 @@ class WiFiSKADevice(ISKADevice):
         if result == 'ack':
             reply = self.comm.send_file(file_path)
             return self.comm.parse_result(reply)
+
+######################################################################################################################
+# Test method
+######################################################################################################################
+def test():
+    # Connect to the server (cloudlet) in the network.
+    remote_cloudlet_name = "WiFiServer"
+    remote_cloudlet = WiFiSKADevice({'host': '127.0.0.1', 'port': 1700,
+                                     'name': remote_cloudlet_name, 'secret': 'secret'})
+    successful_connection = remote_cloudlet.connect()
+    if not successful_connection:
+        raise Exception("Could not connect to cloudlet")
+
+    try:
+        id_data = remote_cloudlet.get_data({'device_id': 'none'})
+        device_internal_id = id_data['device_id']
+        print 'Device id: ' + device_internal_id
+    finally:
+        remote_cloudlet.disconnect()

@@ -30,32 +30,40 @@ import socket
 import os
 import subprocess
 
-from pycloud.pycloud.ska import ska_constants
-from pycloud.pycloud.security import encryption
+import ska_constants
+
+try:
+    from pycloud.pycloud.security import encryption
+except:
+    from ..security import encryption
 
 # Size of a chunk when transmitting through TCP .
 CHUNK_SIZE = 4096
 
 
-######################################################################################################################
-# Checks that there is an enabled WiFi device, and returns its name.
-######################################################################################################################
-def get_adapter_name():
-    internal_name = None
+########################################################################################################################
+#
+########################################################################################################################
+class WiFiAdapter(object):
+    ####################################################################################################################
+    # Checks that there is an enabled WiFi device, and returns its name.
+    ####################################################################################################################
+    def get_adapter_name():
+        internal_name = None
 
-    cmd = subprocess.Popen('iw dev', shell=True, stdout=subprocess.PIPE)
-    for line in cmd.stdout:
-        if "Interface" in line:
-            internal_name = line.split(' ')[1]
-            internal_name = internal_name.replace("\n", "")
-            break
+        cmd = subprocess.Popen('iw dev', shell=True, stdout=subprocess.PIPE)
+        for line in cmd.stdout:
+            if "Interface" in line:
+                internal_name = line.split(' ')[1]
+                internal_name = internal_name.replace("\n", "")
+                break
 
-    if internal_name is not None:
-        print "WiFi adapter with name {} found".format(internal_name)
-    else:
-        print "WiFi adapter not found."
+        if internal_name is not None:
+            print "WiFi adapter with name {} found".format(internal_name)
+        else:
+            print "WiFi adapter not found."
 
-    return internal_name
+        return internal_name
 
 
 ########################################################################################################################
@@ -219,3 +227,14 @@ class WiFiSKACommunicator(object):
             file_to_receive.write(file_data)
 
         print 'File received.'
+
+
+########################################################################################################################
+#
+########################################################################################################################
+class TestAdapter(object):
+    def __init__(self, name):
+        self.name = name
+
+    def get_adapter_name(self):
+        return self.name
