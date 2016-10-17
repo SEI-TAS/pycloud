@@ -26,6 +26,7 @@
 # Released under the MIT license
 # http://jquery.org/license
 import socket
+import os
 
 from wifi_ska_comm import WiFiSKACommunicator, WiFiAdapter, TestAdapter
 
@@ -76,6 +77,8 @@ class WiFiSKAServer(object):
 
                     if command == "receive_file":
                         folder_path = self.handler.get_storage_folder_path(self.files_path, message)
+                        if not os.path.exists(folder_path):
+                            os.makedirs(folder_path)
                         comm.receive_file(message, folder_path)
 
                     return_code, return_data = self.handler.handle_incoming(command, message, self.files_path)
@@ -90,8 +93,6 @@ class WiFiSKAServer(object):
                 comm.send_error_reply(e.message)
         finally:
             print('Closing connections...')
-            if data_socket is not None:
-                data_socket.close()
 
 ######################################################################################################################
 # Test handler
@@ -101,7 +102,7 @@ class TestHandler(object):
     # Create path and folders to store the files.
     ####################################################################################################################
     def get_storage_folder_path(self, base_path, message):
-        return base_path + '/' + message['cloudlet_name']
+        return os.path.join(base_path, message['cloudlet_name'])
 
     ####################################################################################################################
     # Handle an incoming message.
@@ -112,6 +113,18 @@ class TestHandler(object):
             return 'send', ('device_id', 'pepe')
         elif command == 'transfer_complete':
             return command, ''
+        elif command == 'receive_data':
+            print('Command: ' + message['command'])
+            return 'ok', ''
+        elif command == "receive_file":
+            print('File: ' + message['file_id'])
+            full_path = os.path.join(self.get_storage_folder_path(files_path, message), message['file_id'])
+            print('File contents: ')
+            with open(full_path, 'r') as test_file:
+                print(test_file.read())
+            return 'ok', ''
+        else:
+            return 'error'
 
 
 ######################################################################################################################

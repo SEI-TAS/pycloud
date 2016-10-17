@@ -28,6 +28,7 @@
 __author__ = 'Dan'
 
 import socket
+from tempfile import mkstemp
 
 from wifi_ska_comm import WiFiSKACommunicator, WiFiAdapter
 from ska_device_interface import ISKADevice
@@ -156,6 +157,7 @@ class WiFiSKADevice(ISKADevice):
             reply = self.comm.send_file(file_path)
             return self.comm.parse_result(reply)
 
+
 ######################################################################################################################
 # Test method
 ######################################################################################################################
@@ -172,5 +174,20 @@ def test():
         id_data = remote_cloudlet.get_data({'device_id': 'none'})
         device_internal_id = id_data['device_id']
         print 'Device id: ' + device_internal_id
+
+        print('Sending command: test_command')
+        result = remote_cloudlet.send_data({'command': 'test_command'})
+        print 'Result: ' + str(result)
+
+        print('Sending file: test_file')
+        test_file_descriptor, test_file_path = mkstemp(text=True)
+        with open(test_file_path, 'w') as test_file:
+            test_file.write('some_test_data')
+        result = remote_cloudlet.send_file(test_file_path, 'test_file')
+        print 'Result: ' + str(result)
+        import os
+        os.remove(test_file_path)
+    except Exception as e:
+        print 'Error: ' + str(e)
     finally:
         remote_cloudlet.disconnect()

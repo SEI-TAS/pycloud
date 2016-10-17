@@ -162,12 +162,22 @@ class WiFiSKACommunicator(object):
     # Sends a given file, ensuring the other side is ready to store it.
     ####################################################################################################################
     def send_file(self, file_path):
+        print 'Sending file.'
+        with open(file_path, 'rb') as file_to_send:
+            file_data = file_to_send.read()
+
+        if len(file_data) == 0:
+            print 'Empty file, not sending data.'
+            return
+
+        encrypted_file_data = encryption.encrypt_message(file_data, self.encryption_secret)
+
         # First send the file size in bytes.
-        file_size = os.path.getsize(file_path)
+        file_size = len(encrypted_file_data)
         self._send_string(str(file_size))
         reply = self._receive_string()
         if reply == 'ack':
-            self._send_file_contents(file_path)
+            self._send_file_contents(encrypted_file_data)
 
             # Wait for final result.
             print 'Finished sending file. Waiting for result.'
@@ -181,52 +191,48 @@ class WiFiSKACommunicator(object):
         file_path = os.path.join(base_path, message['file_id'])
         self._send_string('ack')
 
-        size = self._receive_string()
+        size = int(self._receive_string())
         self._send_string('ack')
         if size > 0:
-            self._receive_file_contents(file_path)
+            encrypted_data = self._receive_file_contents(size)
+
+            file_data = encryption.decrypt_message(encrypted_data, self.encryption_secret)
+            with open(file_path, 'wb') as file_to_receive:
+                file_to_receive.write(file_data)
+
+            print 'File received.'
 
     ####################################################################################################################
     #
     ####################################################################################################################
-    def _send_file_contents(self, file_path):
-        # Open, encrypt and send the file in chunks.
-        print 'Sending file.'
-        with open(file_path, 'rb') as file_to_send:
-            file_data = file_to_send.readall()
-
-        encrypted_file_data = encryption.encrypt_message(file_data, self.encryption_secret)
-
+    def _send_file_contents(self, file_data):
         # Send until there is no more data in the file.
-        while True:
-            data_chunk = encrypted_file_data.read(CHUNK_SIZE)
-            if not data_chunk:
-                print 'File sent.'
-                break
-
+        chunks = [file_data[i:i + CHUNK_SIZE] for i in range(0, len(file_data), CHUNK_SIZE)]
+        for data_chunk in chunks:
             sent = self.data_socket.send(data_chunk)
             if sent < len(data_chunk):
                 print 'Error sending data chunk.'
 
+        print 'File sent.'
+
     ####################################################################################################################
     #
     ####################################################################################################################
-    def _receive_file_contents(self, file_path):
+    def _receive_file_contents(self, size):
         # Get until there is no more data in the socket.
         print 'Receiving file.'
-        encrypted_data = ''
+        file_data = ''
         while True:
             received = self.data_socket.recv(CHUNK_SIZE)
             if not received:
                 break
             else:
-                encrypted_data += str(received)
+                file_data += str(received)
 
-        file_data = encryption.decrypt_message(encrypted_data, self.encryption_secret)
-        with open(file_path, 'wb') as file_to_receive:
-            file_to_receive.write(file_data)
+            if len(file_data) == size:
+                break
 
-        print 'File received.'
+        return file_data
 
 
 ########################################################################################################################
