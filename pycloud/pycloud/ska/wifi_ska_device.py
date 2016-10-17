@@ -182,7 +182,8 @@ def test():
         print('Sending file: test_file')
         test_file_descriptor, test_file_path = mkstemp(text=True)
         with open(test_file_path, 'w') as test_file:
-            test_file.write('some_test_data')
+            for i in range(0, 1000):
+                test_file.write('some_test_data ')
         result = remote_cloudlet.send_file(test_file_path, 'test_file')
         print 'Result: ' + str(result)
         import os
