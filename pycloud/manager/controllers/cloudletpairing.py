@@ -30,7 +30,7 @@ __author__ = 'Keegan'
 import logging
 import random
 import os
-
+import time
 
 from pylons import request, response, session, tmpl_context as c
 from pylons import app_globals
@@ -46,17 +46,24 @@ from pycloud.pycloud.pylons.lib import helpers as h
 
 from pycloud.pycloud.model.deployment import Deployment
 
+from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import ajaxutils
 
 from pycloud.pycloud.network import wifi_adhoc
-
-import subprocess
 
 log = logging.getLogger(__name__)
 
 SKA_CLIENT_IP = '10.10.10.1'
 SKA_SERVER_IP = '10.10.10.10'
 SKA_SERVER_PORT = '1723'
+
+
+################################################################################################################
+################################################################################################################
+def generate_random_alphanumeric_string(length):
+    return ''.join(random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q",
+                                  "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8",
+                                  "9", "0"], length))
 
 
 ################################################################################################################
@@ -74,21 +81,23 @@ class CloudletPairingController(BaseController):
     # Displays the connection to cloudlet page
     ############################################################################################################
     def GET_pair(self):
+        # Generate secret to display. Secret should be alphanumeric and 6 symbols long
+        secret_length = 6
+        secret = generate_random_alphanumeric_string(secret_length)
+
         page = CloudletPairingPage()
-
-        # TODO: Generate secret to display
-        temp = ''.join(random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"], 6))
-        page.secret = temp #secret should be alphanumeric and 6 symbols long
-
+        page.secret = secret
         return page.render()
 
     ############################################################################################################
     # Does the work after data is entered
     ############################################################################################################
+    @asjson
     def POST_discover(self):
         client_cloudlet = None
         try:
             secret = request.params.get('secret', None)
+            print secret
 
             # Enable ad-hoc mode.
             wifi_adhoc.enable_adhoc_mode(SKA_SERVER_IP)
@@ -100,20 +109,19 @@ class CloudletPairingController(BaseController):
             server.wait_for_messages()
         except Exception, e:
             print str(e)
-            raise e
+            return ajaxutils.show_and_return_error_dict(e.message)
         finally:
             if client_cloudlet is not None:
                 try:
-                    print 'Listener will shut down in 60 seconds.'
-                    command = "./wpa_supplicant/stop_adhoc_mode.sh"
-                    subprocess.Popen(command, shell=True, stdin=None, stdout=None, stderr=None)
+                    print 'Listener will shut down.'
+                    wifi_adhoc.disable_adhoc_mode()
 
                 except Exception, e:
                     error = "Error launching timer function: " + str(e)
                     print error
-                    raise Exception(error)
+                    return ajaxutils.show_and_return_error_dict(e.message)
 
-        return h.redirect_to(controller='devices', action='list')
+        return ajaxutils.JSON_OK
 
     ############################################################################################################
     # Displays the discover page for cloudlet pairing.
@@ -122,12 +130,18 @@ class CloudletPairingController(BaseController):
         page = CloudletDiscoveryPage()
 
         # Generate ssid and random psk here
-        temp = ''.join(random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"], 6))
-        host = os.uname()[1]
-        page.ssid = host + "-" + temp #ssid should be "<cloudlet machine name>-<alphanumeric and 6 symbols long>"
-        psk = ''.join(random.sample(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"], 8))
-        page.psk = psk #psk should be alphanumeric and 8 symbols long
+        # ssid should be "<cloudlet machine name>-<alphanumeric and 6 symbols long>"
+        ssid_suffix_length = 6
+        ssid_suffix = generate_random_alphanumeric_string(ssid_suffix_length)
+        machine_name = os.uname()[1]
+        page.ssid = machine_name + "-" + ssid_suffix
 
+        # psk should be alphanumeric and 8 symbols long
+        psk_length = 8
+        psk = generate_random_alphanumeric_string(psk_length)
+        page.psk = psk
+
+        # Create config file with these params (not yet used).
         wifi_adhoc.configure_wpa2_params(page.ssid, page.psk)
 
         return page.render()
@@ -135,12 +149,15 @@ class CloudletPairingController(BaseController):
     ############################################################################################################
     # Does the wrk after data is entered
     ############################################################################################################
+    @asjson
     def POST_pair(self):
         # Generate secret to display
         device_type = 'cloudlet'
         secret = request.params.get('secret', None)
         ssid = request.params.get('ssid', None)
         psk = request.params.get('psk', None)
+
+        print ssid + '-' + psk + '-' + secret
 
         connection = request.params.get('connection', None)
         if connection is None:
@@ -157,9 +174,13 @@ class CloudletPairingController(BaseController):
                 remote_cloudlet_name = "WiFiServer"
                 remote_cloudlet = WiFiSKADevice({'host': SKA_SERVER_IP, 'port': int(SKA_SERVER_PORT),
                                                  'name': remote_cloudlet_name, 'secret': secret})
+
+                print 'Connecting to cloudlet server'
                 successful_connection = remote_cloudlet.connect()
                 if not successful_connection:
                     raise Exception("Could not connect to cloudlet with id {}.".format(ssid))
+                else:
+                    print 'Connected to cloudlet server'
 
             # TODO: test this.
             # Get the device id.
@@ -181,12 +202,11 @@ class CloudletPairingController(BaseController):
                 try:
                     print 'Disconnecting from cloudlet.'
                     remote_cloudlet.disconnect()
-                    command = "./wpa_supplicant/stop_adhoc_mode.sh"
-                    subprocess.Popen(command, shell=True, stdin=None, stdout=None, stderr=None)
+                    wifi_adhoc.disable_adhoc_mode()
 
                 except Exception, e:
                     error = "Error disconnecting" + str(e)
                     print error
-                    raise Exception(error)
+                    return ajaxutils.show_and_return_error_dict(e.message)
 
-        return h.redirect_to(controller='devices', action='list')
+        return ajaxutils.JSON_OK

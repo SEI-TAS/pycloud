@@ -42,14 +42,37 @@ function pair(pairURL, redirectUrl)
     ajaxGet(pairURL, "Pairing with device", successHandler);
 }
 
-function pairCloudlet()
+function pairCloudlet(pairURL, redirectUrl)
 {
-	console.log("In here")
-	var successHandler = function(response) {
-        showAndLogSuccessMessage("Cloudlet paired");
-        // window.location.href = redirectUrl;
+    var appForm = $('#pairing_form');
+    var dataDict = {};
+    dataDict.ssid = appForm.find('#ssid').val();
+    dataDict.psk = appForm.find('#psk').val();
+    dataDict.secret = appForm.find('#secret').val();
+
+    var successHandler = function(response) {
+        showAndLogSuccessMessage("Device paired");
+        window.location.href = redirectUrl;
     };
 
     // Do the post to get data and load the modal.
-    ajaxGet(null, "Pairing with cloudlet", successHandler);
+    ajaxSimplePost(pairURL, dataDict, "Pairing with device", successHandler);
+}
+
+
+function waitForParing(waitURL, redirectURL)
+{
+    var appForm = $('#discover_form');
+    var dataDict = {};
+    dataDict.ssid = appForm.find('#ssid').val();
+    dataDict.psk = appForm.find('#psk').val();
+    dataDict.secret = appForm.find('#secret').val();
+
+	var successHandler = function(response) {
+        showAndLogSuccessMessage("Paired to cloudlet");
+        window.location.href = redirectUrl;
+    };
+
+    // Do the post to get data and load the modal.
+    ajaxSimplePost(waitURL, dataDict, "Pairing to cloudlet", successHandler);
 }

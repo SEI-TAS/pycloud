@@ -28,6 +28,7 @@
 __author__ = 'Dan'
 
 import socket
+import time
 from tempfile import mkstemp
 
 from wifi_ska_comm import WiFiSKACommunicator, WiFiAdapter
@@ -118,13 +119,19 @@ class WiFiSKADevice(ISKADevice):
     ####################################################################################################################
     # Makes a TCP connection to the remote device.
     ####################################################################################################################
-    def connect(self):
-        self.device_socket = connect_to_device(self.device_info['host'], self.device_info['port'], self.device_info['name'])
-        if self.device_socket is None:
-            return False
-        else:
-            self.comm = WiFiSKACommunicator(self.device_socket, self.device_info['secret'])
-            return True
+    def connect(self, retries=3):
+        while retries > 0:
+            self.device_socket = connect_to_device(self.device_info['host'], self.device_info['port'], self.device_info['name'])
+            if self.device_socket is not None:
+                self.comm = WiFiSKACommunicator(self.device_socket, self.device_info['secret'])
+                return True
+            else:
+                retries -= 1
+                retry_wait_seconds = 2
+                print 'Retrying connection...'
+                time.sleep(retry_wait_seconds)
+
+        return False
 
     ####################################################################################################################
     # Closes the TCP socket.

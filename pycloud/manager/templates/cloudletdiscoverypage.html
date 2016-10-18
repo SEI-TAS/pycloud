@@ -49,11 +49,15 @@ http://jquery.org/license
                 <h4>SSID: <b>${page.ssid}</b> <br> PSK: <b>${page.psk}</b></h4>
 
                 <form id="discover_form" method="post">
-                    <input type="hidden" name="ssid" value="${page.ssid}">
-                    <input type="hidden" name="psk" value="${page.psk}">
-                    Secret: <input type="password" name="secret"><br><br>
-                    <!--<button class="btn btn-large btn-success" onclick="$(this).prop('disabled', true); $('#discover_form').submit(); pairCloudlet()">Make Discoverable</button> -->
-                    <button class="btn btn-large btn-success" onclick="$(this).prop('disabled', true); $('#discover_form').submit()">Make Discoverable</button>
+                    <%
+                        wait_pair_url = h.url_for(controller='cloudletpairing', action='discover')
+                        redirectUrl = h.url_for(controller='devices', action='list')
+                        wait_pair_click = "waitForParing('" + wait_pair_url + "', '" + redirectUrl + "');"
+                    %>
+                    <input type="hidden" name="ssid" id="ssid" value="${page.ssid}">
+                    <input type="hidden" name="psk" id="psk" value="${page.psk}">
+                    Secret: <input type="password" name="secret" id="secret"><br><br>
+                    <button type="button" class="btn btn-large btn-success" onclick="${wait_pair_click}">Make Discoverable</button>
                 </form>
                 <br><br>
             </div>
