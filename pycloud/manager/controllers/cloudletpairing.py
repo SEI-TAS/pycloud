@@ -193,7 +193,9 @@ class CloudletPairingController(BaseController):
             deployment.clear_device_keys(device_keys)
 
         except Exception, e:
-            return ajaxutils.show_and_return_error_dict(e.message)
+            error_message = 'Error connecting or pairing: (' + type(e).__name__ + '): ' + str(e)
+            print error_message
+            return ajaxutils.show_and_return_error_dict(error_message)
 
         finally:
             if remote_cloudlet is not None:
