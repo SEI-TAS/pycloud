@@ -48,7 +48,7 @@ class WiFiAdapter(object):
     ####################################################################################################################
     # Checks that there is an enabled WiFi device, and returns its name.
     ####################################################################################################################
-    def get_adapter_name():
+    def get_adapter_name(self):
         internal_name = None
 
         cmd = subprocess.Popen('iw dev', shell=True, stdout=subprocess.PIPE)
