@@ -94,7 +94,6 @@ class CloudletPairingController(BaseController):
     ############################################################################################################
     @asjson
     def POST_discover(self):
-        client_cloudlet = None
         try:
             secret = request.params.get('secret', None)
             print secret
@@ -108,18 +107,17 @@ class CloudletPairingController(BaseController):
                                    files_path=cloudlet.cloudletCredentialsFolder, pairing_handler=PairingHandler())
             server.wait_for_messages()
         except Exception, e:
-            print str(e)
-            return ajaxutils.show_and_return_error_dict(e.message)
+            message = 'Error setting up connection or receiving data (' + type(e).__name__ + '): ' + str(e)
+            print message
+            return ajaxutils.show_and_return_error_dict(message)
         finally:
-            if client_cloudlet is not None:
-                try:
-                    print 'Listener will shut down.'
-                    wifi_adhoc.disable_adhoc_mode()
-
-                except Exception, e:
-                    error = "Error launching timer function: " + str(e)
-                    print error
-                    return ajaxutils.show_and_return_error_dict(e.message)
+            try:
+                print 'Listener will shut down.'
+                wifi_adhoc.disable_adhoc_mode()
+            except Exception, e:
+                error = 'Error stopping ad-hoc mode' + type(e).__name__ + ': ' + str(e)
+                print error
+                return ajaxutils.show_and_return_error_dict(e.message)
 
         return ajaxutils.JSON_OK
 
