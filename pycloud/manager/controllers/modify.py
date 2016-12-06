@@ -205,7 +205,7 @@ class ModifyController(BaseController):
             # Set up a new VM image.
             print 'newVmFolder: ', app_globals.cloudlet.newVmFolder
             print 'svm._id: ', svm._id
-            temp_svm_folder = os.path.join(g.cloudlet.newVmFolder, svm._id)
+            temp_svm_folder = os.path.join(app_globals.cloudlet.newVmFolder, svm._id)
             print 'temp_svm_folder: ', temp_svm_folder
             new_disk_image = os.path.join(temp_svm_folder, svm.service_id)
             new_vm_image = VMImage()
@@ -222,7 +222,7 @@ class ModifyController(BaseController):
 
             # Create the VM (this will also start it).
             print "Creating and starting VM for user access..."
-            template_xml_file = os.path.abspath(g.cloudlet.newVmXml)
+            template_xml_file = os.path.abspath(app_globals.cloudlet.newVmXml)
             svm.vm_image = new_vm_image
             svm.service_port = fields['port']
             svm.create(template_xml_file)
@@ -259,7 +259,7 @@ class ModifyController(BaseController):
             print 'Editing? ' + str(request.params.get('editing'))
             if request.params.get('editing') == 'false':
                 # Use the service id as the folder for this new saved SVM.
-                vm_image_folder = os.path.join(g.cloudlet.svmCache, svm.service_id)
+                vm_image_folder = os.path.join(app_globals.cloudlet.svmCache, svm.service_id)
             else:
                 # Get the folder of the permanent VM image, to overwrite the previous one.
                 service = Service.by_id(svm.service_id)

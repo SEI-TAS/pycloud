@@ -1,3 +1,9 @@
+python-pycloud (0.4.2) unstable; urgency=medium
+
+  * Fixed bugs that prevented VM creation.
+
+ -- Sebastian Echeverria <secheverria@sei.cmu.edu>  Fri, 05 Dec 2016 11:38:51 -0400
+
 python-pycloud (0.4.1) unstable; urgency=medium
 
   * Fixed several bugs that prevented VMs from starting.
