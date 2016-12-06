@@ -61,6 +61,7 @@ def enable_adhoc_mode(ip_address):
         raise Exception("WiFi adapter not available.")
 
     # Remove previous adapter configuration.
+    print 'Enabling wi-fi ad-hoc mode'
     command = "sudo rm /run/wpa_supplicant/" + adapter_address
     cmd = subprocess.Popen(command, shell=True, stdout=None)
     cmd.wait()
@@ -75,6 +76,8 @@ def enable_adhoc_mode(ip_address):
     cmd = subprocess.Popen(command, shell=True, stdout=None)
     cmd.wait()
 
+    print 'Wi-Fi ad-hoc mode should be enabled now'
+
     return True
 
 
@@ -88,6 +91,7 @@ def disable_adhoc_mode():
         raise Exception("WiFi adapter not available.")
 
     # Stop wpa_supplicant daemon.
+    print 'Disabling wi-fi ad-hoc mode'
     command = "pkill -f 'wpa_supplicant'"
     cmd = subprocess.Popen(command, shell=True, stdout=None)
     cmd.wait()
@@ -96,6 +100,8 @@ def disable_adhoc_mode():
     command = "sudo ifconfig " + adapter_address + " down"
     cmd = subprocess.Popen(command, shell=True, stdout=None)
     cmd.wait()
+
+    print 'Wi-Fi ad-hoc mode should be disabled now'
 
     return True
 
