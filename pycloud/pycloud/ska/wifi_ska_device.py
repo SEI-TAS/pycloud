@@ -119,7 +119,7 @@ class WiFiSKADevice(ISKADevice):
     ####################################################################################################################
     # Makes a TCP connection to the remote device.
     ####################################################################################################################
-    def connect(self, retries=3):
+    def connect(self, retries=5):
         while retries > 0:
             try:
                 self.device_socket = connect_to_device(self.device_info['host'], self.device_info['port'], self.device_info['name'])
@@ -132,7 +132,7 @@ class WiFiSKADevice(ISKADevice):
                 return True
             else:
                 retries -= 1
-                retry_wait_seconds = 2
+                retry_wait_seconds = 5
                 print 'Waiting to retry connection...'
                 time.sleep(retry_wait_seconds)
 
