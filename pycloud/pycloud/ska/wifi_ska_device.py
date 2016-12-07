@@ -121,16 +121,22 @@ class WiFiSKADevice(ISKADevice):
     ####################################################################################################################
     def connect(self, retries=3):
         while retries > 0:
-            self.device_socket = connect_to_device(self.device_info['host'], self.device_info['port'], self.device_info['name'])
+            try:
+                self.device_socket = connect_to_device(self.device_info['host'], self.device_info['port'], self.device_info['name'])
+            except Exception as e:
+                error_message = 'Error connecting to IP {}: ({}) - {}'.format(self.device_info['host'], type(e).__name__, str(e))
+                print error_message
+
             if self.device_socket is not None:
                 self.comm = WiFiSKACommunicator(self.device_socket, self.device_info['secret'])
                 return True
             else:
                 retries -= 1
                 retry_wait_seconds = 2
-                print 'Retrying connection...'
+                print 'Waiting to retry connection...'
                 time.sleep(retry_wait_seconds)
 
+        print 'Could not connect to server.'
         return False
 
     ####################################################################################################################
