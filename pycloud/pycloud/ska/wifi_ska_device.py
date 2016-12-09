@@ -166,7 +166,7 @@ class WiFiSKADevice(ISKADevice):
     # Sends a given file, ensuring the other side is ready to store it.
     ####################################################################################################################
     def send_file(self, file_path, file_id):
-        if os.stat(file_path).st_size == 0:
+        if os.path.getsize(file_path) == 0:
             print 'Empty file, not sending data.'
             return
 
