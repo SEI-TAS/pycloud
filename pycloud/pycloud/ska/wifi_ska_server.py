@@ -89,6 +89,8 @@ class WiFiSKAServer(object):
                     elif return_code == 'transfer_complete':
                         comm.send_success_reply()
                         break
+                    else:
+                        comm.send_error_reply('Could not properly handle command.')
             except Exception as e:
                 comm.send_error_reply(e.message)
         finally:
