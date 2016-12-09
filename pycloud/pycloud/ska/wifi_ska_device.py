@@ -167,7 +167,7 @@ class WiFiSKADevice(ISKADevice):
     ####################################################################################################################
     def send_file(self, file_path, file_id):
         if os.path.getsize(file_path) == 0:
-            print 'Empty file, not sending data.'
+            print 'File {}: Empty file, not sending it.'.format(file_id)
             return
 
         result = self.comm.send_command('receive_file', {'file_id': file_id})

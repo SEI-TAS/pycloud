@@ -60,6 +60,12 @@ def enable_adhoc_mode(ip_address):
     if adapter_address is None:
         raise Exception("WiFi adapter not available.")
 
+    # Turning off NetworkManager.
+    print 'Turning off NetworkManager temporarily'
+    command = "sudo stop network-manager"
+    cmd = subprocess.Popen(command, shell=True, stdout=None)
+    cmd.wait()
+
     # Remove previous adapter configuration.
     print 'Enabling wi-fi ad-hoc mode'
     command = "sudo rm /run/wpa_supplicant/" + adapter_address
@@ -102,6 +108,12 @@ def disable_adhoc_mode():
     cmd.wait()
 
     print 'Wi-Fi ad-hoc mode should be disabled now'
+
+    # Turning on NetworkManager.
+    print 'Turning on NetworkManager'
+    command = "sudo start network-manager"
+    cmd = subprocess.Popen(command, shell=True, stdout=None)
+    cmd.wait()
 
     return True
 

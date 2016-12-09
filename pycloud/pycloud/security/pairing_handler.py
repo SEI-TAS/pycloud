@@ -96,7 +96,7 @@ class PairingHandler(object):
     ####################################################################################################################
     def store_encryption_password(self, cloudlet_hostname, private_key_file_path):
         with open(private_key_file_path, 'r') as private_key_file:
-            private_key = private_key_file.readall()
+            private_key = private_key_file.read()
         encryption_password = hashlib.sha256(private_key).hexdigest()
 
         credentials = CloudletCredential()
