@@ -52,6 +52,7 @@ class PairingHandler(object):
     # Handle an incoming message.
     ####################################################################################################################
     def handle_incoming(self, command, message, files_path):
+        print 'Handling command ' + command
         if command == "receive_file":
             full_path = os.path.join(self.get_storage_folder_path(files_path, message), message['file_id'])
 
@@ -68,6 +69,7 @@ class PairingHandler(object):
                 raise Exception('Invalid message received: it does not contain a command field.')
 
             data_command = message['command']
+            print 'Handling data command ' + data_command
             if data_command == "wifi-profile":
                 try:
                     self.create_wifi_profile(message)
