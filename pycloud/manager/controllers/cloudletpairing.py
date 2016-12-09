@@ -199,13 +199,20 @@ class CloudletPairingController(BaseController):
 
         finally:
             if remote_cloudlet is not None:
+                error = ''
                 try:
                     print 'Disconnecting from cloudlet.'
                     remote_cloudlet.disconnect()
-                    wifi_adhoc.disable_adhoc_mode()
-
                 except Exception, e:
-                    error = "Error disconnecting" + str(e)
+                    error = "Error disconnecting: " + str(e)
+
+                try:
+                    print 'Turning off wi-fi ad-hoc mode'
+                    wifi_adhoc.disable_adhoc_mode()
+                except Exception, e:
+                    error = error + " Error turning off wi-fi ad-hoc mode: " + str(e)
+
+                if error != '':
                     print error
                     return ajaxutils.show_and_return_error_dict(e.message)
 

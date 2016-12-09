@@ -145,7 +145,7 @@ class WiFiSKADevice(ISKADevice):
     ####################################################################################################################
     def disconnect(self):
         if self.device_socket is not None:
-            self.comm.send_command('transfer_complete', '')
+            self.comm.send_command('transfer_complete', '{}')
             self.device_socket.close()
 
     ####################################################################################################################
