@@ -197,7 +197,6 @@ class WiFiSKACommunicator(object):
                 file_to_receive.write(file_data)
 
             print 'File received.'
-            self.send_success_reply()
 
     ####################################################################################################################
     #

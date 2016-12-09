@@ -52,18 +52,17 @@ class PairingHandler(object):
     # Handle an incoming message.
     ####################################################################################################################
     def handle_incoming(self, command, message, files_path):
+        return_code = 'ok'
+        return_data = ''
+
         print 'Handling command ' + command
         if command == "receive_file":
             full_path = os.path.join(self.get_storage_folder_path(files_path, message), message['file_id'])
 
             if message['file_id'] == 'device.key':
                 self.store_encryption_password(message['cloudlet_name'], full_path)
-                pass
             elif message['file_id'] == radius.RADIUS_CERT_FILE_NAME:
                 shutil.copy(full_path, '/etc/ca-certificates/')
-                pass
-
-            return 'ok'
         elif command == "receive_data":
             if 'command' not in message:
                 raise Exception('Invalid message received: it does not contain a command field.')
@@ -73,7 +72,6 @@ class PairingHandler(object):
             if data_command == "wifi-profile":
                 try:
                     self.create_wifi_profile(message)
-                    return 'ok'
                 except Exception as e:
                     print 'Error creating Wi-Fi profile: ' + str(e)
                     raise Exception(e.message)
@@ -81,17 +79,20 @@ class PairingHandler(object):
                 raise Exception('Unknown data command: ' + data_command)
         elif command == "send_data":
             if 'device_id' in message:
-                return 'send', ('device_id', Cloudlet.get_id())
+                return_code = 'send'
+                return_data = ('device_id', Cloudlet.get_id())
             else:
                 error_message = 'Unrecognized data request: ' + str(message)
                 print error_message
                 raise Exception(error_message)
         elif command == "transfer_complete":
-            return 'transfer_complete'
+            return_code = 'transfer_complete'
         else:
             error_message = 'Unrecognized command: ' + message['wifi_command']
             print error_message
             raise Exception(error_message)
+
+        return return_code, return_data
 
     ####################################################################################################################
     #

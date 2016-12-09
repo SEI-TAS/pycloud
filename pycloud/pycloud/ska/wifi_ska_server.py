@@ -61,40 +61,46 @@ class WiFiSKAServer(object):
         self.device_socket.bind((self.host, self.port))
         self.device_socket.listen(1)
 
-        # Get new data until we get a final command.
-        data_socket = None
+        # Wait for a connection.
         try:
-            print('Waiting for messages')
+            print('Waiting for a connection')
             data_socket, addr = self.device_socket.accept()
-            print('Device connected')
             comm = WiFiSKACommunicator(data_socket, self.secret)
+            print('Device connected')
+        except Exception as e:
+            print('Error waiting for connections: ' + str(e))
+            return
+        finally:
             self.device_socket.close()
 
-            try:
-                while True:
-                    command, message = comm.receive_command()
-                    print "Received a message."
+        # Get new data until we get a final command.
+        try:
+            while True:
+                print('Waiting for a message')
+                command, message = comm.receive_command()
+                print "Received a message."
 
-                    if command == "receive_file":
-                        folder_path = self.handler.get_storage_folder_path(self.files_path, message)
-                        if not os.path.exists(folder_path):
-                            os.makedirs(folder_path)
-                        comm.receive_file(message, folder_path)
+                # If the command needs to get a file, first store it in a temp location before handling the command.
+                if command == "receive_file":
+                    folder_path = self.handler.get_storage_folder_path(self.files_path, message)
+                    if not os.path.exists(folder_path):
+                        os.makedirs(folder_path)
+                    comm.receive_file(message, folder_path)
 
-                    return_code, return_data = self.handler.handle_incoming(command, message, self.files_path)
-                    if return_code == 'send':
-                        comm.send_data(return_data)
-                    elif return_code == 'ok':
-                        comm.send_success_reply()
-                    elif return_code == 'transfer_complete':
-                        comm.send_success_reply()
-                        break
-                    else:
-                        comm.send_error_reply('Could not properly handle command.')
-            except Exception as e:
-                comm.send_error_reply(e.message)
-        finally:
-            print('Closing connections...')
+                # Handle the command.
+                return_code, return_data = self.handler.handle_incoming(command, message, self.files_path)
+                if return_code == 'send':
+                    comm.send_data(return_data)
+                elif return_code == 'ok':
+                    comm.send_success_reply()
+                elif return_code == 'transfer_complete':
+                    comm.send_success_reply()
+                    break
+                else:
+                    comm.send_error_reply('Could not properly handle command.')
+        except Exception as e:
+            comm.send_error_reply(e.message)
+
 
 ######################################################################################################################
 # Test handler
