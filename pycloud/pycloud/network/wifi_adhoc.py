@@ -102,7 +102,7 @@ def disable_adhoc_mode():
     cmd = subprocess.Popen(command, shell=True, stdout=None)
     cmd.wait()
 
-    # Configure our static IP.
+    # Disable the adapter we were using for this connection (NM will handle that later).
     command = "sudo ifconfig " + adapter_address + " down"
     cmd = subprocess.Popen(command, shell=True, stdout=None)
     cmd.wait()

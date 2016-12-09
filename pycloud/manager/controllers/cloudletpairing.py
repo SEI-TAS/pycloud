@@ -98,6 +98,9 @@ class CloudletPairingController(BaseController):
             secret = request.params.get('secret', None)
             print secret
 
+            # Disable any lingering ad-hoc connections.
+            wifi_adhoc.disable_adhoc_mode()
+
             # Enable ad-hoc mode.
             wifi_adhoc.enable_adhoc_mode(SKA_SERVER_IP)
 
@@ -164,6 +167,9 @@ class CloudletPairingController(BaseController):
         remote_cloudlet = None
         try:
             if connection == 'wifi':
+                # Disable any lingering ad-hoc connections.
+                wifi_adhoc.disable_adhoc_mode()
+
                 # Set up the ad-hoc network.
                 wifi_adhoc.configure_wpa2_params(ssid, psk)
                 wifi_adhoc.enable_adhoc_mode(SKA_CLIENT_IP)
