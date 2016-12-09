@@ -166,10 +166,6 @@ class WiFiSKACommunicator(object):
         with open(file_path, 'rb') as file_to_send:
             file_data = file_to_send.read()
 
-        if len(file_data) == 0:
-            print 'Empty file, not sending data.'
-            return
-
         encrypted_file_data = encryption.encrypt_message(file_data, self.encryption_secret)
 
         # First send the file size in bytes.

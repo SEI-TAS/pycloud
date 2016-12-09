@@ -29,6 +29,7 @@ __author__ = 'Dan'
 
 import socket
 import time
+import os
 from tempfile import mkstemp
 
 from wifi_ska_comm import WiFiSKACommunicator, WiFiAdapter
@@ -165,6 +166,10 @@ class WiFiSKADevice(ISKADevice):
     # Sends a given file, ensuring the other side is ready to store it.
     ####################################################################################################################
     def send_file(self, file_path, file_id):
+        if os.stat(file_path).st_size == 0:
+            print 'Empty file, not sending data.'
+            return
+
         result = self.comm.send_command('receive_file', {'file_id': file_id})
         if result == 'ack':
             reply = self.comm.send_file(file_path)
