@@ -121,11 +121,12 @@ class PairingHandler(object):
         file_data = file_data.replace('$password', message['password'])
         file_data = file_data.replace('$ca-cert', message['server_cert_name'])
 
-        print 'Wi-Fi profile data: ' + file_data
-
         filename = os.path.join("/etc/NetworkManager/system-connections", message['ssid'])
         print 'Writing Wi-Fi profile to file ' + filename
         with open(filename, "w") as profile:
             profile.write(file_data)
 
-        print 'Wi-Fi profile file created'
+        if os.path.exists(filename):
+            print 'Wi-Fi profile file created'
+        else:
+            print 'Wi-Fi profile file NOT created!'
