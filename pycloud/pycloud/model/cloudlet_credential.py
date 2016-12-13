@@ -74,3 +74,11 @@ class CloudletCredential(Model):
         except:
             return None
         return credential
+
+
+    ################################################################################################################
+    # Remove credentials.
+    ################################################################################################################
+    @staticmethod
+    def find_and_remove(cloudlet_fqdn):
+        return CloudletCredential.find_and_modify(query={'cloudlet_fqdn': cloudlet_fqdn}, remove=True)

@@ -102,6 +102,10 @@ class PairingHandler(object):
             private_key = private_key_file.read()
         encryption_password = hashlib.sha256(private_key).hexdigest()
 
+        # Clear previous creds for this cloudlet.
+        CloudletCredential.find_and_remove(cloudlet_hostname)
+
+        # Store new ones.
         credentials = CloudletCredential()
         credentials.cloudlet_fqdn = cloudlet_hostname
         credentials.encryption_password = encryption_password
