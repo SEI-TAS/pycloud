@@ -119,7 +119,7 @@ class PairingHandler(object):
         with open("./wpa_supplicant/system-connection-template.ini", "r") as ini_file:
             file_data = ini_file.read()
 
-        file_data = file_data.replace('$cloudlet-id', message['ssid'])
+        file_data = file_data.replace('$cloudlet-id', Cloudlet.get_id())
         file_data = file_data.replace('$ssid', message['ssid'])
         file_data = file_data.replace('$name', message['ssid'])
         file_data = file_data.replace('$password', message['password'])
