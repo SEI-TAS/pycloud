@@ -29,6 +29,7 @@
 import os
 import shutil
 import hashlib
+import stat
 
 from pycloud.pycloud.cloudlet import Cloudlet
 from pycloud.pycloud.security import radius
@@ -134,3 +135,7 @@ class PairingHandler(object):
             print 'Wi-Fi profile file created'
         else:
             print 'Wi-Fi profile file NOT created!'
+
+        # The file needs to be r/w only by user (root) to be used by Network Manager.
+        print 'Setting profile as read/write only by owner (root)'
+        os.chmod(filename, stat.S_IRWXU)
