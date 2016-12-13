@@ -111,7 +111,7 @@ class PairingHandler(object):
     # Create a wifi profile in /etc/NetworkManager/system-connections using system-connection-template.ini
     ####################################################################################################################
     def create_wifi_profile(self, message):
-
+        print 'Creating Wi-Fi profile'
         with open("./wpa_supplicant/system-connection-template.ini", "r") as ini_file:
             file_data = ini_file.read()
 
@@ -121,6 +121,11 @@ class PairingHandler(object):
         file_data = file_data.replace('$password', message['password'])
         file_data = file_data.replace('$ca-cert', message['server_cert_name'])
 
+        print 'Wi-Fi profile data: ' + file_data
+
         filename = os.path.join("/etc/NetworkManager/system-connections", message['ssid'])
+        print 'Writing Wi-Fi profile to file ' + filename
         with open(filename, "w") as profile:
             profile.write(file_data)
+
+        print 'Wi-Fi profile file created'
