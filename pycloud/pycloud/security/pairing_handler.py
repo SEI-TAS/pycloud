@@ -138,4 +138,4 @@ class PairingHandler(object):
 
         # The file needs to be r/w only by user (root) to be used by Network Manager.
         print 'Setting profile as read/write only by owner (root)'
-        os.chmod(filename, stat.S_IRWXU)
+        os.chmod(filename, 600)
