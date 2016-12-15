@@ -70,8 +70,12 @@ class WiFiSKAServer(object):
         except Exception as e:
             print('Error waiting for connections: ' + str(e))
             return
+        except KeyboardInterrupt:
+            print('Stopped with Ctrl+C from user... socket will be closed')
+            raise
         finally:
             self.device_socket.close()
+            print('Listener socket closed.')
 
         # Get new data until we get a final command.
         try:
