@@ -29,7 +29,7 @@
 import os
 import shutil
 import hashlib
-import stat
+import subprocess
 
 from pycloud.pycloud.cloudlet import Cloudlet
 from pycloud.pycloud.security import radius
@@ -138,4 +138,8 @@ class PairingHandler(object):
 
         # The file needs to be r/w only by user (root) to be used by Network Manager.
         print 'Setting profile as read/write only by owner (root)'
-        os.chmod(filename, 600)
+        command = "sudo chmod 600 " + filename
+        cmd = subprocess.Popen(command, shell=True, stdout=None)
+        cmd.wait()
+        print 'Permissions changed'
+        
