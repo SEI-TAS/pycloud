@@ -142,4 +142,3 @@ class PairingHandler(object):
         cmd = subprocess.Popen(command, shell=True, stdout=None)
         cmd.wait()
         print 'Permissions changed'
-        
