@@ -39,7 +39,7 @@ class WiFiSKAServer(object):
     ####################################################################################################################
     #
     ####################################################################################################################
-    def __init__(self, host, port, secret, files_path, pairing_handler, adapter=WiFiAdapter()):
+    def __init__(self, host, port, secret, files_path, pairing_handler, adapter=WiFiAdapter(), fqdn=None):
         self.device_socket = None
         self.host = host
         self.port = port
@@ -47,6 +47,7 @@ class WiFiSKAServer(object):
         self.files_path = files_path
         self.handler = pairing_handler
         self.adapter = adapter
+        self.fqdn = fqdn
 
     ####################################################################################################################
     # Listen on a socket and handle commands. Each connection spawns a separate thread
@@ -65,7 +66,7 @@ class WiFiSKAServer(object):
         try:
             print('Waiting for a connection')
             data_socket, addr = self.device_socket.accept()
-            comm = WiFiSKACommunicator(data_socket, self.secret)
+            comm = WiFiSKACommunicator(data_socket, self.secret, local_fqdn=self.fqdn)
             print('Device connected')
         except Exception as e:
             print('Error waiting for connections: ' + str(e))

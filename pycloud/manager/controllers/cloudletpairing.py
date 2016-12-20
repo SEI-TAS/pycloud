@@ -107,7 +107,8 @@ class CloudletPairingController(BaseController):
             # Wait for messages.
             cloudlet = get_cloudlet_instance()
             server = WiFiSKAServer(host=SKA_SERVER_IP, port=SKA_SERVER_PORT, secret=secret,
-                                   files_path=cloudlet.cloudletCredentialsFolder, pairing_handler=PairingHandler())
+                                   files_path=cloudlet.cloudletCredentialsFolder, pairing_handler=PairingHandler(),
+                                   fqdn=Cloudlet.get_fqdn())
             server.wait_for_messages()
         except Exception, e:
             message = 'Error setting up connection or receiving data (' + type(e).__name__ + '): ' + str(e)
@@ -177,7 +178,7 @@ class CloudletPairingController(BaseController):
                 # Connect to the server (cloudlet) in the network.
                 remote_cloudlet_name = "WiFiServer"
                 remote_cloudlet = WiFiSKADevice({'host': SKA_SERVER_IP, 'port': int(SKA_SERVER_PORT),
-                                                 'name': remote_cloudlet_name, 'secret': secret})
+                                                 'name': remote_cloudlet_name, 'secret': secret}, fqdn=Cloudlet.get_fqdn())
 
                 print 'Connecting to cloudlet server'
                 successful_connection = remote_cloudlet.connect()

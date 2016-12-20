@@ -26,7 +26,6 @@
 # Released under the MIT license
 # http://jquery.org/license
 import json
-import socket
 import os
 import subprocess
 
@@ -73,9 +72,10 @@ class WiFiSKACommunicator(object):
     ####################################################################################################################
     #
     ####################################################################################################################
-    def __init__(self, data_socket, encryption_secret):
+    def __init__(self, data_socket, encryption_secret, local_fqdn):
         self.data_socket = data_socket
         self.encryption_secret = encryption_secret
+        self.local_fqdn = local_fqdn
 
     ####################################################################################################################
     # Sends a command.
@@ -84,7 +84,7 @@ class WiFiSKACommunicator(object):
         # Prepare command.
         message = dict(data)
         message['wifi_command'] = command
-        message['cloudlet_name'] = socket.gethostname()
+        message['cloudlet_name'] = self.local_fqdn
         message_string = json.dumps(message)
 
         # Send command.

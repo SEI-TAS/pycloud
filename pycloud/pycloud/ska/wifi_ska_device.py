@@ -58,10 +58,11 @@ class WiFiSKADevice(ISKADevice):
     ####################################################################################################################
     # Creates a device using the provided device info dict.
     ####################################################################################################################
-    def __init__(self, device):
+    def __init__(self, device, fqdn=None):
         self.device_info = device
         self.comm = None
         self.device_socket = None
+        self.fqdn = fqdn
 
     ####################################################################################################################
     # Returns a name for the device.
@@ -129,7 +130,7 @@ class WiFiSKADevice(ISKADevice):
                 print error_message
 
             if self.device_socket is not None:
-                self.comm = WiFiSKACommunicator(self.device_socket, self.device_info['secret'])
+                self.comm = WiFiSKACommunicator(self.device_socket, self.device_info['secret'], local_fqdn=self.fqdn)
                 return True
             else:
                 retries -= 1
