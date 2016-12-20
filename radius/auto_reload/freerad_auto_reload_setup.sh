@@ -12,6 +12,6 @@ cp freeradius.conf /etc/init
 cp freerad.dev /etc/cron.d/freerad
 
 # Update the cron job so that it has the appropriate paths.
-sed -i -e "s:/pycloud_scripts_path:$SCRIPTS_PATH:g" /etc/cron.d/freerad
+sed -i -e "s:pycloud_scripts_path:$SCRIPTS_PATH:g" /etc/cron.d/freerad
 
 echo "Finished setting up cron job"
