@@ -4,9 +4,16 @@ CLOUDLET_USER=$1
 
 # Update libvirtd's qemu config so that it will run under the proper user when started as at system level.
 echo 'Setting libvirtd user, group and file ownership for qemu.'
-sudo sed -i -e "s:#user = \"root\":user = \"${CLOUDLET_USER}\":g" /etc/libvirt/qemu.conf
-sudo sed -i -e "s:#group = \"root\":group = \"${CLOUDLET_USER}\":g" /etc/libvirt/qemu.conf
-sudo sed -i -e "s:#dynamic_ownership = 1:dynamic_ownership = 0:g" /etc/libvirt/qemu.conf
+
+# Uncomment these params, if commented.
+sudo sed -i -e 's:^#user:user:' /etc/libvirt/qemu.conf
+sudo sed -i -e 's:^#group:group:' /etc/libvirt/qemu.conf
+sudo sed -i -e 's:^#dynamic_ownership:dynamic_ownership:' /etc/libvirt/qemu.conf
+
+# Set the user to root.
+sudo sed -i -e 's:^user.*$:user = "root":' /etc/libvirt/qemu.conf
+sudo sed -i -e 's:^group.*$:group = "root":' /etc/libvirt/qemu.conf
+sudo sed -i -e 's:^dynamic_ownership.*$:dynamic_ownership = 1:' /etc/libvirt/qemu.conf
 
 # Restart libvirtd, if it was running, to ensure it uses these settings.
 sudo stop libvirt-bin
