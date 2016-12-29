@@ -99,7 +99,7 @@ class ServiceVM(Model):
         super(ServiceVM, self).__init__(*args, **kwargs)
 
     ################################################################################################################
-    # Sets up the internal network parameters, based on the config.
+    # Finds all SVMs given some search criteria.
     ################################################################################################################
     @staticmethod
     def find_all(search_dict={}, only_find_ready_ones=True, connect_to_vm=True):
@@ -347,15 +347,6 @@ class ServiceVM(Model):
         # Get the resulting XML string and return it.
         updated_xml_descriptor = xml_descriptor.getAsString()
         return updated_xml_descriptor
-    
-    ################################################################################################################
-    # Updates the name and id of an xml by simply replacing the text, without parsing, to ensure the result will
-    # have exactly the same length as before.
-    ################################################################################################################    
-    def _update_raw_name_and_id(self, saved_xml_string):
-        updated_xml = re.sub(r"<uuid>[\w\-]+</uuid>", "<uuid>%s</uuid>" % self._id, saved_xml_string)
-        updated_xml = re.sub(r"<name>[\w\-]+</name>", "<name>%s</name>" % (self.name), updated_xml)
-        return updated_xml
 
     ################################################################################################################
     # Add a port mapping
@@ -558,23 +549,6 @@ class ServiceVM(Model):
         self.running = False
         self.ready = False
 
-        # Get the saved state and make sure it is populated
-        saved_state = VMSavedState(self.vm_image.state_image)
-
-        # Update the state image with the updated descriptor.
-        # NOTE: this is only needed since libvirt wont allow us to change the ID of a VM being restored through its API. 
-        # Instead, we trick it by manually changing the ID of the saved state file, so the API won't know we changed it. 
-        raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription(get_hypervisor())
-        self.set_default_name(raw_saved_xml_descriptor)
-        updated_xml_descriptor_id_only = self._update_raw_name_and_id(raw_saved_xml_descriptor)
-        saved_state.updateStoredVmDescription(updated_xml_descriptor_id_only)
-
-        # Get the descriptor and update it to include the current disk image path, port mappings, etc.
-        saved_xml_descriptor = saved_state.getStoredVmDescription(get_hypervisor())
-        updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
-
-        # Restore a VM to the state indicated in the associated memory image file, in running mode.
-        # The XML descriptor is given since some things need to be changed for the instance, mainly the disk image file and the mapped ports.
         # Unregister from DNS.
         try:
             self._unregister_from_dns()
