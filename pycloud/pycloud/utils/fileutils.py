@@ -90,12 +90,13 @@ def make_read_write_all(file_path):
 
 ################################################################################################################
 # Changes ownership of the given file to the user running the script.
+# NOTE: needs sudo permissions.
 ################################################################################################################
 def chown_to_current_user(file_path):
     curr_user = os.geteuid()
     curr_group = os.getegid()
 
-    # Execute sudo process to change ownershio of potentially root owned file to the current user.
+    # Execute sudo process to change ownership of potentially root owned file to the current user.
     p = Popen(['sudo', 'chown', str(curr_user) + ":" + str(curr_group), file_path], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     out, err = p.communicate()
     rc = p.returncode

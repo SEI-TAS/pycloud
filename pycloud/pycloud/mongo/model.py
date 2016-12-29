@@ -64,5 +64,9 @@ class AttrDict(dict):
 class Model(AttrDict):
     __metaclass__ = MetaObject
 
+    def fill_from_dict(self, values_dict):
+        for key in values_dict:
+            setattr(self, key, values_dict[key])
+
     def save(self, *args, **kwargs):
         self._collection.save(self, *args, **kwargs)

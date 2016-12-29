@@ -26,14 +26,13 @@
 # Released under the MIT license
 # http://jquery.org/license
 
-__author__ = 'jdroot'
-
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.model import Service
 import tarfile
 import json
 import os
+import shutil
 from pylons import request, app_globals
 
 
@@ -58,8 +57,11 @@ class ImportController(BaseController):
         filename = request.params.get("filename")
 
         if not filename.endswith(".csvm"):
+            print "Invalid file"
             return {"error": "Invalid file"}
+
         if not os.path.exists(filename):
+            print "File does not exist"
             return {"error": "File does not exist"}
 
         print "Importing file: ", filename
@@ -73,21 +75,34 @@ class ImportController(BaseController):
         state_image = service.vm_image.state_image
 
         if os.path.exists(svm_path):
+            print "Service path already exists"
             return {"error": "Service already exists"}
 
         os.makedirs(svm_path)
+        service.vm_image.disk_image = os.path.join(svm_path, disk_image)
+        service.vm_image.state_image = os.path.join(svm_path, state_image)
 
         try:
+            # Extract the disk image to its permanent location.
             tar.extract(disk_image, path=svm_path)
-            tar.extract(state_image, path=svm_path)
 
-            service.vm_image.disk_image = os.path.join(svm_path, disk_image)
-            service.vm_image.state_image = os.path.join(svm_path, state_image)
+            try:
+                # Extract the memory image to its permanent location.
+                tar.extract(state_image, path=svm_path)
+
+                # Since usually the memory state from an imported SVM will be incompatible with another computer,
+                # refresh the memory state.
+                service.refresh_image_memory_state()
+            except Exception as e:
+                # Create a memory image from a XML template, since the one in the tar was not valid.
+                print "Could not load VM XML info; creating new one from disk image and standard XML template."
+                service.create_image_memory_state(svm_path)
 
             service.save()
         except Exception as e:
-            print "Exception while importing: ", str(e)
-            return {"error", str(e)}
+            print "Exception while importing: " + str(e)
+            shutil.rmtree(svm_path)
+            return {"error": str(e)}
 
         print "Done importing!"
 

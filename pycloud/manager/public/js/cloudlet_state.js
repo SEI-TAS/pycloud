@@ -37,7 +37,7 @@ http://jquery.org/license
 function reloadCloudletServerState()
 {
     var statusUrl = $("#state_url").val();
-    ajaxGet(statusUrl, waitDialogText=null, function(response) {
+    ajaxGet(statusUrl, null, function(response) {
         // Check if we got a correctly formed JSON.
         if(response.hasOwnProperty('cpu_info'))
         {
@@ -56,7 +56,7 @@ function reloadCloudletServerState()
         {
             console.log('Error getting cloudlet status. Got: ' + JSON.stringify(response));
         }
-    });
+    }, null, false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

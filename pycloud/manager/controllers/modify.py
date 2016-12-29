@@ -83,7 +83,7 @@ class ModifyController(BaseController):
 
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
-        page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot', id=None)
+        page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot')
         page.stopInstanceURL = h.url_for(controller='instances', action='stopInstance', id='')
         page.startInstanceURL = h.url_for(controller='instances', action='startInstance', id='')
         page.chooseImageURL = h.url_for(controller='modify', action='getImageInfo', id=None)
@@ -94,7 +94,7 @@ class ModifyController(BaseController):
         else:
             # Look for the service with this id.
             service = Service.by_id(serviceID)
-            
+
             # We are editing an existing service.
             page.newService = False
             page.internalServiceId = service._id
@@ -186,8 +186,7 @@ class ModifyController(BaseController):
         return h.redirect_to(controller='services')
 
     ############################################################################################################
-    # Creates a new Service VM and opens it in a VNC window for editing.
-    # NOTE: The VNC window will only open on the computer running the server.
+    # Creates a new Service VM.
     ############################################################################################################
     @asjson
     def POST_createSVM(self):
@@ -244,16 +243,17 @@ class ModifyController(BaseController):
     # Stops and saves a Service VM that was edited to its permanent root VM image.
     ############################################################################################################
     @asjson
-    def GET_saveInstanceToRoot(self, id):
+    def GET_saveInstanceToRoot(self):
         try:
+            id = str(request.params.get('id'))
             if id is None:
                 msg = "No VM id was provided, VM can't be saved."
                 return ajaxutils.show_and_return_error_dict(msg)
 
             # Save the VM state.
             print "Saving machine state for SVM with id " + str(id)
-            svm = ServiceVM.find_and_remove(id)
-            svm.stop(foce_save_state=True)
+            svm = ServiceVM.by_id(id)
+            svm.stop(foce_save_state=True, cleanup_files=False)
             print "Service VM stopped, and machine state saved."
 
             print 'Editing? ' + str(request.params.get('editing'))
@@ -268,10 +268,6 @@ class ModifyController(BaseController):
             # Permanently store the VM.
             print 'Moving Service VM Image to cache, from folder {} to folder {}.'.format(os.path.dirname(svm.vm_image.disk_image), vm_image_folder)
             svm.vm_image.move(vm_image_folder)
-
-            # Ensure we own the new image files.
-            fileutils.chown_to_current_user(svm.vm_image.disk_image)
-            fileutils.chown_to_current_user(svm.vm_image.state_image)
 
             # Make the VM image read only.
             print 'Making VM Image read-only.'

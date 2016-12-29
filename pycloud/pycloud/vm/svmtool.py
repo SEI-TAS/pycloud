@@ -125,7 +125,7 @@ def parseTestSshCommandArguments():
 # Main entry point of the tool.
 ################################################################################################################
 def main():
-    # Load the config. (TODO: this is a hacky way of sharing the devini file with Pylons).
+    # Load the config.
     # NOTE: here pycloud.util.config is creating a dictionary of configurations in the default
     # section of development.ini. This is similar to what is created by Pylons when loading
     # a configuraton, tough pylons.config has more information. Since Cloudlet uses only the basic

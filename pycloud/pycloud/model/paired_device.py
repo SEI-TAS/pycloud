@@ -28,34 +28,7 @@
 __author__ = 'Sebastian'
 
 from pycloud.pycloud.mongo import Model, ObjectID
-from pycloud.pycloud.model import ServiceVM
-
-################################################################################################################
-# Destroys the running instance associated with the given device id.
-# NOTE: this is not handling the case of instances shared between multiple devices. It will destroy it without
-# checking if it was also associated to another id.
-################################################################################################################
-def stop_associated_instance(device_id):
-    device_info = PairedDevice.by_id(device_id)
-    if not device_info:
-        print 'Deployment timeout: device info not found for id ' + str(device_id)
-        return
-
-    if 'instance' not in device_info:
-        # No instance was associated with the device info, we can ignore this call.
-        return
-
-    svm = ServiceVM.find_and_remove(device_info.instance)
-    if not svm:
-        print 'Deployment timeout: Instance to be stopped could not be found (id: ' + str(device_info.instance) + ')'
-        return
-
-    try:
-        svm.destroy()
-        print 'Deployment timeout: instance stopped for device ' + device_id
-    except Exception as e:
-        print 'Deployment timeout: Error stopping Service VM Instance: ' + str(e)
-
+from pycloud.pycloud.model.servicevm import ServiceVM
 
 # ###############################################################################################################
 # Represents a device authorized into the system.
@@ -64,7 +37,7 @@ class PairedDevice(Model):
     # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
         collection = "paired_devices"
-        external = ['_id', 'device_id', 'connection_id', 'auth_start', 'auth_duration', 'auth_enabled', 'password']
+        external = ['_id', 'device_id', 'connection_id', 'auth_start', 'auth_duration', 'auth_enabled', 'password', 'type']
         mapping = {
         }
 
@@ -77,6 +50,8 @@ class PairedDevice(Model):
         self.auth_start = None
         self.auth_duration = 0
         self.auth_enabled = False
+        self.type = 'mobile'
+        self.instance = None
         super(PairedDevice, self).__init__(*args, **kwargs)
 
     ################################################################################################################
@@ -119,6 +94,31 @@ class PairedDevice(Model):
         return device
 
     ################################################################################################################
+    # Locate all devices of a certain type
+    ################################################################################################################
+    # noinspection PyBroadException
+    @staticmethod
+    def by_type(type='mobile'):
+        try:
+            devices = PairedDevice.find({'type': type})
+        except:
+            return []
+        return devices
+
+    ################################################################################################################
+    # Locate all devices that are associated to a given instance
+    ################################################################################################################
+    # noinspection PyBroadException
+    @staticmethod
+    def by_instance(instance_id):
+        try:
+            devices = PairedDevice.find({'instance': instance_id})
+        except Exception as e:
+            print 'Error finding devices for instance id {}: {}'.format(instance_id, e.message)
+            return []
+        return devices
+
+    ################################################################################################################
     # Cleanly and safely gets a Device and removes it from the database
     ################################################################################################################
     @staticmethod
@@ -134,7 +134,27 @@ class PairedDevice(Model):
         PairedDevice.find_and_modify(query={}, remove=True)
 
     ################################################################################################################
-    # Disable the given authorization for a paired device, without removing it.
+    # Destroys the running instance associated with the given device id.
+    # NOTE: this is not handling the case of instances shared between multiple devices. It will destroy it without
+    # checking if it was also associated to another id.
     ################################################################################################################
-    def revoke_authorization(self):
-        self.auth_enabled = False
+    def stop_associated_instance(self):
+        device_info = PairedDevice.by_id(self.device_id)
+        if not device_info:
+            print 'Deployment timeout: device info not found for id ' + str(self.device_id)
+            return
+
+        if 'instance' not in device_info:
+            # No instance was associated with the device info, we can ignore this call.
+            return
+
+        svm = ServiceVM.by_id(self.instance)
+        if not svm:
+            print 'Deployment timeout: Instance to be stopped could not be found (id: ' + str(self.instance) + ')'
+            return
+
+        try:
+            svm.stop()
+            print 'Deployment timeout: instance stopped for device ' + self.device_id
+        except Exception as e:
+            print 'Deployment timeout: Error stopping Service VM Instance: ' + str(e)

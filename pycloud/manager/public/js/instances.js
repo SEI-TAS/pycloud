@@ -31,10 +31,24 @@ http://jquery.org/license
 // Functions used when managing the instance list.
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-function showMigrationModal(migrateUrl)
+function showMigrationModal(availableCloudeletsUrl, migrateUrl)
 {
     // Store the migration URL in the modal.
     $('#migrateUrl').val(migrateUrl);
+
+    // Get the list of currently available cloudlets through ajax.
+    var successHandler = function(availableCloudlets) {
+        // Add the cloudelts we found to the list.
+        var migrateForm = $('#migrate-svm-form');
+        var cloudletsSelect = migrateForm.find('#targetCloudlet');
+        cloudletsSelect.empty();
+        $.each(availableCloudlets, function(value, key) {
+            cloudletsSelect.append($('<option></option>').attr('value', value).text(key));
+        });
+    };
+
+    // Do the post to get data and load the modal.
+    ajaxGet(availableCloudeletsUrl, "Finding cloudlets...", successHandler, $('#modal-migrate'));
 
     // Show the modal.
     $('#modal-migrate').modal('show');
@@ -51,7 +65,7 @@ function migrateSVM()
 
     // Add the target cloudlet.
     var migrateUrl = $('#migrateUrl').val();
-    var targetCloudlet = $('#targetCloudet').val();
+    var targetCloudlet = $('#targetCloudlet').val();
     migrateUrl = migrateUrl + '?target=' + targetCloudlet;
 
     // Do the post to get data and load the modal.
@@ -69,11 +83,77 @@ function stopSVM(stopUrl)
     
     // Do the post to get data and load the modal.
     ajaxGet(stopUrl, "Stopping Service VM Instance", successHandler);        
-}    
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////
+function showWifiNetworksModal(availableNetworksUrl)
+{
+    // Get the list of currently available cloudlets through ajax.
+    var successHandler = function(return_info) {
+        // Add the networks we found to the list.
+        var wifiForm = $('#wifi-connection-form');
+        var networksSelect = wifiForm.find('#ssid');
+        networksSelect.empty();
+
+        $("#currentNetwork").text(return_info['current']);
+
+        var availableNetworks = return_info['available'];
+        $.each(availableNetworks, function(ssid, isConnected) {
+            if(!isConnected)
+                networksSelect.append($('<option></option>').attr('value', ssid).text(ssid));
+        });
+    };
+
+    // Do the post to get data and load the modal.
+    ajaxGet(availableNetworksUrl, "Finding networks...", successHandler, $('#modal-wifi-connect'));
+
+    $('#modal-wifi-connect').modal('show');
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to connect to a Wifi network through Ajax.
+/////////////////////////////////////////////////////////////////////////////////////
+function wifiConnection()
+{
+    var successHandler = function(response) {
+        reloadPage();
+    };
+
+    // Add the target cloudlet.
+    var wifiConnectURL = $('#wifi_url').val();
+    var targetSSID = $('#ssid').val();
+    var fullURL = wifiConnectURL + '?target=' + targetSSID;
+
+    // Do the post to get data and load the modal.
+    ajaxGet(fullURL, "Connecting to Wi-FI Network", successHandler, $('#modal-wifi-connect'));
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Function to disconnect from a Wifi network through Ajax.
+/////////////////////////////////////////////////////////////////////////////////////
+function disconnectFromWifiNetwork()
+{
+    var successHandler = function(response) {
+        reloadPage();
+    };
+
+    // Do the post to get data and load the modal.
+    var fullURL = $("#disconnectButton").attr("href");
+    console.log(fullURL);
+    ajaxGet(fullURL, "Disconnecting from Wi-FI Network", successHandler, $('#modal-wifi-connect'));
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Called when the document is loaded.
 /////////////////////////////////////////////////////////////////////////////////////////////////
 $(document).ready( function () {
-
+    $("#disconnectButton").click(function (event) {
+        event.preventDefault();
+        disconnectFromWifiNetwork();
+    })
 });

@@ -48,6 +48,10 @@ log = logging.getLogger(__name__)
 # Class that handles Service related HTTP requests to a Cloudlet.
 ################################################################################################################
 class ServicesController(BaseController):
+
+    # Maps API URL words to actual functions in the controller.
+    API_ACTIONS_MAP = {'': {'action': 'list', 'reply_type': 'json'},
+                       'get': {'action': 'find', 'reply_type': 'json'}}
             
     ################################################################################################################
     # Get a list of the services in the VM. In realiy, for now at least, it actually get a list of services that

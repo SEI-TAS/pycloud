@@ -28,16 +28,27 @@
 
 __author__ = 'jdroot'
 
-from pycloud.pycloud.pylons.lib.base import BaseController, bool_param
 from pylons import request
+from pylons.controllers.util import abort
+
+from pycloud.pycloud.pylons.lib.base import BaseController, bool_param
 from pycloud.pycloud.pylons.lib.util import asjson
 from pycloud.pycloud.utils import timelog
 from pycloud.pycloud.cloudlet import Cloudlet
 from pycloud.pycloud.model import Service, App
 
+from pycloud.pycloud.model.message import DeviceMessage
+
 
 class CloudletController(BaseController):
 
+    # Maps API URL words to actual functions in the controller.
+    API_ACTIONS_MAP = {'': {'action': 'metadata', 'reply_type': 'json'},
+                       'get_messages': {'action': 'get_messages', 'reply_type': 'json'}}
+
+    ################################################################################################################
+    #
+    ################################################################################################################
     @asjson
     def GET_metadata(self):
         timelog.TimeLog.reset()
@@ -52,3 +63,22 @@ class CloudletController(BaseController):
 
         timelog.TimeLog.stamp("Sending response back to " + request.environ['REMOTE_ADDR'])
         return ret
+
+    ################################################################################################################
+    # Only valid if the device has been paired, otherwise it will have no mailbox for commands.
+    ################################################################################################################
+    @asjson
+    def GET_get_messages(self):
+        device_id = request.headers['X-Device-ID']
+        service_id = request.params.get('serviceId', None)
+
+        messages = DeviceMessage.unread_by_device_id(device_id, service_id)
+        reply = {}
+        reply['messages'] = messages
+
+        # Mark all commands as read, to avoid getting them again in a future call.
+        DeviceMessage.mark_all_as_read(device_id, service_id)
+
+        print 'Messages: '
+        print reply
+        return reply

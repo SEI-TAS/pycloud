@@ -212,36 +212,37 @@ function reloadPage()
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to post json data through AJAX and reload after the response.
 /////////////////////////////////////////////////////////////////////////////////////
-function ajaxSimplePost(postURL, dataDict, waitDialogText, onSuccess, modal)
+function ajaxSimplePost(postURL, dataDict, waitDialogText, onSuccess, modal, showError)
 {
     var fileId = null;
-    ajaxCall('POST', postURL, dataDict, waitDialogText, onSuccess, fileId, modal);
+    ajaxCall('POST', postURL, dataDict, waitDialogText, onSuccess, fileId, modal, showError);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to post json data through AJAX and reload after the response, with a file.
 /////////////////////////////////////////////////////////////////////////////////////
-function ajaxFilePost(postURL, dataDict, waitDialogText, onSuccess, fileId, modal)
+function ajaxFilePost(postURL, dataDict, waitDialogText, onSuccess, fileId, modal, showError)
 {
-    ajaxCall('POST', postURL, dataDict, waitDialogText, onSuccess, fileId, modal);
+    ajaxCall('POST', postURL, dataDict, waitDialogText, onSuccess, fileId, modal, showError);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to send json request through AJAX and reload after the response, with a file.
 /////////////////////////////////////////////////////////////////////////////////////
-function ajaxGet(getURL, waitDialogText, onSuccess, modal)
+function ajaxGet(getURL, waitDialogText, onSuccess, modal, showError)
 {
     var fileId = null;    
-    ajaxCall('GET', getURL, {}, waitDialogText, onSuccess, fileId, modal);
+    ajaxCall('GET', getURL, {}, waitDialogText, onSuccess, fileId, modal, showError);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Function to post json data through AJAX and reload after the response.
 /////////////////////////////////////////////////////////////////////////////////////
-function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, modal)
+function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, modal, showError)
 {
     // Check if we got a modal.
     if(typeof(modal)==='undefined') modal = null;
+    if(typeof(showError)==='undefined') showError = true;
     
     // Show progress bar.
     var dialog = null;
@@ -261,7 +262,7 @@ function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, 
             if(dialog) dialog.hide();
 
             // Check if we got an error.
-            if(!ajaxCallWasSuccessful(jsonObject))
+            if(!ajaxCallWasSuccessful(jsonObject) && showError)
             {
                 // Notify the error.
                 showAndLogErrorMessage('There was a problem ' + description + ': ' + jsonObject.error, '', '', modal);
@@ -286,7 +287,8 @@ function ajaxCall(action, postURL, dataDict, waitDialogText, onSuccess, fileId, 
             },
             error: function( req, status, err ) {
                 if(dialog) dialog.hide();
-                showAndLogErrorMessage('There was a problem ' + description + '.', status, err, modal);
+                if(showError)
+                    showAndLogErrorMessage('There was a problem ' + description + '.', status, err, modal);
             }
         });
     }

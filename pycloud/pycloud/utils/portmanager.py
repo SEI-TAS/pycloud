@@ -29,57 +29,40 @@
 #!/usr/bin/env python
 #       
 
-# To generate random port numbers.
 import random
+import socket
+
 
 ################################################################################################################
 # Handles TCP ports.
-# TODO: this list has to be stored in the DB.
 ################################################################################################################
 class PortManager(object):
-    
-    # Stores a list of ports in use.
-    portsInUse = {}
-    
-    ################################################################################################################  
-    # Generate a random port number which is available (in terms of this manager not using it). There is no check to
-    # see if another process is using the port.
+
+    ################################################################################################################
+    # Generate a random port number which is available.
     ################################################################################################################ 
     @staticmethod  
-    def generateRandomAvailablePort():
+    def generate_random_available_port():
         # The range of ports were we will take a port from.
-        rangeStart = 10000
-        rangeEnd = 60000
+        range_start = 10000
+        range_end = 60000
         
-        # Check if we still have ports available.
-        if(len(PortManager.portsInUse) >= (rangeEnd - rangeStart)):
-            raise Exception("There are no ports available.")
-        
-        # This loop will eventually find an available port, since if all of them are in use, the check above would
-        # have detected it. In practice, this loop will almost always run once, since we will not be handling that many
+        # In practice, this loop will almost always run once, since we will not be handling that many
         # running instances to generate collisions.
-        port = 0
-        while(True):
-            # Get a new random port and check if it is in use.
-            port = random.randint(rangeStart, rangeEnd)
-            if(not port in PortManager.portsInUse):
+        max_attempts = 5000
+        num_attempts = 0
+        while True:
+            # Get a new random port.
+            num_attempts += 1
+            port = random.randint(range_start, range_end)
+
+            # Check if the port is in use.
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            result = sock.connect_ex(('127.0.0.1', port))
+            port_is_in_use = result == 0
+            if not port_is_in_use:
                 # If the port is available, stop looking for more ports.
-                PortManager.portsInUse[port] = True
-                break
+                return port
 
-        return port
-    
-    ################################################################################################################  
-    # Marks a given port as cleared.
-    ################################################################################################################ 
-    @staticmethod  
-    def freePort(port):
-        PortManager.portsInUse.pop(port, None)
-
-    ################################################################################################################  
-    # Marks all ports as free.
-    ################################################################################################################ 
-    @staticmethod  
-    def clearPorts():
-        PortManager.portsInUse.clear()
-        
+            if num_attempts >= max_attempts:
+                raise Exception("Too many ports tried, no ports available found.")

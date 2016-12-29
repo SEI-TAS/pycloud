@@ -55,12 +55,13 @@ def make_map(config):
     connect('/services/removeService/{id}', controller='services', action='removeService')
     
     connect('/instances', controller='instances', action='index')
+    connect('/instances/findCloudlets', controller='instances', action='get_available_cloudlets')
+    connect('/instances/findNetworks', controller='instances', action='get_available_networks')
     connect('/instances/startInstance/{id}', controller='instances', action='startInstance')
     connect('/instances/stopInstance/{id}', controller='instances', action='stopInstance')
     connect('/instances/migrate/{id}', controller='instances', action='migrateInstance')
-    connect('/instances/receiveMigratedSVMMetadata', controller='instances', action='receiveMigratedSVMMetadata')
-    connect('/instances/receiveMigratedSVMDiskFile', controller='instances', action='receiveMigratedSVMDiskFile')
-    connect('/instances/resumeMigratedSVM', controller='instances', action='resumeMigratedSVM')
+    connect('/instances/wifiConnect', controller='instances', action='wifiConnect')
+    connect('/instances/wifiDisconnect', controller='instances', action='wifiDisconnect')
     connect('/instances/getMigrationInfo/{id}', controller='instances', action='getMigrationInfo')
     connect('/instances/svmList', controller='instances', action='svmList')
 
@@ -69,7 +70,7 @@ def make_map(config):
     connect('/service/saveNewSVM', controller='modify', action='saveNewSVM')
     connect('/service/openSVM/{id}', controller='modify', action='openSVM')
     connect('/service/edit/{id}', controller='modify', action='index')
-    connect('/service/saveSVM', controller='modify', action='saveInstanceToRoot')
+    connect('/service/saveSVM/', controller='modify', action='saveInstanceToRoot')
     connect('/service/getImageInfo', controller='modify', action='getImageInfo')
 
     connect('/apps', controller='apps', action='index')
@@ -84,12 +85,15 @@ def make_map(config):
 
     connect('list_devices', '/devices', controller='devices', action='list')
     connect('clear', '/devices/clear', controller='devices', action='clear')
-    connect('bootrstrap', '/devices/bootstrap', controller='devices', action='bootstrap')
-    connect('available_devices', '/devices/available', controller='pairing', action='available')
-    connect('pair_device', '/devices/pair/{id}', controller='pairing', action='pair')
+    connect('bootstrap', '/devices/bootstrap', controller='devices', action='bootstrap')
+    connect('available_devices', '/devices/available', controller='devicespairing', action='available')
+    connect('pair_device', '/devices/pair/{id}', controller='devicespairing', action='pair')
     connect('authorize_device', '/devices/authorize/{did}', controller='devices', action='authorize')
     connect('unpair_device', '/devices/unpair/{id}', controller='devices', action='unpair')
     connect('revoke_auth', '/devices/revoke/{id}', controller='devices', action='revoke')
     connect('reauthorize', '/devices/reauthorize/{id}', controller='devices', action='reauthorize')
+
+    connect('pair_cloudlet_display', '/devices/cloudlet/pair', controller='cloudletpairing', action='pair')
+    connect('discover_cloudlets_display', '/devices/cloudlet/discover', controller='cloudletpairing', action='discover')
 
     return mapper

@@ -55,11 +55,19 @@ def make_map(config):
         connect('startvm', '/servicevm/start', controller='servicevm', action='start')
         connect('stopvm', '/servicevm/stop', controller='servicevm', action='stop')
 
+        # Migration commands.
+        connect('/servicevm/migration_svm_metadata', controller='servicevm', action='migration_svm_metadata')
+        connect('/servicevm/migration_svm_disk_file', controller='servicevm', action='migration_svm_disk_file')
+        connect('/servicevm/abort_migration', controller='servicevm', action='abort_migration')
+        connect('/servicevm/migration_generate_credentials', controller='servicevm', action='migration_generate_credentials')
+        connect('/servicevm/migration_svm_resume', controller='servicevm', action='migration_svm_resume')
+
         # Appcommands.
         connect('getAppList', '/apps', controller='apppush', action='getList')
         connect('getApp', '/apps/get', controller='apppush', action='getApp')
 
         # Metadata commands.
         connect('metadata', '/system', controller='cloudlet', action='metadata')
+        connect('get_messages', '/system/get_messages', controller='cloudlet', action='get_messages')
 
     return mapper
