@@ -26,6 +26,7 @@ Packaging and installation instructions are available at https://github.com/SEI-
 
  * debian/: files needed to create a .deb installer.
  * discovery/: configuration files to enable Cloudlet discovery through avahi-daemon.
+ * hostpad/: not used.
  * libusb/: configuration files needed to enable USB communication.
  * pycloud/: the actual code for the Cloudlet Manager and API.
  * radius/: configuration files needed for FreeRADIUS to auto-reload when certain configurations change.
@@ -35,7 +36,9 @@ Packaging and installation instructions are available at https://github.com/SEI-
  * testing/: some test scripts.
  * tls/: scripts to set up a CA and to set up scripts for libvirt.
  * upstart/: Upstart script configurations for the Manager and API services.
+ * wpa_supplicant/: template files for configuring a wpa_supplicant daemon.
  * bootstrap.py: script for starting the server while developing (called by bash script below).
+ * CHANGELOG.md: log of changes for different releases.
  * dev_tips.txt: some hints for developing parts of the system.
  * development_api.ini: config file used while developing the API.
  * development_manager.ini: config file used while developing the Manager. 
@@ -43,6 +46,7 @@ Packaging and installation instructions are available at https://github.com/SEI-
  * pycloud_manager.ini: Manager config file used when installing the server. 
  * LICENSE: license for this software.
  * MANIFEST.in, requirements.txt and setup.py: config files for creating the egg for this python package.
- * README.md this file.
+ * README.md: this file.
  * start_dev_api.sh: script to start API when developing, after env has been set up.
  * start_dev_manager.sh: script to start Manager when developing, after env has been set up.
+ * VERSION: the version number for the project.
