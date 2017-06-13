@@ -4,4 +4,4 @@
 sudo pip install virtualenv
 
 # Create a virtual env to work on.
-virtualenv ../env
+virtualenv --no-site-packages ../env
