@@ -45,8 +45,29 @@ from pycloud.pycloud.model import migrator
 from pycloud.pycloud.model.migrator import MigrationException
 from pycloud.pycloud.model.servicevm import SVMNotFoundException
 
+from pycloud.pycloud.pylons.lib.util import asjson
+import tarfile
+import json
+import os
+import shutil
+
 log = logging.getLogger(__name__)
 
+
+################################################################################################################
+# Extracts values from service.json file from csvm
+################################################################################################################
+def get_service_json(tar=None):
+    member = None
+    try:
+        member = tar.getmember("service.json")
+    except KeyError:
+        pass
+
+    f = tar.extractfile(member)
+    val = json.loads(f.read())
+    f.close()
+    return val
 
 ################################################################################################################
 # Class that handles Service VM related HTTP requests to a Cloudlet.
@@ -56,6 +77,7 @@ class ServiceVMController(BaseController):
     # Maps API URL words to actual functions in the controller.
     API_ACTIONS_MAP = {'start': {'action': 'start', 'reply_type': 'json'},
                        'stop': {'action': 'stop', 'reply_type': 'json'},
+                       'import': {'action': 'import', 'reply_type': 'json'},
                        'migration_svm_metadata': {'action': 'migration_svm_metadata', 'reply_type': 'json', 'method': 'POST'},
                        'migration_svm_disk_file': {'action': 'migration_svm_disk_file', 'reply_type': 'json', 'method': 'POST'},
                        'abort_migration': {'action': 'abort_migration', 'reply_type': 'json', 'method': 'POST'},
@@ -67,7 +89,7 @@ class ServiceVMController(BaseController):
     ################################################################################################################ 
     def cleanup(self):
         pass
-        
+
     ################################################################################################################
     # Called to start a Service VM.
     # - join: indicates if we want to run our own Service VM (false) or if we can share an existing one (true)
@@ -148,6 +170,67 @@ class ServiceVMController(BaseController):
             # If there was a problem stopping the instance, return that there was an error.
             print 'Error stopping Service VM Instance: ' + str(e)
             abort(500, '%s' % str(e))
+
+    ################################################################################################################
+    # Import an svm
+    ################################################################################################################
+    @asjson
+    def GET_import(self):
+        print "Starting SVM import"
+        filename = request.params.get("filename")
+
+        if not filename.endswith(".csvm"):
+            print "Invalid file"
+            return {"error": "Invalid file"}
+
+        if not os.path.exists(filename):
+            print "File does not exist"
+            return {"error": "File does not exist"}
+
+        print "Importing file: ", filename
+
+        tar = tarfile.open(filename, "r")
+        service = Service(get_service_json(tar))
+
+        svm_cache = app_globals.cloudlet.svmCache
+        svm_path = os.path.join(svm_cache, service.service_id)
+        disk_image = service.vm_image.disk_image
+        state_image = service.vm_image.state_image
+
+        if os.path.exists(svm_path):
+            print "Service path already exists"
+            return {"error": "Service already exists"}
+
+        os.makedirs(svm_path)
+        service.vm_image.disk_image = os.path.join(svm_path, disk_image)
+        service.vm_image.state_image = os.path.join(svm_path, state_image)
+
+        try:
+            # Extract the disk image to its permanent location.
+            tar.extract(disk_image, path=svm_path)
+
+            try:
+                # Extract the memory image to its permanent location.
+                tar.extract(state_image, path=svm_path)
+
+                # Since usually the memory state from an imported SVM will be incompatible with another computer,
+                # refresh the memory state.
+                service.refresh_image_memory_state()
+            except Exception as e:
+                # Create a memory image from a XML template, since the one in the tar was not valid.
+                print "Could not load VM XML info; creating new one from disk image and standard XML template."
+                service.create_image_memory_state(svm_path)
+
+            service.save()
+        except Exception as e:
+            print "Exception while importing: " + str(e)
+            shutil.rmtree(svm_path)
+            return {"error": str(e)}
+
+        print "Done importing!"
+
+        return service
+
 
     ############################################################################################################
     # Receives information about a migrated VM.

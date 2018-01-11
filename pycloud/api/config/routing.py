@@ -54,6 +54,7 @@ def make_map(config):
         # SVM commands.
         connect('startvm', '/servicevm/start', controller='servicevm', action='start')
         connect('stopvm', '/servicevm/stop', controller='servicevm', action='stop')
+        connect('import', '/servicevm/import', controller='servicevm', action='import')
 
         # Migration commands.
         connect('/servicevm/migration_svm_metadata', controller='servicevm', action='migration_svm_metadata')
