@@ -95,6 +95,7 @@ class ImportController(BaseController):
                 service.refresh_image_memory_state()
             except Exception as e:
                 # Create a memory image from a XML template, since the one in the tar was not valid.
+                print str(e)
                 print "Could not load VM XML info; creating new one from disk image and standard XML template."
                 service.create_image_memory_state(svm_path)
 

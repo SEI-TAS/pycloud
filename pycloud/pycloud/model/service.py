@@ -188,8 +188,8 @@ class Service(Model):
             if svm:
                 svm.stop()
 
-            print "Exception updating SVM memory state: " + str(e)
-            return {'error': str(e)}
+            error_msg = "Exception updating SVM memory state: " + str(e)
+            raise Exception(error_msg)
 
     ################################################################################################################
     # Returns a VM linked to the original VM image so that it can be modified.
