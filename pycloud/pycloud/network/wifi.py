@@ -150,7 +150,7 @@ class WifiManager(object):
     @staticmethod
     def get_current_network(interface):
         ssid = None
-        response = nmcli('-t -f NAME,DEVICES connection status | grep {}'.format(interface))
+        response = nmcli('-t -f NAME,DEVICE connection show --active | grep {}'.format(interface))
 
         for line in response.splitlines():
             if len(line) > 0:
