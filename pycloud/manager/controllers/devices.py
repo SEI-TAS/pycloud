@@ -33,20 +33,15 @@ from pylons import request, tmpl_context as c
 from pylons import app_globals
 
 from pycloud.pycloud.pylons.lib import helpers as h
-from pycloud.pycloud.pylons.lib.util import asjson
-from pycloud.pycloud.utils import ajaxutils
 
 from pycloud.pycloud.pylons.lib.base import BaseController
 from pycloud.manager.lib.pages import DevicesPage
 
 from pycloud.pycloud.model.deployment import Deployment
-from pycloud.pycloud.model.paired_device import PairedDevice, stop_associated_instance
+from pycloud.pycloud.model.paired_device import PairedDevice
 
 from pycloud.pycloud.ska.adb_ska_device import ADBSKADevice
 from pycloud.pycloud.ska.bluetooth_ska_device import BluetoothSKADevice
-
-from pycloud.pycloud.security import radius
-from pycloud.pycloud.security import credentials
 
 ################################################################################################################
 # Controller for the page.
@@ -65,8 +60,8 @@ class DevicesController(BaseController):
         ADBSKADevice.initialize(app_globals.cloudlet.data_folder)
 
         # Get the overall deployment info.
-        page.deployment = Deployment.find_one()
-        if page.deployment is None:
+        page.deployment = Deployment.get_instance()
+        if page.deployment.auth_start is None:
             page.deployment_auth_start = 'not set'
             page.deployment_auth_duration = 'not set'
             page.deployment_auth_end = 'not set'
@@ -76,37 +71,20 @@ class DevicesController(BaseController):
             page.deployment_auth_end = (page.deployment.auth_start + datetime.timedelta(minutes=page.deployment.auth_duration)).strftime('%Y-%m-%d %X')
 
         # Get the paired devices.
-        page.paired_devices = PairedDevice.find()
+        page.paired_devices = PairedDevice.by_type('mobile')
+
+        # Get the paired cloudlets.
+        page.paired_cloudlets = PairedDevice.by_type('cloudlet')
 
         return page.render()
 
     ############################################################################################################
     # Clears all deployment info.
     ############################################################################################################
-    def clear_deployment(self):
-        # Remove users from RADIUS server.
-        print 'Removing paired devices from RADIUS server.'
-        devices = PairedDevice.find()
-        device_ids = []
-        for device in devices:
-            device_ids.append(device.device_id)
-            stop_associated_instance(device.device_id)
-
-        radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
-                                            app_globals.cloudlet.radius_certs_folder,
-                                            app_globals.cloudlet.radius_eap_conf_file)
-        radius_server.remove_user_credentials(device_ids)
-
-        # Remove all data from DB.
-        print 'Clearing up database.'
-        PairedDevice.clear_data()
-        Deployment.remove()
-
-    ############################################################################################################
-    # Clears all deployment info.
-    ############################################################################################################
     def GET_clear(self):
-        self.clear_deployment()
+        deployment = Deployment.get_instance()
+        deployment.clear()
+        deployment.remove()
 
         # Go to the main page.
         return h.redirect_to(controller='devices', action='list')
@@ -119,83 +97,22 @@ class DevicesController(BaseController):
         # TODO: check when no duration is received, or an invalid duration is received.
         duration = int(request.params.get('duration', 0))
 
-        # Remove all data from DB.
-        self.clear_deployment()
-
         # Setup initial configurations for each device type.
         BluetoothSKADevice.bootstrap()
         ADBSKADevice.bootstrap()
 
-        # Create server keys.
-        server_keys = credentials.ServerCredentials.create_object(app_globals.cloudlet.credentials_type,
-                                                                  app_globals.cloudlet.data_folder)
-        server_keys.generate_and_save_to_file()
-
-        # Create RADIUS server certificate.
-        radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
-                                            app_globals.cloudlet.radius_certs_folder,
-                                            app_globals.cloudlet.radius_eap_conf_file)
-        radius_server.generate_certificate()
-
-        # Set up a new deployment.
-        deployment = Deployment()
-        deployment.auth_start = datetime.datetime.now()
-        deployment.auth_duration = duration
-        deployment.save()
+        deployment = Deployment.get_instance()
+        deployment.bootstrap(duration)
 
         # Go to the main page.
         return h.redirect_to(controller='devices', action='list')
 
     ############################################################################################################
-    # Called after the pairing process finishes.
-    ############################################################################################################
-    @asjson
-    def GET_authorize(self, did):
-        connection_id = request.params.get('cid', None)
-        auth_password = request.params.get('auth_password', None)
-        enc_password = request.params.get('enc_password', None)
-
-        # Create a new paired device with the id info we just received.
-        print 'Adding paired device to DB.'
-        paired_device = PairedDevice()
-        paired_device.device_id = did
-        paired_device.connection_id = connection_id
-        paired_device.password = enc_password
-
-        # By default, authorization for a device will be the same as the deployment info.
-        deployment = Deployment.find_one()
-        paired_device.auth_start = deployment.auth_start
-        paired_device.auth_duration = deployment.auth_duration
-        paired_device.auth_enabled = True
-
-        # Store the paired device.
-        paired_device.save()
-
-        # Store the new device credentials in the RADIUS server.
-        radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
-                                            app_globals.cloudlet.radius_certs_folder,
-                                            app_globals.cloudlet.radius_eap_conf_file)
-        radius_server.add_user_credentials(paired_device.device_id, auth_password)
-
-        # Go to the main page.
-        print 'Device added to DB.'
-        return ajaxutils.JSON_OK
-
-    ############################################################################################################
     #
     ############################################################################################################
     def GET_unpair(self, id):
-        # Remove it from the list.
-        print 'Removing paired device from DB.'
-        stop_associated_instance(id)
-        PairedDevice.find_and_remove(id)
-
-        # Remove from RADIUS server.
-        print 'Removing paired device from RADIUS server.'
-        radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
-                                            app_globals.cloudlet.radius_certs_folder,
-                                            app_globals.cloudlet.radius_eap_conf_file)
-        radius_server.remove_user_credentials([id])
+        deployment = Deployment.get_instance()
+        deployment.unpair_device(id)
 
         # Go to the main page.
         return h.redirect_to(controller='devices', action='list')
@@ -204,18 +121,8 @@ class DevicesController(BaseController):
     #
     ############################################################################################################
     def GET_revoke(self, id):
-        # Mark it as disabled.
-        paired_device = PairedDevice.by_id(id)
-        paired_device.auth_enabled = False
-        paired_device.save()
-        stop_associated_instance(id)
-
-        # Remove from RADIUS server.
-        print 'Removing paired device from RADIUS server.'
-        radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
-                                            app_globals.cloudlet.radius_certs_folder,
-                                            app_globals.cloudlet.radius_eap_conf_file)
-        radius_server.remove_user_credentials([id])
+        deployment = Deployment.get_instance()
+        deployment.revoke_device(id)
 
         # Go to the main page.
         return h.redirect_to(controller='devices', action='list')
@@ -224,16 +131,8 @@ class DevicesController(BaseController):
     #
     ############################################################################################################
     def GET_reauthorize(self, id):
-        # Mark it as enabled.
-        paired_device = PairedDevice.by_id(id)
-        paired_device.auth_enabled = True
-        paired_device.save()
-
-        # Store the device credentials in the RADIUS server.
-        radius_server = radius.RadiusServer(app_globals.cloudlet.radius_users_file,
-                                            app_globals.cloudlet.radius_certs_folder,
-                                            app_globals.cloudlet.radius_eap_conf_file)
-        radius_server.add_user_credentials(paired_device.device_id, paired_device.password)
+        deployment = Deployment.get_instance()
+        deployment.reauthorize_device(id)
 
         # Go to the main page.
         return h.redirect_to(controller='devices', action='list')

@@ -37,15 +37,12 @@ http://jquery.org/license
 function updateSVMList()
 {
     var listUrl = $("#svm_url").val();
-    ajaxGet(listUrl, waitDialogText=null, function(response) {
+    ajaxGet(listUrl, null, function(new_svm_list) {
         // Get the list of the current svms we know about.
         var curr_svm_list = {}
         $(".svm_id").each(function(){
             curr_svm_list[$(this).text()] = true;
         });
-
-        // The list we got from the server with all svms.
-        var new_svm_list = response.service_vms;
 
         // Go over the new list and add any new SVMs to our table.
         for (var i = 0; i < new_svm_list.length; i++) {
@@ -74,7 +71,7 @@ function updateSVMList()
                 reloadPage();
             }
         }
-    });
+    }, null, false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

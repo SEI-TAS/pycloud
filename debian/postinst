@@ -1,37 +1,53 @@
 #!/bin/sh
-PYCLOUD_ENV="/usr/share/python/python-pycloud/lib/python2.7/site-packages/"
 
-#Get the standard site-packages
-SITE_PACKAGES=`python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"`
+# Global vars.
+CLOUDLET_USER="pycloud"
+INSTALL_FOLDER="/var/pycloud"
+DATA_FOLDER="${INSTALL_FOLDER}/data"
 
-#Link libvirt to our local virtualenv
+######################################
+# User and folder setup.
+######################################
+
+# Create a user and group.
+useradd -U -p ${CLOUDLET_USER} ${CLOUDLET_USER}
+chown -R ${CLOUDLET_USER}:${CLOUDLET_USER} ${INSTALL_FOLDER}
+chmod g+s ${INSTALL_FOLDER}
+
+# Setup data folder.
+mkdir -p ${DATA_FOLDER}
+
+# Change permission on so all users can access it.
+echo "Changing ${INSTALL_FOLDER} permissions"
+chmod -R 777 ${INSTALL_FOLDER}
+
+######################################
+# Python libvirt setup
+######################################
+
+# Link libvirt to our local virtualenv
 echo "Linking libvirt to pycloud virtualenv"
+PYCLOUD_ENV="/usr/share/python/python-pycloud/lib/python2.7/site-packages/"
+SITE_PACKAGES=`python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"`
 VIRT="$SITE_PACKAGES/libvirt*"
 ln -s -v $VIRT -t $PYCLOUD_ENV
 echo "Done linking lib"
 
-# Change permission on /var/pycloud so all users can access it.
-echo "Changing /var/pycloud permissions"
-chmod -R 777 /var/pycloud
+######################################
+# Individual setup scripts.
+######################################
 
-# Setup to ensure USB rules will work.
-chmod a+r /etc/udev/rules.d/95-android.rules
-udevadm control --reload-rules
-service udev restart
-udevadm trigger
+# Execute setup scripts.
+cd "${INSTALL_FOLDER}/scripts"
 
-# Set up freeradius permissions.
-chown -R freerad:freerad /etc/freeradius/
-chmod -R g+rw /etc/freeradius/
+# Setup libvirtd and qemu.
+bash qemu_setup.sh ${CLOUDLET_USER}
 
-# Create a user and group.
-useradd -U -p pycloud pycloud
-chown -R pycloud:pycloud /var/pycloud
-chmod g+s /var/pycloud
+# Set up FreeRADIUS.
+bash freerad_setup.sh ${CLOUDLET_USER}
 
-# Add user to groups.
-CURRENT_USER="pycloud"
-adduser $CURRENT_USER kvm
-adduser $CURRENT_USER libvirtd
-adduser $CURRENT_USER freerad
-adduser $CURRENT_USER plugdev
+# Setup USB.
+bash libusb_setup.sh ${CLOUDLET_USER}
+
+# Set up DNS server.
+bash dns_setup.sh ${DATA_FOLDER}

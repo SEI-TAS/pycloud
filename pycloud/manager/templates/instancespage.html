@@ -29,6 +29,7 @@ http://jquery.org/license
 -->
 <%namespace file="form.html" import="text"/>
 <%namespace file="form.html" import="hidden"/>
+<%namespace file="form.html" import="dropdown"/>
 <%inherit file="base.html"/>
 
 <%block name="header">
@@ -45,8 +46,19 @@ http://jquery.org/license
                 <h2>Running Service VM Instances</h2>
             </div>
             <div class="panel-body">
+                <div>
+                    <p>
+                        <%
+                            availableNetworksUrl = h.url_for(controller='instances', action='get_available_networks')
+                        %>
+                        <button class="btn btn-info" onclick="showWifiNetworksModal('${availableNetworksUrl}');">
+                            <span class="glyphicon glyphicon-transfer" style="color: white"></span> Wi-Fi Networks
+                        </button>
+                    </p>
+                </div>
                 <table class="table table-striped">
                     <input type="hidden" id="svm_url" value="${h.url_for(controller='instances', action='svmList')}"/>
+                    <input type="hidden" id="wifi_url" value="${h.url_for(controller='instances', action='wifiConnect')}"/>
                     <tr>
                         <th>Svm ID</th>
                         <th>Service ID</th>
@@ -66,7 +78,8 @@ http://jquery.org/license
                             stop_click    = "stopSVM('"+ stop_url +"');"
 
                             migrate_url   = h.url_for(controller='instances', action='migrateInstance', id=svm._id)
-                            migrate_click = "showMigrationModal('" + migrate_url + "');"
+                            find_cloudlets_url = h.url_for(controller='instances', action='get_available_cloudlets')
+                            migrate_click = "showMigrationModal('" + find_cloudlets_url + "', '" + migrate_url + "');"
                         %>
                         <tr>
                             <td class="svm_id">${svm._id}</td>
@@ -105,8 +118,8 @@ http://jquery.org/license
 		    </div>
 		    <div class="modal-body">
 		        <div class="well">
-		            <form id="new-svm-form" class="form-horizontal" action="" method="post">
-		            	${text(id='targetCloudet', input_width=12, label=_('Target Cloudlet (FQDN)'), mandatory=True)}
+		            <form id="migrate-svm-form" class="form-horizontal" action="" method="post">
+                        ${dropdown(id='targetCloudlet', options={}, input_width=12, label=_('Target Cloudlet'), mandatory=True)}
                         ${hidden(id='migrateUrl')}
 		            </form>
 		        </div>
@@ -114,6 +127,33 @@ http://jquery.org/license
 		    <div class="modal-footer">
 		        <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
 		        <a href="#" class="btn btn-primary" onclick="migrateSVM()">Migrate</a>
+		    </div>
+	    </div>
+    </div>
+</div>
+
+<!-- Wifi connection modal. -->
+<div class="modal fade" id="modal-wifi-connect" role="dialog" data-backdrop="static">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		    <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal">x</button>
+		        <h3>Available Wi-Fi Cloudlet Networks</h3>
+		    </div>
+		    <div class="modal-body">
+                <p>Current Wi-Fi network on Wireless adapter: <b><span id="currentNetwork">${page.current_network}</span></b>
+                    <a href="${ h.url_for(controller='instances', action='wifiDisconnect')}" id="disconnectButton"
+                       class="btn btn-danger btn-xs">Disconnect</a>
+                </p>
+		        <div class="well">
+		            <form id="wifi-connection-form" class="form-horizontal" action="" method="post">
+		            	${dropdown(id='ssid', options={}, input_width=12, label=_('Available Wi-Fi Networks'))}
+		            </form>
+		        </div>
+		    </div>
+		    <div class="modal-footer">
+		        <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+		        <a href="#" class="btn btn-primary" onclick="wifiConnection()">Connect</a>
 		    </div>
 	    </div>
     </div>

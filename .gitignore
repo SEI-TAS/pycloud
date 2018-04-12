@@ -1,3 +1,4 @@
+*.iml
 *.egg-info/*
 /data
 /dist
@@ -6,3 +7,5 @@
 /env
 *.pyc
 .idea/
+/tls/certs
+/scripts/get-pip.py

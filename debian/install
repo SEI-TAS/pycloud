@@ -4,8 +4,18 @@ discovery/cloudlet.service /etc/avahi/services/
 pycloud/pycloud/vm/vm_template.xml /var/pycloud/data/
 upstart/pycloud-api.conf /etc/init
 upstart/pycloud-manager.conf /etc/init
-libusb/95-android.rules /etc/udev/rules.d/
+
+scripts/qemu_setup.sh /var/pycloud/scripts/
+radius/freerad_setup.sh /var/pycloud/scripts/
+
 radius/auto_reload/pycloud-run_every.sh /opt/
 radius/auto_reload/pycloud-reload_configs.sh /opt/
 radius/auto_reload/freeradius.conf /etc/init/
 radius/auto_reload/freerad /etc/cron.d/
+
+libusb/libusb_setup.sh /var/pycloud/scripts/
+libusb/95-android.rules /var/pycloud/scripts/
+
+dns/dns_setup.sh /var/pycloud/scripts/
+dns/db.svm.cloudlet.local /var/pycloud/scripts/
+dns/named.conf.local /var/pycloud/scripts/

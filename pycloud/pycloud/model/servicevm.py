@@ -26,14 +26,9 @@
 # Released under the MIT license
 # http://jquery.org/license
 
-__author__ = 'jdroot'
-
-# Import libvirt to access the virtualization API.
-import libvirt
-
-import re
 import time
 import os
+import json
 
 # Used to generate unique IDs for the VMs.
 from uuid import uuid4
@@ -44,10 +39,22 @@ from pycloud.pycloud.mongo import Model
 from pycloud.pycloud.model.vmimage import VMImage
 from pycloud.pycloud.vm.vmsavedstate import VMSavedState
 from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineDescriptor
-from pycloud.pycloud.vm.virtualmachinedescriptor import VirtualMachineException
-from pycloud.pycloud.vm.vmutils import get_hypervisor
+from pycloud.pycloud.vm.vmutils import VirtualMachineException
 from pycloud.pycloud.utils import portmanager
 from pycloud.pycloud.cloudlet import get_cloudlet_instance
+from pycloud.pycloud.vm.vmutils import VirtualMachine
+
+from pycloud.pycloud.network import cloudlet_dns
+
+
+################################################################################################################
+#
+################################################################################################################
+class SVMNotFoundException(Exception):
+    def __init__(self, message):
+        super(SVMNotFoundException, self).__init__(message)
+        self.message = message
+
 
 ################################################################################################################
 # Represents a runtime ServiceVM, independent on whether it has a cloned or original disk image.
@@ -56,22 +63,24 @@ class ServiceVM(Model):
     # Meta class is needed so that minimongo can map this class onto the database.
     class Meta:
         collection = "service_vms"
-        external = ['_id', 'service_id', 'running', 'port', 'ip_address', 'vnc_address', 'ssh_port']
+        external = ['_id', 'service_id', 'running', 'port', 'ip_address', 'vnc_address', 'ssh_port', 'fqdn']
         mapping = {
             'vm_image': VMImage
         }
 
     # Constants.
     SSH_INTERNAL_PORT = 22
+    VM_NAME_PREFIX = 'VM'
 
     ################################################################################################################
     # Constructor.
     ################################################################################################################
     def __init__(self, *args, **kwargs):
         self._id = None
+        self.name = None
+        self.vm = VirtualMachine()
         self.vm_image = None
-        self.os = "lin"     # By default, used when creating a new SVM only.
-        self.prefix = 'VM'
+        self.os = 'lin'     # By default, used when creating a new SVM only.
         self.port_mappings = {}
         self.service_port = None
         self.port = None    # Used to show the external port
@@ -82,52 +91,67 @@ class ServiceVM(Model):
         self.ip_address = None
         self.mac_address = None
         self.running = False
+        self.ready = False
+        self.fqdn = None
+        self.network_mode = None
+        self.adapter = None
+        self.num_current_users = 0
         super(ServiceVM, self).__init__(*args, **kwargs)
 
     ################################################################################################################
-    # Sets up the internal network parameters, based on the config.
+    # Finds all SVMs given some search criteria.
     ################################################################################################################
-    def _setup_network(self):
-        # Configure bridged mode if enabled
-        c = get_cloudlet_instance()
-        print 'Bridge enabled: ', c.network_bridge_enabled
-        print 'Network Adapter: ', c.network_adapter
-        if c.network_bridge_enabled:
-            self.network_mode = "bridged"
-            self.adapter = c.network_adapter
-
-            # In bridge mode we need a new MAC in case we are a clone.
-            self.mac_address = generate_random_mac()
-            print 'Generated new mac address: ' + self.mac_address
-        else:
-            self.network_mode = "user"
-            self.adapter = c.network_adapter
+    @staticmethod
+    def find_all(search_dict={}, only_find_ready_ones=True, connect_to_vm=True):
+        service_vms_array = []
+        if only_find_ready_ones:
+            search_dict['ready'] = True
+        svm_list = ServiceVM.find(search_dict)
+        for service_vm in svm_list:
+            if connect_to_vm:
+                service_vm.connect_to_vm()
+            else:
+                service_vm.vm = None
+            service_vms_array.append(service_vm)
+        return service_vms_array
 
     ################################################################################################################
-    # Locate a servicevm by its ID
+    # Locate a ServiceVM by its ID
     ################################################################################################################
     # noinspection PyBroadException
     @staticmethod
-    def by_id(svm_id=None):
+    def by_id(svm_id=None, only_find_ready_ones=True):
         try:
-            service_vm = ServiceVM.find_one({'_id': svm_id})
+            search_dict = {'_id': svm_id}
+            if only_find_ready_ones:
+                search_dict['ready'] = True
+            service_vm = ServiceVM.find_one(search_dict)
         except:
             return None
-        return service_vm        
+
+        if service_vm:
+            service_vm.connect_to_vm()
+
+        return service_vm
 
     ################################################################################################################
-    # Generates a random ID, valid as a VM id.
+    # Connects to a libvirt vm.
+    ################################################################################################################
+    def connect_to_vm(self):
+        self.vm = VirtualMachine()
+        try:
+            self.vm.connect_to_virtual_machine(self._id)
+        except VirtualMachineException as e:
+            print 'Error connecting to VM with id {}: {}'.format(self._id, e.message)
+            self.vm = None
+
+    ################################################################################################################
+    #
     ################################################################################################################
     @staticmethod
     def by_service(service_id):
-        return ServiceVM.find({'service_id': service_id})
-
-    ################################################################################################################
-    # Lookup a specific instance by its uuid
-    ################################################################################################################
-    @staticmethod
-    def _get_virtual_machine(uuid):
-        return get_hypervisor().lookupByUUIDString(uuid)
+        service_vms = ServiceVM.find_all({'service_id': service_id})
+        return service_vms
 
     ################################################################################################################
     # Cleanly and safely gets a ServiceVM and removes it from the database.
@@ -138,50 +162,148 @@ class ServiceVM(Model):
         return ServiceVM.find_and_modify(query={'_id': svm_id}, remove=True)
 
     ################################################################################################################
+    # Overridden method to avoid trying to store the VM object into the db.
+    ################################################################################################################
+    def save(self, *args, **kwargs):
+        vm = self.vm
+        self.vm = None
+        super(ServiceVM, self).save(*args, **kwargs)
+        self.vm = vm
+
+    ################################################################################################################
+    # Serializes the object safely into a json string.
+    ################################################################################################################
+    def to_json_string(self):
+        vm = self.vm
+        self.vm = None
+        json_string = json.dumps(self)
+        self.vm = vm
+        return json_string
+
+    ################################################################################################################
+    # Sets the name based on the space in the XML string.
+    ################################################################################################################
+    def set_default_name(self, xml_string=None):
+        self.name = None
+        default_new_name = self.VM_NAME_PREFIX + '-' + self._id
+
+        if not xml_string:
+            self.name = default_new_name
+        else:
+            original_name = VirtualMachineDescriptor.get_raw_name(xml_string)
+            if VirtualMachineDescriptor.does_name_fit(xml_string, default_new_name):
+                new_name = default_new_name
+            else:
+                print 'Truncating new VM name.'
+                new_name = default_new_name[:len(original_name)]
+
+            self.name = new_name
+
+            print 'Original VM Name: {}'.format(original_name)
+            print 'New VM Name: {}'.format(self.name)
+
+        if not self.name:
+            self.name = ''
+
+    ################################################################################################################
     # Generates a random ID, valid as a VM id.
     ################################################################################################################
     def generate_random_id(self):
         self._id = str(uuid4())
 
     ################################################################################################################
-    # Add a port mapping
+    # Create a new service VM from a given template, and start it.
     ################################################################################################################
-    def add_port_mapping(self, host_port, guest_port):
-        if not self.port_mappings:
-            self.port_mappings = {}
+    def create(self, vm_xml_template_file):
+        # Check that the XML description file exists.
+        if not os.path.exists(vm_xml_template_file):
+            raise VirtualMachineException("VM description file %s for VM creation does not exist." % vm_xml_template_file)
 
-        # If you are setting the services port we need to set the external port in a particular attribute.
-        if guest_port == self.service_port:
-            self.port = host_port
+        # Setup network params.
+        self.setup_network()
+
+        # Load the XML template and update it with this VM's information.
+        template_xml_descriptor = open(vm_xml_template_file, "r").read()
+        self.set_default_name()
+        updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)
+
+        # Create a VM ("domain") through the hypervisor.
+        self._cold_boot(updated_xml_descriptor)
+
+        # Ensure network is working and load network data.
+        self.load_network_data()
+        self.register_with_dns()
+
+        return self
+
+    ################################################################################################################
+    # Start this service VM. 
+    ################################################################################################################
+    def start(self):
+        # Check if we are already running.
+        if self.running:
+            return self
+
+        # Setup network params.
+        self.setup_network()
+
+        # Make sure the hypervisor can write to our files (since the disk image will be modified by the VM).
+        self.vm_image.unprotect()
+
+        # Get the saved state and make sure it is populated
+        saved_state = VMSavedState(self.vm_image.state_image)
+
+        # Update the state image with the updated descriptor.
+        # NOTE: this is only needed since libvirt wont allow us to change the ID of a VM being restored through its API. 
+        # Instead, we trick it by manually changing the ID of the saved state file, so the API won't know we changed it.
+        raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription()
+        self.set_default_name(raw_saved_xml_descriptor)
+        updated_xml_descriptor_id_only = VirtualMachineDescriptor.update_raw_name_and_id(raw_saved_xml_descriptor,
+                                                                                         self._id, self.name)
+        saved_state.updateStoredVmDescription(updated_xml_descriptor_id_only)
+
+        # Get the descriptor and update it to include the current disk image path, port mappings, etc.
+        saved_xml_descriptor = saved_state.getStoredVmDescription()
+        updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
+
+        # Restore a VM to the state indicated in the associated memory image file, in running mode.
+        # The XML descriptor is given since some things need to be changed for the instance, mainly the disk image file and the mapped ports.
+        try:
+            print "Resuming from VM image..."
+            VirtualMachine.restore_saved_vm(saved_state.savedStateFilename, updated_xml_descriptor)
+            self.vm.connect_to_virtual_machine(self._id)
+            print "Resumed from VM image."
+            self.running = True
+            self.ready = True
+        except VirtualMachineException as e:
+            # If we could not resume the VM, discard the memory state and try to boot the VM from scratch.
+            print "Error resuming VM: %s for VM; error is: %s" % (str(self._id), str(e))
+            print "Discarding saved state and attempting to cold boot VM."
             
-        # If you are setting the SSH port we need to set the external port in a particular attribute.
-        if guest_port == self.SSH_INTERNAL_PORT:
-            self.ssh_port = host_port               
+            # Simply try creating a new VM with the same disk and the updated XML descriptor from the saved state file.
+            self._cold_boot(updated_xml_descriptor)
 
-        # Add the actual mapping.
-        self.port_mappings[str(host_port)] = guest_port
-        print('Setting up port forwarding from host port ' + str(host_port) + ' to guest port ' + str(guest_port))
+        # Ensure network is working and load network data.
+        self.load_network_data()
+        self.register_with_dns()
 
-    ################################################################################################################
-    # Gets the port mappings in the form int -> int instead of str -> int
-    ################################################################################################################
-    def _get_libvirt_port_mappings(self):
-        ret = {}
-        if self.port_mappings:
-            for key, value in self.port_mappings.iteritems():
-                ret[int(key)] = value
-        return ret
-    
+        # Check if the service is available, wait for it for a bit.
+        # CURRENT IMPLEMENTATION ONLY WORKS IN BRIDGED MODE.
+        if self.network_mode == "bridged":
+            self._check_service()
+
+        return self
+
     ################################################################################################################
     # Updates an XML containing the description of the VM with the current info of this VM.
-    ################################################################################################################    
+    ################################################################################################################
     def _update_descriptor(self, saved_xml_descriptor):
         # Get the descriptor and inflate it to something we can work with.
         xml_descriptor = VirtualMachineDescriptor(saved_xml_descriptor)
 
         # Change the ID and Name (note: not currently that useful since they are changed in the saved state file).
         xml_descriptor.setUuid(self._id)
-        xml_descriptor.setName(self.prefix + '-' + self._id)
+        xml_descriptor.setName(self.name)
 
         # Set the disk image in the description of the VM.
         xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')
@@ -214,49 +336,101 @@ class ServiceVM(Model):
             # Create a new port if we do not have an external port already.
             print 'Setting up port forwarding'
             if not self.port:
-                self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.service_port)
+                self._add_port_mapping(portmanager.PortManager.generate_random_available_port(), self.service_port)
             if not self.ssh_port:
-                self.add_port_mapping(portmanager.PortManager.generateRandomAvailablePort(), self.SSH_INTERNAL_PORT)
-            xml_descriptor.setPortRedirection(self._get_libvirt_port_mappings())
+                self._add_port_mapping(portmanager.PortManager.generate_random_available_port(), self.SSH_INTERNAL_PORT)
+            xml_descriptor.setPortRedirection(self.port_mappings)
+
+        # Remove seclabel item.
+        xml_descriptor.removeSecLabel()
 
         # Get the resulting XML string and return it.
         updated_xml_descriptor = xml_descriptor.getAsString()
         return updated_xml_descriptor
-    
-    ################################################################################################################
-    # Updates the name and id of an xml by simply replacing the text, without parsing, to ensure the result will
-    # have exactly the same length as before.
-    ################################################################################################################    
-    def _update_raw_name_and_id(self, saved_xml_string):
-        updated_xml = re.sub(r"<uuid>[\w\-]+</uuid>", "<uuid>%s</uuid>" % self._id, saved_xml_string)
-        updated_xml = re.sub(r"<name>[\w\-]+</name>", "<name>%s</name>" % (self.prefix + '-' + self._id), updated_xml)
-        return updated_xml
 
     ################################################################################################################
-    # Updates the MAC of an xml by simply replacing the text, without parsing, to ensure the result will
-    # have the exact same length as before.
+    # Add a port mapping
     ################################################################################################################
-    def _update_raw_mac(self, saved_xml_string):
-        updated_xml = re.sub(r"<mac address='[\w\d:]+'/>", "<mac address='%s'/>" % self.mac_address, saved_xml_string)
-        return updated_xml
+    def _add_port_mapping(self, host_port, guest_port):
+        if not self.port_mappings:
+            self.port_mappings = {}
+
+        # If you are setting the services port we need to set the external port in a particular attribute.
+        if guest_port == self.service_port:
+            self.port = host_port
+
+        # If you are setting the SSH port we need to set the external port in a particular attribute.
+        if guest_port == self.SSH_INTERNAL_PORT:
+            self.ssh_port = host_port
+
+        # Add the actual mapping. Keys need to be stored as string so that MongoDB will accept and store them.
+        self.port_mappings[str(host_port)] = int(guest_port)
+        print('Setting up port forwarding from host port ' + str(host_port) + ' to guest port ' + str(guest_port))
 
     ################################################################################################################
-    # Waits for the service to boot up.
+    # Boots a VM using a defined disk image and a state XML.
     ################################################################################################################
-    def _wait_for_service(self, retries=5):
-        if retries == 0:
-            print 'Service is not available, stopping retries.'
-            return False
+    def _cold_boot(self, xml_descriptor):
+        # Create a VM ("domain") through the hypervisor.
+        print "Booting up a VM..."
+        try:
+            self.vm.create_and_start_vm(xml_descriptor)
+            print "VM object successfully created, VM started."
+            self.running = True
+            self.ready = True
+        except:
+            # Ensure we destroy the VM if there was some problem after creating it.
+            self.stop()
+            raise
 
-        print 'Checking if service is available inside VM.'
-        result = is_port_open(self.ip_address, int(self.port))
-        if not result:
-            print 'Service is not yet available, waiting...'
-            time.sleep(2)
-            return self._wait_for_service(retries=(retries-1))
+    ################################################################################################################
+    # Sets up the internal network parameters, based on the config.
+    ################################################################################################################
+    def setup_network(self, update_mac_if_needed=True):
+        # Configure bridged mode if enabled
+        c = get_cloudlet_instance()
+        print 'Bridge enabled: ', c.network_bridge_enabled
+        print 'Network Adapter: ', c.network_adapter
+        if c.network_bridge_enabled:
+            self.network_mode = "bridged"
+            self.adapter = c.network_adapter
+
+            if update_mac_if_needed:
+                # In bridge mode we need a new MAC in case we are a clone.
+                self.mac_address = generate_random_mac()
+                print 'Generated new mac address: ' + self.mac_address
         else:
-            print 'Successful connection, service is available.'
-            return True
+            self.network_mode = "user"
+            self.adapter = c.network_adapter
+
+        # Generate FQDN.
+        self._generate_fqdn()
+
+    ################################################################################################################
+    # Set up network stuff.
+    ################################################################################################################
+    def load_network_data(self):
+        self._load_ip_address()
+        self._load_vnc_address_from_running_instance()
+
+    ################################################################################################################
+    # Loads network data: get the IP of the VM.
+    ################################################################################################################
+    def _load_ip_address(self):
+        try:
+            # Get the IP of the VM.
+            if self.network_mode == 'bridged':
+                if self.ip_address is None:
+                    # We will attempt to indirectly get the IP from the virtual MAC of the VM.
+                    self.ip_address = self._get_ip_from_mac()
+            else:
+                # If we are not on bridged mode, the VM's IP address will be the same as the cloudlet's address.
+                self.ip_address = get_adapter_ip_address(self.adapter)
+        except Exception as e:
+            message = "Error getting IP of new SVM: " + str(e)
+            raise Exception(message)
+
+        print "SSH available on {}:{}".format(str(self.ip_address), str(self.ssh_port))
 
     ################################################################################################################
     # Will locate the IP address from our MAC.
@@ -274,250 +448,186 @@ class ServiceVM(Model):
 
         return ip
 
-    ################################################################################################################
-    # Boots a VM using a defined disk image and a state XML.
-    ################################################################################################################
-    def _cold_boot(self, xml_descriptor):
-        # Create a VM ("domain") through the hypervisor.
-        print "Booting up a VM..."
+    ###############################################################################################################
+    # Get the VNC address and port, loading it from the running VM.
+    ###############################################################################################################
+    def _load_vnc_address_from_running_instance(self):
         try:
-            get_hypervisor().createXML(xml_descriptor, 0)
-            print "VM object successfully created, VM started."
-            self.running = True
-        except:
-            # Ensure we destroy the VM if there was some problem after creating it.
-            self.destroy()
-            raise
+            self.vnc_port = self._get_vnc_port()
+            self.vnc_address = get_adapter_ip_address(self.adapter) + ":" + self.vnc_port
+            print "VNC available on {}".format(str(self.vnc_address))
+        except Exception, e:
+            print 'Could not load VNC address: ' + str(e)
 
     ################################################################################################################
-    # Perform several network checks: get the IP of the VM, ensure that the service is available, and get the VNC
-    # address and port.
+    # Gets the host port the VNC server is listening on for this vm, which was automatically allocated.
     ################################################################################################################
-    def _network_checks(self, check_service=True):
-        try:
-            # Get the IP of the VM.
-            if self.network_mode == 'bridged':
-                # We will attempt to indirectly get the IP from the virtual MAC of the VM.
-                self.ip_address = self._get_ip_from_mac()
-            else:
-                # If we are not on bridged mode, the VM's IP address will be the same as the cloudlet's address.
-                self.ip_address = get_adapter_ip_address(self.adapter)
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            # TODO: throw exception.
-            print "Error getting IP of new SVM: " + str(e)
-            check_service = False
-        print "SSH available on {}:{}".format(str(self.ip_address), str(self.ssh_port))
-
-        if check_service:
-            # Wait until the service is running inside the VM.
-            service_available = self._wait_for_service()
-            if not service_available:
-                # TODO: throw exception.
-                print 'Service was not found running inside the SVM. Check if it is configured to start at boot time.'
-
-        # Get VNC connection info.
-        self.vnc_address = self.__get_vnc_address()
-        self.vnc_port = self.__get_vnc_port()
-        print "VNC available on {}".format(str(self.vnc_address))
-
-    ################################################################################################################
-    # Create a new service VM from a given template, and start it.
-    ################################################################################################################
-    def create(self, vm_xml_template_file):
-        # Check that the XML description file exists.
-        if not os.path.exists(vm_xml_template_file):
-            raise VirtualMachineException("VM description file %s for VM creation does not exist." % vm_xml_template_file)
-
-        # Setup network params.
-        self._setup_network()
-
-        # Load the XML template and update it with this VM's information.
-        template_xml_descriptor = open(vm_xml_template_file, "r").read()
-        updated_xml_descriptor = self._update_descriptor(template_xml_descriptor)
-
-        # Create a VM ("domain") through the hypervisor.
-        self._cold_boot(updated_xml_descriptor)
-
-        # Ensure network is working and load network data.
-        self._network_checks(check_service=False)
-
-        return self
-
-    ################################################################################################################
-    # Start this service VM. 
-    ################################################################################################################
-    def start(self):
-        # Check if we are already running.
-        if self.running:
-            return self
-
-        # Setup network params.
-        self._setup_network()
-
-        # Make sure libvirt can write to our files (since the disk image will be modified by the VM).
-        self.vm_image.unprotect()
-
-        # Get the saved state and make sure it is populated
-        saved_state = VMSavedState(self.vm_image.state_image)
-
-        # Update the state image with the updated descriptor.
-        # NOTE: this is only needed since libvirt wont allow us to change the ID of a VM being restored through its API. 
-        # Instead, we trick it by manually changing the ID of the saved state file, so the API won't know we changed it. 
-        raw_saved_xml_descriptor = saved_state.getRawStoredVmDescription(get_hypervisor())
-        updated_xml_descriptor_id_only = self._update_raw_name_and_id(raw_saved_xml_descriptor)
-        saved_state.updateStoredVmDescription(updated_xml_descriptor_id_only)
-
-        # Get the descriptor and update it to include the current disk image path, port mappings, etc.
-        saved_xml_descriptor = saved_state.getStoredVmDescription(get_hypervisor())
-        updated_xml_descriptor = self._update_descriptor(saved_xml_descriptor)
-
-        # Restore a VM to the state indicated in the associated memory image file, in running mode.
-        # The XML descriptor is given since some things need to be changed for the instance, mainly the disk image file and the mapped ports.
-        try:
-            print "Resuming from VM image..."
-            get_hypervisor().restoreFlags(saved_state.savedStateFilename, updated_xml_descriptor, libvirt.VIR_DOMAIN_SAVE_RUNNING)
-            print "Resumed from VM image."
-            self.running = True
-        except libvirt.libvirtError as e:
-            # If we could not resume the VM, discard the memory state and try to boot the VM from scratch.
-            print "Error resuming VM: %s for VM; error is: %s" % (str(self._id), str(e))
-            print "Discarding saved state and attempting to cold boot VM."
-            
-            # Simply try creating a new VM with the same disk and the updated XML descriptor from the saved state file.
-            self._cold_boot(updated_xml_descriptor)
-
-        # Ensure network is working and load network data.
-        self._network_checks()
-
-        return self
-
-    ################################################################################################################
-    # Gets the host port the VNC server is listening on for this vm, which was automatically allocated by libvirt/qemu.
-    ################################################################################################################
-    def __get_vnc_port(self):
-        vm_xml_string = ServiceVM._get_virtual_machine(self._id).XMLDesc(libvirt.VIR_DOMAIN_XML_SECURE)
+    def _get_vnc_port(self):
+        vm_xml_string = self.vm.get_running_vm_xml_string()
         xml_descriptor = VirtualMachineDescriptor(vm_xml_string)
         vnc_port = xml_descriptor.getVNCPort()
         return vnc_port
 
     ################################################################################################################
-    # Gets the host IP and por port the VNC server is listening on for this vm, which was automatically allocated by libvirt/qemu.
+    # Checks if the service is running inside the VM.
     ################################################################################################################
-    def __get_vnc_address(self):
-        return get_adapter_ip_address(self.adapter) + ":" + self.__get_vnc_port()
+    def _check_service(self):
+        # Wait until the service is running inside the VM.
+        service_available = self._wait_for_service()
+        if not service_available:
+            # TODO: throw exception.
+            print 'Service was not found running inside the SVM. Check if it is configured to start at boot time.'
 
     ################################################################################################################
-    # Stop this service VM
+    # Waits for the service to boot up.
+    # TODO: this method does not work as intended in non-bridged mode. It properly checks that the external,
+    # TODO: port-fowarding port is open, but if there is no forwarded internal port open, it succeeds as well (the
+    # TODO: connection is just closed right away, but that is not checked here).
     ################################################################################################################
-    def stop(self, foce_save_state=False):
-        # Check if this instance is actually running
-        if not self.running:
-            return
+    def _wait_for_service(self, retries=5):
+        if retries == 0:
+            print 'Service is not available, stopping retries.'
+            return False
 
-        vm = None
-        try:
-            # Get the VM
-            vm = ServiceVM._get_virtual_machine(self._id)
-
-            # Save the state, if our image is not cloned.
-            if not self.vm_image.cloned or foce_save_state:
-                self._save_state()
-                self.running = False
-        except Exception, e:
-            print "Warning getting VM: " + str(e)
-
-        # Destroy the VM if it exists, anr mark it as not running.
-        if vm and self.running:
-            print "Stopping Service VM with instance id %s" % self._id
-            vm.destroy()
+        print 'Checking if service is available inside VM.'
+        result = is_port_open(self.ip_address, int(self.port))
+        if not result:
+            print 'Service is not yet available, waiting...'
+            time.sleep(2)
+            return self._wait_for_service(retries=(retries - 1))
         else:
-            print 'VM with id %s not found while stopping it.' % self._id
+            print 'Successful connection, service is available.'
+            return True
+
+    ################################################################################################################
+    # Generates a FQDN for the SVM.
+    ################################################################################################################
+    def _generate_fqdn(self):
+        if get_cloudlet_instance().dns_enabled:
+            hostname = self.service_id + '.' + self._id
+            self.fqdn = cloudlet_dns.CloudletDNS.generate_fqdn(hostname)
+
+    ################################################################################################################
+    # Register with DNS server.
+    ################################################################################################################
+    def register_with_dns(self):
+        if get_cloudlet_instance().dns_enabled:
+            # Register with DNS. If we are in bridged mode, we need to set up a specific record to the new IP address.
+            dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
+            if self.network_mode == 'bridged':
+                dns_server.register_svm(self.fqdn, self.ip_address)
+            else:
+                dns_server.register_svm(self.fqdn)
+
+    ################################################################################################################
+    # Stop this service VM, removing its files, database records, and other related records.
+    ################################################################################################################
+    def stop(self, foce_save_state=False, cleanup_files=True):
+        print "Stopping or cleaning up Service VM with instance id %s" % self._id
+
+        # First save memory state if needed.
+        if self.running:
+            try:
+                # Save the state, if our image is not cloned.
+                if not self.vm_image.cloned or foce_save_state:
+                    self._save_state()
+            except Exception, e:
+                print "Warning: error while saving VM: " + str(e)
+
+        # Destroy the VM if it exists.
+        if self.running:
+            try:
+                if self.vm:
+                    print "Stopping Service VM with instance id %s" % self._id
+                    self.vm.destroy()
+                else:
+                    print 'VM with id %s not found while stopping it.' % self._id
+            except Exception, e:
+                print "Warning: error while cleaning up VM: " + str(e)
+
+        # Ensure we are marked as not running nor ready.
         self.running = False
+        self.ready = False
+
+        # Unregister from DNS.
+        try:
+            self._unregister_from_dns()
+        except Exception, e:
+            print "Warning: error while removing DNS record: " + str(e)
+
+        # Remove it from the database of running VMs.
+        ServiceVM.find_and_remove(self._id)
+
+        if cleanup_files:
+            # Remove VM files
+            self.vm_image.cleanup()
+
+        print "Service VM has finished stopping and cleaning up"
+
+    ################################################################################################################
+    # Pauses a VM and stores its memory state to a disk file.
+    ################################################################################################################
+    def _save_state(self):
+        print "Storing VM memory state to file %s" % self.vm_image.state_image
+        self.vm.save_state(self.vm_image.state_image)
+        self.running = False
+        print "Memory state successfully saved."
+
+    ################################################################################################################
+    # Unregister from DNS server.
+    ################################################################################################################
+    def _unregister_from_dns(self):
+        if get_cloudlet_instance().dns_enabled:
+            dns_server = cloudlet_dns.CloudletDNS(get_cloudlet_instance().data_folder)
+            dns_server.unregister_svm(self.fqdn)
 
     ################################################################################################################
     # Pauses a VM.
     ################################################################################################################
     def pause(self):
-        vm = ServiceVM._get_virtual_machine(self._id)
-        result = vm.suspend()
-        self.running = False
-        return result
+        was_pause_successful = self.vm.pause()
+        if was_pause_successful:
+            self.running = False
+        return was_pause_successful
 
     ################################################################################################################
     # Unpauses a VM.
     ################################################################################################################
     def unpause(self):
-        vm = ServiceVM._get_virtual_machine(self._id)
-        result = vm.resume()
-        if result == 0:
+        was_resume_successful = self.vm.unpause()
+        if was_resume_successful:
             self.running = True
-        return result
+            self.ready = True
+        return was_resume_successful
 
     ################################################################################################################
     # Migrates a vm.
     ################################################################################################################
-    def migrate(self, remote_host, p2p=False):
-            vm = ServiceVM._get_virtual_machine(self._id)
+    def migrate(self, remote_host):
+        # Set flags that depend on migration type.
+        print 'Starting memory and state migration...'
+        start_time = time.time()
 
-            # Prepare basic flags. Bandwidth 0 lets libvirt choose the best value
-            # (and some hypervisors do not support it anyway).
-            # TODO: figure out why shared disk is ignored.
-            flags = 0 # libvirt.VIR_MIGRATE_NON_SHARED_DISK | libvirt.VIR_MIGRATE_PAUSED
-            new_id = None
-            bandwidth = 0
+        # Migrate the state and memory.
+        self.vm.perform_memory_migration(remote_host)
 
-            # Set flags that depend on migration type.
-            print 'Starting memory and state migration...'
-            start_time = time.time()
-            if p2p:
-                flags = flags | libvirt.VIR_MIGRATE_PEER2PEER
-                #uri = 'tcp://%s' % remote_host
-                uri = None
-            else:
-                uri = None
+        # Unregister from DNS server.
+        self._unregister_from_dns()
 
-            # Migrate the state and memory.
-            remote_uri = 'qemu://%s/system' % remote_host
-            remote_hypervisor = libvirt.open(remote_uri)
-            vm.migrate(remote_hypervisor, flags, new_id, uri, bandwidth)
-
-            elapsed_time = time.time() - start_time
-            print 'Migration finished successfully. It took ' + str(elapsed_time) + ' seconds.'
+        elapsed_time = time.time() - start_time
+        print 'Migration finished successfully. It took ' + str(elapsed_time) + ' seconds.'
 
     ################################################################################################################
-    # Pauses a VM and stores its memory state to a disk file.
-    ################################################################################################################          
-    def _save_state(self):
-        # Get the VM.
-        vm = ServiceVM._get_virtual_machine(self._id)     
-        
-        # We indicate that we want want to use as much bandwidth as possible to store the VM's memory when suspending.
-        unlimitedBandwidth = 1000000    # In Gpbs
-        vm.migrateSetMaxSpeed(unlimitedBandwidth, 0)
-
-        # Store the VM's memory state to a file.
-        print "Storing VM memory state to file %s" % self.vm_image.state_image
-        try:
-            result = vm.save(self.vm_image.state_image)
-            if result != 0:
-                raise VirtualMachineException("Cannot save memory state to file %s", str(self._id))
-            else:
-                print "Memory state successfully saved."
-        except libvirt.libvirtError, e:
-            raise VirtualMachineException(str(e))
-
+    # Stops and clears all registered SVMs.
     ################################################################################################################
-    # Will delete this VM (and stop it if it is currently running)
-    ################################################################################################################
-    def destroy(self):
-        if self.running:
+    @staticmethod
+    def clear_all_svms():
+        print 'Shutting down all running virtual machines'
+        svm_list = ServiceVM.find_all(only_find_ready_ones=False)
+        for svm in svm_list:
             try:
-                self.stop()
-            except Exception, e:
-                print "Warning: error while cleaning up VM: " + str(e)
+                svm.stop()
+            except VirtualMachineException as e:
+                print 'Problem shutting down vm with id {}: {}'.format(svm._id, e.message)
 
-        # Remove VM files, and remove it from the database of running VMs.
-        self.vm_image.cleanup()
-        ServiceVM.find_and_remove(self._id)
+        print 'All machines shutdown.'

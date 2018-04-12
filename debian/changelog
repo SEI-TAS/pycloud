@@ -1,3 +1,23 @@
+python-pycloud (3.0.0) unstable; urgency=medium
+
+  * Added support for Service VM migration, migrating identity as well
+  * Added support for accessing Service VM's by FQDN instead of IP directly
+  * Added support for importing .csvm Services that do not have a memory state image file
+
+ -- Sebastian Echeverria <secheverria@sei.cmu.edu>  Fri, 5 October 2016 11:38:51 -0400
+
+python-pycloud (0.4.2) unstable; urgency=medium
+
+  * Fixed bugs that prevented VM creation.
+
+ -- Sebastian Echeverria <secheverria@sei.cmu.edu>  Fri, 05 Dec 2016 11:38:51 -0400
+
+python-pycloud (0.4.1) unstable; urgency=medium
+
+  * Fixed several bugs that prevented VMs from starting.
+
+ -- Sebastian Echeverria <secheverria@sei.cmu.edu>  Fri, 26 May 2016 11:38:51 -0400
+
 python-pycloud (0.4.0) unstable; urgency=medium
 
   * Multiple security improvements.

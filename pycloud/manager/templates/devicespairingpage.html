@@ -44,7 +44,7 @@ http://jquery.org/license
                 <h2>Available Devices</h2>
             </div>
             <div class="panel-body">
-                <form id="connection_form" method="get" action="${h.url_for(controller='pairing', action='available')}">
+                <form id="connection_form" method="get" action="${h.url_for(controller='devicespairing', action='available')}">
                     Connection type:
                     <select name="connection">
                         <option value="usb" ${page.usb_selected}>USB</option>
@@ -60,7 +60,7 @@ http://jquery.org/license
                     </tr>
                     % for device in page.devices:
                         <%
-                            pair_url = h.url_for(controller='pairing', action='pair', id=device.get_name(),
+                            pair_url = h.url_for(controller='devicespairing', action='pair', id=device.get_name(),
                                                  port=device.get_port(), name=device.get_friendly_name(),
                                                  connection=page.connection)
                             redirectUrl = h.url_for(controller='devices', action='list')

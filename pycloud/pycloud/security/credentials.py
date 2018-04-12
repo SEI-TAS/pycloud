@@ -126,11 +126,11 @@ class DeviceCredentials(object):
     # Factory method to create the corresponding server credentials object.
     ############################################################################################################
     @staticmethod
-    def create_object(type, root_folder, device_id, server_private_key_path):
+    def create_object(type, root_folder, device_id, server_private_key_path, server_public_key_path):
         if type == "SKE":
-            credentials_object = SKEDeviceCredentials(root_folder, device_id, server_private_key_path)
+            credentials_object = SKEDeviceCredentials(root_folder, device_id, server_private_key_path, server_public_key_path)
         elif type == "IBE":
-            credentials_object = IBEDeviceCredentials(root_folder, device_id, server_private_key_path)
+            credentials_object = IBEDeviceCredentials(root_folder, device_id, server_private_key_path, server_public_key_path)
         else:
             raise RuntimeError("The crypter type '{}' is not currently supported.".format(type))
 
@@ -139,7 +139,7 @@ class DeviceCredentials(object):
     ############################################################################################################
     #
     ############################################################################################################
-    def __init__(self, root_folder, device_id, server_private_key_path):
+    def __init__(self, root_folder, device_id, server_private_key_path, server_public_key_path):
         self.id = device_id
         self.private_key = None
         self.auth_password = None
@@ -149,6 +149,10 @@ class DeviceCredentials(object):
         self.server_private_key_file_path = server_private_key_path
         with open(server_private_key_path, 'r') as keyfile:
             self.server_private_key = keyfile.read()
+
+        self.server_public_key_path = server_public_key_path
+        with open(server_public_key_path, 'r') as keyfile:
+            self.server_public_key = keyfile.read()
 
         # Build the full paths.
         self.keys_folder = os.path.join(root_folder, LOCAL_FOLDER)

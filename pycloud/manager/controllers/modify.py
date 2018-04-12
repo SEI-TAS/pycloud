@@ -83,7 +83,7 @@ class ModifyController(BaseController):
 
         # Check if we are editing or creating a new service.
         creatingNew = serviceID is None
-        page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot', id=None)
+        page.saveInstanceURL = h.url_for(controller='modify', action='saveInstanceToRoot')
         page.stopInstanceURL = h.url_for(controller='instances', action='stopInstance', id='')
         page.startInstanceURL = h.url_for(controller='instances', action='startInstance', id='')
         page.chooseImageURL = h.url_for(controller='modify', action='getImageInfo', id=None)
@@ -94,7 +94,7 @@ class ModifyController(BaseController):
         else:
             # Look for the service with this id.
             service = Service.by_id(serviceID)
-            
+
             # We are editing an existing service.
             page.newService = False
             page.internalServiceId = service._id
@@ -186,8 +186,7 @@ class ModifyController(BaseController):
         return h.redirect_to(controller='services')
 
     ############################################################################################################
-    # Creates a new Service VM and opens it in a VNC window for editing.
-    # NOTE: The VNC window will only open on the computer running the server.
+    # Creates a new Service VM.
     ############################################################################################################
     @asjson
     def POST_createSVM(self):
@@ -205,7 +204,7 @@ class ModifyController(BaseController):
             # Set up a new VM image.
             print 'newVmFolder: ', app_globals.cloudlet.newVmFolder
             print 'svm._id: ', svm._id
-            temp_svm_folder = os.path.join(g.cloudlet.newVmFolder, svm._id)
+            temp_svm_folder = os.path.join(app_globals.cloudlet.newVmFolder, svm._id)
             print 'temp_svm_folder: ', temp_svm_folder
             new_disk_image = os.path.join(temp_svm_folder, svm.service_id)
             new_vm_image = VMImage()
@@ -222,7 +221,7 @@ class ModifyController(BaseController):
 
             # Create the VM (this will also start it).
             print "Creating and starting VM for user access..."
-            template_xml_file = os.path.abspath(g.cloudlet.newVmXml)
+            template_xml_file = os.path.abspath(app_globals.cloudlet.newVmXml)
             svm.vm_image = new_vm_image
             svm.service_port = fields['port']
             svm.create(template_xml_file)
@@ -244,22 +243,23 @@ class ModifyController(BaseController):
     # Stops and saves a Service VM that was edited to its permanent root VM image.
     ############################################################################################################
     @asjson
-    def GET_saveInstanceToRoot(self, id):
+    def GET_saveInstanceToRoot(self):
         try:
+            id = str(request.params.get('id'))
             if id is None:
                 msg = "No VM id was provided, VM can't be saved."
                 return ajaxutils.show_and_return_error_dict(msg)
 
             # Save the VM state.
             print "Saving machine state for SVM with id " + str(id)
-            svm = ServiceVM.find_and_remove(id)
-            svm.stop(foce_save_state=True)
+            svm = ServiceVM.by_id(id)
+            svm.stop(foce_save_state=True, cleanup_files=False)
             print "Service VM stopped, and machine state saved."
 
             print 'Editing? ' + str(request.params.get('editing'))
             if request.params.get('editing') == 'false':
                 # Use the service id as the folder for this new saved SVM.
-                vm_image_folder = os.path.join(g.cloudlet.svmCache, svm.service_id)
+                vm_image_folder = os.path.join(app_globals.cloudlet.svmCache, svm.service_id)
             else:
                 # Get the folder of the permanent VM image, to overwrite the previous one.
                 service = Service.by_id(svm.service_id)
@@ -268,10 +268,6 @@ class ModifyController(BaseController):
             # Permanently store the VM.
             print 'Moving Service VM Image to cache, from folder {} to folder {}.'.format(os.path.dirname(svm.vm_image.disk_image), vm_image_folder)
             svm.vm_image.move(vm_image_folder)
-
-            # Ensure we own the new image files.
-            fileutils.chown_to_current_user(svm.vm_image.disk_image)
-            fileutils.chown_to_current_user(svm.vm_image.state_image)
 
             # Make the VM image read only.
             print 'Making VM Image read-only.'

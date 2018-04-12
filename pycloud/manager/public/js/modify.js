@@ -213,11 +213,11 @@ function persistInstance(url)
 {
     // Add the instance ID to the URL.
     var svm_id = $('#svmInstanceId').val();
-    url = url + "/" + svm_id;
+    url = url + "?id=" + svm_id;
 
-    // Add para to indicate if we are creating or editing a VM here.
+    // Add param to indicate if we are creating or editing a VM here.
     var editing_SVM = $('#internalServiceId').val() != '';
-    url = url + "?editing=" + editing_SVM
+    url = url + "&editing=" + editing_SVM
 
     // Do the post to get data and load the modal.
     ajaxGet(url, "Saving SVM", function(vm_image) {

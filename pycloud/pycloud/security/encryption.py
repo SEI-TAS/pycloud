@@ -31,11 +31,10 @@ from Crypto.Cipher import AES
 from Crypto import Random
 import hashlib
 import base64
-import binascii
 
-BS = 16
-pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
-unpad = lambda s : s[0:-ord(s[-1])]
+BLOCK_SIZE = 16
+pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * chr(BLOCK_SIZE - len(s) % BLOCK_SIZE)
+unpad = lambda s: s[:-ord(s[len(s)-1:])]
 
 #################################################################################################################
 # Encrypts a message in an AES encrypted base64 string.

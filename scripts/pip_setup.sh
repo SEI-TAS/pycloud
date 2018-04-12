@@ -1,6 +1,5 @@
 #!/bin/sh
 
 # Install pip.
-rm -f get-pip.py
-wget https://bootstrap.pypa.io/get-pip.py
-python get-pip.py
+sudo apt-get -y install python-pip
+sudo -H pip install --upgrade pip

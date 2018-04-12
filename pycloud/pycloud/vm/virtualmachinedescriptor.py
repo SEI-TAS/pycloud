@@ -29,15 +29,11 @@
 # Used to parse the XML for the VirtualMachineDescriptor.
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
-import os
+from vmutils import VirtualMachineException
 
-################################################################################################################
-# Exception type used in our system.
-################################################################################################################
-class VirtualMachineException(Exception):
-    def __init__(self, message):
-        super(VirtualMachineException, self).__init__(message)
-        self.message = message
+import os
+import re
+
 
 ################################################################################################################
 # Represents an XML description of a VM.
@@ -57,6 +53,40 @@ class VirtualMachineDescriptor(object):
         self.xmlRoot = ElementTree.fromstring(xmlDescriptorString)
 
     ################################################################################################################
+    #
+    ################################################################################################################
+    @staticmethod
+    def does_name_fit(xml_string, new_name):
+        # Any new data must not be bigger than the previous one, or it won't fit in the raw header.
+        new_name_will_fit = False
+        original_name = VirtualMachineDescriptor.get_raw_name(xml_string)
+        if original_name:
+            new_name_will_fit = len(new_name) <= len(original_name)
+
+        return new_name_will_fit
+
+    ################################################################################################################
+    # Gets the name from a raw xml descriptor string.
+    ################################################################################################################
+    @staticmethod
+    def get_raw_name(xml_string):
+        name = None
+        matches = re.search(r"<name>([\w\-]+)</name>", xml_string)
+        if matches:
+            name = matches.group(1)
+        return name
+
+    ################################################################################################################
+    # Updates the name and id of an xml by simply replacing the text, without parsing, to ensure the result will
+    # have exactly the same length as before.
+    ################################################################################################################
+    @staticmethod
+    def update_raw_name_and_id(saved_xml_string, uuid, name):
+        updated_xml = re.sub(r"<uuid>[\w\-]+</uuid>", "<uuid>%s</uuid>" % uuid, saved_xml_string)
+        updated_xml = re.sub(r"<name>[\w\-]+</name>", "<name>%s</name>" % name, updated_xml)
+        return updated_xml
+
+    ################################################################################################################
     # Returns an XML string with the contents of this VMDescriptor
     ################################################################################################################
     def getAsString(self):
@@ -67,8 +97,12 @@ class VirtualMachineDescriptor(object):
     # Returns the port the VNC server is listening on, if any.
     ################################################################################################################
     def getVNCPort(self):
-        vncPort = self.xmlRoot.find("devices/graphics[@type='vnc']").get("port")
-        return vncPort
+        vnc_node = self.xmlRoot.find("devices/graphics[@type='vnc']")
+        if vnc_node is not None:
+            vnc_port = vnc_node.get("port")
+            return vnc_port
+        else:
+            raise VirtualMachineException("VNC not set up for this VM.")
 
     ################################################################################################################
     # Sets the realtek network driver instead of the default virtio one. Needed for Windows-based VMs that do
@@ -144,6 +178,15 @@ class VirtualMachineDescriptor(object):
         vnc_address = self.xmlRoot.find("devices/graphics/listen[@type='address']")
         if vnc_address is not None:
             vnc_address.set("address", "0.0.0.0")
+
+    ################################################################################################################
+    # Removes the security label.
+    ################################################################################################################
+    def removeSecLabel(self):
+        sec_label = self.xmlRoot.find('seclabel')
+        if sec_label is not None:
+            print 'Removing security label.'
+            self.xmlRoot.remove(sec_label)
 
     ################################################################################################################
     # Sets the path to the main disk image.
