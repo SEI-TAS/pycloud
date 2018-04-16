@@ -9,3 +9,4 @@
 .idea/
 /tls/certs
 /scripts/get-pip.py
+.DS_Store

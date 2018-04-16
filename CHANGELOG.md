@@ -1,5 +1,10 @@
 # Change Log
 
+## [3.0.1] - 2018-04-12
+### Fixed
+- Fixed bug that was preventing importing a CSVM file with a zero-length memory image file.
+- Fixed bug in use of nmcli, which changed in version 0.9.10.
+
 ## [3.0.0] - 2016-12-28
 ### Added
 - Added support for using Fully-Qualified Domain Names (FQDNs) instead of IP addresses to access Service VMs (SVMs), to allow for easier migration. If enabled, when a new SVM  is started, a FQDN will be returned to the Cloudlet-Ready App, instead of an IP address. If the cloudlet app uses this FQDN to communicate to the Service VM, migration will be transparent. Disabled by default.
