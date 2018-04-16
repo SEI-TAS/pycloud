@@ -173,11 +173,14 @@ class VirtualMachineDescriptor(object):
     ################################################################################################################
     def enableRemoteVNC(self):
         vnc_graphics = self.xmlRoot.find("devices/graphics[@type='vnc']")
-        if vnc_graphics is not None:
+        if vnc_graphics is None:
+            devices_node = self.xmlRoot.find("devices")
+            devices_node.append(ElementTree.fromstring('<graphics type="vnc" port="-1" autoport="yes" keymap="en-us" listen="0.0.0.0"/>'))
+        else:
             vnc_graphics.set("listen", "0.0.0.0")
-        vnc_address = self.xmlRoot.find("devices/graphics/listen[@type='address']")
-        if vnc_address is not None:
-            vnc_address.set("address", "0.0.0.0")
+            vnc_address = self.xmlRoot.find("devices/graphics/listen[@type='address']")
+            if vnc_address is not None:
+                vnc_address.set("address", "0.0.0.0")
 
     ################################################################################################################
     # Disables VNC access.
