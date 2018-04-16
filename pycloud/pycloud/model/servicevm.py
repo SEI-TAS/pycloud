@@ -308,8 +308,8 @@ class ServiceVM(Model):
         # Set the disk image in the description of the VM.
         xml_descriptor.setDiskImage(self.vm_image.disk_image, 'qcow2')
 
-        # Enable remote VNC access.
-        xml_descriptor.enableRemoteVNC()
+        # Disabling VNC access for now.
+        xml_descriptor.disableVNC()
 
         # Sets the Realtek network driver, needed for Windows-based VMs.
         if self.os != "lin":
