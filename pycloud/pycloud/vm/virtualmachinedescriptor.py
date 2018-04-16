@@ -180,6 +180,16 @@ class VirtualMachineDescriptor(object):
             vnc_address.set("address", "0.0.0.0")
 
     ################################################################################################################
+    # Disables VNC access.
+    ################################################################################################################
+    def disableVNC(self):
+        vnc_node = self.xmlRoot.find("devices/graphics[@type='vnc']")
+        if vnc_node is not None:
+            print 'Disabling VNC access.'
+            devices_node = self.xmlRoot.find("devices")
+            devices_node.remove("graphics[@type='vnc']")
+
+    ################################################################################################################
     # Removes the security label.
     ################################################################################################################
     def removeSecLabel(self):
