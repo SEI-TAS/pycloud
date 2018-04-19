@@ -169,15 +169,30 @@ class VirtualMachineDescriptor(object):
             network_card.append(ElementTree.fromstring('<mac address="%s"/>' % mac_address))
 
     ################################################################################################################
-    # Changes the IP address the VNC server will be listening on, to enable remote access.
+    # Ensures that VNC is enabled and accessible remotely.
     ################################################################################################################
     def enableRemoteVNC(self):
+        self.enableVNC("0.0.0.0")
+
+    ################################################################################################################
+    # Ensures that VNC is enabled and accessible locally only.
+    ################################################################################################################
+    def enableLocalVNC(self):
+        self.enableVNC("127.0.0.1")
+
+    ################################################################################################################
+    # Ensures VNC is enabled.
+    ################################################################################################################
+    def enableVNC(self, listening_address):
         vnc_graphics = self.xmlRoot.find("devices/graphics[@type='vnc']")
-        if vnc_graphics is not None:
-            vnc_graphics.set("listen", "0.0.0.0")
-        vnc_address = self.xmlRoot.find("devices/graphics/listen[@type='address']")
-        if vnc_address is not None:
-            vnc_address.set("address", "0.0.0.0")
+        if vnc_graphics is None:
+            devices_node = self.xmlRoot.find("devices")
+            devices_node.append(ElementTree.fromstring('<graphics type="vnc" port="-1" autoport="yes" keymap="en-us" listen="' + listening_address + '"/>'))
+        else:
+            vnc_graphics.set("listen", listening_address)
+            vnc_address = self.xmlRoot.find("devices/graphics/listen[@type='address']")
+            if vnc_address is not None:
+                vnc_address.set("address", listening_address)
 
     ################################################################################################################
     # Disables VNC access.
