@@ -454,7 +454,10 @@ class ServiceVM(Model):
     def _load_vnc_address_from_running_instance(self):
         try:
             self.vnc_port = self._get_vnc_port()
-            self.vnc_address = get_adapter_ip_address(self.adapter) + ":" + self.vnc_port
+
+            # We will only allow local VNC access from now on.
+            #self.vnc_address = get_adapter_ip_address(self.adapter) + ":" + self.vnc_port
+            self.vnc_address = "127.0.0.1:" + self.vnc_port
             print "VNC available on {}".format(str(self.vnc_address))
         except Exception, e:
             print 'Could not load VNC address: ' + str(e)
