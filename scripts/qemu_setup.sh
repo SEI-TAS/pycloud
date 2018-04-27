@@ -16,9 +16,11 @@ sudo sed -i -e 's:^group.*$:group = "root":' /etc/libvirt/qemu.conf
 sudo sed -i -e 's:^dynamic_ownership.*$:dynamic_ownership = 1:' /etc/libvirt/qemu.conf
 
 # Restart libvirtd, if it was running, to ensure it uses these settings.
-sudo stop libvirt-bin
-sudo start libvirt-bin
+sudo service libvirt-bin stop
+sudo service libvirt-bin start
 
 # Add the user to the appropriate groups.
 sudo adduser ${CLOUDLET_USER} kvm
 sudo adduser ${CLOUDLET_USER} libvirtd
+
+echo 'Qemu setup done.'
