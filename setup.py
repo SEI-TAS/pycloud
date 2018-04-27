@@ -30,12 +30,15 @@ __author__ = 'jdroot'
 
 from setuptools import setup, find_packages
 
-from pip.req import parse_requirements
-from pip.download import PipSession
+
+def parse_requirements(filename):
+    """ load requirements from a pip requirements file """
+    lineiter = (line.strip() for line in open(filename))
+    return [line for line in lineiter if line and not line.startswith("#")]
+
 
 # Parse the requirements file.
-pip_session = PipSession()
-reqs = [str(ir.req) for ir in parse_requirements('requirements.txt', session=pip_session)]
+reqs = [req for req in parse_requirements('requirements.txt')]
 
 setup(
     name='pycloud',
