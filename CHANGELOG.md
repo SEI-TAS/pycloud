@@ -1,5 +1,10 @@
 # Change Log
 
+## [3.0.2] - 2018-04-27
+### Fixed
+- Updated setup scripts to be compatible with systemd and changes in pip 10.
+- Changed VNC connections to ServiceVMs to be local only.
+
 ## [3.0.1] - 2018-04-12
 ### Fixed
 - Fixed bug that was preventing importing a CSVM file with a zero-length memory image file.
