@@ -1,3 +1,10 @@
+python-pycloud (3.0.2) unstable; urgency=medium
+
+ * Updated setup scripts to be compatible with systemd and changes in pip 10.
+ * Changed VNC connections to ServiceVMs to be local only.
+
+ -- Sebastian Echeverria <secheverria@sei.cmu.edu>  Fri, 27 April 2018 15:37:51 -0400
+
 python-pycloud (3.0.1) unstable; urgency=medium
 
   * Fixed bug that was preventing importing a CSVM file with a zero-length memory image file.
