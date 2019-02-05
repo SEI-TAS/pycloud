@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Install virtualenv.
-sudo pip install virtualenv
+sudo -H pip install virtualenv
 
 # Create a virtual env to work on.
 virtualenv --no-site-packages ../env
