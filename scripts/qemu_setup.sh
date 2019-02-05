@@ -22,5 +22,6 @@ sudo service libvirt-bin start
 # Add the user to the appropriate groups.
 sudo adduser ${CLOUDLET_USER} kvm
 sudo adduser ${CLOUDLET_USER} libvirtd
+sudo adduser ${CLOUDLET_USER} libvirt
 
 echo 'Qemu setup done.'
