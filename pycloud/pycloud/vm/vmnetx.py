@@ -57,7 +57,7 @@ class LibvirtQemuMemoryHeader(object):
     # assume we don't need to byteswap.
     HEADER_FORMAT = str(len(HEADER_MAGIC)) + 's19I'
     HEADER_LENGTH = struct.calcsize(HEADER_FORMAT)
-    HEADER_UNUSED_VALUES = 15
+    HEADER_UNUSED_VALUES = 14
 
     XML_MINIMUM_PAD = 8 << 10
     XML_END_ALIGNMENT = 4 << 10   # QEMU_MONITOR_MIGRATE_TO_FILE_BS
@@ -77,6 +77,7 @@ class LibvirtQemuMemoryHeader(object):
         self._xml_len = header.pop(0)
         self.was_running = header.pop(0)
         self.compressed = header.pop(0)
+        new_unknown_header_value = header.pop(0) # This was Zero in older versions of qemu
 
         # Check header
         if magic != self.HEADER_MAGIC:
