@@ -11,7 +11,7 @@ netaddr==0.7.14
 M2Crypto==0.31.0
 pybluez==0.21
 libusb1==1.4.0
-pycrypto==2.6.1
+pycryptodome==3.8.1
 adb==1.1.1
 zeroconf==0.17.4
 dnspython==1.12.0
