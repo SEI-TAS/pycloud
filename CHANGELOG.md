@@ -1,5 +1,13 @@
 # Change Log
 
+## [3.0.3] - 2019-05-21
+
+### Fixed
+- Updated dead and buggy pycrypto lib to newer pycryptodome, which uses same namespaces and objects.
+- Updated M2Crypto and Requests versions to avoid vulnerabilities.
+- Fixed handling of qemu saved states to support changes in newer qemu versions, where a new header value is used.
+- Fixed minor issues in env setup (with libvirt group names and pip warnings).
+
 ## [3.0.2] - 2018-04-27
 ### Fixed
 - Updated setup scripts to be compatible with systemd and changes in pip 10.
