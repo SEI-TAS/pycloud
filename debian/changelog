@@ -1,3 +1,11 @@
+python-pycloud (3.0.3) unstable; urgency=medium
+
+ * Updated dead and buggy pycrypto lib to newer pycryptodome, which uses same namespaces and objects.
+ * Updated M2Crypto and Requests versions to avoid vulnerabilities.
+ * Fixed handling of qemu saved states to support changes in newer qemu versions, where a new header value is used.
+ * Fixed minor issues in env setup (with libvirt group names and pip warnings).
+
+ -- Sebastian Echeverria <secheverria@sei.cmu.edu>  Tue, 21 May 2019 15:37:51 -0400
 python-pycloud (3.0.2) unstable; urgency=medium
 
  * Updated setup scripts to be compatible with systemd and changes in pip 10.
