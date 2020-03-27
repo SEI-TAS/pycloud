@@ -4,7 +4,7 @@ Routes==2.1
 WebTest==1.4.3
 mako==1.0.1
 pymongo==2.6.3
-psutil==2.0.0
+psutil==5.7.0
 requests==2.20.0
 netifaces==0.10.4
 netaddr==0.7.14
