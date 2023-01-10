@@ -2,7 +2,7 @@ webob==1.3.1
 Pylons==1.0.1
 Routes==2.1
 WebTest==1.4.3
-mako==1.0.1
+mako==1.2.2
 pymongo==2.6.3
 psutil==5.7.0
 requests==2.20.0
