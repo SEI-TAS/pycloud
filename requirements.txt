@@ -13,5 +13,5 @@ pybluez==0.21
 libusb1==1.4.0
 pycryptodome==3.19.1
 adb==1.1.1
-zeroconf==0.17.4
+zeroconf==0.149.7
 dnspython==2.6.1
